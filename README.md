@@ -1,8 +1,8 @@
-# The REMIND R package
+# The REMIND R package (2nd generation)
 
-R package **remind**, version **36.183.0**
+R package **remind2**, version **0.0.0.9001**
 
-[![CRAN status](https://www.r-pkg.org/badges/version/remind)](https://cran.r-project.org/package=remind)    
+[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)    
 
 ## Purpose and Functionality
 
@@ -21,7 +21,7 @@ The additional repository can be made available permanently by adding the line a
 After that the most recent version of the package can be installed using `install.packages`:
 
 ```r 
-install.packages("remind")
+install.packages("remind2")
 ```
 
 Package updates can be installed using `update.packages` (make sure that the additional repository has been added before running that command):
@@ -44,19 +44,18 @@ In case of questions / problems please contact Anastasis Giannousakis <giannou@p
 
 ## Citation
 
-To cite package **remind** in publications use:
+To cite package **remind2** in publications use:
 
-Giannousakis A, Pehl M (2021). _remind: The REMIND R package_. R package
-version 36.183.0.
+Giannousakis A, Pehl M (2021). _remind2: The REMIND R package (2nd generation)_. R package version 0.0.0.9001.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Manual{,
-  title = {remind: The REMIND R package},
+  title = {remind2: The REMIND R package (2nd generation)},
   author = {Anastasis Giannousakis and Michaja Pehl},
   year = {2021},
-  note = {R package version 36.183.0},
+  note = {R package version 0.0.0.9001},
 }
 ```
 

@@ -56,7 +56,7 @@ reportEmployment <- function(gdx,improvements){
  
   ## gdx from REMIND
   # filtering required capacity variables i.e., only new and existing coal capacities
-  remind_output <- remind::reportCapacity(gdx)
+  remind_output <- remind2::reportCapacity(gdx)
   vars <- "\\Cap\\|Electricity|New Cap\\|Electricity" # only interested in new and current capacities for different techs
   r_vars <- grep(vars,getNames(remind_output),value = T)
   rem_filter <- remind_output[,,r_vars]
@@ -87,7 +87,7 @@ reportEmployment <- function(gdx,improvements){
   cap_tot <- cap_tot[,getYears(rem_filter)[getYears(rem_filter,as.integer = T)>2010],]
   
   # seperating fuel supply variables
-  remind_prod <- remind::reportExtraction(gdx)
+  remind_prod <- remind2::reportExtraction(gdx)
   vars <- c("PE|Production|Biomass (EJ/yr)",
             "PE|Production|Gross|Coal (EJ/yr)" ,                                       
             "PE|Production|Gross|Oil (EJ/yr)" ,                                        

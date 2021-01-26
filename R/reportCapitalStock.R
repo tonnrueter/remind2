@@ -94,12 +94,12 @@ reportCapitalStock <- function(gdx,regionSubsetList=NULL) {
       
       if (0 != length(setdiff(ppfKap_Ind, mixer$pf))) {
         warning(paste('Unknown ppfKap_industry_dyn37 entity.',
-                      'Adjust remind::reportCapitalStock()'))
+                      'Adjust remind2::reportCapitalStock()'))
       }
       
       if (0 != length(setdiff(mixer$pf, ppfKap_Ind))) {
         warning(paste('Missing ppfKap_industry_dyn37 entity.',
-                      'Adjust remind::reportCapitalStock()'))
+                      'Adjust remind2::reportCapitalStock()'))
       } 
       
       eek_Ind <- setNames(vm_cesIO[,y,ppfKap_Ind],
