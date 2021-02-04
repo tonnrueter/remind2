@@ -1,6 +1,6 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.0.0**
+R package **remind2**, version **1.1.0**
 
   
 
@@ -40,23 +40,22 @@ vignette("remind_summary") # Adding plots to the REMIND_summary.pdf
 
 ## Questions / Problems
 
-In case of questions / problems please contact Anastasis Giannousakis <giannou@pik-potsdam.de>.
+In case of questions / problems please contact Renato Rodrigues <renato.rodrigues@pik-potsdam.de>.
 
 ## Citation
 
 To cite package **remind2** in publications use:
 
-Giannousakis A, Pehl M, Rodrigues R (2021). _remind2: The REMIND R package (2nd generation)_. R
-package version 1.0.0.
+Rodrigues R (2021). _remind2: The REMIND R package (2nd generation)_. R package version 1.1.0.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Manual{,
   title = {remind2: The REMIND R package (2nd generation)},
-  author = {Anastasis Giannousakis and Michaja Pehl and Renato Rodrigues},
+  author = {Renato Rodrigues},
   year = {2021},
-  note = {R package version 1.0.0},
+  note = {R package version 1.1.0},
 }
 ```
 
