@@ -4,6 +4,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @description This function returns a magpie object containing the reporting values of the extraction sector. Values include quantities extracted, average and supply costs for coal, oil, gas and uranium.
 #' @return A magpie object 
 #' @author Jerome Hilaire, Lavinia Baumstark
@@ -16,10 +19,10 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind dimSums mselect getRegions new.magpie getYears<- getYears setNames getSets getSets<- as.magpie
-#' @importFrom dplyr %>% filter_ mutate_
+#' @importFrom dplyr %>% filter mutate
 #' @importFrom tidyr extract
 
-reportExtraction <- function(gdx,regionSubsetList=NULL){
+reportExtraction <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   
   ####### conversion factors ##########
   TWa_2_EJ      <- as.numeric(1/readGDX(gdx, c("sm_EJ_2_TWa","sm_ej2twyr"), format="first_found"))
@@ -236,11 +239,11 @@ reportExtraction <- function(gdx,regionSubsetList=NULL){
   getSets(tmp1)[3] <- "variable"
   tmp6 <- quitte::as.quitte(tmp1)
   mylist <- lapply(levels(tmp6$variable), function(x) {
-    calcCumulatedDiscount(data = tmp6 %>% 
-                            filter_(~variable == x) ,
+    suppressWarnings(calcCumulatedDiscount(data = tmp6 %>% 
+                            filter(.data$variable == x) ,
                           nameVar = x, 
-                          discount = 0.0) %>% 
-      mutate_(variable = ~paste0(gsub(" \\(.*\\)", "", x), 
+                          discount = 0.0)) %>% 
+      mutate(variable = paste0(gsub(" \\(.*\\)", "", x), 
                                  "|Cumulated ", 
                                  gsub("/yr", "",  # remove /yr
                                       substr(x, 

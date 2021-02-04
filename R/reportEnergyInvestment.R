@@ -8,6 +8,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @return MAgPIE object - contains the price variables
 #' @author Anastasis Giannousaki
 #' @seealso \code{\link{convGDX2MIF}}
@@ -17,7 +20,7 @@
 #' 
 #' @export
 #' @importFrom magclass dimSums mbind
-reportEnergyInvestment <- function(gdx,regionSubsetList=NULL) {
+reportEnergyInvestment <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
   
   # read sets
   adjte   <- readGDX(gdx,name=c("teAdj","adjte"),format="first_found")

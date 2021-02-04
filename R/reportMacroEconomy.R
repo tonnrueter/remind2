@@ -9,6 +9,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @author Lavinia Baumstark, Anselm Schultes
 #' @examples
 #' 
@@ -18,7 +21,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass setNames mbind getYears dimSums new.magpie getRegions setYears
 
-reportMacroEconomy <- function(gdx,regionSubsetList=NULL){
+reportMacroEconomy <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   
   #---- Functions ----
   find_real_module <- function(module_set, module_name){

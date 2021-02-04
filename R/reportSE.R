@@ -9,6 +9,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @author Gunnar Luderer, Lavinia Baumstark
 #' @examples
 #'
@@ -19,7 +22,7 @@
 #' @importFrom magclass mselect getSets getSets<- getYears dimSums getNames<- mbind
 #' @importFrom abind abind
 
-reportSE <- function(gdx,regionSubsetList=NULL){
+reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
   ####### get realisations #########
   realisation <- readGDX(gdx, "module2realisation")
@@ -47,8 +50,8 @@ reportSE <- function(gdx,regionSubsetList=NULL){
 
   
   # the set liquids changed from sepet+sedie to seLiq in REMIND 1.7. Seliq, sega and seso changed to include biomass or Fossil origin after REMIND 2.0
-  se_Liq    <- intersect(c("seliqfos", "seliqbio", "seliq", "sepet","sedie"),sety)
-  se_Gas    <- intersect(c("segafos", "segabio", "sega"),sety)
+  se_Liq    <- intersect(c("seliqfos", "seliqbio","seliqsyn", "seliq", "sepet","sedie"),sety)
+  se_Gas    <- intersect(c("segafos", "segabio","segasyn", "sega"),sety)
   se_Solids <- intersect(c("sesofos", "sesobio", "seso"),sety)
   
   # Gases and Liquids can also be made from H2 via CCU
@@ -91,6 +94,7 @@ reportSE <- function(gdx,regionSubsetList=NULL){
   ####### set temporal resolution #####
   prodSe    <- prodSe[,y,]
   storLoss  <- storLoss[,y,]
+  p_macBase <- p_macBase[,y,]
   ####### fix negative values to 0 ##################
   #### adjust regional dimension of dataoc
   dataoc <- new.magpie(getRegions(prodSe),getYears(dataoc_tmp),magclass::getNames(dataoc_tmp),fill=0)
@@ -257,8 +261,8 @@ reportSE <- function(gdx,regionSubsetList=NULL){
     se.prod(prodSe,dataoc,oc2te,sety,"pegas","seh2", te = teccs,         name = "SE|Hydrogen|Gas|w/ CCS (EJ/yr)"),
     se.prod(prodSe,dataoc,oc2te,sety,"pegas","seh2", te = tenoccs,       name = "SE|Hydrogen|Gas|w/o CCS (EJ/yr)"),
     se.prod(prodSe,dataoc,oc2te,sety,"seel","seh2",                      name = "SE|Hydrogen|Electricity (EJ/yr)"),
-    se.prod(prodSe,dataoc,oc2te,sety,"seel","seh2", te = "elh2VRE",      name = "SE|Hydrogen|Electricity|from forced VRE storage electrolysis (EJ/yr)"),
-    se.prod(prodSe,dataoc,oc2te,sety,"seel","seh2", te = "elh2",         name = "SE|Hydrogen|Electricity|from general electrolysis (EJ/yr)"),
+    se.prod(prodSe,dataoc,oc2te,sety,"seel","seh2", te = "elh2",         name = "SE|Hydrogen|Electricity|Grey Electrolysis (EJ/yr)"),
+    se.prod(prodSe,dataoc,oc2te,sety,"seel","seh2", te = "elh2VRE",      name = "SE|Hydrogen|Electricity|VRE Electrolysis (EJ/yr)"),
     se.prod(prodSe,dataoc,oc2te,sety,c("pegas","pecoal","peoil") ,"seh2",               name = "SE|Hydrogen|Fossil (EJ/yr)"),
     se.prod(prodSe,dataoc,oc2te,sety,c("pegas","pecoal","peoil"),"seh2", te = teccs,    name = "SE|Hydrogen|Fossil|w/ CCS (EJ/yr)"),
     se.prod(prodSe,dataoc,oc2te,sety,c("pegas","pecoal","peoil"),"seh2", te = tenoccs,  name = "SE|Hydrogen|Fossil|w/o CCS (EJ/yr)"),
@@ -311,6 +315,66 @@ reportSE <- function(gdx,regionSubsetList=NULL){
   
 #    tmp1 <- mbind(tmp1, setNames(se.prod(prodSe,dataoc,oc2te,sety,pebio ,se_Solids, name = NULL)
 #                                 - tmp1[,,"SE|Solids|Traditional Biomass (EJ/yr)"],"SE|Solids|Biomass (EJ/yr)"))
+
+  
+  ### FS: SE Demand Reporting
+  
+  # FE production
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,y,]*pm_conv_TWa_EJ
+  # SE demand
+  vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[,y,]*pm_conv_TWa_EJ
+  # conversion efficiency
+  pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[,y,]
+
+  tmp <- NULL
+  tmp <- mbind(tmp,
+               setNames(collapseNames(dimSums(vm_demSe[,,"seh2.seel"], dim=3)), "SE|Hydrogen|used for electricity (EJ/yr)"),
+               setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turb"]), "SE|Hydrogen|used for electricity|normal turbines (EJ/yr)"),
+               setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turbVRE"]), "SE|Hydrogen|used for electricity|forced VRE turbines (EJ/yr)"))
+  
+  # if CCU on
+  if (realisation[23,2] == "on") {
+    tmp <- mbind(tmp,
+                 setNames(collapseNames(vm_demSe[,,"seh2.seliqbio.MeOH"]), "SE|Hydrogen|used for synthetic fuels|liquids (EJ/yr)"),
+                 setNames(collapseNames(vm_demSe[,,"seh2.segabio.h22ch4"]), "SE|Hydrogen|used for synthetic fuels|gases (EJ/yr)"))
+  }
+
+  # SE electricity use
+  
+  # share of electrolysis H2 in total H2
+  p_shareElec_H2 <- collapseNames(tmp1[,,"SE|Hydrogen|Electricity (EJ/yr)"] / tmp1[,,"SE|Hydrogen (EJ/yr)"])
+  p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
+  
+  tmp <- mbind(tmp,
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "build"), dim=3) / 
+                                        collapseNames(pm_eta_conv[,,"tdels"])),
+                        "SE|Electricity|used in Buildings (EJ/yr)"),
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "indst"), dim=3) / 
+                                        collapseNames(pm_eta_conv[,,"tdels"])),
+                        "SE|Electricity|used in Industry (EJ/yr)"),
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "trans"), dim=3) / 
+                                        collapseNames(pm_eta_conv[,,"tdelt"])),
+                        "SE|Electricity|used in Transport (EJ/yr)"),
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "CDR"), dim=3) / 
+                                        collapseNames(pm_eta_conv[,,"tdels"])),
+                        "SE|Electricity|used for CDR (EJ/yr)"),
+               setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2"]),
+                        "SE|Electricity|used for grey electrolysis (EJ/yr)"),
+               setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2VRE"]),
+                        "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"))
+  
+  if (realisation[23,2] == "on") {
+    tmp <- mbind(tmp,
+                 setNames(collapseNames(p_shareElec_H2 * vm_demSe[,,"seh2.seliqbio.MeOH"] / 
+                                          collapseNames(pm_eta_conv[,,"elh2"])),
+                          "SE|Electricity|used for synthetic fuels|liquids (EJ/yr)"),
+                 setNames(collapseNames(p_shareElec_H2 * vm_demSe[,,"seh2.segabio.h22ch4"] / 
+                                          collapseNames(pm_eta_conv[,,"elh2"])),
+                          "SE|Electricity|used for synthetic fuels|gases (EJ/yr)"))
+    
+  }
+  
+  tmp1 <- mbind(tmp1, tmp)
 
   # add global values
   out <- mbind(tmp1,dimSums(tmp1,dim=1))

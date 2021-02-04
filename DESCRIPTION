@@ -1,11 +1,12 @@
 Package: remind2
 Type: Package
 Title: The REMIND R package (2nd generation)
-Version: 0.0.0.9001
-Date: 2021-01-26
+Version: 1.0.0
+Date: 2021-02-04
 Authors@R: as.person(c(
 	   "Anastasis Giannousakis <giannou@pik-potsdam.de> [aut,cre]",
-	   "Michaja Pehl [aut]"))
+	   "Michaja Pehl [aut]",
+	   "Renato Rodrigues [aut]"))
 Description: Contains the REMIND-specific routines for data and model output manipulation.
 Depends:
     gdx(>= 1.29),

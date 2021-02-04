@@ -9,6 +9,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @return MAgPIE object - contains the emission variables
 #' @author Antoine Levesque, Jerome Hilaire
 #' @seealso \code{\link{convGDX2MIF}}
@@ -18,7 +21,7 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass collapseNames dimSums getNames<- mbind setNames new.magpie getRegions getYears mbind dimSums setYears getRegions<-
-reportEmiAirPol <- function(gdx,regionSubsetList=NULL){
+reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
   # Get realisation name 
   realisation <- readGDX(gdx, "module2realisation")

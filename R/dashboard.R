@@ -13,7 +13,7 @@
 #' @examples
 #'   \dontrun{
 #'     # loading required libraries
-#'     library(remind)
+#'     library(remind2)
 #'     # creating the REMINd dashboard
 #'     dashboard(gdx="./output/Base/fulldata.gdx",statsFile="./output/Base/runstatistics.rda",
 #'               output_file="./output/Base/REMIND_dashboard_Base.html")

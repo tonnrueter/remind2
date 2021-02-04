@@ -9,6 +9,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @author Lavinia Baumstark
 #' @examples
 #' 
@@ -17,7 +20,7 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears mbind dimSums setNames
-reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL){
+reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   ####### read in needed data #########
   ## sets
   trade_bau <- readGDX(gdx_ref,name=c("trade"),format="first_found")

@@ -23,7 +23,7 @@ params:
 
 ```{r loading_libraries, include=FALSE}
   #loading required libraries
-  #library(remind)
+  #library(remind2)
   library(knitr)
   library(flexdashboard)
 ```

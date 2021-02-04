@@ -191,11 +191,11 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   # ---- FE Transport ----
   swlatex(sw,"\\subsection{FE Transport}")
   
-  var.tot <-"FE|Transport (EJ/yr)"
-  vars <- c("FE|Transport|Liquids (EJ/yr)",
-            "FE|Transport|Gases (EJ/yr)",
-            "FE|Transport|Electricity (EJ/yr)",
-            "FE|Transport|Hydrogen (EJ/yr)"
+  var.tot <-"FE|++|Transport (EJ/yr)"
+  vars <- c("FE|Transport|+|Liquids (EJ/yr)",
+            "FE|Transport|+|Gases (EJ/yr)",
+            "FE|Transport|+|Electricity (EJ/yr)",
+            "FE|Transport|+|Hydrogen (EJ/yr)"
   )
 
   p <- mipArea(data["GLO",,vars], total = data["GLO",,var.tot]) + theme(legend.position="none")
@@ -207,14 +207,15 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   #---- FE Industry ----
   swlatex(sw,"\\subsection{FE Industry}")
   
-  var.tot <-"FE|Industry (EJ/yr)"
-  vars <- c("FE|Industry|Electricity (EJ/yr)",
-            "FE|Industry|Heat (EJ/yr)",
-            "FE|Industry|Gases (EJ/yr)",
-            "FE|Industry|Hydrogen (EJ/yr)",
-            "FE|Industry|Liquids (EJ/yr)",
-            "FE|Industry|Solids|Coal (EJ/yr)",
-            "FE|Industry|Solids|Biomass (EJ/yr)"#,
+  var.tot <-"FE|++|Industry (EJ/yr)"
+  vars <- c("FE|Industry|+|Electricity (EJ/yr)",
+            "FE|Industry|+|Heat (EJ/yr)",
+            "FE|Industry|+|Gases (EJ/yr)",
+            "FE|Industry|+|Hydrogen (EJ/yr)",
+            "FE|Industry|+|Liquids (EJ/yr)",
+            "FE|Industry|+|Solids (EJ/yr)"#,
+            #"FE|Industry|Solids|Coal (EJ/yr)"#,
+            #"FE|Industry|Solids|Biomass (EJ/yr)"#,
             #"FE|Industry|Other (EJ/yr)"
   )
   
@@ -227,14 +228,15 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   #---- FE Residential and Commercial ----
   swlatex(sw,"\\subsection{FE Buildings}")
   
-  var.tot <-"FE|Buildings (EJ/yr)"
-  vars <- c("FE|Buildings|Electricity (EJ/yr)",
-            "FE|Buildings|Heat (EJ/yr)",
-            "FE|Buildings|Gases (EJ/yr)",
-            "FE|Buildings|Hydrogen (EJ/yr)",
-            "FE|Buildings|Liquids (EJ/yr)",
-            "FE|Buildings|Solids|Coal (EJ/yr)",
-            "FE|Buildings|Solids|Biomass (EJ/yr)"
+  var.tot <-"FE|++|Buildings (EJ/yr)"
+  vars <- c("FE|Buildings|+|Electricity (EJ/yr)",
+            "FE|Buildings|+|Heat (EJ/yr)",
+            "FE|Buildings|+|Gases (EJ/yr)",
+            "FE|Buildings|+|Hydrogen (EJ/yr)",
+            "FE|Buildings|+|Liquids (EJ/yr)",
+            "FE|Buildings|+|Solids (EJ/yr)"#,
+            #"FE|Buildings|Solids|Coal (EJ/yr)",
+            #"FE|Buildings|Solids|Biomass (EJ/yr)"
   )
   
   # Global plot, FE

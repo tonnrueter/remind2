@@ -1,4 +1,4 @@
 library(testthat)
-library(remind)
+library(remind2)
 
-test_check("remind")
+test_check("remind2")

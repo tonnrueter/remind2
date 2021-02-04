@@ -8,6 +8,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @return MAgPIE object - contains the price variables
 #' @author Lavinia Baumstark, Christoph Bertram, Anselm Schultes
 #' @seealso \code{\link{convGDX2MIF}}
@@ -19,7 +22,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears setNames mbind dimSums
 
-reportTrade <- function(gdx,regionSubsetList=NULL) {
+reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
   
   TWa_2_EJ        <- 31.536
   sm_tdptwyr2dpgj <- 31.71   #TerraDollar per TWyear to Dollar per GJ

@@ -25,6 +25,7 @@
 #' @importFrom reshape2 dcast
 #' @importFrom stats quantile IQR lag
 #' @importFrom grDevices rgb
+#' @importFrom RColorBrewer brewer.pal
 #' 
 #' @export
 

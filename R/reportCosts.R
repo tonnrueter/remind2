@@ -9,6 +9,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @return MAgPIE object - contains the cost variables
 #' @author David Klein
 #' @seealso \code{\link{convGDX2MIF}}
@@ -22,16 +25,16 @@
 #' @importFrom gdx readGDX
 #' @importFrom dplyr filter
 
-reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL) {
+reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
   
   # Cost calculation requires information from other reportings
   if(is.null(output)){
       cat("Executing reportExtraction\n")
-      output <- mbind(output,reportExtraction(gdx,regionSubsetList))
+      output <- mbind(output,reportExtraction(gdx,regionSubsetList,t))
       cat("Executing reportPrices\n")
-      output <- mbind(output,reportPrices(gdx,regionSubsetList=regionSubsetList))
+      output <- mbind(output,reportPrices(gdx,regionSubsetList=regionSubsetList,t))
       cat("Executing reportEnergyInvestments\n")
-      output <- mbind(output,reportEnergyInvestment(gdx,regionSubsetList)[,getYears(output),])
+      output <- mbind(output,reportEnergyInvestment(gdx,regionSubsetList,t)[,getYears(output),])
   }
   
   ########################################################################################
@@ -85,7 +88,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL) {
   p_dataeta              <- readGDX(gdx,name=c("pm_dataeta","p_dataeta"),format="first_found")
   pm_pvp                 <- readGDX(gdx,name=c("pm_pvp"),format = "first_found")
   cost_emu_pre           <- readGDX(gdx,name="p30_pebiolc_costs_emu_preloop",format="first_found")
-  cost_mag               <- readGDX(gdx,name="p30_pebiolc_costsmag",format="first_found")[,getYears(cost_emu_pre),]
+  cost_mag               <- readGDX(gdx,name="p30_pebiolc_costsmag",format="first_found", react = "silent")[,getYears(cost_emu_pre),]
   totLUcosts             <- readGDX(gdx,name=c("pm_totLUcosts"),format="first_found")[,getYears(cost_emu_pre),]
   totLUcostsWithMAC      <- readGDX(gdx,name=c("p26_totLUcosts_withMAC"),format="first_found")[,getYears(cost_emu_pre),]
   costsLuMACLookup       <- readGDX(gdx,name=c("p26_macCostLu"),format="first_found")[,getYears(cost_emu_pre),]
@@ -117,8 +120,24 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL) {
   pebal.m      <- readGDX(gdx,name=c("q_balPe","qm_pebal"),  types="equations",field="m",format="first_found")
   budget.m     <- readGDX(gdx,name='qm_budget', types="equations",field="m",format="first_found") # alternative: calcPrice
   sebal.m      <- readGDX(gdx,name=c("q_balSe","q_sebal"),   types="equations",field="m",format="first_found")
-  febal.m      <- readGDX(gdx,name=c("q_balFe","q_febal"),   types="equations",field="m",format="first_found")[,,fety]
-  balfinen.m   <- readGDX(gdx,name=c("qm_balFeForCesAndEs","qm_balFeForCes","q_balFeForCes","q_balfinen"),types="equations",field="m",format="first_found")[finenbal]
+  balfinen.m   <- readGDX(gdx,name=c("qm_balFeForCesAndEs","qm_balFeForCes","q_balFeForCes","q_balfinen"),types="equations",field="m",format="first_found", react = "silent")[finenbal]
+  
+  if(is.null(balfinen.m)){
+    vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",restore_zeros=FALSE,format="first_found")
+    demFeIndst.m <- readGDX(gdx,name=c("q37_demFeIndst"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
+    demFeBuild.m <- readGDX(gdx,name=c("q36_demFeBuild"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
+    balFe.m <- readGDX(gdx,name=c("qm_balFe","q_balFe"),types="equations",restore_zeros=FALSE,field="m",format="first_found") 
+    #balFeCDR.m <- readGDX(gdx,name=c("q33_balFeCDR"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
+    #febalForUe.m <- dimReduce(febalForUe.m, dim_exclude = 2)
+    demFeTrans.m <- readGDX(gdx,name=c("q35_demFeTrans"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
+    y1 <- Reduce(intersect,list(getYears(demFeTrans.m),getYears(budget.m),getYears(vm_demFeSector)))
+    price_fe_trans_emiMkt <- abs(demFeTrans.m[,y1,]/(budget.m[,y1,]+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in transportation per emission market (US$2005/GJ)
+    quant_fe_trans_emiMkt <-  dimSums(dimSums(vm_demFeSector[,y1,"trans"],dim=c(3.1)),dim=c(3.2))[,,getNames(price_fe_trans_emiMkt[,y1,])] # quantity of final energy in transportation per emission market
+    price_fe_trans <- dimSums(price_fe_trans_emiMkt*quant_fe_trans_emiMkt,dim=3.2) / dimSums(quant_fe_trans_emiMkt,dim=3) # price of final energy in transportation (US$2005/GJ)
+    febalForUe.m <- price_fe_trans
+  } else {
+    febalForUe.m <- readGDX(gdx,name=c("q_balFeForUe","q_balFe","q_febal"),types="equations",field="m",format="first_found",restore_zeros=FALSE)  
+  }
   
   # Find common years
   y <- Reduce(intersect,list(getYears(vm_fuelex),
@@ -145,11 +164,22 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL) {
   pebal.m          <- pebal.m[,y,]
   budget.m         <- budget.m[,y,]
   sebal.m          <- sebal.m[,y,]
-  febal.m          <- febal.m[,y,]
+  febalForUe.m     <- febalForUe.m[,y,]
   balfinen.m       <- balfinen.m[,y,]
   vm_omcosts_cdr   <- vm_omcosts_cdr[,y,]
   output           <- output[,y,]
   p_eta_conv       <- p_eta_conv[,y,]
+  
+  y <- Reduce(intersect,list(getYears(febalForUe.m),getYears(vm_prodFe),getYears(sebal.m),getYears(vm_prodSe)))
+  febalForUe.m        <- febalForUe.m[,y,]
+  if(!(is.null(balfinen.m))) {
+    balfinen.m     <- balfinen.m[,y,]
+  } else {
+    demFeIndst.m <- demFeIndst.m[,y,]
+    demFeBuild.m <- demFeBuild.m[,y,]
+    balFe.m <- balFe.m[,y,]
+    vm_demFeSector <- vm_demFeSector[,y,]
+  }
   
   # Gather efficiency data in only one magpie object to enable generic structure of below defined functions:
   # Take values from pm_data (constant efficiency over time) for technologies where p_dataeta (time variant efficiencies) has no values.
@@ -320,7 +350,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL) {
   if (!is.null(ppfen_stat)){
     ##### CDR
     price_feels <- abs(balfinen.m[,,"feels.feels"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Electricity|Stationary (US$2005/GJ)")
-    price_fedie <- abs(febal.m[,,"fedie"]         /(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
+    price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
     price_fehes <- abs(balfinen.m[,,"fehes.fehes"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ #  "Price|Final Energy|Heat|
     price_fegas <- abs(balfinen.m[,,"fegas.fegas"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Gas (US$2005/GJ)")
     price_feh2s <- abs(balfinen.m[,,"feh2s.feh2s"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Hydrogen|Stationary (US$2005/GJ)")
@@ -341,58 +371,77 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL) {
                                "Energy costs CDR (billion US$2005/yr)"))
   } else {
     
-    if ('subsectors' == industry_module) {
-      fe2ppfen37_feels <- filter(fe2ppfen37, 'feels' == .data$all_enty)
-      fe2ppfen37_fegas <- filter(fe2ppfen37, 'fegas' == .data$all_enty)
-      fe2ppfen37_feh2s <- filter(fe2ppfen37, 'feh2s' == .data$all_enty)
+    if (!is.null(balfinen.m)){
       
-      
-      # "Price|Final Energy|Electricity|Industry (US$2005/GJ)")
-      price_feeli <- abs(
-        ( dimSums(
-            mselect(balfinen.m, fe2ppfen37_feels) 
-          * vm_cesIO[,y,fe2ppfen37_feels$all_in],
-          dim = 3) 
-        / dimSums(vm_cesIO[,y,fe2ppfen37_feels$all_in], dim = 3)
+      if ('subsectors' == industry_module) {
+        fe2ppfen37_feels <- filter(fe2ppfen37, 'feels' == .data$all_enty)
+        fe2ppfen37_fegas <- filter(fe2ppfen37, 'fegas' == .data$all_enty)
+        fe2ppfen37_feh2s <- filter(fe2ppfen37, 'feh2s' == .data$all_enty)
+        
+        
+        # "Price|Final Energy|Electricity|Industry (US$2005/GJ)")
+        price_feeli <- abs(
+          ( dimSums(
+              mselect(balfinen.m, fe2ppfen37_feels) 
+            * vm_cesIO[,y,fe2ppfen37_feels$all_in],
+            dim = 3) 
+          / dimSums(vm_cesIO[,y,fe2ppfen37_feels$all_in], dim = 3)
+          )
+          / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
         )
-        / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
-      )
-      
-      # "Price|Final Energy|Gases|Industry (US$2005/GJ)")
-      price_fegai <- abs(
-        ( dimSums(
-          mselect(balfinen.m, fe2ppfen37_fegas) 
-          * vm_cesIO[,y,fe2ppfen37_fegas$all_in],
-          dim = 3) 
-          / dimSums(vm_cesIO[,y,fe2ppfen37_fegas$all_in], dim = 3)
+        
+        # "Price|Final Energy|Gases|Industry (US$2005/GJ)")
+        price_fegai <- abs(
+          ( dimSums(
+            mselect(balfinen.m, fe2ppfen37_fegas) 
+            * vm_cesIO[,y,fe2ppfen37_fegas$all_in],
+            dim = 3) 
+            / dimSums(vm_cesIO[,y,fe2ppfen37_fegas$all_in], dim = 3)
+          )
+          / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
         )
-        / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
-      )
-      
-      # "Price|Final Energy|Hydrogen|Industry (US$2005/GJ)")
-      price_feh2i <- abs(
-        ( dimSums(
-          mselect(balfinen.m, fe2ppfen37_feh2s) 
-          * vm_cesIO[,y,fe2ppfen37_feh2s$all_in],
-          dim = 3) 
-          / dimSums(vm_cesIO[,y,fe2ppfen37_feh2s$all_in], dim = 3)
+        
+        # "Price|Final Energy|Hydrogen|Industry (US$2005/GJ)")
+        price_feh2i <- abs(
+          ( dimSums(
+            mselect(balfinen.m, fe2ppfen37_feh2s) 
+            * vm_cesIO[,y,fe2ppfen37_feh2s$all_in],
+            dim = 3) 
+            / dimSums(vm_cesIO[,y,fe2ppfen37_feh2s$all_in], dim = 3)
+          )
+          / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
         )
-        / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
-      )
+      } else {
+        price_feeli <- abs(balfinen.m[,,"feels.feeli"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Electricity|Industry (US$2005/GJ)")
+        price_fegai <- abs(balfinen.m[,,"fegas.fegai"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Gases|Industry (US$2005/GJ)")
+        price_feh2i <- abs(balfinen.m[,,"feh2s.feh2i"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Hydrogen|Industry (US$2005/GJ)")
+      } 
+      
+      # reduce names in 3rd dimension
+      price_feeli <- setNames(price_feeli,"feeli") # reduce feels.feels to feels
+      price_fegai <- setNames(price_fegai,"fegai") # reduce fehes.fehes to fehes
+      price_feh2i <- setNames(price_feh2i,"feh2i") # reduce fehes.fehes to fehes
+      
     } else {
-      price_feeli <- abs(balfinen.m[,,"feels.feeli"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Electricity|Industry (US$2005/GJ)")
-      price_fegai <- abs(balfinen.m[,,"fegas.fegai"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Gases|Industry (US$2005/GJ)")
-      price_feh2i <- abs(balfinen.m[,,"feh2s.feh2i"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Hydrogen|Industry (US$2005/GJ)")
+      # industry final energy price
+      price_fe_indst_emiMkt <- abs(demFeIndst.m/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in industry per emission market (US$2005/GJ)
+      quant_fe_indst_emiMkt <-  dimSums(dimSums(vm_demFeSector[,,"indst"],dim=c(3.1)),dim=c(3.2))[,,getNames(price_fe_indst_emiMkt)] # qunatity of final energy in industry per emission market
+      price_fe_indst <- dimSums(price_fe_indst_emiMkt*quant_fe_indst_emiMkt,dim=3.2) / dimSums(quant_fe_indst_emiMkt,dim=3) # price of final energy in industry (US$2005/GJ)
+      # buildings final energy price
+      price_fe_build_emiMkt <- abs(demFeBuild.m/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in buildings per emission market (US$2005/GJ)
+      quant_fe_build_emiMkt <-  dimSums(dimSums(vm_demFeSector[,,"build"],dim=c(3.1)),dim=c(3.2))[,,getNames(price_fe_build_emiMkt)]
+      price_fe_build <- dimSums(price_fe_build_emiMkt*quant_fe_build_emiMkt,dim=3.2) / dimSums(quant_fe_build_emiMkt,dim=3) # price of final energy in buildings (US$2005/GJ)
+    
+      # reduce names in 3rd dimension
+      price_feeli <- price_fe_indst[,,"feels"]
+      price_fegai <- price_fe_indst[,,"fegas"]
+      price_feh2i <- price_fe_indst[,,"feh2s"]
+      price_feeli <- setNames(price_feeli,"feeli") # reduce feels.feels to feels
+      price_fegai <- setNames(price_fegai,"fegai") # reduce fehes.fehes to fehes
+      price_feh2i <- setNames(price_feh2i,"feh2i") # reduce fehes.fehes to fehes
     }
     
-    
-    price_fedie <- abs(febal.m[,,"fedie"]         /(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
-    
-    # reduce names in 3rd dimension
-    
-    price_feeli <- setNames(price_feeli,"feeli") # reduce feels.feels to feels
-    price_fegai <- setNames(price_fegai,"fegai") # reduce fehes.fehes to fehes
-    price_feh2i <- setNames(price_feh2i,"feh2i") # reduce fehes.fehes to fehes
+    price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
     
     tmp  <- mbind(tmp,setNames(price_feeli * vm_otherFEdemand[,,"feels"] * pm_conv_TWa_EJ , "Energy costs CDR|Electricity (billion US$2005/yr)"))   
     tmp  <- mbind(tmp,setNames(price_fedie * vm_otherFEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"))

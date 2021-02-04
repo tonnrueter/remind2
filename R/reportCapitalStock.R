@@ -8,6 +8,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @return MAgPIE object - contains the capital stock variables
 #' @author Lavinia Baumstark; Michaja Pehl
 #' @seealso \code{\link{convGDX2MIF}}
@@ -19,7 +22,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears mbind setNames dimSums
 #' @importFrom dplyr tribble
-reportCapitalStock <- function(gdx,regionSubsetList=NULL) {
+reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
 
     module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
     tran_mod = module2realisation[module2realisation$modules == "transport", 2]

@@ -8,6 +8,9 @@
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
 #' be created.
+#' @param t temporal resolution of the reporting, default:
+#' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' 
 #' @return MAgPIE object - contains the capacity variables
 #' @author Lavinia Baumstark, Christoph Bertram
 #' @seealso \code{\link{convGDX2MIF}}
@@ -18,9 +21,9 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind setNames dimSums getSets getSets<- as.magpie
-#' @importFrom dplyr %>% filter_ mutate_
+#' @importFrom dplyr %>% filter mutate
 
-reportCapacity <- function(gdx,regionSubsetList=NULL) {
+reportCapacity <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
   
   # read sets
   teall2rlf   <- readGDX(gdx,name=c("te2rlf","teall2rlf"),format="first_found")
@@ -31,6 +34,8 @@ reportCapacity <- function(gdx,regionSubsetList=NULL) {
   vm_cap      <- readGDX(gdx,name=c("vm_cap"),field="l",format="first_found") * 1000
   vm_deltaCap <- readGDX(gdx,name=c("vm_deltaCap"),field="l",format="first_found") * 1000
   v_earlyreti <- readGDX(gdx,name=c("vm_capEarlyReti","v_capEarlyReti","v_earlyreti"),field="l",format="first_found")
+  
+  module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   
   # data preparation
   ttot <- as.numeric(as.vector(ttot))
@@ -54,7 +59,19 @@ reportCapacity <- function(gdx,regionSubsetList=NULL) {
   if (all(c("h2turbVRE","h2turb") %in% magclass::getNames(vm_cap,dim=1))) {tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,c("h2turb","h2turbVRE")],dim=3), "Cap|Electricity|Hydrogen (GW)"))  }
   tmp1 <- mbind(tmp1,setNames(dimSums(tmp1,dim=3),                      "Cap|Electricity (GW)"))
   
-
+  tmp7 <- NULL
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("gash2c")],dim=3),         "Cap|Hydrogen|Gas|w/ CCS (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("gash2")],dim=3),         "Cap|Hydrogen|Gas|w/o CCS (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("gash2","gash2c")],dim=3),         "Cap|Hydrogen|Gas (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("coalh2c")],dim=3),         "Cap|Hydrogen|Coal|w/ CCS (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("coalh2")],dim=3),         "Cap|Hydrogen|Coal|w/o CCS (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("coalh2","coalh2c")],dim=3),         "Cap|Hydrogen|Coal (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("bioh2c")],dim=3),         "Cap|Hydrogen|Biomass|w/ CCS (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("bioh2")],dim=3),         "Cap|Hydrogen|Biomass|w/o CCS (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("bioh2","bioh2c")],dim=3),         "Cap|Hydrogen|Biomass (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(vm_cap[,,c("elh2","elh2VRE")],dim=3),         "Cap|Hydrogen|Electricity (GW)"))
+  tmp7 <- mbind(tmp7,setNames(dimSums(tmp7,dim=3),                      "Cap|Hydrogen (GW)"))
+  
   tmp <- NULL
   tmp <- mbind(tmp,setNames(dimSums(vm_cap[,,"igccc"],dim=3),               "Cap|Electricity|Coal|IGCC|w/ CCS (GW)"))
   tmp <- mbind(tmp,setNames(dimSums(vm_cap[,,"igcc"],dim=3),                "Cap|Electricity|Coal|IGCC|w/o CCS (GW)"))
@@ -115,33 +132,44 @@ reportCapacity <- function(gdx,regionSubsetList=NULL) {
   tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,"bioh2"],dim=3),               "New Cap|Hydrogen|Biomass|w/o CCS (GW)"))
   tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gash2c","coalh2c")],dim=3), "New Cap|Hydrogen|Fossil|w/ CCS (GW)"))
   tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gash2","coalh2")],dim=3),   "New Cap|Hydrogen|Fossil|w/o CCS (GW)"))
-  # Newly built capacities liquids
-  if ("MeOH" %in% getNames(vm_deltaCap, dim=1)) {
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c(refineries,"coalftrec","coalftcrec","bioftrec","bioftcrec","biodiesel","bioeths","bioethl","MeOH")],dim=3), 
-                                "New Cap|Liquids (GW)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[,,c(refineries,"coalftrec","coalftcrec")],dim=3), 
-                                 "New Cap|Liquids|Fossil (GW)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[,,c("bioftrec","bioftcrec","biodiesel","bioeths","bioethl")],dim=3), 
-                                 "New Cap|Liquids|Biomass (GW)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[,,c("MeOH")],dim=3), 
-                                 "New Cap|Liquids|Hydrogen (GW)"))
-  } else {
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c(refineries,"coalftrec","coalftcrec","bioftrec","bioftcrec","biodiesel","bioeths","bioethl")],dim=3), 
-                                "New Cap|Liquids (GW)"))
-  }
-  # Newly built capacities gases
-  if ("h22ch4" %in% getNames(vm_deltaCap, dim=1)) {
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gastr","coalgas","biogas","h22ch4")],dim=3), 
-                                "New Cap|Gases (GW)"))
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gastr","coalgas")],dim=3), 
-                                "New Cap|Gases|Fossil (GW)"))
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("biogas")],dim=3), 
-                                "New Cap|Gases|Biomass (GW)"))
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("h22ch4")],dim=3), 
-                                "New Cap|Gases|Hydrogen (GW)"))
-  } else {
-    tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gastr","coalgas","biogas")],dim=3), 
-                                "New Cap|Gases (GW)"))
+  tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gash2")],dim=3),   "New Cap|Hydrogen|Gas|w/o CCS (GW)"))
+  tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gash2c")],dim=3),   "New Cap|Hydrogen|Gas|w CCS (GW)"))
+  tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gash2c","gash2")],dim=3),   "New Cap|Hydrogen|Gas (GW)"))
+
+  # Newly built capacities liquids, if CCU on
+  if (module2realisation[23,2] == "on") {
+
+
+
+    # Newly built capacities liquids
+    if ("MeOH" %in% getNames(vm_deltaCap, dim=1)) {
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c(refineries,"coalftrec","coalftcrec","bioftrec","bioftcrec","biodiesel","bioeths","bioethl","MeOH")],dim=3), 
+                                  "New Cap|Liquids (GW)"))
+      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[,,c(refineries,"coalftrec","coalftcrec")],dim=3), 
+                                   "New Cap|Liquids|Fossil (GW)"))
+      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[,,c("bioftrec","bioftcrec","biodiesel","bioeths","bioethl")],dim=3), 
+                                   "New Cap|Liquids|Biomass (GW)"))
+      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[,,c("MeOH")],dim=3), 
+                                   "New Cap|Liquids|Hydrogen (GW)"))
+    } else {
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c(refineries,"coalftrec","coalftcrec","bioftrec","bioftcrec","biodiesel","bioeths","bioethl")],dim=3), 
+                                  "New Cap|Liquids (GW)"))
+    }
+
+    # Newly built capacities gases
+    if ("h22ch4" %in% getNames(vm_deltaCap, dim=1)) {
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gastr","coalgas","biogas","h22ch4")],dim=3), 
+                                  "New Cap|Gases (GW)"))
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gastr","coalgas")],dim=3), 
+                                  "New Cap|Gases|Fossil (GW)"))
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("biogas")],dim=3), 
+                                  "New Cap|Gases|Biomass (GW)"))
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("h22ch4")],dim=3), 
+                                  "New Cap|Gases|Hydrogen (GW)"))
+    } else {
+      tmp2 <- mbind(tmp2,setNames(dimSums(vm_deltaCap[,,c("gastr","coalgas","biogas")],dim=3), 
+                                  "New Cap|Gases (GW)"))
+    }
   }
 
 
@@ -186,7 +214,7 @@ reportCapacity <- function(gdx,regionSubsetList=NULL) {
   tmp4 <- mbind(tmp4,setNames(tmp4[,,"Idle Cap|Electricity|Gas|w/o CCS (GW)"]+tmp[,,"Cap|Electricity|Gas|w/o CCS (GW)"],
                             "Total Cap|Electricity|Gas|w/o CCS (GW)"))
   #Cumulate things on extensive time set
-  tmp <- mbind(tmp,tmp1,tmp2,tmp4)
+  tmp <- mbind(tmp,tmp7,tmp1,tmp2,tmp4)
 
   # Cumulative capacities = cumulating new capacities, starting with 0 in 2005
   tmp6 <- tmp2[,t2005,]
@@ -194,10 +222,10 @@ reportCapacity <- function(gdx,regionSubsetList=NULL) {
   tmp6 <- quitte::as.quitte(tmp6)
   mylist <- lapply(levels(tmp6$variable), function(x) {
     calcCumulatedDiscount(data = tmp6 %>%
-                          filter_(~variable == x) ,
+                          filter(.data$variable == x) ,
                           nameVar = x,
                           discount = 0.0) %>%
-      mutate_(variable = ~gsub("New",replacement="Cumulative",x))
+      mutate(variable = gsub("New",replacement="Cumulative",x))
   })
   
   tmp6 <- do.call('rbind', mylist)

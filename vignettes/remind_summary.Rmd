@@ -49,7 +49,7 @@ install.packages("remind")
 Initialize some variables and download test data.
 ```{r, eval=FALSE}
 # validationSummary() is part of remind library
-library(remind)
+library(remind2)
 
 # Specifying path to .mif and .gdx files.
 reportfile <- "REMIND_generic_RCP26.mif"

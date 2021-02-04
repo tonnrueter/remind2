@@ -63,7 +63,7 @@ calcFEprices <- function(gdx) {
     ) -> simple.q_febal.terms
     
     # load q_febal.m
-    q_febal.m <- readGDX(gdx, c("q_balFe","q_febal"), field = "m", restore_zeros = FALSE ,format="first_found")
+    q_febal.m <- readGDX(gdx, c("qm_balFe","q_balFe","q_febal"), field = "m", restore_zeros = FALSE ,format="first_found")
     
     # collapse q_febal.m dimension names from "x.x" to "x"
     sub(".*\\.", "", magclass::getNames(q_febal.m)) -> magclass::getNames(q_febal.m)
