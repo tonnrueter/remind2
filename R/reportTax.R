@@ -95,12 +95,12 @@ reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,21
   
   if(is.null(fe_tax) & is.null(fe_sub)){
     
-    fe_tax = mbind(readGDX(gdx, name=c('p21_tau_fe_tax_transport'))[,,fety35],
-                   readGDX(gdx, name=c('p21_tau_fe_tax_bit_st'))[,,ppfen_stat_build_ind],
-                   readGDX(gdx, name=c("pm_tau_fe_tax_ES_st",'p21_tau_fe_tax_ES_st'), react = "silent")[,,esty_bt])
-    fe_sub = mbind(readGDX(gdx, name=c('p21_tau_fe_sub_transport'))[,,fety35],
-                   readGDX(gdx, name=c('p21_tau_fe_sub_bit_st'))[,,ppfen_stat_build_ind],
-                   readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'), react = "silent")[,,esty_bt])
+    fe_tax = mbind(readGDX(gdx, name=c('p21_tau_fe_tax_transport'), format= "first_found")[,,fety35],
+                   readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind],
+                   readGDX(gdx, name=c('pm_tau_fe_tax_ES_st','p21_tau_fe_tax_ES_st'), format= "first_found", react = "silent")[,,esty_bt])
+    fe_sub = mbind(readGDX(gdx, name=c('p21_tau_fe_sub_transport'), format= "first_found")[,,fety35],
+                   readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind],
+                   readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'), format= "first_found", react = "silent")[,,esty_bt])
     
     # Some versions of REMIND have B-I-T but no differentiated taxes for Buildings and Industry
     # If they do not differentiate, splitVersion = F

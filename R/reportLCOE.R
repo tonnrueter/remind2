@@ -1246,8 +1246,8 @@ reportLCOE <- function(gdx, output.type = "both"){
     ### stationary FE tax
     
     # read stationary FE tax
-    p21_tau_fe_tax_bit_st <- readGDX(gdx, "p21_tau_fe_tax_bit_st")[,ttot_from2005,unique(c(fe2ppfen.industry$all_in, fe2ppfen.buildings$all_in))]
-    p21_tau_fe_tax_sub_st <- readGDX(gdx, "p21_tau_fe_sub_bit_st")[,ttot_from2005,unique(c(fe2ppfen.industry$all_in, fe2ppfen.buildings$all_in))]
+    p21_tau_fe_tax_bit_st <- readGDX(gdx, c("pm_tau_fe_tax_bit_st","p21_tau_fe_tax_bit_st"), format= "first_found")[,ttot_from2005,unique(c(fe2ppfen.industry$all_in, fe2ppfen.buildings$all_in))]
+    p21_tau_fe_tax_sub_st <- readGDX(gdx, c("pm_tau_fe_sub_bit_st","p21_tau_fe_sub_bit_st"), format= "first_found")[,ttot_from2005,unique(c(fe2ppfen.industry$all_in, fe2ppfen.buildings$all_in))]
 
     
     # ES service tax in buildings (detailed buildings realizations)

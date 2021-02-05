@@ -284,7 +284,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   vm_prodSE      <- vm_prodSE[rbind(pe2se,se2se)]
   vm_prodFe      <- readGDX(gdx,name=c("vm_prodFe","v_feprod","vm_feprod"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
   vm_prodFe      <- vm_prodFe[se2fe]
-  vm_demFe       <- readGDX(gdx,name=c("v_demFe","vm_demFe"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
+  vm_demFe       <- readGDX(gdx,name=c("v35_demFe","v_demFe","vm_demFe"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
   vm_demFe       <- vm_demFe[fe2ue]
 
   vm_demFeForEs <- readGDX(gdx,name = c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found",react = "silent") * pm_conv_TWa_EJ
@@ -649,7 +649,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     
     # Effort Sharing emission targets and reference emissions 
     ESreferenceEmissions <- readGDX(gdx,"f47_ESreferenceEmissions",restore_zeros=FALSE, react = "silent")
-    emiTargetES <- readGDX(gdx,"p47_emiTargetES",restore_zeros=FALSE, react = "silent")
+    emiTargetES <- readGDX(gdx,c("pm_emiTargetES","p47_emiTargetES"),format="first_found",restore_zeros=FALSE, react = "silent")
     if(!(is.null(ESreferenceEmissions))){
       emiTargetES <- emiTargetES[,,] * GtC_2_MtCO2
       target <- new.magpie(cells_and_regions=getRegions(tmp),years=getYears(tmp),names="Emi|CO2|ESD|Targets (Mt CO2/yr)")

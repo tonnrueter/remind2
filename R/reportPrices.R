@@ -175,8 +175,8 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   fe_taxCES  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = F)[ppfen_stat_build_ind]
   fe_subCES  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = F)[ppfen_stat_build_ind]
   if(is.null(fe_taxCES) & is.null(fe_subCES)){
-    fe_taxCES = readGDX(gdx, name=c('p21_tau_fe_tax_bit_st'))[,,ppfen_stat_build_ind]
-    fe_subCES = readGDX(gdx, name=c('p21_tau_fe_sub_bit_st'))[,,ppfen_stat_build_ind]
+    fe_taxCES = readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
+    fe_subCES = readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
     
   }
   getSets(fe_taxCES) = gsub("all_enty","all_in", getSets(fe_taxCES))
