@@ -1,8 +1,8 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.1.0**
+R package **remind2**, version **1.2.0**
 
-  
+[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)    
 
 ## Purpose and Functionality
 
