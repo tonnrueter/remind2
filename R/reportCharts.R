@@ -1519,8 +1519,9 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
             "Liquids"          = "FE|Industry|Liquids (EJ/yr)",
             "Gases"            = "FE|Industry|Gases (EJ/yr)",
             "Heat"             = "FE|Industry|Heat (EJ/yr)",
-            "Solids - Coal"    = "FE|Industry|Solids|Coal (EJ/yr)",
-            "Solids - Biomass" = "FE|Industry|Solids|Biomass (EJ/yr)",
+            "Solids"           = "FE|Industry|Solids (EJ/yr)",
+#            "Solids - Coal"    = "FE|Industry|Solids|Coal (EJ/yr)",
+#            "Solids - Biomass" = "FE|Industry|Solids|Biomass (EJ/yr)",
             "Hydrogen"         = "FE|Industry|Hydrogen (EJ/yr)"#,
             #"FE|Industry|Other (EJ/yr)"
   )
