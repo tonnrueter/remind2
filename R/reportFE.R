@@ -984,9 +984,23 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames(out[,,"FE|Buildings|+|Electricity (EJ/yr)"] + out[,,"FE|Industry|+|Electricity (EJ/yr)"], "FE|Buildings and Industry|Electricity (EJ/yr)"),
     setNames(out[,,"FE|Buildings|+|Heat (EJ/yr)"]        + out[,,"FE|Industry|+|Heat (EJ/yr)"]       , "FE|Buildings and Industry|Heat (EJ/yr)"),
     setNames(out[,,"FE|Buildings|+|Hydrogen (EJ/yr)"]    + out[,,"FE|Industry|+|Hydrogen (EJ/yr)"]   , "FE|Buildings and Industry|Hydrogen (EJ/yr)")
-    
   )
-   
+  
+  # variables required by the exogains code
+  # Disaggregate solids between coal, modern biomass and traditional biomass
+  out <-  mbind(out,  setNames(asS4(pmin(out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"],out[,,"FE|Buildings|+|Solids (EJ/yr)"]))         ,"FE|Buildings|Solids|Biomass|Traditional (EJ/yr)"))
+  out <-  mbind(out,  setNames(out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"] - out[,,"FE|Buildings|Solids|Biomass|Traditional (EJ/yr)"] , "FE|Industry|Solids|Biomass|Traditional (EJ/yr)" ))
+
+  share_sol_noTrad_buil = (out[,,"FE|Buildings|+|Solids (EJ/yr)"] - out[,,"FE|Buildings|Solids|Biomass|Traditional (EJ/yr)"]) / (out[,,"FE|+|Solids (EJ/yr)"] - out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"] )
+  share_sol_noTrad_indu = (out[,, "FE|Industry|+|Solids (EJ/yr)"] - out[,, "FE|Industry|Solids|Biomass|Traditional (EJ/yr)"]) / (out[,,"FE|+|Solids (EJ/yr)"] - out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"] )
+  
+  out <- mbind(out,
+    setNames(out[,,"FE|Solids|Biomass|+|Modern (EJ/yr)"] * share_sol_noTrad_buil, "FE|Buildings|Solids|Biomass|Modern (EJ/yr)"),
+    setNames(out[,,"FE|Solids|Fossil|+|Coal (EJ/yr)"]    * share_sol_noTrad_buil, "FE|Buildings|Solids|Coal (EJ/yr)"),
+    setNames(out[,,"FE|Solids|Biomass|+|Modern (EJ/yr)"] * share_sol_noTrad_indu,  "FE|Industry|Solids|Biomass|Modern (EJ/yr)"),
+    setNames(out[,,"FE|Solids|Fossil|+|Coal (EJ/yr)"]    * share_sol_noTrad_indu,  "FE|Industry|Solids|Coal (EJ/yr)")
+  )
+  
   #--- Synfuel ---
   
   ### FS: add new FE sectoral synfuel/biomass/fossil reporting
