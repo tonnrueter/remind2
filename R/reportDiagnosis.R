@@ -17,7 +17,7 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom lubridate seconds_to_period day hour minute second
-#' @importFrom dplyr bind_rows summarise_ group_by_ mutate_ mutate filter_
+#' @importFrom dplyr bind_rows summarise group_by mutate filter
 #' @importFrom tidyr %>%
 #' @importFrom quitte as.quitte
 #' @importFrom ggplot2 ggplot geom_line scale_fill_manual scale_y_discrete geom_rect geom_hline scale_x_continuous coord_cartesian coord_flip geom_bar geom_text position_stack element_blank geom_boxplot aes_
@@ -148,16 +148,16 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   
   # adding columns with per region objective difference between iterations (diff.objval) and convergence condition for objective value divergence 
   p80_repy_wide <- p80_repy_wide %>%
-    group_by_(~region) %>%
-    mutate_(diff.objval = ~ objval - lag(objval, order_by=iteration),
-           objvalCondition = ~ ifelse(modelstat=="2",T,
-                                    ifelse(modelstat=="7" & is.na(diff.objval), F, 
-                                            ifelse(modelstat=="7" & abs(diff.objval) < 1e-4, T, F))))
+    group_by(.data$region) %>%
+    mutate(diff.objval = .data$objval - lag(.data$objval, order_by=.data$iteration),
+           objvalCondition = ifelse(modelstat=="2",T,
+                                    ifelse(modelstat=="7" & is.na(.data$diff.objval), F, 
+                                            ifelse(modelstat=="7" & abs(.data$diff.objval) < 1e-4, T, F))))
   
   # adding column with per iteration convergence for objective value divergence (objvalConverge) - if any region did not converged in the difference between iteration objectives, then objvalConverge will be false for all regions in the respective iteration  
   p80_repy_wide <- p80_repy_wide %>%
-    group_by_(~iteration) %>%
-    mutate_(objvalConverge = ~all(objvalCondition))
+    group_by(.data$iteration) %>%
+    mutate(objvalConverge = all(.data$objvalCondition))
   
   # adding column with literal string for model convergence (convergence). values: optimal, feasible or infeasible
   p80_repy_wide$convergence <- "infeasible"
@@ -178,8 +178,8 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   
   # creating tooltip text (plotly) 
   data <- diag$data$summaryTable %>% 
-    group_by_(~iteration, ~convergence) %>%
-    mutate_(details = ~paste0("Iteration: ", iteration,"<br>region: ",paste0(region, collapse = ", ")))
+    group_by(.data$iteration, .data$convergence) %>%
+    mutate(details = paste0("Iteration: ", .data$iteration,"<br>region: ",paste0(.data$region, collapse = ", ")))
   
   # solver status summary
   optColor <- plotstyle(as.character(unique(data$convergence)),unknown=missingColorsdf)
@@ -187,7 +187,7 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   
   diag$plots$convergence <- ggplot(mapping = aes_(~iteration, ~convergence, text=~details))+
       geom_line(data = data, linetype = "dashed",aes_(group=~region, color=~region), alpha=aestethics$alpha, size=aestethics$line$size) +
-      geom_point(data = data %>% group_by_(~iteration, ~convergence, ~details) %>% summarise_(), aes_(fill=~convergence), size=2, alpha=aestethics$alpha) +
+      geom_point(data = data %>% group_by(.data$iteration, .data$convergence, .data$details) %>% summarise(), aes_(fill=~convergence), size=2, alpha=aestethics$alpha) +
       scale_fill_manual(values=optColor) +
       scale_color_manual(values=regColor) +
       scale_y_discrete(breaks=c("infeasible", "feasible", "optimal"), drop = FALSE) +
@@ -212,7 +212,7 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   diag$data$surplus <- surplus
   
   # filter surplus results
-  maxTol <- surplus %>% group_by_(~type, ~period, ~iteration) %>% mutate_(Surplus_within_limits = ~ifelse(all(Surplus_within_limits=="yes"),"yes","no"))
+  maxTol <- surplus %>% group_by(.data$type, .data$period, .data$iteration) %>% mutate(Surplus_within_limits = ifelse(all(.data$Surplus_within_limits=="yes"),"yes","no"))
   maxTol <- maxTol[which(surplus$all_enty %in% c("peoil","good","perm")),][c(-1)]
   
   vars <- c("pecoal"="Coal","pegas"="Gas","peoil"="Oil","peur"="Uranium","good"="Goods","pebiolc"="Biomass")
@@ -246,7 +246,7 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   
   ### Trade convergence Summary
   
-  surplusCondition <- surplus %>% group_by_(~iteration) %>% summarise_(Surplus_within_limits = ~ifelse(all(Surplus_within_limits=="yes"),"yes","no")) 
+  surplusCondition <- surplus %>% group_by(.data$iteration) %>% summarise(Surplus_within_limits = ifelse(all(.data$Surplus_within_limits=="yes"),"yes","no")) 
   
   surplusCondition$tooltip <- paste0("Iteration: ", surplusCondition$iteration, "<br>Converged")
   for(iter in surplusCondition$iteration){
@@ -324,10 +324,10 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   
   data <- data.frame(iteration = 1:diag$data$lastIteration)
   
-  data <- data %>% mutate_(fadeoutPriceAnticip = ~ifelse(iteration < diag$data$priceAntecipationFadeoutIteration, 1,0.7**(iteration - diag$data$priceAntecipationFadeoutIteration + 1)),
-                          converged = ~ifelse(fadeoutPriceAnticip > 1e-4, "no", "yes"),
-                          tooltip = ~ifelse(converged == "yes", paste0("Converged<br>Price Anticipation fade out is low enough<br>", round(fadeoutPriceAnticip,5), " <= 0.0001"), 
-                                           paste0("Did not converged<br>Price Anticipation fade out is not low enough<br>", round(fadeoutPriceAnticip,5), " > 0.0001")))
+  data <- data %>% mutate(fadeoutPriceAnticip = ifelse(.data$iteration < diag$data$priceAntecipationFadeoutIteration, 1,0.7**(.data$iteration - diag$data$priceAntecipationFadeoutIteration + 1)),
+                          converged = ifelse(.data$fadeoutPriceAnticip > 1e-4, "no", "yes"),
+                          tooltip = ifelse(.data$converged == "yes", paste0("Converged<br>Price Anticipation fade out is low enough<br>", round(.data$fadeoutPriceAnticip,5), " <= 0.0001"), 
+                                           paste0("Did not converged<br>Price Anticipation fade out is not low enough<br>", round(.data$fadeoutPriceAnticip,5), " > 0.0001")))
   
   
   diag$plots$priceAnticipation <- suppressWarnings( ggplot(data, aes_(x = ~iteration)) +
@@ -361,22 +361,22 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   
   # total convergence time per region and convergence type (value)
   cumConvergenceTime <- diag$data$summaryTable %>% 
-    group_by_(~region, ~convergence) %>%
-    summarise_(value = ~sum(resusd))
+    group_by(.data$region, .data$convergence) %>%
+    summarise(value = sum(.data$resusd))
   
   # total convergence time per region (total)
   cumConvergenceTime <- cumConvergenceTime %>%
-    group_by_(~region) %>%
-    mutate_(total = ~sum(value))
+    group_by(.data$region) %>%
+    mutate(total = sum(.data$value))
   
   # tooltip text (plotly) 
   cumConvergenceTime$Details <- paste0("<br>Region: ",cumConvergenceTime$region, "<br>Duration: ", format_duration(cumConvergenceTime$value), "<br>Convergence: ", cumConvergenceTime$convergence, "<br>Total Duration: ", format_duration(cumConvergenceTime$total)) 
   
   # Slowest iteration per region and convergence type 
   SlowestIteration <- diag$data$summaryTable %>% 
-    group_by_(~region, ~convergence) %>% 
-    filter_(~ max(resusd) == resusd) %>% 
-    summarise_(value = ~resusd, iteration = ~iteration)
+    group_by(.data$region, .data$convergence) %>% 
+    filter(max(.data$resusd) == .data$resusd) %>% 
+    summarise(value = .data$resusd, iteration = .data$iteration)
   
   # tooltip text (plotly) 
   SlowestIteration$Details <- paste0("<br>Region: ",SlowestIteration$region, "<br>Duration: ", format_duration(SlowestIteration$value), "<br>Iteration: ", SlowestIteration$iteration, "<br>Convergence: ", SlowestIteration$convergence) 
@@ -454,8 +454,8 @@ reportDiagnosis <- function(gdx=NULL,statsFile=NULL,chartType="ggplot",includeDa
   }
   
   data <- diag$data$summaryTable %>%
-    group_by_(~iteration) %>%
-    mutate_(outlier = ~ifelse(is_outlier(resusd), resusd, as.numeric(NA)))
+    group_by(.data$iteration) %>%
+    mutate(outlier = ifelse(is_outlier(.data$resusd), .data$resusd, as.numeric(NA)))
   
   #tooltip
   data$Outlier_info <- paste0("<br>Region: ",data$region, "<br>Duration: ", format_duration(data$resusd), "<br>Iteration: ", data$iteration)
