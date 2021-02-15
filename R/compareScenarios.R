@@ -157,65 +157,47 @@ compareScenarios <- function(mif, hist,
 
 
   ## ---- Read data ----
-
+  
   ## read model results
-  data <- NULL
-  for(i in 1:length(mif)){
-    data_new <- read.report(mif[i],as.list=FALSE)
-    if (magclass::getNames(data_new,fulldim = TRUE)[["scenario"]] %in% magclass::getNames(data,fulldim = TRUE)[["scenario"]]) magclass::getNames(data_new) <- gsub(magclass::getNames(data_new,fulldim = TRUE)["scenario"],paste0(magclass::getNames(data_new,fulldim = TRUE)["scenario"],i),magclass::getNames(data_new))
-    if(all(getRegions(data) %in% getRegions(data_new)) && all(getRegions(data_new) %in% getRegions(data))) {
-      data <- mbind(data,data_new)
+  mifData <- lapply(mif, function(file){read.report(file,as.list=FALSE)})
+  
+  # get regions present all mif files
+  for(i in 1:length(mifData)){ 
+    if(i==1){
+      mifRegions <- getRegions(mifData[[i]])
     } else {
-      if(is.null(reg)){
-        # use the intersect of regions
-        if(!is.null(data)){
-          reg_intersect <- intersect(getRegions(data), getRegions(data_new))
-          data <- mbind(data[reg_intersect,,],data_new[reg_intersect,,])
-        }else{
-          data <- data_new
-        }
-      } else if(all(reg=="all_reg")){
-        if(all(getRegions(data_new) %in% getRegions(data))) {
-          ## expand data_new by old regions from data
-          oldReg         <- getRegions(data)[-which(getRegions(data) %in% getRegions(data_new))]
-          dummy_data_new <- new.magpie(oldReg,getYears(data_new),getNames(data_new),fill=NA)
-          data_new       <- mbind(data_new,dummy_data_new)
-          ## compine old and new data
-          data <- mbind(data,data_new)
-        } else {
-          ## expand data by new regions from data_new
-          newReg     <- getRegions(data_new)[-which(getRegions(data_new) %in% getRegions(data))]
-          dummy_data <- new.magpie(newReg,getYears(data),getNames(data),fill=NA)
-          data       <- mbind(data,dummy_data)
-          ## expand data_new by old regions from data
-          oldReg         <- getRegions(data)[-which(getRegions(data) %in% getRegions(data_new))]
-          dummy_data_new <- new.magpie(oldReg,getYears(data_new),getNames(data_new),fill=NA)
-          data_new       <- mbind(data_new,dummy_data_new)
-          ## compine old and new data
-          data <- mbind(data,data_new)
-        }
-      } else {
-        # use the intersect of regions with reg param
-        reg_intersect <- intersect(reg, getRegions(data_new))
-        if(length(reg_intersect)>0){
-          data <- mbind(data,data_new[reg_intersect,,])
-        }else{
-          warning(paste0(mif, " was not included due to no matching regions"))
-        }
-      }
+      mifRegions <- intersect(mifRegions,getRegions(mifData[[i]]))
     }
   }
-
-
-  if (!(is.null(reg))) {
-    if (!(all(reg=="all_reg"))) {
-      data <- data[reg,y,]
-    } else {
-      data <- data[,y,]
-    }
+  
+  ## define regions that should be in the comparison scenario
+  if(is.null(reg) || reg == "all_reg"){
+    reg <- mifRegions
   } else {
-    data <- data[,y,]
+    reg <- intersect(reg,mifRegions)
   }
+  
+  ## return if no regions found
+  if(length(reg) == 0){
+    return(warning("There is no intersection between the regions in the mif files and the regions defined in the reg parameter.\nExiting without creating the scenario comparison pdf."))
+  }
+  
+  ## return if the main region if is not available in the current selected regions
+  if(!(mainReg %in% reg)){
+    return(warning("The main region is not available in all mif files.\nExiting without creating the scenario comparison pdf."))
+  }
+  
+  ## return if after removing the main region there is no remaining region to be plotted
+  if(length(reg[!reg == mainReg]) == 0){
+    return(warning("There is no remaining region besides the main region.\nExiting without creating the scenario comparison pdf."))
+  }
+  
+  ## merging model results into a single magclass object
+  data <- NULL
+  for(i in 1:length(mifData)){ 
+    data <- mbind(data,mifData[[i]][reg,y,])
+  }
+  
   ## delete "+" and "++" from variable names
   data <- deletePlus(data)
 
@@ -276,9 +258,15 @@ compareScenarios <- function(mif, hist,
 
   sw <- swopen(fileName,template = template)
   swlatex(sw,"\\tableofcontents\\newpage")
+  
+  ## empty page
+  swlatex(sw,"\\newpage")
+  swlatex(sw,"\\thispagestyle{empty}")
+  swlatex(sw,"\\mbox{}")
+  swlatex(sw,"\\newpage")
+  
   ## ---- ++++ S U M M A R Y ++++ ----
   
-  swlatex(sw,"\\newpage")
   swlatex(sw,"\\section{Summary}")
 
   ## ---- GHG total ----
@@ -1289,6 +1277,7 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\onecolumn")
   p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y") + ylab("FE int. of GDP (MJ/US$2005)")
   swfigure(sw,print,p,sw_option="height=8,width=16")
+  
   swlatex(sw,"\\twocolumn")
 
   ## ---- FE intensity of GDP (GDP domain)----
@@ -2709,7 +2698,7 @@ compareScenarios <- function(mif, hist,
     "ES|Transport|Pass|Road|LDV (bn pkm/yr)",
     "ES|Transport|Pass|non-LDV (bn pkm/yr)")
   
-  if(all(items,"ES|Transport|Freight (bn tkm/yr)") %in% getNames(data,dim=3)){
+  if(all(c(items,"ES|Transport|Freight (bn tkm/yr)") %in% getNames(data,dim=3))){
     
     swlatex(sw,"\\section{Energy Services}")
   
