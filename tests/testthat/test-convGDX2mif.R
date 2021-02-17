@@ -32,11 +32,19 @@ check_eqs <- function(dt, eqs, scope="all", sens=1e-10){
 
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
 
+  testgdx_folder <- "../testgdxs/"
+
   ## add GDXs for comparison here:
   my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
   if(length(my_gdxs) == 0){
-    succeed("No GDXs found to test.")
+    dir.create(testgdx_folder, showWarnings = FALSE)
+    download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21.gdx",
+                  file.path(testgdx_folder, "fulldata.gdx"))
+    if(md5sum(file.path(testgdx_folder, "fulldata.gdx")) != "8ce7127ec26cb8bb36cecee3f4fa97f1"){
+      fail("Checksum for downloaded GDX not correct.")
+    }
   }
+  my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
 
   ## please add variable tests below
   check_integrity <- function(out){
@@ -47,7 +55,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     check_eqs(
       dt_wide,
       list(
-        `FE|Transport|Liquids (EJ/yr)` = "`FE|Transport|Liquids|Oil (EJ/yr)` + `FE|Transport|Liquids|Biomass (EJ/yr)` + `FE|Transport|Liquids|Hydrogen (EJ/yr)` + `FE|Transport|Liquids|Coal (EJ/yr)`"
+        `FE|Transport|+|Liquids (EJ/yr)` = "`FE|Transport|Liquids|+|Biomass (EJ/yr)` + `FE|Transport|Liquids|+|Fossil (EJ/yr)`"
       ))
 
   }
@@ -76,7 +84,6 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
       foreach (i = gdxs) %dopar% {
         cat(paste0(i,"\n"))
         a <- convGDX2MIF(i)
-        ## run integrity test only on fulldata
         check_integrity(a)
         cat("\n")
       }
@@ -84,8 +91,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
       for (i in gdxs) {
         cat(paste0(i,"\n"))
         a <- convGDX2MIF(i)
-        if("fulldata.gdx" == basename(i))
-          check_integrity(a)
+        check_integrity(a)
         cat("\n")
       }
     }
