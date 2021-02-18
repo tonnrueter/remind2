@@ -32,6 +32,9 @@ check_eqs <- function(dt, eqs, scope="all", sens=1e-10){
 
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
 
+  ## uncomment to skip test
+  ## success("Skip GDX test")
+
   testgdx_folder <- "../testgdxs/"
 
   ## add GDXs for comparison here:
@@ -40,9 +43,8 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     dir.create(testgdx_folder, showWarnings = FALSE)
     download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21.gdx",
                   file.path(testgdx_folder, "fulldata.gdx"))
-    if(md5sum(file.path(testgdx_folder, "fulldata.gdx")) != "8ce7127ec26cb8bb36cecee3f4fa97f1"){
-      fail("Checksum for downloaded GDX not correct.")
-    }
+    expect_equal(md5sum(file.path(testgdx_folder, "fulldata.gdx")),
+                 "8ce7127ec26cb8bb36cecee3f4fa97f1")
   }
   my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
 
