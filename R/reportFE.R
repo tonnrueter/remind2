@@ -919,7 +919,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   
   if(cdr_mod != "off"){
     
-    s33_rockgrind_fedem <- readGDX(gdx,"s33_rockgrind_fedem", react = "silent")[,t,]
+    s33_rockgrind_fedem <- readGDX(gdx,"s33_rockgrind_fedem", react = "silent")
     if (is.null(s33_rockgrind_fedem)){
       s33_rockgrind_fedem  <- new.magpie("GLO",NULL,fill=0)
     }
