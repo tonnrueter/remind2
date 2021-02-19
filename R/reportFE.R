@@ -75,8 +75,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames(dimSums(vm_prodFe[,,c("segabio","segafos")],dim=3),                                                  "FE|+|Gases (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"segabio"],dim=3),                                                               "FE|Gases|+|Biomass (EJ/yr)"), 
     setNames(dimSums(vm_prodFe[,,"segafos"],dim=3),                                                               "FE|Gases|+|Fossil (EJ/yr)"), 
-    setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pegas"),dim=3),   "FE|Gases|Fossil|+|Natural Gas (EJ/yr)"),
-    setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pecoal"),dim=3),  "FE|Gases|Fossil|+|Coal (EJ/yr)"),
+    setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pegas"),dim=3),   "FE|Gases|Fossil|Natural Gas (EJ/yr)"),
+    setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pecoal"),dim=3),  "FE|Gases|Fossil|Coal (EJ/yr)"),
     
     # electricity
     setNames(dimSums(vm_prodFe[,,c("feels","feelt")],dim=3),                                                      "FE|+|Electricity (EJ/yr)"),
@@ -730,8 +730,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
        setNames((dimSums(mselect(vm_demFeSector,all_enty1="feelt",emi_sectors="trans", all_emiMkt="ES")  ,dim=3)),                     "FE|Transport|Pass|+|Electricity (EJ/yr)"),
        setNames((dimSums(mselect(vm_demFeSector,all_enty1="feelt",emi_sectors="trans", all_emiMkt="ES")  ,dim=3)),                     "FE|Transport|Pass|ESD|+|Electricity (EJ/yr)"),
        
-       setNames((dimSums(mselect(v_demFe,all_te="apTrnElT")  ,dim=3)),                                                                 "FE|Transport|Pass|Electricity|+|Train (EJ/yr)" ),
-       setNames((dimSums(mselect(v_demFe,all_te="apCarElT")  ,dim=3)),                                                                 "FE|Transport|Pass|Electricity|+|Road (EJ/yr)"),
+       setNames((dimSums(mselect(v_demFe,all_te="apTrnElT")  ,dim=3)),                                                                 "FE|Transport|Pass|Electricity|Train (EJ/yr)" ),
+       setNames((dimSums(mselect(v_demFe,all_te="apCarElT")  ,dim=3)),                                                                 "FE|Transport|Pass|Electricity|Road (EJ/yr)"),
        
        # Passengers hydrogen
        setNames((dimSums(mselect(vm_demFeSector,all_enty1="feh2t",emi_sectors="trans", all_emiMkt="ES")  ,dim=3)),                     "FE|Transport|Pass|+|Hydrogen (EJ/yr)"),
@@ -751,9 +751,9 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
     out <- mbind(out,
       # Passengers
-      setNames(out[,,"FE|Transport|Pass|+|Liquids (EJ/yr)"]          + out[,,"FE|Transport|Pass|+|Gases (EJ/yr)"]         + out[,,"FE|Transport|Pass|+|Electricity (EJ/yr)"]           + out[,,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"]         , "FE|Transport|Pass (EJ/yr)"),
-      setNames(out[,,"FE|Transport|Pass|ESD|+|Liquids (EJ/yr)"]      + out[,,"FE|Transport|Pass|ESD|+|Gases (EJ/yr)"]     + out[,,"FE|Transport|Pass|ESD|+|Electricity (EJ/yr)"]       + out[,,"FE|Transport|Pass|ESD|+|Hydrogen (EJ/yr)"]     , "FE|Transport|ESD|Pass (EJ/yr)"),
-      setNames(out[,,"FE|Transport|Pass|other|+|Liquids (EJ/yr)"] , "FE|Transport|other|Pass (EJ/yr)"),
+      setNames(out[,,"FE|Transport|Pass|+|Liquids (EJ/yr)"]       + out[,,"FE|Transport|Pass|+|Gases (EJ/yr)"]     + out[,,"FE|Transport|Pass|+|Electricity (EJ/yr)"]     + out[,,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"]     , "FE|Transport|Pass (EJ/yr)"),
+      setNames(out[,,"FE|Transport|Pass|ESD|+|Liquids (EJ/yr)"]   + out[,,"FE|Transport|Pass|ESD|+|Gases (EJ/yr)"] + out[,,"FE|Transport|Pass|ESD|+|Electricity (EJ/yr)"] + out[,,"FE|Transport|Pass|ESD|+|Hydrogen (EJ/yr)"] , "FE|Transport|Pass|++|ESD (EJ/yr)"),
+      setNames(out[,,"FE|Transport|Pass|other|+|Liquids (EJ/yr)"] , "FE|Transport|Pass|++|other (EJ/yr)"),
 
       # Freight
       setNames(out[,,"FE|Transport|Freight|+|Liquids (EJ/yr)"]       , "FE|Transport|Freight (EJ/yr)"),

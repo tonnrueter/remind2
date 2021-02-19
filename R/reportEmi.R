@@ -439,7 +439,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   p_share_seliq_t   <- collapseNames(output[,y,"FE|Transport|+|Liquids (EJ/yr)"] / output[,y,"FE|+|Liquids (EJ/yr)"])
   p_share_segas_t   <- collapseNames(output[,y,"FE|Transport|+|Gases (EJ/yr)"] / output[,y,"FE|+|Gases (EJ/yr)"])
   if (tran_mod == "complex"){
-    p35_share_seel_t_ldv  <- collapseNames(output[,y,"FE|Transport|Pass|Electricity|+|Road (EJ/yr)"] / output[,y,"FE|+|Electricity (EJ/yr)"])
+    p35_share_seel_t_ldv  <- collapseNames(output[,y,"FE|Transport|Pass|Electricity|Road (EJ/yr)"] / output[,y,"FE|+|Electricity (EJ/yr)"])
     p35_share_seh2_t_ldv  <- collapseNames(output[,y,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"] / output[,y,"FE|+|Hydrogen (EJ/yr)"])
     p35_share_seliq_t_ldv <- collapseNames(output[,y,"FE|Transport|Pass|Liquids|Road (EJ/yr)"] / output[,y,"FE|+|Liquids (EJ/yr)"])
   }else if(tran_mod == "edge_esm"){
