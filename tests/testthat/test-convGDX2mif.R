@@ -42,9 +42,10 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   if(length(my_gdxs) == 0){
     dir.create(testgdx_folder, showWarnings = FALSE)
     download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21.gdx",
-                  file.path(testgdx_folder, "fulldata.gdx"))
-    expect_equal(md5sum(file.path(testgdx_folder, "fulldata.gdx")),
-                 "8ce7127ec26cb8bb36cecee3f4fa97f1")
+                  file.path(testgdx_folder, "fulldata.gdx"), mode="wb")
+    if(md5sum(file.path(testgdx_folder, "fulldata.gdx")) != "8ce7127ec26cb8bb36cecee3f4fa97f1"){
+      fail("MD5 hash not correct. Downloading GDX failed.")
+    }
   }
   my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
 
