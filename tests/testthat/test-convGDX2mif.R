@@ -2,6 +2,7 @@ context("REMIND reporting")
 
 library(gdx)
 library(data.table)
+library(doParallel)
 
 ## Check REMIND output. dt is a data.table in *wide* format,
 ## i.e., variables are columns. `eqs` is a list of equations of the form
@@ -43,9 +44,6 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     dir.create(testgdx_folder, showWarnings = FALSE)
     download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21.gdx",
                   file.path(testgdx_folder, "fulldata.gdx"), mode="wb")
-    if(md5sum(file.path(testgdx_folder, "fulldata.gdx")) != "8ce7127ec26cb8bb36cecee3f4fa97f1"){
-      fail("MD5 hash not correct. Downloading GDX failed.")
-    }
   }
   my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
 
@@ -70,44 +68,11 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     
   }
 
-  runParallelTests <- function(gdxs=NULL,cores=0,par=FALSE){
-
-    new_gdxs <- NULL
-    if (is.null(gdxs) & file.exists("/p/projects/")) {
-      gdxs <- system2("find","/p/projects/remind/runs/r* -name fulldata.gdx",stdout=T,stderr = FALSE)
-      gdxs <- grep("magpie",gdxs,v=T,invert=T,ignore.case = T)
-      gd <- length(gdxs)
-      gdxs <- gdxs[c(gd)] # floor(gd/2),floor(3*gd/4),
-      gdxs <- c(gdxs,"/p/projects/remind/runs/0AA_DONTDELETEME_MO/fulldata.gdx")
-      brnam <- unlist(strsplit(gdxs,split="/"))
-      new_gdxs <- paste0(brnam[grep("fulldata.gdx",brnam)-1],".gdx")
-      file.copy(gdxs,new_gdxs,overwrite = TRUE)
-      gdxs <- new_gdxs
-    }
-    i <- NULL
-    # if (Sys.info()["sysname"]=="Linux") {
-    #   par <- TRUE
-    #   library(foreach)
-    #   doMC::registerDoMC(cores = 2)
-    # }
-    if (par) {
-      foreach (i = gdxs) %dopar% {
-        cat(paste0(i,"\n"))
-        a <- convGDX2MIF(i)
-        check_integrity(a)
-        cat("\n")
-      }
-    } else {
-      for (i in gdxs) {
-        cat(paste0(i,"\n"))
-        a <- convGDX2MIF(i)
-        check_integrity(a)
-        cat("\n")
-      }
-    }
-    unlink(new_gdxs)
+  foreach (i = my_gdxs) %dopar% {
+    cat(paste0(i,"\n"))
+    a <- convGDX2MIF(i)
+    check_integrity(a)
+    cat("\n")
   }
-
-  runParallelTests(my_gdxs)
 
 })
