@@ -2,7 +2,6 @@ context("REMIND reporting")
 
 library(gdx)
 library(data.table)
-library(doParallel)
 
 ## Check REMIND output. dt is a data.table in *wide* format,
 ## i.e., variables are columns. `eqs` is a list of equations of the form
@@ -61,14 +60,12 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
                                        total could not be found and the summation
                                        check will not be performed: ",mylist[chck]))
     mylist <- mylist[grep(" \\(.*.\\)$",names(mylist))]
-    #    mylist <- mylist[-grep("FE|Transport|Pass|+|Electricity (EJ/yr)",names(mylist),fixed = T)]
-    #    mylist <- mylist[-grep("FE|Gases|+|Fossil (EJ/yr)",names(mylist),fixed = T)]
 
     check_eqs(dt_wide,mylist)
     
   }
 
-  foreach (i = my_gdxs) %dopar% {
+  for (i in my_gdxs) {
     cat(paste0(i,"\n"))
     a <- convGDX2MIF(i)
     check_integrity(a)
