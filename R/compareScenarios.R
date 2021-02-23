@@ -28,6 +28,7 @@
 #' @importFrom data.table as.data.table setnames := data.table
 #' @importFrom utils installed.packages
 #' @importFrom rmndt magpie2dt
+#' @importFrom ggplot2 guides guide_legend
 
 compareScenarios <- function(mif, hist,
                              y=c(seq(2005,2060,5),seq(2070,2100,10)),
@@ -297,7 +298,8 @@ compareScenarios <- function(mif, hist,
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=4.5,width=7")
 
-  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\onecolumn")
@@ -331,7 +333,8 @@ compareScenarios <- function(mif, hist,
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=4.5,width=7")
 
-  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\onecolumn")
@@ -357,7 +360,9 @@ compareScenarios <- function(mif, hist,
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+        guides(fill=guide_legend(ncol=3))
+
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   ## ---- FE by sector ----
