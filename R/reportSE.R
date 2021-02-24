@@ -115,18 +115,18 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     ## identify all techs with secarrier as a main product
     # sub1_oc2te <- oc2te[(oc2te$all_enty %in% pecarrier) & (oc2te$all_enty1 %in% secarrier) & (oc2te$all_enty2 %in% sety)    & (oc2te$all_te %in% te),]
     ## secondary energy production with secarrier as a main product
-    x1 <- dimSums(mselect(prodSe,all_enty=enty.input,all_enty1=se.output,all_te=te),dim=3, na.rm = T)
+    x1 <- dimSums(mselect(prodSe,all_enty=enty.input,all_enty1=se.output,all_te=te), dim = 3, na.rm = T)
     ## secondary energy production with secarrier as a couple product
     ## identify all oc techs with secarrier as a couple product
     sub_oc2te <- oc2te[(oc2te$all_enty %in% enty.input) & (oc2te$all_enty1 %in% sety)    & (oc2te$all_enty2 %in% se.output) & (oc2te$all_te %in% te),]
-    x2 <- dimSums(prodSe[sub_oc2te]*dataoc[sub_oc2te],dim=3, na.rm = T)
+    x2 <- dimSums(prodSe[sub_oc2te]*dataoc[sub_oc2te], dim = 3, na.rm = T)
 
     ## storage losses
     input.pe2se <- pe2se[(pe2se$all_enty %in% enty.input) & (pe2se$all_enty1 %in% se.output) & (pe2se$all_te %in% te),]
     if ( (nrow(input.pe2se) == 0) || (is.null(storageLoss)) ){
       x3 <- 0
     } else {
-      x3 <- dimSums(storageLoss[input.pe2se], dim=3)
+      x3 <- dimSums(storageLoss[input.pe2se], dim = 3, na.rm = T)
     }
 
     out <- (x1+x2-x3)
@@ -151,18 +151,18 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     ## identify all techs with secarrier as a main product
     # sub1_oc2te <- oc2te[(oc2te$all_enty %in% pecarrier) & (oc2te$all_enty1 %in% secarrier) & (oc2te$all_enty2 %in% sety)    & (oc2te$all_te %in% te),]
     ## secondary energy production with secarrier as a main product
-    x1 <- dimSums(mselect(prodSe,all_enty=enty.input,all_enty1=se.output,all_te=te),dim=3)
+    x1 <- dimSums(mselect(prodSe,all_enty=enty.input,all_enty1=se.output,all_te=te), dim = 3, na.rm = T)
     ## secondary energy production with secarrier as a couple product
     ## identify all oc techs with secarrier as a couple product
     sub_oc2te <- oc2te[(oc2te$all_enty %in% enty.input) & (oc2te$all_enty1 %in% sety)    & (oc2te$all_enty2 %in% se.output) & (oc2te$all_te %in% te),]
-    x2 <- dimSums(prodSe[sub_oc2te]*dataoc[sub_oc2te],dim=3)
+    x2 <- dimSums(prodSe[sub_oc2te]*dataoc[sub_oc2te], dim = 3, na.rm = T)
 
     ## storage losses
     input.pe2se <- pe2se[(pe2se$all_enty %in% enty.input) & (pe2se$all_enty1 %in% se.output) & (pe2se$all_te %in% te),]
     if (nrow(input.pe2se) == 0) {
       x3 <- 0
     } else {
-      x3 <- dimSums(storageLoss[input.pe2se], dim=3)
+      x3 <- dimSums(storageLoss[input.pe2se], dim=3, na.rm=T)
     }
 
     out <- (x3)
@@ -328,7 +328,7 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
 
   tmp <- NULL
   tmp <- mbind(tmp,
-               setNames(collapseNames(dimSums(vm_demSe[,,"seh2.seel"], dim=3)), "SE|Hydrogen|used for electricity (EJ/yr)"),
+               setNames(collapseNames(dimSums(vm_demSe[,,"seh2.seel"], dim=3, na.rm=T)), "SE|Hydrogen|used for electricity (EJ/yr)"),
                setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turb"]), "SE|Hydrogen|used for electricity|normal turbines (EJ/yr)"),
                setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turbVRE"]), "SE|Hydrogen|used for electricity|forced VRE turbines (EJ/yr)"))
   
@@ -346,16 +346,16 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
   
   tmp <- mbind(tmp,
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "build"), dim=3) / 
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "build"), dim=3, na.rm=T) / 
                                         collapseNames(pm_eta_conv[,,"tdels"])),
                         "SE|Electricity|used in Buildings (EJ/yr)"),
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "indst"), dim=3) / 
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "indst"), dim=3, na.rm=T) / 
                                         collapseNames(pm_eta_conv[,,"tdels"])),
                         "SE|Electricity|used in Industry (EJ/yr)"),
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "trans"), dim=3) / 
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "trans"), dim=3, na.rm=T) / 
                                         collapseNames(pm_eta_conv[,,"tdelt"])),
                         "SE|Electricity|used in Transport (EJ/yr)"),
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "CDR"), dim=3) / 
+               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "CDR"), dim=3, na.rm=T) / 
                                         collapseNames(pm_eta_conv[,,"tdels"])),
                         "SE|Electricity|used for CDR (EJ/yr)"),
                setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2"]),
