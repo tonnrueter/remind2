@@ -2,7 +2,10 @@ context("REMIND reporting")
 
 library(gdx)
 library(data.table)
-library(doParallel)
+library(stringi)
+
+## uncomment to skip test
+## skip("Skip GDX test")
 
 ## Check REMIND output. dt is a data.table in *wide* format,
 ## i.e., variables are columns. `eqs` is a list of equations of the form
@@ -33,10 +36,10 @@ check_eqs <- function(dt, eqs, scope="all", sens=1e-10){
 
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
 
-  ## uncomment to skip test
-  ## success("Skip GDX test")
-
   testgdx_folder <- "../testgdxs/"
+  testmif_folder <- "../testmifs/"
+
+  dir.create(testmif_folder, showWarnings = FALSE)
 
   ## add GDXs for comparison here:
   my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
@@ -61,11 +64,30 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
 
   }
 
-  foreach (i = my_gdxs) %dopar% {
+  ## test compareScenarios
+  check_compscen <- function(){
+    ## save mif with random filename
+
+    my_mifs <- list.files(testmif_folder, "*.mif", full.names = TRUE)
+    histmif <- file.path(testmif_folder, "historical.mif")
+    my_mifs <- my_mifs[my_mifs != histmif]
+    if(!file.exists(histmif))
+      download.file("https://rse.pik-potsdam.de/data/example/historical.mif", histmif)
+    compareScenarios(my_mifs, histmif, fileName=file.path(testmif_folder, "scenarioComparison.pdf"))
+
+  }
+
+  for(i in my_gdxs) {
     cat(paste0(i,"\n"))
     a <- convGDX2MIF(i)
+    print("Check integrity.")
     check_integrity(a)
+    write.report(
+      a, file.path(testmif_folder, sprintf("%s.mif", stri_rand_strings(1, 5))))
     cat("\n")
   }
+
+  print("Check compareScenario.")
+  check_compscen()
 
 })
