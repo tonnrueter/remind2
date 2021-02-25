@@ -55,12 +55,17 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     dt <- rmndt::magpie2dt(out)
     stopifnot(!(c("total", "diff") %in% unique(dt[["variable"]])))
     dt_wide <- data.table::dcast(dt, ... ~ variable)
+    mylist <- mip::extractVariableGroups(unique(dt[["variable"]]),keepOrigNames = T)
+    mylist <- lapply(mylist, FUN=function(x){return(paste0("`",x,"`"))})
+    mylist <- lapply(mylist, paste, collapse = "+")
+    # remove from the tests the variables whose totals cannot be found
+    chck <- grep(" \\(.*.\\)$",names(mylist),invert = T)
+    if (length(chck)>0) warning(paste0("For these variables the corresponding
+                                       total could not be found and the summation
+                                       check will not be performed: ",mylist[chck]))
+    mylist <- mylist[grep(" \\(.*.\\)$",names(mylist))]
 
-    check_eqs(
-      dt_wide,
-      list(
-        `FE|Transport|+|Liquids (EJ/yr)` = "`FE|Transport|Liquids|+|Biomass (EJ/yr)` + `FE|Transport|Liquids|+|Fossil (EJ/yr)`"
-      ))
+    check_eqs(dt_wide,mylist)
 
   }
 
