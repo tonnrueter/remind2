@@ -361,7 +361,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
-        guides(fill=guide_legend(ncol=3))
+    guides(fill=guide_legend(ncol=3))
 
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
