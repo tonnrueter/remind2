@@ -785,7 +785,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       lapply(
         getNames(out)[grep("FE\\|Transport\\|Pass\\|other", getNames(out))],
         function(x) {
-          setNames(out[,,x],gsub("FE\\|Transport\\|Pass\\|other","FE\\|Transport\\|Pass\\|w/o Bunkers",x))
+          setNames(out[,,x],gsub("FE\\|Transport\\|Pass\\|other","FE\\|Transport\\|Pass\\|Bunkers",x))
         }
       )
     )
@@ -799,6 +799,15 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     )
     out <- mbind(out,pass_var_without_Bunkers,freight_var_without_Bunkers,freight_var_with_Bunkers)
    
+    ##
+    out <- mbind(out,
+                 setNames(out[,,"FE|Transport|Pass|++|ESD (EJ/yr)"],   "FE|Transport|Pass|w/o Bunkers (EJ/yr)"),
+                 setNames(out[,,"FE|Transport|Pass|++|other (EJ/yr)"], "FE|Transport|Pass|Bunkers (EJ/yr)"),
+                 
+                 setNames(out[,,"FE|Transport|Freight|++|ESD (EJ/yr)"],   "FE|Transport|Freight|w/o Bunkers (EJ/yr)"),
+                 setNames(out[,,"FE|Transport|Freight|++|other (EJ/yr)"], "FE|Transport|Freight|Bunkers (EJ/yr)")
+    )
+    
     # Energy Services
     p35_passLDV_ES_efficiency <- readGDX(gdx,"p35_passLDV_ES_efficiency", restore_zeros = FALSE)[,t,]
     p35_pass_nonLDV_ES_efficiency <- readGDX(gdx,"p35_pass_nonLDV_ES_efficiency", restore_zeros = FALSE)[,t,]

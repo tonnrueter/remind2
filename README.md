@@ -46,8 +46,7 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R (2021). _remind2: The REMIND R package (2nd generation)_. R
-package version 1.11.0.
+Rodrigues R (2021). _remind2: The REMIND R package (2nd generation)_. R package version 1.11.0.
 
 A BibTeX entry for LaTeX users is
 
