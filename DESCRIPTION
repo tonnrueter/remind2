@@ -1,8 +1,8 @@
 Package: remind2
 Type: Package
 Title: The REMIND R package (2nd generation)
-Version: 1.4.2
-Date: 2021-03-01
+Version: 1.12.1
+Date: 2021-02-25
 Authors@R: as.person(c(
 	   "Renato Rodrigues <renato.rodrigues@pik-potsdam.de> [aut,cre]"))
 Description: Contains the REMIND-specific routines for data and model output manipulation.
@@ -38,12 +38,12 @@ Imports:
     rmarkdown,
     rmndt,
     scales,
-    tidyr,
-	zoo
+    tidyr
 Encoding: UTF-8
 License: LGPL-3
 RoxygenNote: 7.1.1
 Suggests:
 	testthat,
+	stringi,
 	sr15data
 VignetteBuilder: knitr

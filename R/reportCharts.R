@@ -20,7 +20,7 @@
 #' @importFrom mip plotstyle mipArea shorten_legend mipLineHistorical
 #' @importFrom tidyr %>%
 #' @importFrom gdx readGDX
-#' @importFrom dplyr group_by_	do_
+#' @importFrom dplyr group_by	do summarise mutate ungroup
 #' @importFrom ggplot2 ggplot theme theme_minimal expand_limits labs element_blank ylab labeller geom_vline scale_color_manual geom_area  
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom stats as.formula
@@ -46,6 +46,7 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   }
   
   data <- read.report(reportfile,as.list=FALSE)
+  data <- deletePlus(data)
   data <- collapseNames(data)
   data <- data[,getYears(data)<="y2100",]
   
@@ -117,7 +118,7 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
     "1st Generation"="#008c00",  
     "Traditional Biomass" = "#000000", #SE Solids
     "Industry" = "#000000", "Heating Oil" = "#E41A1C", #FE prices
-    "Liquids|Oil" = "#cc7500", "Liquids|Coal" = "#0c0c0c", "Liquids|Biomass" = "#005900", "Solids|Coal" = "#0c0c0c", "Solids|Biomass" = "#005900" #FE 
+    "Liquids|Fossil" = "#cc7500", "Liquids|Oil" = "#cc7500", "Liquids|Coal" = "#0c0c0c", "Liquids|Biomass" = "#005900", "Solids|Coal" = "#0c0c0c", "Solids|Biomass" = "#005900" #FE 
   )
   missingColorsdf <- data.frame(row.names=names(missingColors), color=missingColors)
   
@@ -204,8 +205,8 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   colors <- plotstyle(unique(regionMapping$RegionCode),unknown=missingColorsdf) # region colors
   
   series <- regionMapping %>% 
-    group_by_(name = ~RegionCode) %>% 
-    do_(data = ~list_parse(select(., CountryCode))) %>%
+    group_by(name = .data$RegionCode) %>% 
+    do(data = list_parse(select(.data, .data$CountryCode))) %>%
     ungroup() 
   series$color <- colors[series$name]
   
@@ -342,10 +343,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ unitSubscript(paste0(round(value,2)," Mt CO<sub>2</sub><br>","Total carbon emissions in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period))) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= unitSubscript(paste0(round(.data$value,2)," Mt CO<sub>2</sub><br>","Total carbon emissions in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period))) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -498,16 +499,16 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   #var.tot <-"PE (EJ/yr)"
   vars <- c("Coal with CCS" = "PE|Coal|w/ CCS (EJ/yr)", 
             "Coal without CCS" = "PE|Coal|w/o CCS (EJ/yr)",
-            "Oil" = "PE|+|Oil (EJ/yr)",
+            "Oil" = "PE|Oil (EJ/yr)",
             "Gas with CCS" = "PE|Gas|w/ CCS (EJ/yr)", 
             "Gas without CCS" = "PE|Gas|w/o CCS (EJ/yr)",
             "Biomass with CCS" = "PE|Biomass|w/ CCS (EJ/yr)", 
             "Biomass without CCS" = "PE|Biomass|w/o CCS (EJ/yr)",
-            "Nuclear" = "PE|+|Nuclear (EJ/yr)", 
-            "Hydro" = "PE|+|Hydro (EJ/yr)",
-            "Geothermal" = "PE|+|Geothermal (EJ/yr)",
-            "Solar" = "PE|+|Solar (EJ/yr)",  
-            "Wind" = "PE|+|Wind (EJ/yr)")
+            "Nuclear" = "PE|Nuclear (EJ/yr)", 
+            "Hydro" = "PE|Hydro (EJ/yr)",
+            "Geothermal" = "PE|Geothermal (EJ/yr)",
+            "Solar" = "PE|Solar (EJ/yr)",  
+            "Wind" = "PE|Wind (EJ/yr)")
   
   
   color <- plotstyle(as.character(gsub("\\+\\|","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)
@@ -522,10 +523,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
        geom_area(alpha=aestethics$alpha) +
        geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
        geom_line(data=df %>%
-                   group_by_(~region,~period) %>%
-                   summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                   mutate_(position= ~ value+max(value)/1000) %>%
-                   mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total  primary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                   group_by(.data$region,.data$period) %>%
+                   summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                   mutate(position= .data$value+max(.data$value)/1000) %>%
+                   mutate(details= paste0(round(.data$value,2)," EJ<br>","Total  primary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                    ungroup(),
                  aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
        facet_wrap(~region, scales="fixed") +
@@ -533,7 +534,7 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
        labs(x = NULL, y = NULL) +
        scale_fill_manual(values = color) )
     # relative chart
-    df <- df %>% group_by_(~region,~period) %>% mutate_(percent = ~ value/sum(value)*100) #creating percentage column
+    df <- df %>% group_by(.data$region,.data$period) %>% mutate(percent = .data$value/sum(.data$value)*100) #creating percentage column
     df$percDetails <- paste0(round(df$percent,2)," %<br>",gsub("\\|"," ",gsub("\\+\\|","",gsub("PE\\|","",as.character(df$variable)))), " primary energy consumption in ", ifelse(reg=="GLO","the World", as.character(df$region)),"<br>year: ",df$period)
     g$perc <- suppressWarnings( ggplot(data=df,aes_(x=~period,y=~value,fill=~variable,text=~percDetails,group = ~variable)) +
         geom_bar(position = "fill",stat = "identity",alpha=aestethics$alpha) +
@@ -545,16 +546,16 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
         scale_x_continuous(limits = c(2005, NA)) )
     #per capita chart
     df <- suppressWarnings(left_join(df, pop, by=c("region", "period")))
-    df <- df %>% group_by_(~region,~period) %>% mutate_(percapita = ~ value/population) #creating per capita column
+    df <- df %>% group_by(.data$region,.data$period) %>% mutate(percapita = .data$value/.data$population) #creating per capita column
     df$percapitaDetails <- paste0(round(df$percapita,2)," EJ per capita<br>",gsub("\\|"," ",gsub("\\+\\|","",gsub("PE\\|","",as.character(df$variable)))), " primary energy consumption in ", ifelse(reg=="GLO","the World", as.character(df$region)),"<br>year: ",df$period)
     g$percapita <- suppressWarnings( ggplot(data=df,aes_(x=~period,y=~percapita,fill=~variable,text=~percapitaDetails,group = ~variable)) +
                                  geom_area(alpha=aestethics$alpha) +
                                  geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                                  geom_line(data=df %>%
-                                             group_by_(~region,~period) %>%
-                                             summarise_(percapita = ~sum(percapita,na.rm=TRUE)) %>%
-                                             mutate_(position= ~ percapita+max(percapita)/1000) %>%
-                                             mutate_(details= ~ paste0(round(percapita,2)," EJ per capita<br>","Total  primary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                             group_by(.data$region,.data$period) %>%
+                                             summarise(percapita = sum(.data$percapita,na.rm=TRUE)) %>%
+                                             mutate(position= .data$percapita+max(.data$percapita)/1000) %>%
+                                             mutate(details= paste0(round(.data$percapita,2)," EJ per capita<br>","Total  primary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                              ungroup(),
                                            aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                                  facet_wrap(~region, scales="fixed") +
@@ -805,8 +806,8 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   out$legend$'Uranium production'$units <- "EJ/yr"
   
   # Biomass production
-  vars <- c("PE|Production|Biomass|+|Lignocellulosic (EJ/yr)",
-            "PE|Production|Biomass|+|1st Generation (EJ/yr)")
+  vars <- c("PE|Production|Biomass|Lignocellulosic (EJ/yr)",
+            "PE|Production|Biomass|1st Generation (EJ/yr)")
   
   color <- plotstyle(as.character(gsub(" \\(.*","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)
   names(color) <- gsub(" \\(.*","",vars)
@@ -912,10 +913,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -974,10 +975,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," TWh<br>","Total electricity secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," TWh<br>","Total electricity secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1036,10 +1037,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total gases secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total gases secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1092,10 +1093,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total heat secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total heat secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1150,10 +1151,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total liquids secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total liquids secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1205,10 +1206,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total solids secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total solids secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1264,10 +1265,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total hydrogen secondary energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total hydrogen secondary energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1305,12 +1306,12 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   ##### FINAL ENERGY
   
   #var.tot <-"FE (EJ/yr)"
-  vars <- c("Electricity" = "FE|+|Electricity (EJ/yr)",
-            "Solids"      = "FE|+|Solids (EJ/yr)",
-            "Liquids"     = "FE|+|Liquids (EJ/yr)",
-            "Gases"       = "FE|+|Gases (EJ/yr)",
-            "Heat"        = "FE|+|Heat (EJ/yr)",
-            "Hydrogen"    = "FE|+|Hydrogen (EJ/yr)"#,
+  vars <- c("Electricity" = "FE|Electricity (EJ/yr)",
+            "Solids"      = "FE|Solids (EJ/yr)",
+            "Liquids"     = "FE|Liquids (EJ/yr)",
+            "Gases"       = "FE|Gases (EJ/yr)",
+            "Heat"        = "FE|Heat (EJ/yr)",
+            "Hydrogen"    = "FE|Hydrogen (EJ/yr)"#,
             #"FE|Solar (EJ/yr)",
             #"FE|Other (EJ/yr)"
   )
@@ -1325,10 +1326,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total final energy in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total final energy in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1413,8 +1414,9 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   
   #var.tot <-"FE|Transport (EJ/yr)"
   vars <- c("Electricity"    = "FE|Transport|Electricity (EJ/yr)",
-            "Liquids - Oil"  = "FE|Transport|Liquids|Oil (EJ/yr)",
-            "Liquids - Coal" = "FE|Transport|Liquids|Coal (EJ/yr)",
+            "Liquids - Fossil"  = "FE|Transport|Liquids|Fossil (EJ/yr)",
+            #"Liquids - Oil"  = "FE|Transport|Liquids|Oil (EJ/yr)",
+            #"Liquids - Coal" = "FE|Transport|Liquids|Coal (EJ/yr)",
             "Liquids - Biomass" = "FE|Transport|Liquids|Biomass (EJ/yr)",
             #"FE|Transport|Gases (EJ/yr)",
             "Hydrogen"       = "FE|Transport|Hydrogen (EJ/yr)"
@@ -1430,10 +1432,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total final energy use by transportat in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total final energy use by transportat in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1536,10 +1538,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total final energy use by industry in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total final energy use by industry in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
@@ -1644,10 +1646,10 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
                              geom_area(alpha=aestethics$alpha) +
                              geom_vline(xintercept=as.numeric(min(df$period)),linetype=2, size=aestethics$`y-axis`$size, color=aestethics$`y-axis`$color) + # vertical line at initial year
                              geom_line(data=df %>%
-                                         group_by_(~region,~period) %>%
-                                         summarise_(value = ~sum(value,na.rm=TRUE)) %>%
-                                         mutate_(position= ~ value+max(value)/1000) %>%
-                                         mutate_(details= ~ paste0(round(value,2)," EJ<br>","Total final energy use by buildings in ", ifelse(reg=="GLO","the World", as.character(region)),"<br>year: ",period)) %>%
+                                         group_by(.data$region,.data$period) %>%
+                                         summarise(value = sum(.data$value,na.rm=TRUE)) %>%
+                                         mutate(position= .data$value+max(.data$value)/1000) %>%
+                                         mutate(details= paste0(round(.data$value,2)," EJ<br>","Total final energy use by buildings in ", ifelse(reg=="GLO","the World", as.character(.data$region)),"<br>year: ",.data$period)) %>%
                                          ungroup(),
                                        aes_(~period,~position,text=~details,group = ~region),color="#000000",size=aestethics$line$size,inherit.aes = FALSE, linetype="dashed",alpha=aestethics$alpha) +
                              facet_wrap(~region, scales="fixed") +
