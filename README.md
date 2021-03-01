@@ -1,6 +1,6 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.12.1**
+R package **remind2**, version **1.12.2**
 
 [![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)    
 
@@ -55,7 +55,7 @@ A BibTeX entry for LaTeX users is
   title = {remind2: The REMIND R package (2nd generation)},
   author = {Renato Rodrigues},
   year = {2021},
-  note = {R package version 1.12.1},
+  note = {R package version 1.12.2},
 }
 ```
 
