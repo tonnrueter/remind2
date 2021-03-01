@@ -284,8 +284,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   vm_prodSE      <- vm_prodSE[rbind(pe2se,se2se)]
   vm_prodFe      <- readGDX(gdx,name=c("vm_prodFe","v_feprod","vm_feprod"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
   vm_prodFe      <- vm_prodFe[se2fe]
-  vm_demFe       <- readGDX(gdx,name=c("v35_demFe","v_demFe","vm_demFe"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
-  vm_demFe       <- vm_demFe[fe2ue]
+
 
   vm_demFeForEs <- readGDX(gdx,name = c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found",react = "silent") * pm_conv_TWa_EJ
 
@@ -1328,6 +1327,9 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
 
   if(tran_mod == "complex"){
+    
+    vm_demFe       <- readGDX(gdx,name=c("v35_demFe","v_demFe","vm_demFe"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
+    vm_demFe       <- vm_demFe[fe2ue]
     LDV35      <- readGDX(gdx,"LDV35")
 
     tmp <- mbind(
