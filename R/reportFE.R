@@ -678,6 +678,10 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     #Passenger > LDV
     
     p35_pass_FE_share_transp <- readGDX(gdx,"p35_pass_FE_share_transp", restore_zeros = FALSE)[,t,]
+
+    
+    
+    
     
     v_demFe <- readGDX(gdx,name=c("v35_demFe","v_demFe"),field="l",restore_zeros=FALSE,format="first_found")[,t,]*TWa_2_EJ
     
@@ -886,6 +890,11 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     fe2es_dyn35 <- readGDX(gdx,c("fe2es_dyn35"), format = "first_found")
     
     vm_demFeForEs_trnsp = vm_demFeForEs[fe2es_dyn35]
+    
+    if(tran_mod == "edge_esm"){
+      p35_pass_FE_share_transp <- dimSums(vm_demFeForEs_trnsp[,,"esdie_pass_",pmatch=TRUE], dim=3,na.rm=T) /
+        dimSums(vm_demFeForEs_trnsp[,,"esdie_",pmatch=TRUE], dim=3,na.rm=T)
+    }
     
     out <- mbind(out,
       setNames(dimSums(vm_demFeForEs_trnsp[,,"eselt_frgt_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Freight|Electricity (EJ/yr)"),

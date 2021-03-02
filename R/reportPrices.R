@@ -232,8 +232,10 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
 
   #####################################
   #choose the CES entries names for transport
+  if (!is.null(esm2macro.m)) {
   name_trsp=c("fepet","ueLDVt","fedie","ueHDVt","feelt","ueelTt")
   name_trsp=name_trsp[name_trsp%in%getNames(esm2macro.m)]
+  }
   #####################################
   
   ####### calculate minimal temporal resolution #####
@@ -254,7 +256,9 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   pric_emu_pre_shifted <- pric_emu_pre_shifted[,y,]
   pric_emu       <- pric_emu[,y,]
   bio_tax_factor <- bio_tax_factor[,y,]
+  if (!is.null(esm2macro.m)) {
   esm2macro.m    <- esm2macro.m[,y,]
+  }
   pm_dataemi     <- pm_dataemi[,y,]
   pm_ts          <- pm_ts[,y,]
   pm_pvpRegi     <- pm_pvpRegi[,y,]
@@ -333,7 +337,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   tmp = compute_agg_price_fe(tmp,output,"Transport")
   
   #Final energy prices
-  a = abs(mselect(balfinen.m[,y,][rbind(finenbal,fe2es)]))/abs((budget.m+1e-10)) # Translate the marginal utility of the constraint into the marginal income (price)
+  a = abs(mselect(balfinen.m[,y,][finenbal]))/abs((budget.m+1e-10)) # Translate the marginal utility of the constraint into the marginal income (price)
   b = complete_magpie(a) # Due to a strange behaviour of magclass objects addition, we need to use complete_magpie to make the addition
   prices_fe_bi = (b + mbind(fe_taxCES[,y,getColValues(finenbal,"all_in")],
                             fe_taxES[,y,getColValues(fe2es,"all_in")])
@@ -648,7 +652,8 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     tmp <- mbind(tmp,setNames(x1/x2/(abs(budget.m) + 1e-10) * tdptwyr2dpgj,                                     "Average price for liquid transport energy|SE (US$2005/GJ)"))
    }
 
-   # some precalculations 
+   # some precalculations
+  if (!is.null(esm2macro.m)) {
   x1 <- abs(balfinen.m[finenbal] / (budget.m + 1e-10)) * 1000
   dimnames(x1)[[3]] <- dimnames(cesIO[,,finenbal[,2]])[[3]]
   x1 <- dimSums(x1 * cesIO[,,finenbal[,2]],dim=3)
@@ -656,7 +661,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   x3 <- dimSums(cesIO[finenbal],dim=3) / TWa_2_EJ
   x4 <- dimSums(cesIO[,,ppfenfromes],dim=3) / TWa_2_EJ
   tmp <- mbind(tmp,setNames((x1 + x2)/(x3 + x4),                                                              "Average price for energy|CES (US$2005/GJ)"))
-  
+  }
   # ---- compute CES prices ----
   tmp <- mbind(
     tmp,
@@ -783,9 +788,6 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     # "Price|Secondary Energy|Liquids|Synthetic (CCU) (US$2005/GJ)" = "SE|Liquids|Hydrogen (EJ/yr)",
     "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|CO2|ETS (Mt CO2/yr)",
     "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|CO2|ESD (Mt CO2/yr)",
-
-    "Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Transport|Pass|ESD|+|Liquids (EJ/yr)",
-    "Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Transport|Freight|ESD|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Buildings|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Industry|ESD|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ETS (US$2005/GJ)" = "FE|Industry|ETS|+|Liquids (EJ/yr)",
@@ -796,6 +798,18 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     "Price|Final Energy|Solids|Industry|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Industry|ESD|+|Solids (EJ/yr)",
     "Price|Final Energy|Solids|Industry|w/ costs for emissions|ETS (US$2005/GJ)" = "FE|Industry|ETS|+|Solids (EJ/yr)"
               )
+  
+  # set Transport weights depending on transport realization because different FE labels there
+  if (tran_mod == "edge_esm") {
+  int2ext <- c(int2ext,
+  "Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Transport|Pass|Liquids (EJ/yr)",
+  "Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Transport|Freight|Liquids (EJ/yr)")
+  } else {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Transport|Pass|ESD|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Transport|Freight|ESD|+|Liquids (EJ/yr)")
+  } 
+  
 
   if (!is.null(esm2macro.m)) { 
     int2ext <- c(int2ext,

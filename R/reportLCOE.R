@@ -502,6 +502,9 @@ reportLCOE <- function(gdx, output.type = "both"){
   curtShare <- NULL
   `Curtailment Cost` <- NULL
    maxcap <- NULL
+   AddH2TdCost <- NULL
+   `Additional H2 t&d Cost` <- NULL
+   emi_sectors <- NULL
   
   ##############################################
   
@@ -780,17 +783,19 @@ reportLCOE <- function(gdx, output.type = "both"){
                 expand(tech, region = getRegs(df.CAPEX))) %>%
     mutate( emiFac = ifelse(is.na(emiFac), 0, emiFac))
   
+
   
-  # get se2fe emision factor to add to techs that produce seliqfos, segafos, sesofos
+  # get se2fe emision factor to add to calculate CO2 cost for pe2se technologies whose outputs are seliqfos/segasfos etc.
   df.emifac.se2fe <- df.emiFac %>% 
-    left_join(se2fe, by=c("tech"="all_te")) %>% 
+                        left_join(se2fe, by=c("tech"="all_te")) %>%  
     # filter for SE fossil, take diesel emifac for all liquids
-    filter(all_enty %in% c("seliqfos","segafos","sesofos")) %>% 
+    filter(all_enty %in% c("seliqfos","segafos","sesofos")) %>%   
     filter(all_enty != "seliqfos" | all_enty1 == "fedie") %>% 
     rename(input = all_enty, emiFac.se2fe = emiFac) %>% 
     select(region, input, emiFac.se2fe) %>% 
     left_join(pe2se, by = c("input" = "all_enty1")) %>% 
     rename(tech = all_te) %>% 
+    filter(emiFac.se2fe > 0) %>% 
     select(region, tech, emiFac.se2fe)
   
   
@@ -1355,6 +1360,82 @@ reportLCOE <- function(gdx, output.type = "both"){
     # This only includes taxes that are placed on final energy ( to explain FE prices). 
     # Not taxes on UE/ES level in the detailed buildings and industry sectors. 
     
+    
+    ### add additional H2 transmission and distribution cost
+    ### for buildings and industry that were added by Renato
+    
+    vm_costAddTeInv <- readGDX(gdx, "vm_costAddTeInv", field = "l", restore_zeros = F)
+    getSets(vm_costAddTeInv)[2] <- "ttot"
+    
+    v37_costExponent <- readGDX(gdx, "v37_costExponent", field = "l", restore_zeros = F)
+    v36_costExponent <- readGDX(gdx, "v36_costExponent", field = "l", restore_zeros = F)
+    
+    
+    if (!is.null(v37_costExponent)) {
+      vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,ttot_from2005,]
+      # calculate H2 and total FE demand in sector
+      H2FE <- dimReduce(dimSums(vm_demFeSector[,,c("indst","build")][,,"feh2s"], dim = c(3.1,3.4), na.rm = T))
+      totalFE <- dimReduce(dimSums(vm_demFeSector[,,c("indst","build")], dim = c(3.1,3.2,3.4), na.rm = T))
+      
+      cm_indst_H2costAddH2Inv <- readGDX(gdx, "cm_indst_H2costAddH2Inv")
+      cm_indst_costDecayStart <- readGDX(gdx, "cm_indst_costDecayStart")
+      cm_indst_H2costDecayEnd <- readGDX(gdx, "cm_indst_H2costDecayEnd")
+      
+      cm_build_H2costAddH2Inv <- readGDX(gdx, "cm_build_H2costAddH2Inv")
+      cm_build_costDecayStart <- readGDX(gdx, "cm_build_costDecayStart")
+      cm_build_H2costDecayEnd <- readGDX(gdx, "cm_build_H2costDecayEnd")
+      
+      # ### derivative of vm_costAddTeInv with respect to FE H2 per sector is
+      # ### (following q36_costAddTeInv and q36_auxCostAddTeInv)
+      # 
+      #       AddtdCostH2Ind =    # marginal LCOE = average LCOE * marginal LCOE component
+      #                     # average LCOE 
+      #                     vm_costAddTeInv[,,"tdh2s.indst"] / H2FE[,,"indst"] +
+      #                     # marginal LCOE component (d (average LCOE) / d(H2FE))
+      #                     # 1. factor: derivative of q37_costAddTeInv
+      #                     cm_indst_H2costAddH2Inv * 8.76 * (1+3^(v37_costExponent))^(-2) *
+      #                     # 2. factor: derivative of q37_auxCostAddTeInv
+      #                     3^(v37_costExponent) * log(3) * 10 / (cm_indst_H2costDecayEnd-cm_indst_costDecayStart) *
+      #                     # 3. factor: derivative of H2Share(H2FE)=H2FE/totalFE*
+      #                     1 / totalFE[,,"indst"] *
+      #                     # convert to USD2015/MWh(H2)
+      #                     1.2 / s_twa2mwh * 1e12
+      
+
+      # check average LCOE component of additional H2 td costs
+      #AvgLCOE <- vm_costAddTeInv[,,"tdh2s.indst"] / H2FE[,,"indst"] * 1.2 / s_twa2mwh * 1e12
+      
+      # AddtdCostH2Build =    # marginal LCOE = average LCOE * marginal LCOE component
+      #   # average LCOE
+      #   vm_costAddTeInv[,,"tdh2s.build"] / H2FE[,,"build"] +
+      #   # marginal LCOE component (d (average LCOE) / d(H2FE))
+      #   # 1. factor: derivative of q37_costAddTeInv
+      #   cm_build_H2costAddH2Inv * 8.76 * (1+3^(v36_costExponent))^(-2) *
+      #   # 2. factor: derivative of q37_auxCostAddTeInv
+      #   3^(v36_costExponent) * log(3) * 10 / (cm_build_H2costDecayEnd-cm_build_costDecayStart) *
+      #   # 3. factor: derivative of H2Share(H2FE)=H2FE/totalFE*
+      #   1 / totalFE[,,"build"] *
+      #   # convert to USD2015/MWh(H2)
+      #   1.2 / s_twa2mwh * 1e12
+      
+      
+      ### calculate average LCOE of additional H2 stationary t&d cost for now
+      AddtdCostH2Ind <- vm_costAddTeInv[,,"tdh2s.indst"] / H2FE[,,"indst"] * 1.2 / s_twa2mwh * 1e12
+      AddtdCostH2Build <- vm_costAddTeInv[,,"tdh2s.build"] / H2FE[,,"build"] * 1.2 / s_twa2mwh * 1e12
+      
+      df.AddH2tdCost <- as.quitte(AddtdCostH2Build) %>% 
+                          select(region, period, all_te, emi_sectors, value) %>% 
+                        rbind(as.quitte(AddtdCostH2Ind) %>% 
+                                select(region, period, all_te, emi_sectors, value)) %>% 
+                        rename( AddH2TdCost = value, sector = emi_sectors,
+                                tech = all_te) %>% 
+                        revalue.levels( sector = c("build" = "buildings", "indst" = "industry")) %>% 
+                        mutate( AddH2TdCost = ifelse(is.nan(AddH2TdCost), NA, AddH2TdCost))
+      
+      
+          
+    }
+    
   ####################### LCOE calculation (New plant/marginal) ########################
   
 
@@ -1380,6 +1461,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     left_join(df.CCSCost) %>% 
     left_join(df.flexPriceShare) %>%
     left_join(df.FEtax) %>% 
+    left_join(df.AddH2tdCost) %>% 
     # filter to only have LCOE technologies
     filter( tech %in% c(te_LCOE)) 
     
@@ -1391,7 +1473,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   # replace NA by 0 in certain columns
   # columns where NA should be replaced by 0
   col.NA.zero <- c("OMF","OMV", "co2.price.weighted.mean", "fuel.price.weighted.mean","co2_dem","emiFac.se2fe","Co2.Capt.Price",
-                   "secfuel.prod", "secfuel.price", "grid.cost","VREstor.cost", "curtShare","CCStax.cost","CCSCost","FEtax")
+                   "secfuel.prod", "secfuel.price", "grid.cost","VREstor.cost", "curtShare","CCStax.cost","CCSCost","FEtax","AddH2TdCost")
   df.LCOE[,col.NA.zero][is.na(df.LCOE[,col.NA.zero])] <- 0
   
   # replace NA by 1 in certain columns
@@ -1430,9 +1512,9 @@ reportLCOE <- function(gdx, output.type = "both"){
     mutate( `Curtailment Cost` = curtShare / (1-curtShare) * (`Investment Cost` + `OMF Cost` + `OMV Cost`)) %>% 
     mutate( `CCS Tax Cost` = CCStax.cost, `CCS Cost` = CCSCost) %>%
     mutate( `Flex Tax` = -(1-FlexPriceShare) * `Fuel Cost`) %>% 
-    mutate( `FE Tax` = FEtax) %>% 
+    mutate( `FE Tax` = FEtax, `Additional H2 t&d Cost` = AddH2TdCost) %>% 
     mutate( `Total LCOE` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Fuel Cost` + `CO2 Tax Cost` + 
-              `CO2 Provision Cost` + `Second Fuel Cost` + `VRE Storage Cost` + `Grid Cost` + `CCS Tax Cost` + `Curtailment Cost` + `CCS Cost` + `Flex Tax` + `FE Tax`)
+              `CO2 Provision Cost` + `Second Fuel Cost` + `VRE Storage Cost` + `Grid Cost` + `CCS Tax Cost` + `Curtailment Cost` + `CCS Cost` + `Flex Tax` + `FE Tax` + `Additional H2 t&d Cost`)
   
    
   
@@ -1532,9 +1614,10 @@ reportLCOE <- function(gdx, output.type = "both"){
     df.LCOE.out <- df.LCOE %>% 
       select(region, period, tech, output, sector, `Investment Cost`, `OMF Cost`, `OMV Cost`, `Fuel Cost` ,
              `CO2 Tax Cost`,`CO2 Provision Cost`,`Second Fuel Cost`,`VRE Storage Cost` ,`Grid Cost`, `Curtailment Cost`,
-             `CCS Tax Cost`, `CCS Cost`,`Flex Tax`,`FE Tax`,`Total LCOE`) %>% 
+             `CCS Tax Cost`, `CCS Cost`,`Flex Tax`,`FE Tax`,`Additional H2 t&d Cost`,`Total LCOE`) %>% 
       gather(cost, value, -region, -period, -tech, -output, -sector) %>% 
       mutate(unit = "US$2015/MWh", type="marginal") %>% 
+      filter( value != 0) %>% 
       select(region, period, type, output, tech, sector, unit, cost, value)
     
     LCOE.mar.out <- as.magpie(df.LCOE.out, spatial = 1, temporal = 2, datacol=9) 
@@ -1553,6 +1636,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  
  ### calculate global average LCOE for region "World"
  LCOE.out.inclGlobal <- new.magpie(c(getRegions(LCOE.out),"GLO"), getYears(LCOE.out), getNames(LCOE.out))
+ getSets(LCOE.out.inclGlobal) <- getSets(LCOE.out)
  LCOE.out.inclGlobal[getRegions(LCOE.out),,] <- LCOE.out
  LCOE.out.inclGlobal["GLO",,] <- dimSums(LCOE.out, dim=1) / length(getRegions(LCOE.out))
  
