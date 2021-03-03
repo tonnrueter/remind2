@@ -2701,9 +2701,19 @@ compareScenarios <- function(mif, hist,
   items<- c(
     "ES|Transport|Pass (bn pkm/yr)",
     "ES|Transport|Pass|Road|LDV (bn pkm/yr)",
-    "ES|Transport|Pass|non-LDV (bn pkm/yr)")
+    "ES|Transport|Pass|non-LDV (bn pkm/yr)",
+    "ES|Transport|Freight (bn tkm/yr)",
+    "Est LDV Stock (million vehicles)",
+    "Est EV LDV Stock (million vehicles)",
+    "Est H2 LDV Stock (million vehicles)",
+    "Est ICE LDV Stock (million vehicles)",
+    "Est LDV Sales (million vehicles)",
+    "Est EV LDV Sales (million vehicles)",
+    "Est H2 LDV Sales (million vehicles)",
+    "Est ICE LDV Sales (million vehicles)"
+  )
   
-  if(all(c(items,"ES|Transport|Freight (bn tkm/yr)") %in% getNames(data,dim=3))){
+  if(all(c(items) %in% getNames(data,dim=3))){
     
     swlatex(sw,"\\section{Energy Services}")
   
@@ -2715,6 +2725,12 @@ compareScenarios <- function(mif, hist,
   
     swlatex(sw,"\\subsubsection{Energy Services for Passenger Transport (per Capita, year)}")
      
+    items<- c(
+      "ES|Transport|Pass (bn pkm/yr)",
+      "ES|Transport|Pass|Road|LDV (bn pkm/yr)",
+      "ES|Transport|Pass|non-LDV (bn pkm/yr)"
+    )
+    
     p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. (km/yr)",
                           global = T, per_gdp = F)
     swfigure(sw,print,p,sw_option="height=9,width=16")
@@ -2764,6 +2780,62 @@ compareScenarios <- function(mif, hist,
       
     swlatex(sw,"\\twocolumn")
   
+    # Vehicles Stock
+    
+    swlatex(sw,"\\subsubsection{Vehicles Stock}")
+    
+    tot <-"Est LDV Stock (million vehicles)"
+    
+    items <- c("Est EV LDV Stock (million vehicles)",
+               "Est H2 LDV Stock (million vehicles)",
+               "Est ICE LDV Stock (million vehicles)")
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+
+    # Sales
+    
+    swlatex(sw,"\\subsubsection{Vehicles Sales}")
+    
+    tot <-    "Est LDV Sales (million vehicles)"
+    
+    items <- c("Est EV LDV Sales (million vehicles)",
+               "Est H2 LDV Sales (million vehicles)",
+               "Est ICE LDV Sales (million vehicles)")
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")    
+    
   }
 
   ## ---- ++++ C L I M A T E ++++ ----
