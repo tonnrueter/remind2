@@ -788,6 +788,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     # "Price|Secondary Energy|Liquids|Synthetic (CCU) (US$2005/GJ)" = "SE|Liquids|Hydrogen (EJ/yr)",
     "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|CO2|ETS (Mt CO2/yr)",
     "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|CO2|ESD (Mt CO2/yr)",
+    "Price|Carbon|ESD (US$2005/t CO2)"                        = "Emi|CO2|ESD (Mt CO2/yr)",
     "Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Buildings|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Industry|ESD|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ETS (US$2005/GJ)" = "FE|Industry|ETS|+|Liquids (EJ/yr)",
