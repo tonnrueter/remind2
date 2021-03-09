@@ -290,6 +290,7 @@ reportEDGETransport <- function(output_folder=".",
     p_ef_dem <- readGDX(gdx, "p_ef_dem")  ## MtCO2/EJ
     p_ef_dem <- as.data.table(p_ef_dem)[all_enty %in% c("fepet", "fegas", "feelt", "feh2t")]  ## emissions factor for Electricity and Hydrogen are 0, as we are calculating tailpipe emissions
     setnames(p_ef_dem, old = "value", new = "ef")
+    setnames(p_ef_dem, old = "all_regi", new = "region")
     ## attribute explicitly fuel used to the FE values
     emidem = repFE[grepl("Liquids|Gases|Hydrogen|Electricity", variable) & region != "World"]   ## EJ
     emidem[, all_enty := ifelse(grepl("Liquids", variable), "fepet", NA)]
@@ -297,7 +298,7 @@ reportEDGETransport <- function(output_folder=".",
     emidem[, all_enty := ifelse(grepl("Electricity", variable), "feelt", all_enty)]
     emidem[, all_enty := ifelse(grepl("Hydrogen", variable), "feh2t", all_enty)]
     ## merge with emission factors
-    emidem = emidem[p_ef_dem, on = "all_enty"]
+    emidem = emidem[p_ef_dem, on = c("all_enty","region")]
     ## calculate emissions and attribute variable and unit names
     emidem[, value := value*ef][, c("variable", "unit") := list(gsub("FE", "Emi\\|CO2", variable), "Mt CO2/yr")]
 
