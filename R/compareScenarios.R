@@ -2713,6 +2713,7 @@ compareScenarios <- function(mif, hist,
     "Est ICE LDV Sales (million vehicles)"
   )
   
+    
   if(all(c(items) %in% getNames(data,dim=3))){
     
     swlatex(sw,"\\section{Energy Services}")
@@ -2838,6 +2839,79 @@ compareScenarios <- function(mif, hist,
     
   }
 
+  ## ---- Freight ----
+  
+  items<- c(
+    "Services and Products|Transport|Freight|Stock|uedit (NA)",
+    "Services and Products|Transport|Freight|Stock|apCarDiT (NA)",
+    "Services and Products|Transport|Freight|Stock|apcarDiEffT (NA)",
+    "Services and Products|Transport|Freight|Stock|apcarDiEffH2T (NA)",
+    "Services and Products|Transport|Freight|Sales|uedit (NA)",
+    "Services and Products|Transport|Freight|Sales|apCarDiT (NA)",
+    "Services and Products|Transport|Freight|Sales|apcarDiEffT (NA)",
+    "Services and Products|Transport|Freight|Sales|apcarDiEffH2T (NA)"
+  )
+  
+  if(all(c(items) %in% getNames(data,dim=3))){
+    
+    # Freight Vehicles Stock
+    
+    swlatex(sw,"\\subsubsection{Freight Vehicles Stock}")
+    
+    tot <-"Services and Products|Transport|Freight|Stock|uedit (NA)"
+    
+    items <- c("Services and Products|Transport|Freight|Stock|apCarDiT (NA)",
+               "Services and Products|Transport|Freight|Stock|apcarDiEffT (NA)",
+               "Services and Products|Transport|Freight|Stock|apcarDiEffH2T (NA)")
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    # Sales
+    
+    swlatex(sw,"\\subsubsection{Freight Vehicles Sales}")
+    
+    tot <-    "Services and Products|Transport|Freight|Sales|uedit (NA)"
+    
+    items <- c("Services and Products|Transport|Freight|Sales|apCarDiT (NA)",
+               "Services and Products|Transport|Freight|Sales|apcarDiEffT (NA)",
+               "Services and Products|Transport|Freight|Sales|apcarDiEffH2T (NA)")
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")    
+    
+  }
+  
   ## ---- ++++ C L I M A T E ++++ ----
 
   if(all(c("Forcing (W/m2)","Temperature|Global Mean [K]") %in% getNames(data,dim=3))){
