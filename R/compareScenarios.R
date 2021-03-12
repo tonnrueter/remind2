@@ -2505,14 +2505,16 @@ compareScenarios <- function(mif, hist,
   ## ---- FE Line Buildings ----
 
   if("FE|Buildings (EJ/yr)" %in% magclass::getNames(data,dim=3)){
-    swlatex(sw,"\\subsection{Buildings}")
+    swlatex(sw,"\\subsection{Buildings Final Energy}")
     p <- mipLineHistorical(data[mainReg,,"FE|Buildings (EJ/yr)"],x_hist=histData[mainReg,,"FE|Buildings (EJ/yr)"],
                            ylab='FE|Buildings [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"FE|Buildings (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Buildings (EJ/yr)"][mainReg,,,invert=TRUE],
                            ylab='FE|Buildings [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
-
+    
+    swlatex(sw,"\\subsubsection{per carrier}")
+    
     p <- mipLineHistorical(data[mainReg,,"FE|Buildings|Electricity (EJ/yr)"],x_hist=hist_edge[mainReg,,"FE|Buildings|Electricity (EJ/yr)"],
                            ylab='FE|Buildings|Electricity [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
@@ -2560,7 +2562,7 @@ compareScenarios <- function(mif, hist,
   ## ---- FE Line Industry ----
 
   if("FE|Industry (EJ/yr)" %in% magclass::getNames(data,dim=3)){
-    swlatex(sw,"\\subsection{Industry}")
+    swlatex(sw,"\\subsection{Industry Final Energy}")
 
     p <- mipLineHistorical(data[mainReg,,"FE|Industry (EJ/yr)"],x_hist=histData[mainReg,,"FE|Industry (EJ/yr)"],
                            ylab='FE|Industry [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -2568,7 +2570,9 @@ compareScenarios <- function(mif, hist,
     p <- mipLineHistorical(data[,,"FE|Industry (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Industry (EJ/yr)"][mainReg,,,invert=TRUE],
                            ylab='FE|Industry [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
-
+    
+    swlatex(sw,"\\subsubsection{per carrier}")
+    
     p <- mipLineHistorical(data[mainReg,,"FE|Industry|Electricity (EJ/yr)"],x_hist=hist_edge[mainReg,,"FE|Industry|Electricity (EJ/yr)"],
                            ylab='FE|Industry|Electricity [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
@@ -2615,7 +2619,7 @@ compareScenarios <- function(mif, hist,
 
   ## ---- FE Line Transport ----
 
-  swlatex(sw,"\\subsection{Transport}")
+  swlatex(sw,"\\subsection{Transport Final Energy}")
   p <- mipLineHistorical(data[mainReg,,"FE|Transport (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transport w/ Bunkers (EJ/yr)"],
                          ylab='FE|Transport [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
@@ -2630,6 +2634,8 @@ compareScenarios <- function(mif, hist,
                          ylab='FE|Transport|w/o Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
+  swlatex(sw,"\\subsubsection{per carrier with Bunkers}")
+  
   hist_bunkers <- setNames(histData[,,"Eurostat.FE|Transport w/ Bunkers (EJ/yr)"] - histData[,,"Eurostat.FE|Transport (EJ/yr)"],"historical.Eurostat.FE|Transport|Bunkers (EJ/yr)")
   p <- mipLineHistorical(data[mainReg,,"FE|Transport|Bunkers (EJ/yr)"],x_hist=hist_bunkers[mainReg,,"FE|Transport|Bunkers (EJ/yr)"],
                          ylab='FE|Transport|Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -2666,6 +2672,7 @@ compareScenarios <- function(mif, hist,
                          ylab='FE|Transport|Hydrogen [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
+  swlatex(sw,"\\subsubsection{per carrier Without Bunkers}")
   
   p <- mipLineHistorical(data[mainReg,,"FE|Transport|w/o Bunkers|Liquids (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transport|Liquids (EJ/yr)"],
                          ylab='FE|Transport|Liquids [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -2716,7 +2723,7 @@ compareScenarios <- function(mif, hist,
     
   if(all(c(items) %in% getNames(data,dim=3))){
     
-    swlatex(sw,"\\section{Energy Services}")
+    swlatex(sw,"\\section{Energy Services and Products}")
   
     swlatex(sw,"\\subsection{Transport}")
   
@@ -2783,7 +2790,7 @@ compareScenarios <- function(mif, hist,
   
     # Vehicles Stock
     
-    swlatex(sw,"\\subsubsection{Vehicles Stock}")
+    swlatex(sw,"\\subsubsection{LDV Vehicles Stock}")
     
     tot <-"Est LDV Stock (million vehicles)"
     
@@ -2811,7 +2818,7 @@ compareScenarios <- function(mif, hist,
 
     # Sales
     
-    swlatex(sw,"\\subsubsection{Vehicles Sales}")
+    swlatex(sw,"\\subsubsection{LDV Vehicles Sales}")
     
     tot <-    "Est LDV Sales (million vehicles)"
     
@@ -2839,30 +2846,30 @@ compareScenarios <- function(mif, hist,
     
   }
 
-  ## ---- Freight ----
+  ## ---- HDV ----
   
   items<- c(
-    "Services and Products|Transport|Freight|Stock|uedit (NA)",
-    "Services and Products|Transport|Freight|Stock|apCarDiT (NA)",
-    "Services and Products|Transport|Freight|Stock|apcarDiEffT (NA)",
-    "Services and Products|Transport|Freight|Stock|apcarDiEffH2T (NA)",
-    "Services and Products|Transport|Freight|Sales|uedit (NA)",
-    "Services and Products|Transport|Freight|Sales|apCarDiT (NA)",
-    "Services and Products|Transport|Freight|Sales|apcarDiEffT (NA)",
-    "Services and Products|Transport|Freight|Sales|apcarDiEffH2T (NA)"
+    "Services and Products|Transport|HDV|Stock|uedit (NA)",
+    "Services and Products|Transport|HDV|Stock|apCarDiT (NA)",
+    "Services and Products|Transport|HDV|Stock|apcarDiEffT (NA)",
+    "Services and Products|Transport|HDV|Stock|apcarDiEffH2T (NA)",
+    "Services and Products|Transport|HDV|Sales|uedit (NA)",
+    "Services and Products|Transport|HDV|Sales|apCarDiT (NA)",
+    "Services and Products|Transport|HDV|Sales|apcarDiEffT (NA)",
+    "Services and Products|Transport|HDV|Sales|apcarDiEffH2T (NA)"
   )
   
   if(all(c(items) %in% getNames(data,dim=3))){
     
     # Freight Vehicles Stock
     
-    swlatex(sw,"\\subsubsection{Freight Vehicles Stock}")
+    swlatex(sw,"\\subsubsection{HDV Vehicles Stock}")
     
-    tot <-"Services and Products|Transport|Freight|Stock|uedit (NA)"
+    tot <-"Services and Products|Transport|HDV|Stock|uedit (NA)"
     
-    items <- c("Services and Products|Transport|Freight|Stock|apCarDiT (NA)",
-               "Services and Products|Transport|Freight|Stock|apcarDiEffT (NA)",
-               "Services and Products|Transport|Freight|Stock|apcarDiEffH2T (NA)")
+    items <- c("Services and Products|Transport|HDV|Stock|apCarDiT (NA)",
+               "Services and Products|Transport|HDV|Stock|apcarDiEffT (NA)",
+               "Services and Products|Transport|HDV|Stock|apcarDiEffH2T (NA)")
     var <- data[,,intersect(items,getNames(data,dim=3))]
     
     p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
@@ -2882,15 +2889,15 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=8,width=16")
     swlatex(sw,"\\twocolumn")
     
-    # Sales
+    # HDV Sales
     
-    swlatex(sw,"\\subsubsection{Freight Vehicles Sales}")
+    swlatex(sw,"\\subsubsection{HDV Vehicles Sales}")
     
-    tot <-    "Services and Products|Transport|Freight|Sales|uedit (NA)"
+    tot <-    "Services and Products|Transport|HDV|Sales|uedit (NA)"
     
-    items <- c("Services and Products|Transport|Freight|Sales|apCarDiT (NA)",
-               "Services and Products|Transport|Freight|Sales|apcarDiEffT (NA)",
-               "Services and Products|Transport|Freight|Sales|apcarDiEffH2T (NA)")
+    items <- c("Services and Products|Transport|HDV|Sales|apCarDiT (NA)",
+               "Services and Products|Transport|HDV|Sales|apcarDiEffT (NA)",
+               "Services and Products|Transport|HDV|Sales|apcarDiEffH2T (NA)")
     var <- data[,,intersect(items,getNames(data,dim=3))]
     
     p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
