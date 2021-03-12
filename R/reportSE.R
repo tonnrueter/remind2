@@ -25,7 +25,8 @@
 reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
   ####### get realisations #########
-  realisation <- readGDX(gdx, "module2realisation")
+  module2realisation <- readGDX(gdx, "module2realisation")
+  rownames(module2realisation) <- module2realisation$modules
 
   ####### get power realisations #########
   realisation <- readGDX(gdx, "module2realisation")
@@ -67,8 +68,8 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   prodSe <- readGDX(gdx,name=c("vm_prodSe","v_seprod"),field="l",restore_zeros=FALSE,format="first_found")*pm_conv_TWa_EJ
   prodSe <- mselect(prodSe,all_enty1=sety)
 
-  if (length(tmp_d3 <- intersect(c("seh2.seliqfos.MeOH", "seh2.segafos.h22ch4"),
-                                 getNames(prodSe)))) {
+  if (length(tmp_d3 <- intersect(c("MeOH", "h22ch4"),
+                                 getNames(prodSe, dim=3)))) {
     # if synfuels are activated, there might be no demand until 2020. This can 
     # lead to NAs that need to be substituted with 0
     prodSe[,c('y2005', 'y2010', 'y2015', 'y2020'),tmp_d3] <- 
@@ -333,10 +334,10 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turbVRE"]), "SE|Hydrogen|used for electricity|forced VRE turbines (EJ/yr)"))
   
   # if CCU on
-  if (realisation[23,2] == "on") {
+  if (module2realisation["CCU",2] == "on") {
     tmp <- mbind(tmp,
-                 setNames(collapseNames(vm_demSe[,,"seh2.seliqbio.MeOH"]), "SE|Hydrogen|used for synthetic fuels|liquids (EJ/yr)"),
-                 setNames(collapseNames(vm_demSe[,,"seh2.segabio.h22ch4"]), "SE|Hydrogen|used for synthetic fuels|gases (EJ/yr)"))
+                 setNames(dimSums(mselect(vm_demSe, all_enty="seliqsyn"), dim=3), "SE|Hydrogen|used for synthetic fuels|liquids (EJ/yr)"),
+                 setNames(dimSums(mselect(vm_demSe, all_enty="segasyn"), dim=3), "SE|Hydrogen|used for synthetic fuels|gases (EJ/yr)"))
   }
 
   # SE electricity use
@@ -363,12 +364,12 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2VRE"]),
                         "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"))
   
-  if (realisation[23,2] == "on") {
+  if (module2realisation["CCU",2] == "on") {
     tmp <- mbind(tmp,
-                 setNames(collapseNames(p_shareElec_H2 * vm_demSe[,,"seh2.seliqbio.MeOH"] / 
+                 setNames(collapseNames(p_shareElec_H2 * dimSums(mselect(vm_demSe, all_enty="seliqsyn"), dim=3) / 
                                           collapseNames(pm_eta_conv[,,"elh2"])),
                           "SE|Electricity|used for synthetic fuels|liquids (EJ/yr)"),
-                 setNames(collapseNames(p_shareElec_H2 * vm_demSe[,,"seh2.segabio.h22ch4"] / 
+                 setNames(collapseNames(p_shareElec_H2 * dimSums(mselect(vm_demSe, all_enty="segasyn"), dim=3) / 
                                           collapseNames(pm_eta_conv[,,"elh2"])),
                           "SE|Electricity|used for synthetic fuels|gases (EJ/yr)"))
     
