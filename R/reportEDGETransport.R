@@ -73,8 +73,7 @@ reportEDGETransport <- function(output_folder=".",
               aggr_mode := "Pass|Road|LDV"]
     datatable[subsector_L2 != "trn_pass_road_LDV" & sector == "Pass",
               aggr_mode := "Pass|non-LDV"]
-    ## Freight is already in the "normal" reporting
-    ## datatable[is.na(aggr_mode), aggr_mode := "Freight"]
+    datatable[is.na(aggr_mode), aggr_mode := "Freight"]
 
     ## A little more detail: Vehicle Aggregates
     datatable[grepl("^Truck", vehicle_type), aggr_veh := "Freight|Road"]
@@ -202,21 +201,21 @@ reportEDGETransport <- function(output_folder=".",
           datatable[sector == "Pass", sum(demand_F, na.rm=T),
                     by = c("region", "year", "aggr_mode", "remind_rep")
                     ][, aggr_mode := paste0(aggr_mode, "|", remind_rep)],
-          "bn pkm/yr", "V1", "aggr_mode"),
+                    "bn pkm/yr", "V1", "aggr_mode"),
         prepare4MIF(
           datatable[sector == "Freight" & !is.na(aggr_veh), sum(demand_F, na.rm=T),
                     by = c("region", "year", "aggr_veh", "remind_rep")
                     ][, aggr_veh := paste0(aggr_veh, "|", remind_rep)],
-          "bn tkm/yr", "V1", "aggr_veh"),
+                   "bn tkm/yr", "V1", "aggr_veh"),
         prepare4MIF(
           datatable[sector == "Pass" & !is.na(aggr_veh), sum(demand_F, na.rm=T),
                     by = c("region", "year", "aggr_veh", "remind_rep")
                     ][, aggr_veh := paste0(aggr_veh, "|", remind_rep)],
-          "bn pkm/yr", "V1", "aggr_veh"),
+                    "bn pkm/yr", "V1", "aggr_veh"),
         prepare4MIF(datatable[!is.na(det_veh), sum(demand_F, na.rm=T),
                               by = c("region", "year", "det_veh", "remind_rep")
                               ][, det_veh := paste0(det_veh, "|", remind_rep)],
-                    "bn pkm/yr", "V1", "det_veh")))
+                              "bn pkm/yr", "V1", "det_veh")))
     }else if(mode == "VKM"){
       ## for energy services, it is better to refer to the actual technologies
       ## and not the fuel types (-> LCA)
@@ -231,7 +230,7 @@ reportEDGETransport <- function(output_folder=".",
           datatable[sector == "Pass", sum(demand_VKM, na.rm=T),
                     by = c("region", "year", "aggr_mode", "remind_rep")
                     ][, aggr_mode := paste0(aggr_mode, "|", remind_rep)],
-          "bn vkm/yr", "V1", "aggr_mode"),
+                    "bn vkm/yr", "V1", "aggr_mode"),
         prepare4MIF(
           datatable[sector == "Freight" & !is.na(aggr_veh), sum(demand_VKM, na.rm=T),
                     by = c("region", "year", "aggr_veh", "remind_rep")
@@ -241,11 +240,11 @@ reportEDGETransport <- function(output_folder=".",
           datatable[sector == "Pass" & !is.na(aggr_veh), sum(demand_VKM, na.rm=T),
                     by = c("region", "year", "aggr_veh", "remind_rep")
                     ][, aggr_veh := paste0(aggr_veh, "|", remind_rep)],
-          "bn vkm/yr", "V1", "aggr_veh"),
+                    "bn vkm/yr", "V1", "aggr_veh"),
         prepare4MIF(datatable[!is.na(det_veh), sum(demand_VKM, na.rm=T),
                               by = c("region", "year", "det_veh", "remind_rep")
                               ][, det_veh := paste0(det_veh, "|", remind_rep)],
-                    "bn vkm/yr", "V1", "det_veh")))
+                              "bn vkm/yr", "V1", "det_veh")))
     }else{
       techmap["BEV", remind_rep := "Electricity"]
       techmap["Electric", remind_rep := "Electricity"]
@@ -261,17 +260,17 @@ reportEDGETransport <- function(output_folder=".",
           datatable[!is.na(aggr_mode), sum(demand_EJ, na.rm=T),
                     by = c("region", "year", "aggr_mode", "remind_rep")
                     ][, aggr_mode := paste0(aggr_mode, "|", remind_rep)],
-          "EJ/yr", "V1", "aggr_mode"),
+                    "EJ/yr", "V1", "aggr_mode"),
         prepare4MIF(
           datatable[!is.na(aggr_veh), sum(demand_EJ, na.rm=T),
                     by = c("region", "year", "aggr_veh", "remind_rep")
                     ][, aggr_veh := paste0(aggr_veh, "|", remind_rep)],
-          "EJ/yr", "V1", "aggr_veh"),
+                    "EJ/yr", "V1", "aggr_veh"),
         prepare4MIF(
           datatable[!is.na(det_veh), sum(demand_EJ, na.rm=T),
                     by = c("region", "year", "det_veh", "remind_rep")
                     ][, det_veh := paste0(det_veh, "|", remind_rep)],
-          "EJ/yr", "V1", "det_veh")))
+                    "EJ/yr", "V1", "det_veh")))
 
     }
     ## add World
@@ -283,14 +282,14 @@ reportEDGETransport <- function(output_folder=".",
     return(rbindlist(list(report, report_tech)))
   }
 
+
   ## Demand emissions
   reportingEmi <- function(repFE, gdx, miffile){
 
     ## load emission factors for fossil fuels
     p_ef_dem <- readGDX(gdx, "p_ef_dem")  ## MtCO2/EJ
     p_ef_dem <- as.data.table(p_ef_dem)[all_enty %in% c("fepet", "fegas", "feelt", "feh2t")]  ## emissions factor for Electricity and Hydrogen are 0, as we are calculating tailpipe emissions
-    setnames(p_ef_dem, old = "value", new = "ef")
-    setnames(p_ef_dem, old = "all_regi", new = "region")
+    setnames(p_ef_dem, old = c("value", "all_regi"), new = c("ef", "region"))
     ## attribute explicitly fuel used to the FE values
     emidem = repFE[grepl("Liquids|Gases|Hydrogen|Electricity", variable) & region != "World"]   ## EJ
     emidem[, all_enty := ifelse(grepl("Liquids", variable), "fepet", NA)]
@@ -471,7 +470,8 @@ reportEDGETransport <- function(output_folder=".",
 
 
   if(!is.null(regionSubsetList)){
-    toMIF <- toMIF[region %in% regionSubsetList]
+    regions2report = c(regionSubsetList$EUR, regionSubsetList$NEU)
+    toMIF <- toMIF[region %in% regions2report]
   }
 
   ## Make sure there are no duplicates!

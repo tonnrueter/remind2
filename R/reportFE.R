@@ -819,6 +819,13 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     )
     
     out <- mbind(out,
+                 setNames((dimSums(mselect(v_demFe,all_te=c("apCarDiT","apcarDiEffT","apcarDiEffH2T")),dim=3,na.rm=T)), "FE|Transport|non-LDV (EJ/yr)"),
+                 setNames((dimSums(mselect(v_demFe,all_te="apCarDiT")  ,dim=3,na.rm=T)),                                "FE|Transport|non-LDV|apCarDiT (EJ/yr)"),
+                 setNames((dimSums(mselect(v_demFe,all_te="apcarDiEffT")  ,dim=3,na.rm=T)),                             "FE|Transport|non-LDV|apcarDiEffT (EJ/yr)"),
+                 setNames((dimSums(mselect(v_demFe,all_te="apcarDiEffH2T")  ,dim=3,na.rm=T)),                           "FE|Transport|non-LDV|apcarDiEffH2T (EJ/yr)")
+                 )
+    
+    out <- mbind(out,
       # Passengers
       setNames(out[,,"FE|Transport|Pass|+|Liquids (EJ/yr)"]       + out[,,"FE|Transport|Pass|+|Gases (EJ/yr)"]     + out[,,"FE|Transport|Pass|+|Electricity (EJ/yr)"]     + out[,,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"]     , "FE|Transport|Pass (EJ/yr)"),
       setNames(out[,,"FE|Transport|Pass|ESD|+|Liquids (EJ/yr)"]   + out[,,"FE|Transport|Pass|ESD|+|Gases (EJ/yr)"] + out[,,"FE|Transport|Pass|ESD|+|Electricity (EJ/yr)"] + out[,,"FE|Transport|Pass|ESD|+|Hydrogen (EJ/yr)"] , "FE|Transport|Pass|++|ESD (EJ/yr)"),
