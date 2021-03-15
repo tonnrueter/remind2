@@ -325,24 +325,12 @@ reportEDGETransport <- function(output_folder=".",
     shareLiqSec[, c("value") := NULL]
 
     ## create pathway in demSe for synfuels to transport and synfuels to stationary
-    if ("seliqsyn" %in% unique(demSe$fe)) {
-      demSeSyn = merge(demSe[fe == "seliqsyn" & te == "MeOH", .(year, region, value)], shareLiqSec, all = TRUE, by = c("region", "year"))
-      demSeSyn[is.na(value), value := 0]
-      demSeSyn[, value := value*convMeOH]  
-      demSeSyn[, share := NULL]
-      demSeSyn[, fe := ifelse(sec == "trsp", "fesynt", "fesyns")]
-      demSeSyn[, se := "seliqsyn"]
-    } else {
-      demSeSyn = merge(demSe[fe == "seliqfos" & te == "MeOH", .(year, region, value)], shareLiqSec, all = TRUE, by = c("region", "year"))
-      demSeSyn[is.na(value), value := 0]
-      demSeSyn[, value := share*value*convMeOH]  ## convert in seliqfos values
-      demSeSyn[, share := NULL]
-      demSeSyn[, fe := ifelse(sec == "trsp", "fesynt", "fesyns")]
-      demSeSyn[, se := "seliqfos"]
-    }
-
-
-
+    demSeSyn = merge(demSe[fe == "seliqfos" & te == "MeOH", .(year, region, value)], shareLiqSec, all = TRUE, by = c("region", "year"))
+    demSeSyn[is.na(value), value := 0]
+    demSeSyn[, value := share*value*convMeOH]  ## convert in seliqfos values
+    demSeSyn[, share := NULL]
+    demSeSyn[, fe := ifelse(sec == "trsp", "fesynt", "fesyns")]
+   
     ## calculate the seliqfos from synfuels as a share of the total seliqfos
     demSeLiq = demSe[se =="seliqfos"]
     demSeLiq = demSeLiq[, sec := ifelse(fe %in% c("fepet", "fedie"), "trsp", "st")]

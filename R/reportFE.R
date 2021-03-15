@@ -63,6 +63,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames(dimSums(vm_prodFe[,,c("seliqbio","seliqfos")],dim=3,na.rm=T),                                                "FE|+|Liquids (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"seliqbio"],dim=3,na.rm=T),                                                              "FE|Liquids|+|Biomass (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"seliqfos"],dim=3,na.rm=T),                                                              "FE|Liquids|+|Fossil (EJ/yr)"),
+    setNames(dimSums(mselect(vm_prodFe, all_enty="seliqsyn") ,dim=3,na.rm=T),                                             "FE|Liquids|+|Hydrogen (EJ/yr)"),
     
     #Solids    
     setNames(dimSums(vm_prodFe[,,c("sesobio","sesofos")],dim=3,na.rm=T),                                                  "FE|+|Solids (EJ/yr)"), 
@@ -78,6 +79,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames(dimSums(vm_prodFe[,,"segafos"],dim=3,na.rm=T),                                                               "FE|Gases|+|Fossil (EJ/yr)"), 
     setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pegas"),dim=3,na.rm=T),   "FE|Gases|Fossil|Natural Gas (EJ/yr)"),
     setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pecoal"),dim=3,na.rm=T),  "FE|Gases|Fossil|Coal (EJ/yr)"),
+    setNames(dimSums(mselect(vm_prodFe, all_enty="segasyn") ,dim=3,na.rm=T),                                             "FE|Gases|+|Hydrogen (EJ/yr)"),
+    
     
     # electricity
     setNames(dimSums(vm_prodFe[,,c("feels","feelt")],dim=3,na.rm=T),                                                      "FE|+|Electricity (EJ/yr)"),
@@ -319,45 +322,46 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames((dimSums(mselect(vm_demFeSector,all_enty1="feh2s",emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|ETS|+|Hydrogen (EJ/yr)")
     
   )
-  
+
   ### FE carriers from specific PE origin
-  
+
   p_share_coal_liq <- dimSums(mselect(vm_prodSe, all_enty="pecoal", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3)
   p_share_oil_liq <- dimSums(mselect(vm_prodSe, all_enty="peoil", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3)
   p_share_gas_liq <- dimSums(mselect(vm_prodSe, all_enty="pegas", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3)
-  
+
   p_share_ngas_gas <- dimSums(mselect(vm_prodSe, all_enty="pegas", all_enty1="segafos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="segafos"), dim=3)
   p_share_coal_gas <- dimSums(mselect(vm_prodSe, all_enty="pecoal", all_enty1="segafos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="segafos"), dim=3)
-  
+
+  # origin of fossil liquids and gases
   out <- mbind(out,
-                
+
                 # industry fossil liquids
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="indst")*p_share_oil_liq  ,dim=3,na.rm=T)), "FE|Industry|+|Liquids|+|Oil (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="indst")*p_share_gas_liq  ,dim=3,na.rm=T)), "FE|Industry|+|Liquids|+|Gas (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="indst")*p_share_coal_liq ,dim=3,na.rm=T)), "FE|Industry|+|Liquids|+|Coal (EJ/yr)"),
-                
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="indst")*p_share_oil_liq  ,dim=3,na.rm=T)), "FE|Industry|Liquids|Fossil|+|Oil (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="indst")*p_share_gas_liq  ,dim=3,na.rm=T)), "FE|Industry|Liquids|Fossil|+|Gas (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="indst")*p_share_coal_liq ,dim=3,na.rm=T)), "FE|Industry|Liquids|Fossil|+|Coal (EJ/yr)"),
+
                 # buildings fossil liquids
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="build")*p_share_oil_liq  ,dim=3,na.rm=T)), "FE|Buildings|+|Liquids|+|Oil (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="build")*p_share_gas_liq  ,dim=3,na.rm=T)), "FE|Buildings|+|Liquids|+|Gas (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="build")*p_share_coal_liq ,dim=3,na.rm=T)), "FE|Buidings|+|Liquids|+|Coal (EJ/yr)"),
-                
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="build")*p_share_oil_liq  ,dim=3,na.rm=T)), "FE|Buildings|Liquids|Fossil|+|Oil (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="build")*p_share_gas_liq  ,dim=3,na.rm=T)), "FE|Buildings|Liquids|Fossil|+|Gas (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1="fehos",emi_sectors="build")*p_share_coal_liq ,dim=3,na.rm=T)), "FE|Buildings|Liquids|Fossil|+|Coal (EJ/yr)"),
+
                 # transport fossil liquids
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1=c("fepet","fedie"),emi_sectors="trans")*p_share_oil_liq  ,dim=3,na.rm=T)), "FE|Transport|+|Liquids|+|Oil (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1=c("fepet","fedie"),emi_sectors="trans")*p_share_gas_liq  ,dim=3,na.rm=T)), "FE|Transport|+|Liquids|+|Gas (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1=c("fepet","fedie"),emi_sectors="trans")*p_share_coal_liq ,dim=3,na.rm=T)), "FE|Transport|+|Liquids|+|Coal (EJ/yr)"),
-                
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1=c("fepet","fedie"),emi_sectors="trans")*p_share_oil_liq  ,dim=3,na.rm=T)), "FE|Transport|Liquids|Fossil|+|Oil (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1=c("fepet","fedie"),emi_sectors="trans")*p_share_gas_liq  ,dim=3,na.rm=T)), "FE|Transport|Liquids|Fossil|+|Gas (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="seliqfos",all_enty1=c("fepet","fedie"),emi_sectors="trans")*p_share_coal_liq ,dim=3,na.rm=T)), "FE|Transport|Liquids|Fossil|+|Coal (EJ/yr)"),
+
                 # industry fossil gases
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="indst")*p_share_ngas_gas  ,dim=3,na.rm=T)), "FE|Industry|+|Gases|+|Natural Gas (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="indst")*p_share_coal_gas  ,dim=3,na.rm=T)), "FE|Industry|+|Gases|+|Coal (EJ/yr)"),
-                
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="indst")*p_share_ngas_gas  ,dim=3,na.rm=T)), "FE|Industry|Gases|Fossil|+|Natural Gas (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="indst")*p_share_coal_gas  ,dim=3,na.rm=T)), "FE|Industry|Gases|Fossil|+|Coal (EJ/yr)"),
+
                 # buildings fossil gases
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="build")*p_share_ngas_gas  ,dim=3,na.rm=T)), "FE|Buildings|+|Gases|+|Natural Gas (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="build")*p_share_coal_gas  ,dim=3,na.rm=T)), "FE|Buildings|+|Gases|+|Coal (EJ/yr)"),
-                
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="build")*p_share_ngas_gas  ,dim=3,na.rm=T)), "FE|Buildings|Gases|Fossil|+|Natural Gas (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegas",emi_sectors="build")*p_share_coal_gas  ,dim=3,na.rm=T)), "FE|Buildings|Gases|Fossil|+|Coal (EJ/yr)"),
+
                 # transport fossil gases
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegat",emi_sectors="trans")*p_share_ngas_gas  ,dim=3,na.rm=T)), "FE|Transport|+|Gases|+|Natural Gas (EJ/yr)"),
-                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegat",emi_sectors="trans")*p_share_coal_gas  ,dim=3,na.rm=T)), "FE|Transport|+|Gases|+|Coal (EJ/yr)")
-                
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegat",emi_sectors="trans")*p_share_ngas_gas  ,dim=3,na.rm=T)), "FE|Transport|Gases|Fossil|+|Natural Gas (EJ/yr)"),
+                setNames((dimSums(mselect(vm_demFeSector,all_enty="segafos",all_enty1="fegat",emi_sectors="trans")*p_share_coal_gas  ,dim=3,na.rm=T)), "FE|Transport|Gases|Fossil|+|Coal (EJ/yr)")
+
   )
                                
   # ---- BUNKERS ----
