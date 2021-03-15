@@ -331,8 +331,7 @@ reportEDGETransport <- function(output_folder=".",
     demSeSyn[, share := NULL]
     demSeSyn[, fe := ifelse(sec == "trsp", "fesynt", "fesyns")]
     demSeSyn[, se := "seliqfos"]
-
-
+   
     ## calculate the seliqfos from synfuels as a share of the total seliqfos
     demSeLiq = demSe[se =="seliqfos"]
     demSeLiq = demSeLiq[, sec := ifelse(fe %in% c("fepet", "fedie"), "trsp", "st")]

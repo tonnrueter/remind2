@@ -31,13 +31,133 @@
 
 #' @export
 reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
+  
+  
+  
+  ### FS: start new price reporting 
+  #(from price parameters calculated in core/postsolve.gms)
+  
+  
+  pm_FEPrice <- readGDX(gdx, "pm_FEPrice", restore_zeros = F)
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,t,]
+  
+  if (!is.null(pm_FEPrice)) {
+    
+    tdptwyr2dpgj <- 31.71   # conversion factor trUSD2005/TWa to USD2005/GJ
+    
+    # calculate weights for aggregation of FE prices
+
+    # weights for market aggregtion of prices: FE share of market
+    p_weights_FEprice_mkt <- dimSums(vm_demFeSector, dim=3.1, na.rm = T) / dimSums(vm_demFeSector, dim=c(3.1,3.4), na.rm = T)
+    p_weights_FEprice_mkt[is.na(p_weights_FEprice_mkt)] <- 0
+    # adjust to pm_FEprice dimensions
+    p_weights_FEprice_mkt <- p_weights_FEprice_mkt[,getYears(pm_FEPrice),getNames(pm_FEPrice)]
+
+    # weights for fepet/fedie to liquids aggregtion of prices: FE fepet/fedie share of aggregated markets
+    p_weights_FEprice_diepet <- dimSums(mselect(vm_demFeSector, all_enty1=c("fedie","fepet"), emi_sectors="trans"), dim=c(3.1,3.4), na.rm = T) / 
+                                  dimSums(mselect(vm_demFeSector, all_enty1=c("fedie","fepet"), emi_sectors="trans"), dim=c(3.1,3.2,3.4), na.rm = T)
+    p_weights_FEprice_diepet[is.na(p_weights_FEprice_diepet)] <- 0
+    p_weights_FEprice_diepet <- p_weights_FEprice_diepet[,getYears(pm_FEPrice),]
+
+    out <- NULL
+    
+    # calculate prices as weighted average prices across markets
+    # FE Transport Prices
+    out <- mbind(out,
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feelt", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                  "Price|Final Energy|Transport|Electricity (US$2005/GJ)"),
+                 # in case of transport liquids: calculate weighted average of markets first, then calculate weighted average of fepet/fedie
+                 setNames( dimSums( p_weights_FEprice_diepet * dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1=c("fepet","fedie"), emi_sectors = "trans"), dim=3.3, na.rm = T), dim=3.1, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Transport|Liquids (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fegat", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Transport|Gases (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feh2t", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)")
+    ) 
+    
+    # FE Buildings Prices
+    out <- mbind(out,
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feels", emi_sectors = "build"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Buildings|Electricity (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fegas", emi_sectors = "build"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Buildings|Gases (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feh2s", emi_sectors = "build"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fehos", emi_sectors = "build"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Buildings|Liquids (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fehes", emi_sectors = "build"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Buildings|Heat (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fesos", emi_sectors = "build"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Buildings|Solids (US$2005/GJ)")
+    ) 
+    
+    # FE Industry Prices
+    out <- mbind(out,
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feels", emi_sectors = "indst"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Industry|Electricity (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fegas", emi_sectors = "indst"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Industry|Gases (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feh2s", emi_sectors = "indst"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fehos", emi_sectors = "indst"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Industry|Liquids (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fehes", emi_sectors = "indst"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Industry|Heat (US$2005/GJ)"),
+                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fesos", emi_sectors = "indst"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                           "Price|Final Energy|Industry|Solids (US$2005/GJ)")
+    )
+   
+    
+    # apply lowpass filter to receive moving average prices
+    out.lowpass <- lowpass(out)
+    # add "Moving Avg" to variable name
+    getNames(out.lowpass) <- paste0(substr(getNames(out.lowpass), 
+                                           1,nchar(getNames(out.lowpass))-13),
+                                    "|Moving Avg",
+                                    substr(getNames(out.lowpass), 
+                                           nchar(getNames(out.lowpass))-12,
+                                           nchar(getNames(out.lowpass))))
+    # bind to output object
+    out <- mbind(out,out.lowpass)
+    
+    # add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code) 
+    out2 <- new.magpie(getRegions(out), getYears(vm_demFeSector), getNames(out), fill = NA)
+    out2[,getYears(out), ] <- out
+    
+    out <- out2
+    
+    
+
+}
+  
+  
+  
+  
+  
+  ### end new price reporting
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   if(is.null(output)){
-    output <- reportPE(gdx,regionSubsetList)
-    output <- mbind(output,reportSE(gdx,regionSubsetList,t))
-    output <- mbind(output,reportFE(gdx,regionSubsetList,t))
-    output <- mbind(output,reportEmi(gdx,regionSubsetList,t))
-    output <- mbind(output,reportExtraction(gdx,regionSubsetList,t))
-    output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList,t)[,getYears(output),])
+    output <- reportPE(gdx,regionSubsetList = regionSubsetList,t = t)
+    output <- mbind(output,reportSE(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportFE(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportEmi(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportExtraction(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList = regionSubsetList,t = t)[,getYears(output),])
   }
   
   #---- Functions
@@ -280,6 +400,8 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   
   ####### calculate reporting parameters ############
   tmp <- NULL
+  
+
   # Calculate and append new variables to magpie object
   # Costs and prices for purpose-grown 2nd gen. bioenergy
   # - Shiftfactor
@@ -880,6 +1002,55 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   if("fegat" %in% getNames(febal.m)){
     int2ext <- c(int2ext, "Price|Final Energy|Gases|Transport (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)")
   }
+  
+  ### price variables of new reporting
+  if (!is.null(pm_FEPrice)) {
+    
+    # weights definition for region aggregtation
+    int2ext <- c(int2ext, 
+                 
+                 # transport prices
+                 "Price|Final Energy|Transport|Electricity (US$2005/GJ)"       = "FE|Transport|+|Electricity (EJ/yr)",
+                 "Price|Final Energy|Transport|Electricity|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Electricity (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Transport|Gases|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
+                 "Price|Final Energy|Transport|Hydrogen|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
+
+                 # buildings prices
+                 "Price|Final Energy|Buildings|Electricity (US$2005/GJ)"       = "FE|Buildings|+|Electricity (EJ/yr)",
+                 "Price|Final Energy|Buildings|Electricity|Moving Avg (US$2005/GJ)"       = "FE|Buildings|+|Electricity (EJ/yr)",
+                 "Price|Final Energy|Buildings|Liquids (US$2005/GJ)"       = "FE|Buildings|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Buildings|Liquids|Moving Avg (US$2005/GJ)"       = "FE|Buildings|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Buildings|Gases (US$2005/GJ)"       = "FE|Buildings|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Buildings|Gases|Moving Avg (US$2005/GJ)"       = "FE|Buildings|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"       = "FE|Buildings|+|Hydrogen (EJ/yr)",
+                 "Price|Final Energy|Buildings|Hydrogen|Moving Avg (US$2005/GJ)"       = "FE|Buildings|+|Hydrogen (EJ/yr)",
+                 "Price|Final Energy|Buildings|Heat (US$2005/GJ)"       = "FE|Buildings|+|Heat (EJ/yr)",
+                 "Price|Final Energy|Buildings|Heat|Moving Avg (US$2005/GJ)"       = "FE|Buildings|+|Heat (EJ/yr)",
+                 "Price|Final Energy|Buildings|Solids (US$2005/GJ)"       = "FE|Buildings|+|Solids (EJ/yr)",
+                 "Price|Final Energy|Buildings|Solids|Moving Avg (US$2005/GJ)"       = "FE|Buildings|+|Solids (EJ/yr)",
+                 
+                 # industry prices
+                 "Price|Final Energy|Industry|Electricity (US$2005/GJ)"       = "FE|Industry|+|Electricity (EJ/yr)",
+                 "Price|Final Energy|Industry|Electricity|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Electricity (EJ/yr)",
+                 "Price|Final Energy|Industry|Liquids (US$2005/GJ)"       = "FE|Industry|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Industry|Liquids|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Industry|Gases (US$2005/GJ)"       = "FE|Industry|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Industry|Gases|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"       = "FE|Industry|+|Hydrogen (EJ/yr)",
+                 "Price|Final Energy|Industry|Hydrogen|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Hydrogen (EJ/yr)",
+                 "Price|Final Energy|Industry|Heat (US$2005/GJ)"       = "FE|Industry|+|Heat (EJ/yr)",
+                 "Price|Final Energy|Industry|Heat|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Heat (EJ/yr)",
+                 "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|+|Solids (EJ/yr)",
+                 "Price|Final Energy|Industry|Solids|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Solids (EJ/yr)"
+            )
+    
+    # bind new price variables to old variables
+    tmp <- mbind(tmp, out)
+      }
 
 
   
