@@ -740,18 +740,85 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   if (tran_mod == "complex"){
     
     #fedie = HDV, fepet = LDV
-    #Freight   > HDV > non bunker (national goods transportation)
-    #                > bunker (international goods transportation)
-    #Passenger > HDV > non bunker 
-    #                > bunker (international aviation and passenger ships)
+    #FE|Transport|LDV
+    #FE|Transport|non-LDV
+    #  FE|Transport|non-LDV|Bunkers
+    #  FE|Transport|non-LDV|w/o Bunkers
+    
+    #Freight   > non-LDV > non bunker (national goods transportation)
+    #                    > bunker (international goods transportation)
+    #Passenger > non-LDV > non bunker 
+    #                    > bunker (international aviation and passenger ships)
     #Passenger > LDV
+    
+    v35_demTransType <- readGDX(gdx,name=c("v35_demTransType"),field="l",restore_zeros=FALSE,format="first_found")
+    
+    if(!is.null(v35_demTransType)){
+      v35_demTransType <- v35_demTransType[,t,]*TWa_2_EJ
+      
+      out <- mbind(out,
+                   # Transport LDV 
+                   setNames((dimSums(mselect(v35_demTransType,transType_35="LDV")  ,dim=3,na.rm=T)),                  "FE|Transport|LDV (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fepet",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|+|Hydrogen (EJ/yr)"),
+                   
+                   setNames((dimSums(mselect(v35_demTransType,all_emiMkt="ESD",transType_35="LDV")  ,dim=3,na.rm=T)),                  "FE|Transport|LDV|ESD (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fepet",all_emiMkt="ESD",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|ESD|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",all_emiMkt="ESD",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|ESD|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",all_emiMkt="ESD",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|ESD|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",all_emiMkt="ESD",transType_35="LDV")  ,dim=3,na.rm=T)), "FE|Transport|LDV|ESD|+|Hydrogen (EJ/yr)"),
+                   
+                   # Transport nonLDV 
+                   setNames((dimSums(mselect(v35_demTransType,transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)),                  "FE|Transport|non-LDV (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|+|Hydrogen (EJ/yr)"),
+                   
+                   setNames((dimSums(mselect(v35_demTransType,all_emiMkt="ESD",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)),                  "FE|Transport|non-LDV|ESD (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",all_emiMkt="ESD",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|ESD|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",all_emiMkt="ESD",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|ESD|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",all_emiMkt="ESD",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|ESD|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",all_emiMkt="ESD",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|ESD|+|Hydrogen (EJ/yr)"),
+                   
+                   setNames((dimSums(mselect(v35_demTransType,all_emiMkt="other",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)),                  "FE|Transport|non-LDV|other (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",all_emiMkt="other",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|other|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",all_emiMkt="other",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|other|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",all_emiMkt="other",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|other|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",all_emiMkt="other",transType_35=c("nonLDV_noBunkers,nonLDV_Bunkers"))  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|other|+|Hydrogen (EJ/yr)"),
+                   
+                   # Transport non-LDV Bunkers
+                   setNames((dimSums(mselect(v35_demTransType,transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|++|Bunkers (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|+|Hydrogen (EJ/yr)"),
+                   
+                   setNames((dimSums(mselect(v35_demTransType,all_emiMkt="other",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)),                  "FE|Transport|non-LDV|Bunkers|+|other (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",all_emiMkt="other",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|other|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",all_emiMkt="other",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|other|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",all_emiMkt="other",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|other|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",all_emiMkt="other",transType_35="nonLDV_Bunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|Bunkers|other|+|Hydrogen (EJ/yr)"),
+                   
+                   # Transport non-LDV w/o Bunkers
+                   setNames((dimSums(mselect(v35_demTransType,transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)),                  "FE|Transport|non-LDV|++|w/o Bunkers (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|+|Hydrogen (EJ/yr)"),
+                   
+                   setNames((dimSums(mselect(v35_demTransType,all_emiMkt="ESD",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)),                  "FE|Transport|non-LDV|w/o Bunkers|+|ESD (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fedie",all_emiMkt="ESD",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|ESD|+|Liquids (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="fegas",all_emiMkt="ESD",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|ESD|+|Gases (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feelt",all_emiMkt="ESD",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|ESD|+|Electricity (EJ/yr)"),
+                   setNames((dimSums(mselect(v35_demTransType,all_enty="feh2t",all_emiMkt="ESD",transType_35="nonLDV_noBunkers")  ,dim=3,na.rm=T)), "FE|Transport|non-LDV|w/o Bunkers|ESD|+|Hydrogen (EJ/yr)")
+      )
+    }
     
     p35_pass_FE_share_transp <- readGDX(gdx,"p35_pass_FE_share_transp", restore_zeros = FALSE)[,t,]
 
-    
-    
-    
-    
     v_demFe <- readGDX(gdx,name=c("v35_demFe","v_demFe"),field="l",restore_zeros=FALSE,format="first_found")[,t,]*TWa_2_EJ
     
     out <- mbind(out,
@@ -822,12 +889,12 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                  setNames((dimSums(mselect(v_demFe,all_te="apCarElT")  ,dim=3,na.rm=T)),                          "FE|Transport|Pass|Road|LDV|Electricity (EJ/yr)")
     )
     
-    out <- mbind(out,
-                 setNames((dimSums(mselect(v_demFe,all_te=c("apCarDiT","apcarDiEffT","apcarDiEffH2T")),dim=3,na.rm=T)), "FE|Transport|non-LDV (EJ/yr)"),
-                 setNames((dimSums(mselect(v_demFe,all_te="apCarDiT")  ,dim=3,na.rm=T)),                                "FE|Transport|non-LDV|apCarDiT (EJ/yr)"),
-                 setNames((dimSums(mselect(v_demFe,all_te="apcarDiEffT")  ,dim=3,na.rm=T)),                             "FE|Transport|non-LDV|apcarDiEffT (EJ/yr)"),
-                 setNames((dimSums(mselect(v_demFe,all_te="apcarDiEffH2T")  ,dim=3,na.rm=T)),                           "FE|Transport|non-LDV|apcarDiEffH2T (EJ/yr)")
-                 )
+    # out <- mbind(out,
+    #              setNames((dimSums(mselect(v_demFe,all_te=c("apCarDiT","apcarDiEffT","apcarDiEffH2T")),dim=3,na.rm=T)), "FE|Transport|non-LDV (EJ/yr)"),
+    #              setNames((dimSums(mselect(v_demFe,all_te="apCarDiT")  ,dim=3,na.rm=T)),                                "FE|Transport|non-LDV|apCarDiT (EJ/yr)"),
+    #              setNames((dimSums(mselect(v_demFe,all_te="apcarDiEffT")  ,dim=3,na.rm=T)),                             "FE|Transport|non-LDV|apcarDiEffT (EJ/yr)"),
+    #              setNames((dimSums(mselect(v_demFe,all_te="apcarDiEffH2T")  ,dim=3,na.rm=T)),                           "FE|Transport|non-LDV|apcarDiEffH2T (EJ/yr)")
+    #              )
     
     out <- mbind(out,
       # Passengers
@@ -899,8 +966,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     )
                  
     out <- mbind(out,
-      setNames(p35_freight_ES_efficiency * (1-p35_pass_FE_share_transp) * dimSums(vm_cesIO[,,"ueHDVt"],dim=3,na.rm=T),   "ES|Transport|Freight (bn tkm/yr)"),
-      setNames(out[,,"ES|Transport|Pass|Road|LDV (bn pkm/yr)"] + out[,,"ES|Transport|Pass|non-LDV (bn pkm/yr)"], "ES|Transport|Pass (bn pkm/yr)")
+      setNames(p35_freight_ES_efficiency * (1-p35_pass_FE_share_transp) * dimSums(vm_cesIO[,,"ueHDVt"],dim=3,na.rm=T), "ES|Transport|Freight (bn tkm/yr)"),
+      setNames(out[,,"ES|Transport|Pass|Road|LDV (bn pkm/yr)"] + out[,,"ES|Transport|Pass|non-LDV (bn pkm/yr)"],       "ES|Transport|Pass (bn pkm/yr)")
     )
     
     

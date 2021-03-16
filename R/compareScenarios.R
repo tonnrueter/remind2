@@ -1372,23 +1372,34 @@ compareScenarios <- function(mif, hist,
 
   ## ---- Emissions GHG Total ----
 
-  swlatex(sw,"\\subsection{GHGtot}")
+  swlatex(sw,"\\subsection{GHG - total}")
 
   targets = c("Emi|GHGtot|target|40% (Mt CO2-equiv/yr)"="-40% vs. 1990 (Eurostat)",
                      "Emi|GHGtot|target|55% (Mt CO2-equiv/yr)"="-55% vs. 1990 (Eurostat)",
                      "Emi|GHGtot|target|65% (Mt CO2-equiv/yr)"="-65% vs. 1990 (Eurostat)")
 
   p <- mipLineHistorical(data[mainReg,,"Emi|GHGtot (Mt CO2-equiv/yr)"],x_hist=histData[mainReg,,"Emi|GHGtot (Mt CO2-equiv/yr)"],
-                         ylab='Emi|GHGtot [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
+                         ylab='Emi|GHGtot|w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                          hlines=if(all(names(targets) %in% getNames(histData, dim=3)) && !all(is.na(histData[mainReg,1990,names(targets)]))) histData[mainReg,1990,names(targets)] else NULL, 
                          hlines.labels=targets)
   swfigure(sw,print,p,sw_option="height=8,width=8")
   
   p <- mipLineHistorical(data[,,"Emi|GHGtot (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHGtot (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|GHGtot [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
+                         ylab='Emi|GHGtot|w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
                          hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[,1990,names(targets)][mainReg,,invert=TRUE] else NULL)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
+  
+  #GHG total with bunkers
+  p <- mipLineHistorical(data[mainReg,,"Emi|GHGtot|w/ Bunkers (Mt CO2-equiv/yr)"],x_hist=NULL,
+                         ylab='Emi|GHGtot|w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  
+  p <- mipLineHistorical(data[,,"Emi|GHGtot|w/ Bunkers (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi|GHGtot|w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  # emission markets
   if(mainReg=="EUR"){
     swlatex(sw,"\\subsection{GHG - Market}")
     
@@ -2634,27 +2645,32 @@ compareScenarios <- function(mif, hist,
                          ylab='FE|Transport|w/o Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  
-  swlatex(sw,"\\subsubsection{Transport per type}")
+  # Transport per type
   
   items<- c(
-    "FE|Transport|Bunkers|Liquids (EJ/yr)",
-    "FE|Transport|Bunkers|Gases (EJ/yr)",
-    "FE|Transport|Bunkers|Electricity (EJ/yr)",
-    "FE|Transport|Bunkers|Hydrogen (EJ/yr)",
-    "FE|Transport|Pass|Road|LDV|Hydrogen (EJ/yr)",
-    "FE|Transport|Pass|Road|LDV|Liquids (EJ/yr)",
-    "FE|Transport|Pass|Road|LDV|Electricity (EJ/yr)",
-    "FE|Transport|non-LDV|apCarDiT (EJ/yr)",
-    "FE|Transport|non-LDV|apcarDiEffT (EJ/yr)",
-    "FE|Transport|non-LDV|apcarDiEffH2T (EJ/yr)"
+    "FE|Transport|LDV|Liquids (EJ/yr)",
+    "FE|Transport|LDV|+|Gases (EJ/yr)",
+    "FE|Transport|LDV|+|Electricity (EJ/yr)",
+    "FE|Transport|LDV|+|Hydrogen (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|+|Liquids (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|+|Gases (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|+|Electricity (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|+|Hydrogen (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|+|Liquids (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|+|Gases (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|+|Electricity (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|+|Hydrogen (EJ/yr)"
   )
-  
+
   if(all(c(items) %in% getNames(data,dim=3))){
+    
+    swlatex(sw,"\\subsubsection{Transport per type}")
+    
+    tot <-"FE|Transport (EJ/yr)"
     
     var <- data[,,intersect(items,getNames(data,dim=3))]
     
-    p <- mipArea(var[mainReg,,],scales="free_y")
+    p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
     p <- p + theme(legend.position="none")
     swfigure(sw,print,p,sw_option="height=3.5,width=7")
     
@@ -2667,7 +2683,7 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     swlatex(sw,"\\onecolumn")
-    p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
     swfigure(sw,print,p,sw_option="height=8,width=16")
     swlatex(sw,"\\twocolumn")
     
