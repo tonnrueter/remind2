@@ -302,7 +302,6 @@ reportEDGETransport <- function(output_folder=".",
     ## calculate emissions and attribute variable and unit names
     emidem[, value := value*ef][, c("variable", "unit") := list(gsub("FE", "Emi\\|CO2", variable), "Mt CO2/yr")]
 
-    tp_emi <- copy(emidem)
     emidem = rbind(copy(emidem)[, c("type", "variable") := list("tailpipe", paste0(variable, "|Tailpipe"))],
                    copy(emidem)[, c("type", "variable") := list("demand", paste0(variable, "|Demand"))])
 
