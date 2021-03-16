@@ -37,6 +37,9 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   ### FS: start new price reporting 
   #(from price parameters calculated in core/postsolve.gms)
   
+  module2realisation <- readGDX(gdx, "module2realisation")
+  rownames(module2realisation) <- module2realisation$modules
+  
   
   pm_FEPrice <- readGDX(gdx, "pm_FEPrice", restore_zeros = F)
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,t,]
@@ -69,11 +72,16 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                  # in case of transport liquids: calculate weighted average of markets first, then calculate weighted average of fepet/fedie
                  setNames( dimSums( p_weights_FEprice_diepet * dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1=c("fepet","fedie"), emi_sectors = "trans"), dim=3.3, na.rm = T), dim=3.1, na.rm = T)*tdptwyr2dpgj,
                            "Price|Final Energy|Transport|Liquids (US$2005/GJ)"),
-                 setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fegat", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
-                           "Price|Final Energy|Transport|Gases (US$2005/GJ)"),
                  setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="feh2t", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
                            "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)")
     ) 
+    
+    if (module2realisation["transport",2] == "edge_esm") {
+      out <- mbind(out,
+                   setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fegat", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+                             "Price|Final Energy|Transport|Gases (US$2005/GJ)"))
+    }
+
     
     # FE Buildings Prices
     out <- mbind(out,
@@ -1014,9 +1022,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                  "Price|Final Energy|Transport|Electricity|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Electricity (EJ/yr)",
                  "Price|Final Energy|Transport|Liquids (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
                  "Price|Final Energy|Transport|Liquids|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)",
-                 "Price|Final Energy|Transport|Gases|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)",
-                 "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
+                  "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
                  "Price|Final Energy|Transport|Hydrogen|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
 
                  # buildings prices
@@ -1047,6 +1053,13 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                  "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|+|Solids (EJ/yr)",
                  "Price|Final Energy|Industry|Solids|Moving Avg (US$2005/GJ)"       = "FE|Industry|+|Solids (EJ/yr)"
             )
+    
+    
+    if (module2realisation["transport",2] == "edge_esm") {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)",
+                 "Price|Final Energy|Transport|Gases|Moving Avg (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)")
+    }
     
     # bind new price variables to old variables
     tmp <- mbind(tmp, out)
