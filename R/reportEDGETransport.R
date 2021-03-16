@@ -91,6 +91,9 @@ reportEDGETransport <- function(output_folder=".",
     datatable[subsector_L3 == "Domestic Aviation", aggr_veh := "Pass|Aviation|Domestic"]
     datatable[subsector_L3 == "International Aviation", aggr_veh := "Pass|Aviation|International"]
 
+    ## Freight
+    datatable[grepl("^Truck", vehicle_type), det_veh := sprintf("Freight|Road|%s", vehicle_type)]
+
     ## High Detail: Ecoinvent-Compatible Output
     datatable[grepl("Subcompact", vehicle_type),
               det_veh := "Pass|Road|LDV|Small"]
@@ -377,19 +380,34 @@ reportEDGETransport <- function(output_folder=".",
     return(emidem)
   }
 
+  reportingVehNum <- function(demand_vkm){
+    venum <- copy(demand_vkm)
+    venum[grepl("Road|LDV", variable, fixed=TRUE), ven := value/15e-3] # billion vehicle-km -> thousand vehicles
+    venum[grepl("Road|Truck", variable, fixed=TRUE), ven := value/30e-3]
+    venum[grepl("Road|Truck (0-3.5t)", variable, fixed=TRUE), ven := value/20e-3]
+    venum[grepl("Road|Truck (40t)", variable, fixed=TRUE), ven := value/100e-3]
+
+    venum <- venum[!is.na(ven)]
+    venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, value := NULL]
+    setnames(venum, "ven", "value")
+    return(venum)
+  }
+
   repFE <- reportingESandFE(
       demand_ej,
     mode ="FE")
+  repVKM <- reportingESandFE(
+    datatable=demand_vkm,
+    mode="VKM")
 
   toMIF <- rbindlist(list(
     repFE,
+    repVKM,
     reportingESandFE(
       datatable=demand_km,
       mode="ES"),
-    reportingESandFE(
-      datatable=demand_vkm,
-      mode="VKM"),
-    reportingEmi(repFE = repFE, gdx = gdx, miffile = miffile)
+    reportingVehNum(repVKM),
+    reportingEmi(repFE = repFE, gdx = gdx)
   ))
 
   ## add Road Totals
