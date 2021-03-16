@@ -337,6 +337,9 @@ reportEDGETransport <- function(output_folder=".",
     venum[grepl("Road|Truck (0-3.5t)", variable, fixed=TRUE), ven := value/20e-3]
     venum[grepl("Road|Truck (40t)", variable, fixed=TRUE), ven := value/100e-3]
 
+    ## https://de.statista.com/statistik/daten/studie/251746/umfrage/durchschnittliche-fahrleistung-von-kraftomnibussen-in-deutschland/
+    demand_vkm[grepl("Pass|Road|Bus", variable, fixed=TRUE), ven := value/45e-3]
+
     venum <- venum[!is.na(ven)]
     venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, value := NULL]
     venum[, unit := "tsd veh"]
