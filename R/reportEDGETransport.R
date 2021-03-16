@@ -38,7 +38,7 @@ reportEDGETransport <- function(output_folder=".",
   all_enty <- ef <- variable_agg <- model <- scenario <- period <- NULL
   Region <- Variable <- co2 <- co2val <- elh2 <- fe  <- NULL
   int <- se <- sec  <- sharesec <- te  <- tech <-  val <- share <- NULL
-  eff <- sharebio <- sharesyn <- totseliq <- type <- NULL
+  eff <- sharebio <- sharesyn <- totseliq <- type <- ven <- NULL
 
   load(file.path(output_folder, "config.Rdata"))
 
@@ -329,6 +329,8 @@ reportEDGETransport <- function(output_folder=".",
   }
 
   reportingVehNum <- function(demand_vkm){
+    ## sources for truck mileage are from DE:
+    ## https://www.kba.de/DE/Statistik/Kraftverkehr/VerkehrKilometer/vk_revisionsbericht_2019_pdf.pdf?__blob=publicationFile&v=1
     venum <- copy(demand_vkm)
     venum[grepl("Road|LDV", variable, fixed=TRUE), ven := value/15e-3] # billion vehicle-km -> thousand vehicles
     venum[grepl("Road|Truck", variable, fixed=TRUE), ven := value/30e-3]
@@ -337,6 +339,7 @@ reportEDGETransport <- function(output_folder=".",
 
     venum <- venum[!is.na(ven)]
     venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, value := NULL]
+    venum[, unit := "tsd veh"]
     setnames(venum, "ven", "value")
     return(venum)
   }
