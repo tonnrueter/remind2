@@ -14,9 +14,9 @@
 #' @param remind_root path to the REMIND root directory, defaults to two levels up from output_folder.
 #' @author Alois Dirnaichner Marianna Rottoli
 #'
-#' @importFrom rmndt approx_dt
+#' @importFrom rmndt approx_dt readMIF writeMIF
 #' @importFrom gdxdt readgdx
-#' @importFrom data.table fread fwrite rbindlist
+#' @importFrom data.table fread fwrite rbindlist copy
 #' @export
 
 reportEDGETransport <- function(output_folder=".",
@@ -34,7 +34,7 @@ reportEDGETransport <- function(output_folder=".",
   RegionCode <- CountryCode <- cfg <- `.` <- sector <- subsector_L3 <- region <- year <- NULL
   subsector_L2 <- subsector_L1 <- aggr_mode <- vehicle_type <- det_veh <- aggr_nonmot <- NULL
   demand_F <- demand_EJ <- remind_rep <- V25 <- aggr_veh <- technology <- NULL
-  variable <- value <- demand_VKM <- loadFactor <- NULL
+  ttot <- se_share <- fe_demand <- variable <- value <- demand_VKM <- loadFactor <- NULL
   all_enty <- ef <- variable_agg <- model <- scenario <- period <- NULL
   Region <- Variable <- co2 <- co2val <- elh2 <- fe  <- NULL
   int <- se <- sec  <- sharesec <- te  <- tech <-  val <- share <- NULL
@@ -59,7 +59,7 @@ reportEDGETransport <- function(output_folder=".",
   name_mif = file.path(output_folder, name_mif[!grepl("withoutPlu", name_mif)])
 
   stopifnot(typeof(name_mif) == "character")
-  miffile <- fread(name_mif, sep=";", header=T)
+  miffile <- readMIF(name_mif)
 
   ## ES and FE Demand
 
@@ -287,16 +287,17 @@ reportEDGETransport <- function(output_folder=".",
 
 
   ## Demand emissions
-  reportingEmi <- function(repFE, gdx, miffile){
+  reportingEmi <- function(repFE, gdx){
 
     ## load emission factors for fossil fuels
-    p_ef_dem <- readGDX(gdx, "p_ef_dem")  ## MtCO2/EJ
-    p_ef_dem <- as.data.table(p_ef_dem)[all_enty %in% c("fepet", "fegas", "feelt", "feh2t")]  ## emissions factor for Electricity and Hydrogen are 0, as we are calculating tailpipe emissions
+    p_ef_dem <- readgdx(gdx, "p_ef_dem")[all_enty %in% c("fepet", "fedie", "fegas")]  ## MtCO2/EJ
+    p_ef_dem[all_enty == "fegas", all_enty := "fegat"]
     setnames(p_ef_dem, old = c("value", "all_regi"), new = c("ef", "region"))
     ## attribute explicitly fuel used to the FE values
     emidem = repFE[grepl("Liquids|Gases|Hydrogen|Electricity", variable) & region != "World"]   ## EJ
-    emidem[, all_enty := ifelse(grepl("Liquids", variable), "fepet", NA)]
-    emidem[, all_enty := ifelse(grepl("Gases", variable), "fegas", all_enty)]
+    emidem[, all_enty := ifelse(grepl("Liquids", variable), "fedie", NA)]
+    emidem[, all_enty := ifelse(grepl("LDV.+Liquids", variable), "fepet", all_enty)]
+    emidem[, all_enty := ifelse(grepl("Gases", variable), "fegat", all_enty)]
     emidem[, all_enty := ifelse(grepl("Electricity", variable), "feelt", all_enty)]
     emidem[, all_enty := ifelse(grepl("Hydrogen", variable), "feh2t", all_enty)]
     ## merge with emission factors
@@ -304,72 +305,19 @@ reportEDGETransport <- function(output_folder=".",
     ## calculate emissions and attribute variable and unit names
     emidem[, value := value*ef][, c("variable", "unit") := list(gsub("FE", "Emi\\|CO2", variable), "Mt CO2/yr")]
 
-    emidem = rbind(emidem[region %in% unique(emidem$region)][,type := "tailpipe"], emidem[region %in% unique(emidem$region)][,type := "demand"])
+    emidem = rbind(copy(emidem)[, c("type", "variable") := list("tailpipe", paste0(variable, "|Tailpipe"))],
+                   copy(emidem)[, c("type", "variable") := list("demand", paste0(variable, "|Demand"))])
 
-    ## create corresponding entries with share of biofuels+synfuels in total liquids, for passenger SM, LO, freight SM, LO
-    TWa_2_EJ <- 31.536
-    ## demSe: secondary energy demand, secondary energy carrier units
-    demSe <- readgdx(gdx, "vm_demSe")[, value := value*TWa_2_EJ]
-    setnames(demSe, c("year", "region", "se", "fe", "te", "value"))
-    ## prodSe: secondary energy production, secondary energy carrier units
-    prodSe <- readgdx(gdx, "vm_prodSe")[, value := value*TWa_2_EJ]
-    setnames(prodSe, c("year", "region", "pe", "se", "te", "value"))
-    ## energy conversion for the different technologies
-    etaconv = readgdx(gdx, "pm_eta_conv")
-    setnames(etaconv, c("year", "region", "te", "eff"))
-    ## separately see MeOH conversion
-    convMeOH = unique(etaconv[te == "MeOH", eff])
+    prodFe <- readgdx(gdx, "vm_prodFE")[, ttot := as.numeric(ttot)]
+    setnames(prodFe,
+             c("period", "region", "se", "all_enty", "te", "fe_demand"))
+    prodFe[, se_share := fe_demand/sum(fe_demand), by=c("period", "region", "all_enty")]
+    prodFe <- prodFe[all_enty %in% c("fedie", "fepet", "fegat") & se %in% c("segafos", "seliqfos")][, c("se", "te", "fe_demand") := NULL]
 
-    ## calculate the shares of seliqfos for the two sectors, transport and stationary (in seliqfos units)
-    shareLiqSec = demSe[se == "seliqfos"]
-    shareLiqSec[, sec := ifelse(fe %in% c("fepet", "fedie"), "trsp", "st")]
-    shareLiqSec = shareLiqSec[, .(value = sum(value)), by = .(region, year, sec)]
-    shareLiqSec[, share := value/sum(value), by =.(region, year)]
-    shareLiqSec[, c("value") := NULL]
+    emidem <- prodFe[emidem, on=c("period", "region", "all_enty")]
+    emidem <- emidem[all_enty %in% c("fedie", "fepet", "fegat") & type == "demand", value := value*se_share]
 
-    ## create pathway in demSe for synfuels to transport and synfuels to stationary
-    demSeSyn = merge(demSe[fe == "seliqfos" & te == "MeOH", .(year, region, value)], shareLiqSec, all = TRUE, by = c("region", "year"))
-    demSeSyn[is.na(value), value := 0]
-    demSeSyn[, value := share*value*convMeOH]  ## convert in seliqfos values
-    demSeSyn[, share := NULL]
-    demSeSyn[, fe := ifelse(sec == "trsp", "fesynt", "fesyns")]
-    demSeSyn[, se := "seliqfos"]
-   
-    ## calculate the seliqfos from synfuels as a share of the total seliqfos
-    demSeLiq = demSe[se =="seliqfos"]
-    demSeLiq = demSeLiq[, sec := ifelse(fe %in% c("fepet", "fedie"), "trsp", "st")]
-    demSeLiq = demSeLiq[,.(totseliq = sum(value)), by = c("year", "region", "sec")]
-    demSeLiq = merge(demSeLiq, demSeSyn, by = c("region", "year", "sec"))
-    demSeLiq[, sharesyn := value/(totseliq)]
-    demSeLiq = demSeLiq[, .(sharesyn = sum(sharesyn)), .(region, year, sec)]
-    setnames(demSeLiq, old = "year", new = "period")
-    demSeLiq[, period := as.numeric(period)]
-
-    ## calculate share of biofuels on total seliqfos+seliqbio
-    shareBioSec = demSe[se %in% c("seliqfos", "seliqbio")]
-    shareBioSec[, sec := ifelse(fe %in% c("fepet", "fedie"), "trsp", "st")]
-    shareBioSec = shareBioSec[sec == "trsp"]
-    shareBioSec = shareBioSec[, sharebio := value/sum(value), by = .(region, year)]
-    shareBioSec = shareBioSec[,.(sharebio = sum(sharebio)), .(region, year, se)]
-    shareBioSec = shareBioSec[se == "seliqbio"]
-    shareBioSec[, c("se") := NULL]
-    setnames(shareBioSec, old = "year", new = "period")
-    shareBioSec[, period := as.numeric(period)]
-
-    ## decrease the "demand" entries of the amount of biofuels
-    emidem = merge(emidem, shareBioSec, by = c("region", "period"))
-    emidem[type == "demand" & all_enty %in% c("fedie", "fepet"), value := value*(1-sharebio)]
-
-    ## merge demand and shares of synfuels+biofuels
-    emidem = merge(emidem, demSeLiq[sec == "trsp"][, sec := NULL], by = c("region", "period"))
-    emidem[type == "demand", value := value*(1-sharesyn)]
-
-    ## the taipipe emissions are to be labeled as "Tailpipe"
-    emidem[type == "tailpipe", variable := paste0(variable, "|Tailpipe")]
-    ## the demand emissions are to be labeled as "Demand"
-    emidem[type == "demand", variable := paste0(variable, "|Demand")]
-
-    emidem[, c("sharesyn", "sharebio", "type", "ef", "V3", "V2", "all_enty") := NULL]
+    emidem[, c("se_share", "type", "ef", "all_enty") := NULL]
 
     ## aggregate removing the fuel dependency
     emidem[, variable_agg := gsub("\\|Liquids|\\|Electricity|\\|Hydrogen|\\|Gases", "", variable)]
@@ -489,9 +437,8 @@ reportEDGETransport <- function(output_folder=".",
   }
 
   toMIF <- data.table::dcast(toMIF, ... ~ period, value.var="value")
-
-  EOL <- if (.Platform$OS.type=="windows") ";\r\n" else ";\n"
-
-  fwrite(toMIF, name_mif, append=T, sep=";", eol=EOL)
+  setnames(toMIF, colnames(toMIF)[1:5], c("Model", "Scenario", "Region", "Variable", "Unit"))
+  
+  writeMIF(toMIF, name_mif, append=T)
   deletePlus(name_mif, writemif=T)
 }
