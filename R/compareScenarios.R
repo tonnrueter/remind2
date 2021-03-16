@@ -2649,17 +2649,17 @@ compareScenarios <- function(mif, hist,
   
   items<- c(
     "FE|Transport|LDV|Liquids (EJ/yr)",
-    "FE|Transport|LDV|+|Gases (EJ/yr)",
-    "FE|Transport|LDV|+|Electricity (EJ/yr)",
-    "FE|Transport|LDV|+|Hydrogen (EJ/yr)",
-    "FE|Transport|non-LDV|w/o Bunkers|+|Liquids (EJ/yr)",
-    "FE|Transport|non-LDV|w/o Bunkers|+|Gases (EJ/yr)",
-    "FE|Transport|non-LDV|w/o Bunkers|+|Electricity (EJ/yr)",
-    "FE|Transport|non-LDV|w/o Bunkers|+|Hydrogen (EJ/yr)",
-    "FE|Transport|non-LDV|Bunkers|+|Liquids (EJ/yr)",
-    "FE|Transport|non-LDV|Bunkers|+|Gases (EJ/yr)",
-    "FE|Transport|non-LDV|Bunkers|+|Electricity (EJ/yr)",
-    "FE|Transport|non-LDV|Bunkers|+|Hydrogen (EJ/yr)"
+    "FE|Transport|LDV|Gases (EJ/yr)",
+    "FE|Transport|LDV|Electricity (EJ/yr)",
+    "FE|Transport|LDV|Hydrogen (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|Liquids (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|Gases (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|Electricity (EJ/yr)",
+    "FE|Transport|non-LDV|w/o Bunkers|Hydrogen (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|Liquids (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|Gases (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|Electricity (EJ/yr)",
+    "FE|Transport|non-LDV|Bunkers|Hydrogen (EJ/yr)"
   )
 
   if(all(c(items) %in% getNames(data,dim=3))){
