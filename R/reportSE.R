@@ -402,6 +402,28 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   }
   
   tmp1 <- mbind(tmp1, tmp)
+  
+  
+  ### add SE trade variables
+  
+  # Note: Quick imlementation for ariadne
+  # In the medium-term, this needs to be made consistent with other aggregated SE variables 
+  # or some SE|Production label needs to be introdued. 
+  # Preferibly, labeling should be made in line with existing/upcoming project conventions
+  
+  if (module2realisation["trade",2] == "se_trade") {
+    vm_Mport <- readGDX(gdx, "vm_Mport", field = "l", restore_zeros = F)[,t,]
+    vm_Xport <- readGDX(gdx, "vm_Xport", field = "l", restore_zeros = F)[,t,]
+    
+    
+    tmp1 <- mbind(tmp1,
+                   setNames( mselect(vm_Mport - vm_Xport, all_enty="seh2")*pm_conv_TWa_EJ, 
+                             "SE|Hydrogen|Net Imports (EJ/yr)"),
+                  setNames( mselect(vm_Mport - vm_Xport, all_enty="seel")*pm_conv_TWa_EJ, 
+                            "SE|Electricity|Net Imports (EJ/yr)"),
+                  setNames( mselect(vm_Mport - vm_Xport, all_enty="seliqsyn")*pm_conv_TWa_EJ, 
+                            "SE|Liquids|Hydrogen|Net Imports (EJ/yr)"))
+  }
 
   # add global values
   out <- mbind(tmp1,dimSums(tmp1,dim=1))

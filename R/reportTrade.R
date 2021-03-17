@@ -24,6 +24,10 @@
 
 reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
   
+  ####### get realisations #########
+  module2realisation <- readGDX(gdx, "module2realisation")
+  rownames(module2realisation) <- module2realisation$modules
+  
   TWa_2_EJ        <- 31.536
   sm_tdptwyr2dpgj <- 31.71   #TerraDollar per TWyear to Dollar per GJ
   
@@ -42,6 +46,11 @@ reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,
   
   #AJS for current account 
   set_trade <- readGDX(gdx,name=c("trade"),types = 'sets',format="first_found")
+  
+  tradeMacro <- readGDX(gdx, "tradeMacro")
+  tradePe <- readGDX(gdx, "tradePe")
+  tradeSe <- readGDX(gdx, "tradeSe")
+
   
   # calculate variables
   trade     <- Xport - Mport
@@ -75,7 +84,30 @@ reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,
   
   tmp <- mbind(tmp,setNames(trade_net[,,"perm"] * 44 / 12 * 1000,                             "Trade|Emi Allowances|Volume (Mt CO2-equiv/yr)"))
   tmp <- mbind(tmp,setNames((1-p_costsPEtradeMp[,,"perm"]) * Mport[,,"perm"] * 44 / 12 * 1000,"Trade|Imports|Emi Allowances|Volume (Mt CO2-equiv/yr)"))
-  tmp <- mbind(tmp,setNames(Xport[,,"perm"] * 44 / 12 * 1000,                                 "Trade|Exports|Emi Allowances|Volume (Mt CO2-equiv/yr)"))
+  tmp <- mbind(tmp,setNames(Xport[,,"perm"] * 44 / 12 * 1000,                                "Trade|Exports|Emi Allowances|Volume (Mt CO2-equiv/yr)"))
+  
+  # SE Trade
+  if (module2realisation["trade",2] == "se_trade") {
+ 
+    tmp <- mbind(tmp,setNames(trade_net[,,"seh2"] * TWa_2_EJ,                                "Trade|SE|Hydrogen (EJ/yr)"))
+    # for now p_costsPEtradeMp is zero for SE trade, adapt once SE trade transport cost implemented
+    tmp <- mbind(tmp,setNames((1-p_costsPEtradeMp[,,"seh2"]) * Mport[,,"seh2"] * TWa_2_EJ, "Trade|Imports|SE|Hydrogen (EJ/yr)"))
+    tmp <- mbind(tmp,setNames(Xport[,,"seh2"] * TWa_2_EJ,                                    "Trade|Exports|SE|Hydrogen (EJ/yr)"))
+    
+    tmp <- mbind(tmp,setNames(trade_net[,,"seel"] * TWa_2_EJ,                                "Trade|SE|Electricity (EJ/yr)"))
+    # for now p_costsPEtradeMp is zero for SE trade, adapt once SE trade transport cost implemented
+    tmp <- mbind(tmp,setNames((1-p_costsPEtradeMp[,,"seel"]) * Mport[,,"seel"] * TWa_2_EJ, "Trade|Imports|SE|Electricity (EJ/yr)"))
+    tmp <- mbind(tmp,setNames(Xport[,,"seel"] * TWa_2_EJ,                                    "Trade|Exports|SE|Electricity (EJ/yr)"))
+    
+    tmp <- mbind(tmp,setNames(trade_net[,,"seliqsyn"] * TWa_2_EJ,                                "Trade|SE|Liquids|Hydrogen (EJ/yr)"))
+    # for now p_costsPEtradeMp is zero for SE trade, adapt once SE trade transport cost implemented
+    tmp <- mbind(tmp,setNames((1-p_costsPEtradeMp[,,"seliqsyn"]) * Mport[,,"seliqsyn"] * TWa_2_EJ, "Trade|Imports|SE|Liquids|Hydrogen (EJ/yr)"))
+    tmp <- mbind(tmp,setNames(Xport[,,"seliqsyn"] * TWa_2_EJ,                                    "Trade|Exports|SE|Liquids|Hydrogen (EJ/yr)"))
+    
+
+    
+  }
+  
   
   # add global values
   tmp   <- mbind(tmp,dimSums(tmp,dim=1))
@@ -95,6 +127,10 @@ reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,
   tmp <- mbind(tmp,setNames(trade[,,"perm"] * price[,,"perm"] * 1000,                         "Trade|Emi Allowances|Value (billion US$2005/yr)"))
   tmp <- mbind(tmp,setNames(dimSums( trade[,,set_trade] * price[,,set_trade],dim = 3) * 1000, "Trade|All|Value (billion US$2005/yr)"))
   tmp <- mbind(tmp,setNames(dimSums( trade[,,set_trade] * price[,,set_trade],dim = 3),        "Current Account (billion US$2005/yr)"))
+  
+  
+  
+  
   
   # rename dimensions in the magpie object 
   names(dimnames(tmp))[3] = 'variable'
