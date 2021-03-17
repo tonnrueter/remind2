@@ -342,6 +342,32 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
 
   # SE electricity use
   
+  # SE electricity use
+  
+  ### calculation of electricity use for own consumption of energy system
+  vm_prodFe <- readGDX(gdx, "vm_prodFe", field = "l", restore_zeros = F)
+  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
+  
+  # filter for coupled production coefficents which consume seel 
+  # (have all_enty2=seel and are negative)
+  teprodCoupleSeel <- getNames(mselect(dataoc_tmp, all_enty2="seel"), dim=3)
+  CoeffOwnConsSeel <- dataoc_tmp[,,teprodCoupleSeel]
+  CoeffOwnConsSeel[CoeffOwnConsSeel>0] <- 0 
+  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[,,"ccsinje", invert=T]
+  
+  # FE and SE production that has own consumption of electricity
+  # calculate prodSe back to TWa (was in EJ before), but prod couple coefficient is defined in TWa(input)/Twa(output)
+  prodOwnCons <- mbind(vm_prodFe, prodSe/pm_conv_TWa_EJ)[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)]
+  
+  tmp <- NULL
+  tmp <- mbind(tmp, setNames(
+    -pm_conv_TWa_EJ *
+      (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)], dim=3, na.rm = T) +
+         dimSums(CoeffOwnConsSeel[,,"ccsinje"] * vm_co2CCS[,,"ccsinje"], dim=3,  na.rm = T)),
+    "SE|Electricity|used for own consumption of energy system (EJ/yr)"))
+  
+  
+  
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[,,"SE|Hydrogen|Electricity (EJ/yr)"] / tmp1[,,"SE|Hydrogen (EJ/yr)"])
   p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
