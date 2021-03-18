@@ -60,7 +60,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames((dimSums(vm_prodFe,dim=3,na.rm=T)), "FE (EJ/yr)"),
 
     #Liquids    
-    setNames(dimSums(vm_prodFe[,,c("seliqbio","seliqfos")],dim=3,na.rm=T),                                                "FE|+|Liquids (EJ/yr)"),
+    setNames(dimSums(vm_prodFe[,,c("seliqbio","seliqfos","seliqsyn")],dim=3,na.rm=T),                                                "FE|+|Liquids (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"seliqbio"],dim=3,na.rm=T),                                                              "FE|Liquids|+|Biomass (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"seliqfos"],dim=3,na.rm=T),                                                              "FE|Liquids|+|Fossil (EJ/yr)"),
     setNames(dimSums(mselect(vm_prodFe, all_enty="seliqsyn") ,dim=3,na.rm=T),                                             "FE|Liquids|+|Hydrogen (EJ/yr)"),
@@ -74,7 +74,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames(p_eta_conv[,,"tdfossos"] * dimSums(mselect(vm_prodSe,all_enty1="sesofos",all_enty="pecoal"),dim=3,na.rm=T),  "FE|Solids|Fossil|+|Coal (EJ/yr)"),
     
     #Gases
-    setNames(dimSums(vm_prodFe[,,c("segabio","segafos")],dim=3,na.rm=T),                                                  "FE|+|Gases (EJ/yr)"),
+    setNames(dimSums(vm_prodFe[,,c("segabio","segafos","segasyn")],dim=3,na.rm=T),                                                  "FE|+|Gases (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"segabio"],dim=3,na.rm=T),                                                               "FE|Gases|+|Biomass (EJ/yr)"), 
     setNames(dimSums(vm_prodFe[,,"segafos"],dim=3,na.rm=T),                                                               "FE|Gases|+|Fossil (EJ/yr)"), 
     setNames(p_eta_conv[,,"tdfosgas"] * dimSums(mselect(vm_prodSe,all_enty1="segafos",all_enty="pegas"),dim=3,na.rm=T),   "FE|Gases|Fossil|Natural Gas (EJ/yr)"),
