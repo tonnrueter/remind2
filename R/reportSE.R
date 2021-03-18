@@ -342,6 +342,39 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
 
   # SE electricity use
   
+  # SE electricity use
+  
+  ### calculation of electricity use for own consumption of energy system
+  vm_prodFe <- readGDX(gdx, "vm_prodFe", field = "l", restore_zeros = F)
+  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
+  
+  # filter for coupled production coefficents which consume seel 
+  # (have all_enty2=seel and are negative)
+  teprodCoupleSeel <- getNames(mselect(dataoc_tmp, all_enty2="seel"), dim=3)
+  CoeffOwnConsSeel <- dataoc_tmp[,,teprodCoupleSeel]
+  CoeffOwnConsSeel[CoeffOwnConsSeel>0] <- 0 
+  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[,,"ccsinje", invert=T]
+  
+  # FE and SE production that has own consumption of electricity
+  # calculate prodSe back to TWa (was in EJ before), but prod couple coefficient is defined in TWa(input)/Twa(output)
+  prodOwnCons <- mbind(vm_prodFe, prodSe/pm_conv_TWa_EJ)[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)]
+  
+  tmp <- NULL
+  tmp <- mbind(tmp, setNames(
+    -pm_conv_TWa_EJ *
+      (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)], dim=3, na.rm = T) +
+         dimSums(CoeffOwnConsSeel[,,"ccsinje"] * vm_co2CCS[,,"ccsinje"], dim=3,  na.rm = T)),
+    "SE|Electricity|used for own consumption of energy system (EJ/yr)"))
+  
+  
+  # electricity for decentral ground heat pumps 
+  tmp <- mbind(tmp, setNames(
+    -pm_conv_TWa_EJ *
+      (dimSums(CoeffOwnConsSeel_woCCS[,,"geohe"] * prodOwnCons[,,"geohe"], dim=3)),
+    "SE|Electricity|used for centralized geothermal heat pumps (EJ/yr)"))
+  
+  
+  
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[,,"SE|Hydrogen|Electricity (EJ/yr)"] / tmp1[,,"SE|Hydrogen (EJ/yr)"])
   p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
@@ -362,7 +395,10 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2"]),
                         "SE|Electricity|used for grey electrolysis (EJ/yr)"),
                setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2VRE"]),
-                        "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"))
+                        "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"),
+               setNames(collapseNames(dimSums(vm_demSe[,,c("elh2VRE","elh2")], dim=3)),
+                        "SE|Electricity|used for hydrogen (EJ/yr)")
+  )
   
   if (module2realisation["CCU",2] == "on") {
     tmp <- mbind(tmp,
@@ -375,7 +411,34 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
   }
   
+  # transmission losses from se2fe conversion of electricity
+  tmp <- mbind(tmp, 
+                setNames(dimSums(vm_demSe[,,"tdels"]*(1-pm_eta_conv[,,"tdels"]), dim=3),
+               "SE|Electricity|Transmission Losses (EJ/yr)"))
+  
   tmp1 <- mbind(tmp1, tmp)
+  
+  
+  ### add SE trade variables
+  
+  # Note: Quick imlementation for ariadne
+  # In the medium-term, this needs to be made consistent with other aggregated SE variables 
+  # or some SE|Production label needs to be introdued. 
+  # Preferibly, labeling should be made in line with existing/upcoming project conventions
+  
+  if (module2realisation["trade",2] == "se_trade") {
+    vm_Mport <- readGDX(gdx, "vm_Mport", field = "l", restore_zeros = F)[,t,]
+    vm_Xport <- readGDX(gdx, "vm_Xport", field = "l", restore_zeros = F)[,t,]
+    
+    
+    tmp1 <- mbind(tmp1,
+                   setNames( mselect(vm_Mport - vm_Xport, all_enty="seh2")*pm_conv_TWa_EJ, 
+                             "SE|Hydrogen|Net Imports (EJ/yr)"),
+                  setNames( mselect(vm_Mport - vm_Xport, all_enty="seel")*pm_conv_TWa_EJ, 
+                            "SE|Electricity|Net Imports (EJ/yr)"),
+                  setNames( mselect(vm_Mport - vm_Xport, all_enty="seliqsyn")*pm_conv_TWa_EJ, 
+                            "SE|Liquids|Hydrogen|Net Imports (EJ/yr)"))
+  }
 
   # add global values
   out <- mbind(tmp1,dimSums(tmp1,dim=1))
