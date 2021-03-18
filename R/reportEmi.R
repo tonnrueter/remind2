@@ -1695,6 +1695,13 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                 "Emi|CO2|Energy (Mt CO2/yr)"))
   
   
+  tmp <- mbind(tmp,
+               setNames(tmp[,,"Emi|CO2|Energy (Mt CO2/yr)"]+tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"],
+                        "Emi|CO2|Energy|Gross (Mt CO2/yr)"))
+  
+  
+  
+  
   
   
   ### If Buildings Industry Structure ############################################################################
