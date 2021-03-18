@@ -367,6 +367,13 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     "SE|Electricity|used for own consumption of energy system (EJ/yr)"))
   
   
+  # electricity for decentral ground heat pumps 
+  tmp <- mbind(tmp, setNames(
+    -pm_conv_TWa_EJ *
+      (dimSums(CoeffOwnConsSeel_woCCS[,,"geohe"] * prodOwnCons[,,"geohe"], dim=3)),
+    "SE|Electricity|used for centralized geothermal heat pumps (EJ/yr)"))
+  
+  
   
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[,,"SE|Hydrogen|Electricity (EJ/yr)"] / tmp1[,,"SE|Hydrogen (EJ/yr)"])
@@ -388,7 +395,10 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2"]),
                         "SE|Electricity|used for grey electrolysis (EJ/yr)"),
                setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2VRE"]),
-                        "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"))
+                        "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"),
+               setNames(collapseNames(dimSums(vm_demSe[,,c("elh2VRE","elh2")], dim=3)),
+                        "SE|Electricity|used for hydrogen (EJ/yr)")
+  )
   
   if (module2realisation["CCU",2] == "on") {
     tmp <- mbind(tmp,
@@ -400,6 +410,11 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                           "SE|Electricity|used for synthetic fuels|gases (EJ/yr)"))
     
   }
+  
+  # transmission losses from se2fe conversion of electricity
+  tmp <- mbind(tmp, 
+                setNames(dimSums(vm_demSe[,,"tdels"]*(1-pm_eta_conv[,,"tdels"]), dim=3),
+               "SE|Electricity|Transmission Losses (EJ/yr)"))
   
   tmp1 <- mbind(tmp1, tmp)
   
