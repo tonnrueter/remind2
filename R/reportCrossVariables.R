@@ -434,13 +434,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
                         output[,,"Emi|CO2|Fossil Fuels and Industry|Cement process (Mt CO2/yr)"],
                         "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"))
   
-  tmp7 <- mbind(tmp7, 
-                setNames(tmp[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"]+
-                           output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
-                         "Emi|CO2|Industry|Direct|Gross (Mt CO2/yr)"))
-  
-  
-  out <- mbind(out, tmp7)
+
   
   
   ### additional EDGE-T variables for ariadne
