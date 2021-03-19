@@ -1189,7 +1189,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       
       
       # read in FE industry non-energy use trajectories from industry subsectors run
-      df.fe_nechem <- read.csv("C:/work/scripts/pik-piam/misc/pm_fe_nechem.cs4r", 
+      df.fe_nechem <- read.csv(system.file("extdata","pm_fe_nechem.cs4r",package = "remind2"),
                                sep = ",", skip = 4, header = F)
       
       colnames(df.fe_nechem) <- c("period", "region","SSP","encar","value_subsectors")

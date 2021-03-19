@@ -953,28 +953,29 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                   "Carbon Management|CCU|Gases (Mt CO2/yr)"))
     
     
-    ## add CCU CO2 flows to respective supply emissions that were captured by pe2se technologies
-    # first calculate share of pe2se captured CO2 from total CO2
-    p_share_pe2se_cco2 <- dimSums(mselect(v_emi, all_enty2="cco2"), dim=3) / dimSums(vm_co2capture, dim=3)
-    p_share_pe2se_cco2[is.na(p_share_pe2se_cco2)] <- 0
+    ## add CCU CO2 flows to respective supply emissions that were captured by energy system technologies (pe2se or industry capture)
+    # first calculate share of captured CO2 by energy system from total CO2 captured
+    # note that DAC CO2 does not enter the energy system variables in the first place, such that DAC CCU does not need to be added
+    p_share_en_cco2 <- (dimSums(mselect(v_emi, all_enty2="cco2"), dim=3) + dimSums(vm_emiIndCCS, dim=3)) / dimSums(vm_co2capture, dim=3)
+    p_share_en_cco2[is.na(p_share_en_cco2)] <- 0
     
     tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
       tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Liquids (Mt CO2/yr)"]*p_share_pe2se_cco2
+      tmp[,,"Carbon Management|CCU|Liquids (Mt CO2/yr)"]*p_share_en_cco2
     
     tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
       tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Gases (Mt CO2/yr)"]*p_share_pe2se_cco2
+      tmp[,,"Carbon Management|CCU|Gases (Mt CO2/yr)"]*p_share_en_cco2
             
      
     ## add to respective total energy emissions emissions
     tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
       tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Liquids (Mt CO2/yr)"]*p_share_pe2se_cco2
+      tmp[,,"Carbon Management|CCU|Liquids (Mt CO2/yr)"]*p_share_en_cco2
       
     tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
       tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Gases (Mt CO2/yr)"]*p_share_pe2se_cco2
+      tmp[,,"Carbon Management|CCU|Gases (Mt CO2/yr)"]*p_share_en_cco2
     
   }
   
