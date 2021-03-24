@@ -1395,13 +1395,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
 
   }
   
-  
-  ### total energy demand emissions
-  tmp <- mbind(tmp, 
-               setNames(tmp[,,"Emi|CO2|Energy|Demand|Gases|After IndustryCCS (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Demand|Liquids|After IndustryCCS (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Demand|Solids|After IndustryCCS (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Demand (Mt CO2/yr)"))
+
   
   
   ### CDR/CCU emissions ##########################################################################################  
@@ -2238,6 +2232,46 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
       )
     }
   }
+  
+  # FS: new (temporary) sectoral emissions variables (after merge and synfuel accounting on supply-side)
+  
+  emi2te <- readGDX(gdx, "emi2te") # conversions to emissions
+  
+  ### for emissions of energy system technologies
+  # emission factors of technologies
+  pm_emifac <- readGDX(gdx, "pm_emifac", restore_zeros = F)[,t,]
+  
+  # final energy demand (se2fe emissions factors applied to)
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,t,]
+  
+  se2fe <- readGDX(gdx, "se2fe") # se2fe conversions
+  emiInd37_fuel <- readGDX(gdx, "emiInd37_fuel") # energy-related industry CCS categories (excl. co2 cement CCS)
+  
+   # co2 emissions factor of fe carriers
+  pm_emifac.co2.fe <- dimSums(mselect(pm_emifac, all_te=se2fe$all_te, all_enty2="co2"), dim=c(3.3,3.4)) 
+  
+  EmiFeCarrier <- pm_emifac.co2.fe * vm_demFeSector[,,getNames(pm_emifac.co2.fe)]
+  
+  # split into sectors
+  out <- mbind(out,
+               
+               # buidings emissions 
+               setNames(  dimSums(EmiFeCarrier[,,"build"], dim=3)*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"),
+               # industry emissions: fe carrier emissions - industry CC
+               setNames(  (dimSums(EmiFeCarrier[,,"indst"], dim=3) - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"),
+               # transprt emissions: fe carrier emissions
+               setNames(  dimSums(EmiFeCarrier[,,"trans"], dim=3)*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"),
+               # demand-side energy CO2 emissions
+               # fe emissions
+               setNames((dimSums(EmiFeCarrier,dim=3) 
+                         # substract industry CC
+                         - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3)) * GtC_2_MtCO2,
+                        "Emi|CO2|Energy|Demand (Mt CO2/yr)")
+  )
+  
     
   # add global values
   out <- mbind(out,dimSums(na.rm=TRUE,x=out,dim=1))
@@ -2269,6 +2303,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     setNames(  out[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],    "Emi|CO2|Transport|Demand|w/ Bunkers (Mt CO2/yr)"),
     setNames(  out[,,"Emi|CO2|Transport|Direct (Mt CO2/yr)"],    "Emi|CO2|Transport|Direct|w/ Bunkers (Mt CO2/yr)"),
     setNames(  out[,,"Emi|CO2|Transport|w/o couple prod (Mt CO2/yr)"],    "Emi|CO2|Transport|w/o couple prod|w/ Bunkers (Mt CO2/yr)"),
+    setNames(  out[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],    "Emi|CO2|Energy|Demand|Transport|w/ Bunkers (Mt CO2/yr)"),
     setNames(  out[,,"Emi|CO2|Cumulated (Mt CO2/yr)"],    "Emi|CO2|Cumulated|w/ Bunkers (Mt CO2/yr)"),
     setNames(  out[,,"Emi|CO2|Fossil Fuels and Industry|Cumulated (Mt CO2/yr)"],    "Emi|CO2|Fossil Fuels and Industry|Cumulated|w/ Bunkers (Mt CO2/yr)"),
     setNames(  out[,,"Emi|CO2|Gross Fossil Fuels and Industry|Cumulated (Mt CO2/yr)"],    "Emi|CO2|Gross Fossil Fuels and Industry|Cumulated|w/ Bunkers (Mt CO2/yr)"),
@@ -2296,7 +2331,8 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Transport (Mt CO2/yr)",
                          "Emi|CO2|Transport|Demand (Mt CO2/yr)",
                          "Emi|CO2|Transport|Direct (Mt CO2/yr)",
-                         "Emi|CO2|Transport|w/o couple prod (Mt CO2/yr)"
+                         "Emi|CO2|Transport|w/o couple prod (Mt CO2/yr)",
+                         "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"
                          )
   for (var in vars_with_bunkers){
     # ...re-calculate the regional values by substracting the emissions from bunkers.
