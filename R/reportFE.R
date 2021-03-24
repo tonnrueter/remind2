@@ -1209,7 +1209,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       # non-energy use of solids/liquids/gases: min(fehoi,fehoi_nechem),
       # where fehoi would be the liquids of the current run and 
       # fehoi_nechem the non-energy use liquids of the reference industry subsectors run
-      df.out.nechem <- as.quitte(out[,,vars.nechem]) %>% 
+      df.out.nechem <- suppressWarnings(as.quitte(out[,,vars.nechem])) %>% 
                         rename( encar = data) %>% 
                         # join current FE|Industry|Liquids etc. with non-energy use subsectors data
                         revalue.levels(encar = map.vars.nechem) %>% 
@@ -1220,7 +1220,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                         revalue.levels(encar= map.nonen.vars) %>% 
                         select(region, period, encar, Value_NonEn)
       
-      out.nechem <- as.magpie(df.out.nechem, spatial=1, temporal=2, datacol=4)
+      out.nechem <- suppressWarnings(as.magpie(df.out.nechem, spatial=1, temporal=2, datacol=4))
       out.nechem <- out.nechem[getRegions(out), getYears(out),]
       
   

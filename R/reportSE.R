@@ -12,7 +12,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #' 
-#' @author Gunnar Luderer, Lavinia Baumstark
+#' @author Gunnar Luderer, Lavinia Baumstark, Felix Schreyer
 #' @examples
 #'
 #' \dontrun{reportSE(gdx)}
@@ -317,107 +317,7 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
 #    tmp1 <- mbind(tmp1, setNames(se.prod(prodSe,dataoc,oc2te,sety,pebio ,se_Solids, name = NULL)
 #                                 - tmp1[,,"SE|Solids|Traditional Biomass (EJ/yr)"],"SE|Solids|Biomass (EJ/yr)"))
 
-  
-  ### FS: SE Demand Reporting
-  
-  # FE production
-  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,y,]*pm_conv_TWa_EJ
-  # SE demand
-  vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[,y,]*pm_conv_TWa_EJ
-  # conversion efficiency
-  pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[,y,]
-
-  tmp <- NULL
-  tmp <- mbind(tmp,
-               setNames(collapseNames(dimSums(vm_demSe[,,"seh2.seel"], dim=3, na.rm=T)), "SE|Hydrogen|used for electricity (EJ/yr)"),
-               setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turb"]), "SE|Hydrogen|used for electricity|normal turbines (EJ/yr)"),
-               setNames(collapseNames(vm_demSe[,,"seh2.seel.h2turbVRE"]), "SE|Hydrogen|used for electricity|forced VRE turbines (EJ/yr)"))
-  
-  # if CCU on
-  if (module2realisation["CCU",2] == "on") {
-    tmp <- mbind(tmp,
-                 setNames(dimSums(mselect(vm_demSe, all_enty="seliqsyn"), dim=3), "SE|Hydrogen|used for synthetic fuels|liquids (EJ/yr)"),
-                 setNames(dimSums(mselect(vm_demSe, all_enty="segasyn"), dim=3), "SE|Hydrogen|used for synthetic fuels|gases (EJ/yr)"))
-  }
-
-  # SE electricity use
-  
-  # SE electricity use
-  
-  ### calculation of electricity use for own consumption of energy system
-  vm_prodFe <- readGDX(gdx, "vm_prodFe", field = "l", restore_zeros = F)
-  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
-  
-  # filter for coupled production coefficents which consume seel 
-  # (have all_enty2=seel and are negative)
-  teprodCoupleSeel <- getNames(mselect(dataoc_tmp, all_enty2="seel"), dim=3)
-  CoeffOwnConsSeel <- dataoc_tmp[,,teprodCoupleSeel]
-  CoeffOwnConsSeel[CoeffOwnConsSeel>0] <- 0 
-  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[,,"ccsinje", invert=T]
-  
-  # FE and SE production that has own consumption of electricity
-  # calculate prodSe back to TWa (was in EJ before), but prod couple coefficient is defined in TWa(input)/Twa(output)
-  prodOwnCons <- mbind(vm_prodFe, prodSe/pm_conv_TWa_EJ)[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)]
-  
-  tmp <- NULL
-  tmp <- mbind(tmp, setNames(
-    -pm_conv_TWa_EJ *
-      (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)], dim=3, na.rm = T) +
-         dimSums(CoeffOwnConsSeel[,,"ccsinje"] * vm_co2CCS[,,"ccsinje"], dim=3,  na.rm = T)),
-    "SE|Electricity|used for own consumption of energy system (EJ/yr)"))
-  
-  
-  # electricity for decentral ground heat pumps 
-  tmp <- mbind(tmp, setNames(
-    -pm_conv_TWa_EJ *
-      (dimSums(CoeffOwnConsSeel_woCCS[,,"geohe"] * prodOwnCons[,,"geohe"], dim=3)),
-    "SE|Electricity|used for centralized geothermal heat pumps (EJ/yr)"))
-  
-  
-  
-  # share of electrolysis H2 in total H2
-  p_shareElec_H2 <- collapseNames(tmp1[,,"SE|Hydrogen|Electricity (EJ/yr)"] / tmp1[,,"SE|Hydrogen (EJ/yr)"])
-  p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
-  
-  tmp <- mbind(tmp,
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "build"), dim=3, na.rm=T) / 
-                                        collapseNames(pm_eta_conv[,,"tdels"])),
-                        "SE|Electricity|used in Buildings (EJ/yr)"),
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "indst"), dim=3, na.rm=T) / 
-                                        collapseNames(pm_eta_conv[,,"tdels"])),
-                        "SE|Electricity|used in Industry (EJ/yr)"),
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "trans"), dim=3, na.rm=T) / 
-                                        collapseNames(pm_eta_conv[,,"tdelt"])),
-                        "SE|Electricity|used in Transport (EJ/yr)"),
-               setNames(collapseNames(dimSums(mselect(vm_demFeSector, all_enty="seel", emi_sectors = "CDR"), dim=3, na.rm=T) / 
-                                        collapseNames(pm_eta_conv[,,"tdels"])),
-                        "SE|Electricity|used for CDR (EJ/yr)"),
-               setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2"]),
-                        "SE|Electricity|used for grey electrolysis (EJ/yr)"),
-               setNames(collapseNames(vm_demSe[,,"seel.seh2.elh2VRE"]),
-                        "SE|Electricity|used for forced VRE electrolysis (EJ/yr)"),
-               setNames(collapseNames(dimSums(vm_demSe[,,c("elh2VRE","elh2")], dim=3)),
-                        "SE|Electricity|used for hydrogen (EJ/yr)")
-  )
-  
-  if (module2realisation["CCU",2] == "on") {
-    tmp <- mbind(tmp,
-                 setNames(collapseNames(p_shareElec_H2 * dimSums(mselect(vm_demSe, all_enty="seliqsyn"), dim=3) / 
-                                          collapseNames(pm_eta_conv[,,"elh2"])),
-                          "SE|Electricity|used for synthetic fuels|liquids (EJ/yr)"),
-                 setNames(collapseNames(p_shareElec_H2 * dimSums(mselect(vm_demSe, all_enty="segasyn"), dim=3) / 
-                                          collapseNames(pm_eta_conv[,,"elh2"])),
-                          "SE|Electricity|used for synthetic fuels|gases (EJ/yr)"))
-    
-  }
-  
-  # transmission losses from se2fe conversion of electricity
-  tmp <- mbind(tmp, 
-                setNames(dimSums(vm_demSe[,,"tdels"]*(1-pm_eta_conv[,,"tdels"]), dim=3),
-               "SE|Electricity|Transmission Losses (EJ/yr)"))
-  
-  tmp1 <- mbind(tmp1, tmp)
-  
+ 
   
   ### add SE trade variables
   
@@ -439,6 +339,129 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                   setNames( mselect(vm_Mport - vm_Xport, all_enty="seliqsyn")*pm_conv_TWa_EJ, 
                             "SE|Liquids|Hydrogen|Net Imports (EJ/yr)"))
   }
+  
+  
+  ### FS: SE Demand Reporting
+  
+  # FE production
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,y,]*pm_conv_TWa_EJ
+  # SE demand
+  vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[,y,]*pm_conv_TWa_EJ
+  # conversion efficiency
+  pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[,y,]
+  
+  tmp1 <- mbind(tmp1,
+               setNames(dimSums(mselect(vm_demSe, all_enty="seh2",all_enty1="seel"), dim=3), "SE|Hydrogen|used for electricity (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demSe, all_enty="seh2",all_enty1="seel",all_te="h2turb"), dim=3), "SE|Hydrogen|used for electricity|normal turbines (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demSe, all_enty="seh2",all_enty1="seel",all_te="h2turbVRE"), dim=3), "SE|Hydrogen|used for electricity|forced VRE turbines (EJ/yr)")
+  )
+  
+  
+  # if CCU on
+  if (module2realisation["CCU",2] == "on" & "seliqsyn" %in% getNames(vm_demSe, dim=2)) {
+    tmp1 <- mbind(tmp1,
+                 setNames(dimSums(mselect(vm_demSe, all_enty="seh2", all_enty1="seliqsyn", all_te="MeOH"), dim=3), "SE|Hydrogen|used for synthetic fuels|liquids (EJ/yr)"),
+                 setNames(dimSums(mselect(vm_demSe, all_enty="seh2", all_enty1="segasyn", all_te="h22ch4"), dim=3), "SE|Hydrogen|used for synthetic fuels|gases (EJ/yr)")
+    )
+  }
+  
+  # SE electricity use
+  
+  # SE electricity use
+  
+  ### calculation of electricity use for own consumption of energy system
+  vm_prodFe <- readGDX(gdx, "vm_prodFe", field = "l", restore_zeros = F)
+  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
+  
+  # filter for coupled production coefficents which consume seel 
+  # (have all_enty2=seel and are negative)
+  teprodCoupleSeel <- getNames(mselect(dataoc_tmp, all_enty2="seel"), dim=3)
+  CoeffOwnConsSeel <- dataoc_tmp[,,teprodCoupleSeel]
+  CoeffOwnConsSeel[CoeffOwnConsSeel>0] <- 0 
+  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[,,"ccsinje", invert=T]
+  
+  # FE and SE production that has own consumption of electricity
+  # calculate prodSe back to TWa (was in EJ before), but prod couple coefficient is defined in TWa(input)/Twa(output)
+  prodOwnCons <- mbind(vm_prodFe, prodSe/pm_conv_TWa_EJ)[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)]
+  
+  tmp1 <- mbind(tmp1, setNames(
+    -pm_conv_TWa_EJ *
+      (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[,,getNames(CoeffOwnConsSeel_woCCS, dim=3)], dim=3, na.rm = T) +
+         dimSums(CoeffOwnConsSeel[,,"ccsinje"] * vm_co2CCS[,,"ccsinje"], dim=3,  na.rm = T)),
+    "SE|Electricity|used for own consumption of energy system (EJ/yr)"))
+  
+  
+  # electricity for decentral ground heat pumps 
+  tmp1 <- mbind(tmp1, setNames(
+    -pm_conv_TWa_EJ *
+      (dimSums(CoeffOwnConsSeel_woCCS[,,"geohe"] * prodOwnCons[,,"geohe"], dim=3)),
+    "SE|Electricity|used for centralized geothermal heat pumps (EJ/yr)"))
+  
+  
+  # share of electrolysis H2 in total H2
+  p_shareElec_H2 <- collapseNames(tmp1[,,"SE|Hydrogen|Electricity (EJ/yr)"] / tmp1[,,"SE|Hydrogen (EJ/yr)"])
+  p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
+  
+  
+  # share of domestically produced H2 (only not 1 if se trade module on and hydrogen can be imported/exported)
+  if (module2realisation["trade",2] == "se_trade") {
+    p_share_H2DomProd <-  collapseNames(tmp1[,,"SE|Hydrogen (EJ/yr)"] / (tmp1[,,"SE|Hydrogen|Net Imports (EJ/yr)"] + tmp1[,,"SE|Hydrogen (EJ/yr)"]))
+  } else {
+    p_share_H2DomProd <- tmp1[,,"SE|Hydrogen (EJ/yr)"] 
+    p_share_H2DomProd[] <- 1
+  }
+   
+  
+  
+  
+  tmp1 <- mbind(tmp1,
+               setNames(dimSums(mselect(vm_demFeSector, all_enty="seel", all_enty1="feels",emi_sectors = "build"), dim=3) / 
+                          mselect(pm_eta_conv, all_te="tdels"),
+                        "SE|Electricity|used in Buildings (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demFeSector, all_enty="seel", all_enty1="feels",emi_sectors = "indst"), dim=3) / 
+                          mselect(pm_eta_conv, all_te="tdels"),
+                        "SE|Electricity|used in Industry (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demFeSector, all_enty="seel", all_enty1="feelt",emi_sectors = "trans"), dim=3) / 
+                          mselect(pm_eta_conv, all_te="tdelt"),
+                        "SE|Electricity|used in Transport (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demFeSector, all_enty="seel", all_enty1="feels",emi_sectors = "CDR"), dim=3) / 
+                          mselect(pm_eta_conv, all_te="tdels"),
+                        "SE|Electricity|used for CDR (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demSe, all_enty="seel", all_enty1="seh2"), dim=3), 
+                        "SE|Electricity|used for H2 (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demSe, all_enty="seel", all_enty1="seh2", all_te="elh2"), dim=3), 
+                        "SE|Electricity|used for H2|Standard Electrolysis (EJ/yr)"),
+               setNames(dimSums(mselect(vm_demSe, all_enty="seel", all_enty1="seh2", all_te="elh2VRE"), dim=3), 
+                        "SE|Electricity|used for H2|VRE Storage (EJ/yr)")
+  )
+  
+  # calculate electricity going into domestic (!) H2 production for direct H2 use (FE Hydrogen)
+  tmp1 <- mbind(tmp1,
+               setNames(dimSums(mselect(vm_demSe, all_enty="seh2", all_enty1=c("feh2s","feh2t")), dim=3) * p_share_H2DomProd *
+                          p_shareElec_H2 / mselect(pm_eta_conv, all_te="elh2"), 
+                        "SE|Electricity|used for H2|direct FE H2 (EJ/yr)"))
+  
+  # electricity used for domestic (!) synfuel production
+  if (module2realisation["CCU",2] == "on" & "seliqsyn" %in% getNames(vm_demSe, dim=2)) {
+    
+    tmp1 <- mbind(tmp1,
+                 setNames(dimSums(mselect(vm_demSe, all_enty="seh2", all_enty1=c("seliqsyn")), dim=3) * p_share_H2DomProd *
+                            p_shareElec_H2 / mselect(pm_eta_conv, all_te="elh2"), 
+                          "SE|Electricity|used for H2|for synthetic fuels|liquids (EJ/yr)"),
+                 setNames(dimSums(mselect(vm_demSe, all_enty="seh2", all_enty1=c("segasyn")), dim=3) * p_share_H2DomProd *
+                            p_shareElec_H2 / mselect(pm_eta_conv, all_te="elh2"), 
+                          "SE|Electricity|used for H2|for synthetic fuels|gases (EJ/yr)"))
+    
+  }
+  
+  
+  
+  # transmission losses from se2fe conversion of electricity
+  tmp1 <- mbind(tmp1, 
+               setNames(dimSums(vm_demSe[,,"tdels"]*(1-pm_eta_conv[,,"tdels"]), dim=3),
+                        "SE|Electricity|Transmission Losses (EJ/yr)"))
+  
+
 
   # add global values
   out <- mbind(tmp1,dimSums(tmp1,dim=1))

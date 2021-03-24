@@ -2471,8 +2471,8 @@ compareScenarios <- function(mif, hist,
              "SE|Hydrogen|Coal|w/o CCS (EJ/yr)",
              "SE|Hydrogen|Gas|w/ CCS (EJ/yr)",
              "SE|Hydrogen|Gas|w/o CCS (EJ/yr)",
-             "SE|Hydrogen|Electricity|from forced VRE storage electrolysis (EJ/yr)",
-             "SE|Hydrogen|Electricity|from general electrolysis (EJ/yr)",
+             "SE|Hydrogen|Electricity|VRE Storage Electrolysis (EJ/yr)",
+             "SE|Hydrogen|Electricity|Standard Electrolysis (EJ/yr)",
              "SE|Hydrogen|Net Imports (EJ/yr)")
 
   var <- data[,,intersect(items,getNames(data,dim=3))]
@@ -2525,6 +2525,40 @@ compareScenarios <- function(mif, hist,
   p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
+  
+  swlatex(sw,"\\subsubsection{SE|Electricity - Usage}")
+  
+  items<- c ("SE|Electricity|used for H2|for synthetic fuels|gases (EJ/yr)",
+             "SE|Electricity|used for H2|for synthetic fuels|liquids (EJ/yr)",
+             "SE|Electricity|used for H2|direct FE H2 (EJ/yr)",
+             "SE|Electricity|used for H2|VRE Storage (EJ/yr)",
+             "SE|Electricity|used in Buildings (EJ/yr)",
+             "SE|Electricity|used in Industry (EJ/yr)",
+             "SE|Electricity|used in Transport (EJ/yr)",
+             "SE|Electricity|used for CDR (EJ/yr)",
+             "SE|Electricity|used for own consumption of energy system (EJ/yr)")
+  
+  
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  p <- mipArea(var[mainReg,,],scales="free_y")
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
   
   
   
