@@ -352,7 +352,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
                      tmp1[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"],
                    "Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)")
   
-  tmp3 <- setNames(tmp[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"] + 
+  tmp3 <- setNames(output[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"] + 
                      output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
                    "Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)") 
   
