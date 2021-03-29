@@ -1008,11 +1008,24 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   tmp <- mbind(tmp, 
     setNames(tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"],
-             "Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"), 
-               setNames(tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"],
-    "Emi|CO2|Energy|Supply|Heat|Gross|w/ couple prod (Mt CO2/yr)"),
+              "Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"), 
+    
+    setNames(tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"],
+              "Emi|CO2|Energy|Supply|Heat|Gross|w/ couple prod (Mt CO2/yr)"),
+    
     setNames(tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"],
-             "Emi|CO2|Energy|Supply|Hydrogen|Gross|w/ couple prod (Mt CO2/yr)"),
+              "Emi|CO2|Energy|Supply|Hydrogen|Gross|w/ couple prod (Mt CO2/yr)"),
+    
+    setNames(tmp[,,"Emi|CO2|Energy|Supply|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"],
+             "Emi|CO2|Energy|Supply|Solids|Gross|w/ couple prod (Mt CO2/yr)"),
+    
+    setNames(tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"],
+             "Emi|CO2|Energy|Supply|Liquids|Gross|w/ couple prod (Mt CO2/yr)"),
+    
+    setNames(tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"],
+             "Emi|CO2|Energy|Supply|Gases|Gross|w/ couple prod (Mt CO2/yr)"),
+    
+    
     setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"],
              "Emi|CO2|Energy|SupplyandDemand|Liquids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
     setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"],
@@ -2266,11 +2279,18 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                           "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"),
                # demand-side energy CO2 emissions
                # fe emissions
-               setNames((dimSums(EmiFeCarrier,dim=3) 
+               setNames((dimSums(EmiFeCarrier,dim=3, na.rm = T) 
                          # substract industry CC
                          - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3)) * GtC_2_MtCO2,
                         "Emi|CO2|Energy|Demand (Mt CO2/yr)")
+               
   )
+  
+  # gross energy industry emissions
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"] + 
+                        out[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
+                                   "Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"))
   
     
   # add global values

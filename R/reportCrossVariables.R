@@ -29,6 +29,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   }
 
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
+  rownames(module2realisation) <- module2realisation$modules
   tran_mod = module2realisation[module2realisation$modules == "transport", 2]
   
   ####### conversion factors ##########
@@ -336,131 +337,38 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
                  setNames(output[,,"Emi|CO2|Buildings|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"], "Emi|CO2|Buildings|Direct and Indirect|Gross (Mt CO2/yr)"),
                  setNames(output[,,"Emi|CO2|Buildings|Solids|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"], "Emi|CO2|Buildings|Solids|Gross (Mt CO2/yr)")
     )
-  
-  # }
 
-  
    
-  # calculate additional gross emissions variables
-  
-  tmp1 <- setNames(output[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"] + 
-                     output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"],
-                  "Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)") 
-
-  tmp2 <- setNames(output[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"] +
-                     output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"] -
-                     tmp1[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)")
-  
-  tmp3 <- setNames(output[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"] + 
-                     output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)") 
-  
-  tmp4 <- setNames(-1 * output[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"], 
-                    "Emi|CO2|Carbon Capture and Storage|Biomass|Neg (Mt CO2/yr)") 
-
-  tmp5 <- setNames(output[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"] +
-                   output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Supply|Gross (Mt CO2/yr)")
-  
-  #extra variables
-  tmp <- mbind(tmp, 
-               setNames(output[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-                          output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Gases|Gross (Mt CO2/yr)"),
-               setNames(output[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"] +
-                          output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Heat|Gross (Mt CO2/yr)"),
-               setNames(output[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"] +
-                          output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Hydrogen|Gross (Mt CO2/yr)"),
-               setNames(output[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-                          output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Liquids|Gross (Mt CO2/yr)"),
-               setNames(output[,,"Emi|CO2|Energy|Supply|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-                          output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Solids|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Solids|Gross (Mt CO2/yr)")
-  )
-  
-  # there is still a difference that I am putting in others until I find where it should be allocated
-  tmp <- mbind(tmp, 
-               setNames(output[,,"Emi|CO2|Energy|Supply|Gross (Mt CO2/yr)"] 
-                        - output[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"]
-                        - dimSums(tmp[,,c("Emi|CO2|Energy|Supply|Gases|Gross (Mt CO2/yr)",
-                                          "Emi|CO2|Energy|Supply|Heat|Gross (Mt CO2/yr)",
-                                          "Emi|CO2|Energy|Supply|Hydrogen|Gross (Mt CO2/yr)",
-                                          "Emi|CO2|Energy|Supply|Liquids|Gross (Mt CO2/yr)",
-                                          "Emi|CO2|Energy|Supply|Solids|Gross (Mt CO2/yr)")],dim=3),
-                        "Emissions|CO2|Energy|Supply|Other|Gross (Mt CO2/yr)")
-  )
-  
+  ### additional variables ###
+  # (needed for specific projects)
+    
+ 
   # calculate cumulative values
   tmp <- mbind(tmp, 
-  #             setNames(cumulatedValue(tmp2[,,"Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)"]), "Emi|CO2|Energy|Supply|Non-Elec|Cumulated (Mt CO2/yr)"),
-  #             setNames(cumulatedValue(tmp1[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Supply|Electricity|Gross|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp3[,,"Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Demand|Industry|Gross|Cumulated (Mt CO2/yr)"),
+               setNames(cumulatedValue(output[,,"Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Demand|Industry|Gross|Cumulated (Mt CO2/yr)"),
                setNames(cumulatedValue(tmp[,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"]), "Emi|CO2|Buildings|Direct|Cumulated (Mt CO2/yr)")
   )
 
-  tmp <- mbind(tmp, #tmp1, tmp2,tmp4, , tmp5
-               tmp3)
   
-  tmp6 <- mbind(tmp,
-                setNames(output[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"] / output[,,"FE|Transport|Fuels (EJ/yr)"], "FE|Transport|Fossil Carbon Intensity of fuels (kg CO2/GJ)"),
-                setNames(tmp[,,"Emi|CO2|Buildings|Direct and Indirect (Mt CO2/yr)"] / output[,,"FE|Buildings|Fuels (EJ/yr)"], "FE|Buildings|Fossil Carbon Intensity of fuels (kg CO2/GJ)"),
-                setNames(tmp[,,"Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"] / output[,,"FE|Industry|Fuels (EJ/yr)"], "FE|Industry|Fossil Carbon Intensity of fuels (kg CO2/GJ)"),
-                setNames(output[,,"Emi|CO2|Fossil Fuels and Industry|Demand (Mt CO2/yr)"] / output[,,"FE|Fuels (EJ/yr)"], "FE|Fossil Carbon Intensity of fuels (kg CO2/GJ)") 
-  )
-  
-  out <- mbind(tmp6, int_gr)
-  
-  
-  ### add energy demand-side and energy emissions CO2 aggregation
-
-  # total demand-side emissions (Emissions|CO2 does not include industry CCS)
-  tmp7 <- NULL
-  #tmp7 <- mbind(tmp7,
-  #             setNames(out[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"] +
-  #                      out[,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"] +
-  #                      output[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],
-  #                      "Emi|CO2|Energy|Demand (Mt CO2/yr)"))
-  
-  tmp7 <- mbind(tmp7, 
-               setNames(output[,,"Emi|CO2|Energy|Demand (Mt CO2/yr)"]+
-                        output[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply+Demand (Mt CO2/yr)"))
-  tmp7 <- mbind(tmp7, 
+  tmp <- mbind(tmp, 
                setNames(output[,,"Emi|CO2|Energy (Mt CO2/yr)"]+
                         output[,,"Emi|CO2|Fossil Fuels and Industry|Cement process (Mt CO2/yr)"],
                         "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"))
   
-
   
-  
-  ### additional EDGE-T variables for ariadne
-  # also: are bunkers included in EDGE-T emissions reporting? 
-  # Because the below does not add up to Emi|CO2|Demand|Transport from reportEmi.
+  # additional EDGE-T variables for ariadne
   if (tran_mod == "edge_esm") {
-    tmp8 <- NULL
-    tmp8 <- mbind(tmp8, 
+    tmp <- mbind(tmp, 
                   setNames(output[,,"Emi|CO2|Transport|Freight|Short-Medium Distance|Demand (Mt CO2/yr)"] +
                            output[,,"Emi|CO2|Transport|Freight|Long Distance|Demand (Mt CO2/yr)"],
                            "Emi|CO2|Transport|Freight|Demand (Mt CO2/yr)"),
                   setNames(output[,,"Emi|CO2|Transport|Pass|Short-Medium Distance|Demand (Mt CO2/yr)"] +
                              output[,,"Emi|CO2|Transport|Pass|Long Distance|Demand (Mt CO2/yr)"],
                            "Emi|CO2|Transport|Pass|Demand (Mt CO2/yr)"))
-    
-
-    
-    # # FE bunkers
-    # tmp8 <- mbind(tmp8,
-    #               setNames(output[,,"FE|Transport|Freight|International Shipping (EJ/yr)"]
-    #                        + output[,,"FE|Transport|Pass|Aviation|International (EJ/yr)"],
-    #                        "FE|Transport|Bunkers (EJ/yr)"))
-    
-    out <- mbind(out, tmp8)
   }
-
+  
+  
+  out <- mbind(tmp, int_gr)
 
   return(out)
 }
