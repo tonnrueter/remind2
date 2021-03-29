@@ -38,7 +38,7 @@ reportEDGETransport <- function(output_folder=".",
   all_enty <- ef <- variable_agg <- model <- scenario <- period <- NULL
   Region <- Variable <- co2 <- co2val <- elh2 <- fe  <- NULL
   int <- se <- sec  <- sharesec <- te  <- tech <-  val <- share <- NULL
-  eff <- sharebio <- sharesyn <- totseliq <- type <- NULL
+  eff <- sharebio <- sharesyn <- totseliq <- type <- ven <- NULL
 
   load(file.path(output_folder, "config.Rdata"))
 
@@ -90,6 +90,9 @@ reportEDGETransport <- function(output_folder=".",
     datatable[grepl("Passenger Rail|HSR", vehicle_type), aggr_veh := "Pass|Rail"]
     datatable[subsector_L3 == "Domestic Aviation", aggr_veh := "Pass|Aviation|Domestic"]
     datatable[subsector_L3 == "International Aviation", aggr_veh := "Pass|Aviation|International"]
+
+    ## Freight
+    datatable[grepl("^Truck", vehicle_type), det_veh := sprintf("Freight|Road|%s", vehicle_type)]
 
     ## High Detail: Ecoinvent-Compatible Output
     datatable[grepl("Subcompact", vehicle_type),
@@ -325,18 +328,39 @@ reportEDGETransport <- function(output_folder=".",
     return(emidem)
   }
 
+  reportingVehNum <- function(demand_vkm){
+    ## sources for truck mileage are from DE:
+    ## https://www.kba.de/DE/Statistik/Kraftverkehr/VerkehrKilometer/vk_revisionsbericht_2019_pdf.pdf?__blob=publicationFile&v=1
+    venum <- copy(demand_vkm)
+    venum[grepl("Road|LDV", variable, fixed=TRUE), ven := value/15e-3] # billion vehicle-km -> thousand vehicles
+    venum[grepl("Road|Truck", variable, fixed=TRUE), ven := value/30e-3]
+    venum[grepl("Road|Truck (0-3.5t)", variable, fixed=TRUE), ven := value/20e-3]
+    venum[grepl("Road|Truck (40t)", variable, fixed=TRUE), ven := value/100e-3]
+
+    ## https://de.statista.com/statistik/daten/studie/251746/umfrage/durchschnittliche-fahrleistung-von-kraftomnibussen-in-deutschland/
+    venum[grepl("Pass|Road|Bus", variable, fixed=TRUE), ven := value/45e-3]
+
+    venum <- venum[!is.na(ven)]
+    venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, value := NULL]
+    venum[, unit := "tsd veh"]
+    setnames(venum, "ven", "value")
+    return(venum)
+  }
+
   repFE <- reportingESandFE(
       demand_ej,
     mode ="FE")
+  repVKM <- reportingESandFE(
+    datatable=demand_vkm,
+    mode="VKM")
 
   toMIF <- rbindlist(list(
     repFE,
+    repVKM,
     reportingESandFE(
       datatable=demand_km,
       mode="ES"),
-    reportingESandFE(
-      datatable=demand_vkm,
-      mode="VKM"),
+    reportingVehNum(repVKM),
     reportingEmi(repFE = repFE, gdx = gdx)
   ))
 
