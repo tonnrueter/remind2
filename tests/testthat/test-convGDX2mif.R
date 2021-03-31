@@ -55,7 +55,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     dt <- rmndt::magpie2dt(out)
     stopifnot(!(c("total", "diff") %in% unique(dt[["variable"]])))
     dt_wide <- data.table::dcast(dt, ... ~ variable)
-    mylist <- mip::extractVariableGroups(unique(dt[["variable"]]),keepOrigNames = T)
+    mylist <- mip::extractVariableGroups(unique(dt[["variable"]]),keepOrigNames = TRUE)
     mylist <- lapply(mylist, FUN=function(x){return(paste0("`",x,"`"))})
     mylist <- lapply(mylist, paste, collapse = "+")
     # remove from the tests the variables whose totals cannot be found
