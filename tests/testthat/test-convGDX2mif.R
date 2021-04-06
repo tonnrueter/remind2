@@ -55,14 +55,12 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     dt <- rmndt::magpie2dt(out)
     stopifnot(!(c("total", "diff") %in% unique(dt[["variable"]])))
     dt_wide <- data.table::dcast(dt, ... ~ variable)
-    mylist <- mip::extractVariableGroups(unique(dt[["variable"]]),keepOrigNames = T)
+    mylist <- mip::extractVariableGroups(unique(dt[["variable"]]),keepOrigNames = TRUE)
     mylist <- lapply(mylist, FUN=function(x){return(paste0("`",x,"`"))})
     mylist <- lapply(mylist, paste, collapse = "+")
     # remove from the tests the variables whose totals cannot be found
     chck <- grep(" \\(.*.\\)$",names(mylist),invert = T)
-    if (length(chck)>0) warning(paste0("For these variables the corresponding
-                                       total could not be found and the summation
-                                       check will not be performed: ",mylist[chck]))
+    if (length(chck)>0) warning(paste0("For this group the corresponding total could not be found and the summation check will not be performed: \n",mylist[chck],"\n\n"))
     mylist <- mylist[grep(" \\(.*.\\)$",names(mylist))]
 
     check_eqs(dt_wide,mylist)
@@ -92,7 +90,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     cat("\n")
   }
 
-  print("Check compareScenario.")
+  print("Check compareScenarios.")
   check_compscen()
 
 })
