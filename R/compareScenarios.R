@@ -273,25 +273,24 @@ compareScenarios <- function(mif, hist,
   ## ---- GHG total ----
 
   swlatex(sw,"\\subsection{GHG Emissions}")
-
-  GWP <- c("CO2"=1,"CH4"=28,"N2O"=265)
-  var <- NULL
-  var <- mbind(var,data[,,"Emi|CO2|Land-Use Change (Mt CO2/yr)"]                   *GWP["CO2"])
-  var <- mbind(var,data[,,"Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"]   *GWP["CO2"])
-  var <- mbind(var,data[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"]*-GWP["CO2"])
-  var <- mbind(var,data[,,"Emi|CH4|Energy Supply and Demand (Mt CH4/yr)"]          *GWP["CH4"])
-  var <- mbind(var,data[,,"Emi|CH4|Land Use (Mt CH4/yr)"]                          *GWP["CH4"])
-  var <- mbind(var,data[,,"Emi|CH4|Other (Mt CH4/yr)"]                             *GWP["CH4"])
-  var <- mbind(var,data[,,"Emi|CH4|Waste (Mt CH4/yr)"]                             *GWP["CH4"])
-  var <- mbind(var,data[,,"Emi|N2O|Land Use (kt N2O/yr)"]                          *GWP["N2O"]/1000)
-  var <- mbind(var,data[,,"Emi|N2O|Energy Supply and Demand (kt N2O/yr)"]          *GWP["N2O"]/1000)
-  var <- mbind(var,data[,,"Emi|N2O|Waste (kt N2O/yr)"]                             *GWP["N2O"]/1000)
-  var <- mbind(var,data[,,"Emi|N2O|Industry (kt N2O/yr)"]                          *GWP["N2O"]/1000)
-  var <- mbind(var,data[,,"Emi|F-Gases (Mt CO2-equiv/yr)"]                         )
-  var <- setNames(var,gsub(" \\(.*\\)"," (Mt CO2eq/yr)",magclass::getNames(var)))
-
-  p <- mipArea(var[mainReg,,],scales="free_y")
-  p <- p + theme(legend.position="none")
+  
+  tot <-"Emi|GHG|CO2Eq (Mt CO2eq/yr)"
+  items <- c("Emi|CO2|Energy (Mt CO2/yr)",
+             "Emi|CO2|Process (Mt CO2/yr)",
+             "Emi|CO2|Land-Use Change (Mt CO2/yr)",
+             "Emi|GHG|CO2Eq|CH4 (Mt CO2eq/yr)",
+             "Emi|GHG|CO2Eq|N2O (Mt CO2eq/yr)",
+             "Emi|GHG|CO2Eq|F-Gases (Mt CO2eq/yr)",
+             "Emi|CO2|non-BECCS CDR (Mt CO2/yr)")
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="none") + 
+           scale_y_continuous("Emi|GHG|CO2Eq (Mt CO2eq/yr)") +
+           geom_line(data=as.quitte(data[mainReg,,tot]), 
+                     mapping=aes(period, value),
+                               size=1.3)
   swfigure(sw,print,p,sw_option="height=3.5,width=7")
 
   p <- mipBarYearData(var[mainReg,y_bar,])
@@ -299,7 +298,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=4.5,width=7")
 
   p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
-    guides(fill=guide_legend(ncol=3))
+        guides(fill=guide_legend(ncol=3))
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\onecolumn")
@@ -309,24 +308,30 @@ compareScenarios <- function(mif, hist,
 
   ## ---- CO2 by sector ----
 
-  swlatex(sw,"\\subsection{CO2 by sector}")
+  swlatex(sw,"\\subsection{CO2 by sector (w/ gross emissions, excl. BECCS)}")
 
   tot <-"Emi|CO2 (Mt CO2/yr)"
-  items <- c("Emi|CO2|Land-Use Change (Mt CO2/yr)",
-             "Emi|CO2|Energy|Supply|Non-Elec|Gross (Mt CO2/yr)",
-             "Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)",
-             "Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)",
-             "Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)",
-             ##          "Emi|CO2|Industrial Processes (Mt CO2/yr)",
-             "Emi|CO2|Buildings|Direct (Mt CO2/yr)",
-             "Emi|CO2|Transport|Demand (Mt CO2/yr)",
-             "Emi|CO2|Carbon Capture and Storage|Biomass|Neg (Mt CO2/yr)",
-             "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
-             "Emi|CO2|CDR|EW (Mt CO2/yr)")
+  items <- c(
+             "Emi|CO2|Land-Use Change (Mt CO2/yr)",
+             "Emi|CO2|Process (Mt CO2/yr)",
+             "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)",
+             "Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)",
+             "Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)",
+             "Emi|Gross CO2|Energy|Supply|Non-electric (Mt CO2/yr)",
+             "Emi|Gross CO2|Energy|Supply|Electricity (Mt CO2/yr)",
+             "Emi|CDR CO2|BECCS (Mt CO2/yr)",
+             "Emi|CDR CO2|DACCS (Mt CO2/yr)",
+             "Emi|CDR CO2|EW (Mt CO2/yr)")
+             
+  
   var <- data[,,intersect(items,getNames(data,dim=3))]
 
-  p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
-  p <- p + theme(legend.position="none")
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi|CO2 (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
   swfigure(sw,print,p,sw_option="height=3.5,width=7")
 
   p <- mipBarYearData(var[mainReg,y_bar,])
@@ -344,17 +349,30 @@ compareScenarios <- function(mif, hist,
 
   ## ---- CO2 by sector cumulated ----
 
-  items <- c("Emi|CO2|Land-Use Change|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Energy|Supply|Non-Elec|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Energy|Supply|Electricity|Gross|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Energy|Demand|Industry|Gross|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|FFaI|Industry|Process|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Buildings|Direct|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Transport|Demand|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|CDR|BECCS|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|CDR|DACCS|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|CDR|EW|Cumulated (Mt CO2/yr)")
+  tot <- "Emi Cumulated|CO2 (Mt CO2)"
+  items <- c(
+    "Emi Cumulated|CO2|Land-Use Change (Mt CO2)",
+    "Emi Cumulated|CO2|Process (Mt CO2)",
+    "Emi Cumulated|CO2|Energy|Demand|Transport (Mt CO2)",
+    "Emi Cumulated|CO2|Energy|Demand|Industry (Mt CO2)",
+    "Emi Cumulated|CO2|Energy|Demand|Buildings (Mt CO2)",
+    "Emi Cumulated|Gross CO2|Energy|Supply|Non-electric (Mt CO2)",
+    "Emi Cumulated|Gross CO2|Energy|Supply|Electricity (Mt CO2)",
+    "Emi Cumulated|CDR CO2|BECCS (Mt CO2)",
+    "Emi Cumulated|CDR CO2|DACCS (Mt CO2)",
+    "Emi Cumulated|CDR CO2|EW (Mt CO2)")
+  
+  
   var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi Cumulated|CO2 (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
 
   p <- mipBarYearData(var[mainReg,y_bar,])
   p <- p + theme(legend.position="none")
@@ -1592,25 +1610,25 @@ compareScenarios <- function(mif, hist,
                      "Emi|GHGtot|target|55% (Mt CO2-equiv/yr)"="-55% vs. 1990 (Eurostat)",
                      "Emi|GHGtot|target|65% (Mt CO2-equiv/yr)"="-65% vs. 1990 (Eurostat)")
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|GHGtot (Mt CO2-equiv/yr)"],x_hist=histData[mainReg,,"Emi|GHGtot (Mt CO2-equiv/yr)"],
-                         ylab='Emi|GHGtot|w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
+  p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHGtot (Mt CO2-equiv/yr)"],
+                         ylab='Total GHG Emisions w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                          hlines=if(all(names(targets) %in% getNames(histData, dim=3)) && !all(is.na(histData[mainReg,1990,names(targets)]))) histData[mainReg,1990,names(targets)] else NULL, 
                          hlines.labels=targets)
   swfigure(sw,print,p,sw_option="height=8,width=8")
   
-  p <- mipLineHistorical(data[,,"Emi|GHGtot (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHGtot (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|GHGtot|w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
+  p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHGtot (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Total GHG Emisions w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
                          hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[,1990,names(targets)][mainReg,,invert=TRUE] else NULL)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   
   #GHG total with bunkers
-  p <- mipLineHistorical(data[mainReg,,"Emi|GHGtot|w/ Bunkers (Mt CO2-equiv/yr)"],x_hist=NULL,
-                         ylab='Emi|GHGtot|w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Emi w/ Bunkers|GHG|CO2Eq (Mt CO2eq/yr)"],x_hist=NULL,
+                         ylab='Total GHG Emisions w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   
-  p <- mipLineHistorical(data[,,"Emi|GHGtot|w/ Bunkers (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|GHGtot|w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi w/ Bunkers|GHG|CO2Eq (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Total GHG Emisions w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   # emission markets
@@ -1623,50 +1641,107 @@ compareScenarios <- function(mif, hist,
                        "Emi|GHG|ETS|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
                        "Emi|GHG|ETS|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)")
         
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
-                           ylab='Emi|GHG|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
+                           ylab='Emi|GHG|CO2Eq|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                            hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2005,names(targets)] else NULL,
                            hlines.labels=targets)
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                           ylab='Emi|GHG|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
+    p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
+                           ylab='Emi|GHG|CO2Eq|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
                            hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,,invert=TRUE][,2005,names(targets)] else NULL)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
-    swlatex(sw,"\\subsubsection{ES}")
+    swlatex(sw,"\\subsubsection{ESR}")
     
     targets = c("Emi|GHG|ES|target|40% (Mt CO2-equiv/yr)"="-40% vs. 2005 (EEA)",
                 "Emi|GHG|ES|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
                 "Emi|GHG|ES|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)")
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ESD (Mt CO2-equiv/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ES (Mt CO2-equiv/yr)"],
-                           ylab='Emi|GHG|ESD [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|ESR (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ES (Mt CO2-equiv/yr)"],
+                           ylab='Emi|GHG|CO2Eq|ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                            hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2005,names(targets)] else NULL,
                            hlines.labels=targets)
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|GHG|ESD (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                           ylab='Emi|GHG|ESD [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
+    p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|ESR (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
+                           ylab='Emi|GHG|CO2Eq|ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
                            hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,,invert=TRUE][,2005,names(targets)] else NULL)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
-    swlatex(sw,"\\subsubsection{other}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],x_hist=histData[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],
-                           ylab='Emi|GHG|other - Non ETS and ES [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swlatex(sw,"\\subsubsection{Other - Outside ETS and ESR}")
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],
+                           ylab='Emi|GHG|CO2Eq|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                           ylab='Emi|GHG|other - Non ETS and ES [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
+                           ylab='Emi|GHG|CO2Eq|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
 
   ## ---- Emissions CO2 ----
-
+  
   swlatex(sw,"\\subsection{CO2}")
+  
+  swlatex(sw,"\\subsubsection{CO2 by sector (net emissions, incl. BECCS)}")
+  
+  tot <-"Emi|CO2 (Mt CO2/yr)"
+  items <- c(
+    "Emi|CO2|Land-Use Change (Mt CO2/yr)",
+    "Emi|CO2|Process (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)",
+    "Emi|CO2|Energy|Supply|Non-electric (Mt CO2/yr)",
+    "Emi|CO2|Energy|Supply|Electricity w/ couple prod (Mt CO2/yr)",
+    "Emi|CDR CO2|DACCS (Mt CO2/yr)",
+    "Emi|CDR CO2|EW (Mt CO2/yr)")
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi|CO2 (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
 
+
+
+  swlatex(sw,"\\subsubsection{Total CO2}")
   p <- mipLineHistorical(data[mainReg,,"Emi|CO2 (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2 (Mt CO2/yr)"],
                          ylab='Emi|CO2 [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2 (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2 (Mt CO2/yr)"][mainReg,,,invert=TRUE],
                          ylab='Emi|CO2 [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\subsubsection{Energy and Industrial Processes - Net (incl BECCS)}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Energy and Industrial Processes [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Energy and Industrial Processes [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\subsubsection{Energy and Industrial Processes - Gross}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|Gross CO2|Energy and Industrial Processes (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"],
+                         ylab='Emi|Gross CO2|Energy and Industrial Processes [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Emi|Gross CO2|Energy and Industrial Processes (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|Gross CO2|Energy and Industrial Processes [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\subsubsection{Energy}")
@@ -1677,229 +1752,175 @@ compareScenarios <- function(mif, hist,
                          ylab='Emi|CO2|Energy  [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
+  swlatex(sw,"\\subsubsection{Energy Supply}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Energy|Supply [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Energy|Supply [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
   swlatex(sw,"\\subsubsection{Electricity}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply|Electricity w/ couple prod (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"],
                          ylab='Emi|CO2|Energy|Supply|Electricity [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+  p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Supply|Electricity w/ couple prod (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"][mainReg,,,invert=TRUE],
                          ylab='Emi|CO2|Energy|Supply|Electricity [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\subsubsection{Buildings}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"],
-                         ylab='Emi|CO2|Buildings|Direct [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Energy|Demand|Buildings [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|Buildings|Direct [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Energy|Demand|Buildings [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"],
-                         ylab='Emi|CO2|Industry|Direct [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swlatex(sw,"\\subsubsection{Industry}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Energy|Demand|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|Industry|Direct [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Energy|Demand|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"],
-                         ylab='Emi|CO2|Fossil Fuels and Industry|Energy Supply [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swlatex(sw,"\\subsubsection{Transport}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Energy|Demand|Transport [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|Fossil Fuels and Industry|Energy Supply [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Energy|Demand|Transport [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],
-                         ylab='Emi|CO2|Transport|Demand [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|Transport|Demand [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-  
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"],
-                         ylab='Emi|CO2|FFaI|Industry|Process [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|FFaI|Industry|Process [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-  
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"],
-                         ylab='Emi|CO2|Gross Fossil Fuels and Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|Gross Fossil Fuels and Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"],
-                         ylab='Emi|CO2|Fossil Fuels and Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swlatex(sw,"\\subsubsection{Process Emissions}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Process|Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Process|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CO2|Fossil Fuels and Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CO2|Process|Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Process|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-
+  
+  swlatex(sw,"\\subsubsection{Land-Use Change (Mt CO2/yr)}")
   p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Land-Use Change (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Land Use (Mt CO2/yr)"],
                          ylab='Emi|CO2|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|Land-Use Change (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Land Use (Mt CO2/yr)"][mainReg,,,invert=TRUE],
                          ylab='Emi|CO2|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Carbon Capture and Storage|Fossil|Pe2Se (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|Carbon Capture and Storage|Fossil|Pe2Se [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  
+  swlatex(sw,"\\subsubsection{non-BECCS CDR (Mt CO2/yr)}")
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|non-BECCS CDR (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Land Use (Mt CO2/yr)"],
+                         ylab='Emi|CO2|non-BECCS CDR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Carbon Capture and Storage|Fossil|Pe2Se (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|Carbon Capture and Storage|Fossil|Pe2Se [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CO2|non-BECCS CDR (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Land Use (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|non-BECCS CDR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
+  
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Carbon Capture and Storage (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|Carbon Capture and Storage [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  ## ---- CDR ----
+  
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|CDR CO2|BECCS (Mt CO2/yr)"],x_hist=NULL,
+                         ylab='Emi|CDR CO2|BECCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Carbon Capture and Storage (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|Carbon Capture and Storage [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CDR CO2|BECCS (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi|CDR CO2|BECCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  ## ---- Emissions CDR ----
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|CDR CO2|DACCS (Mt CO2/yr)"],x_hist=NULL,
+                         ylab='Emi|CDR CO2|DACCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CDR CO2|DACCS (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi|CDR CO2|DACCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|BECCS (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|BECCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|CDR CO2|EW (Mt CO2/yr)"],x_hist=NULL,
+                         ylab='Emi|CDR CO2|EW [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|BECCS (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|BECCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CDR CO2|EW (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi|CDR CO2|EW [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  if("Emi|CO2|CDR|DACCS (Mt CO2/yr)" %in% magclass::getNames(data,dim=3)) {
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|DACCS (Mt CO2/yr)"],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|DACCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,"Emi|CO2|CDR|DACCS (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|DACCS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-    swfigure(sw,print,p,sw_option="height=9,width=8")
-  }
-
-  if("Emi|CO2|CDR|EW (Mt CO2/yr)" %in% magclass::getNames(data,dim=3)) {
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|EW (Mt CO2/yr)"],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|EW [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,"Emi|CO2|CDR|EW (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|EW [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-    swfigure(sw,print,p,sw_option="height=9,width=8")
-  }
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|CDR CO2|Land-Use Change (Mt CO2/yr)"],x_hist=NULL,
+                         ylab='Emi|CDR CO2|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi|CDR CO2|Land-Use Change (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi|CDR CO2|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  ## ---- Emissions CDR per sector ----
 
-  tot <-"Emi|CO2 (Mt CO2/yr)"
-  items <- c("Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)",
-             "Emi|CO2|Carbon Capture and Storage|Fossil (Mt CO2/yr)",
-             "Emi|CO2|Land-Use Change (Mt CO2/yr)",
-             "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
-             "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
-             "Emi|CO2|CDR|EW (Mt CO2/yr)")
-  var <- data[,,intersect(items,getNames(data,dim=3))]
 
-  p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
-  p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  ## ---- Cumulated Emissions ----
 
-  p <- mipBarYearData(var[mainReg,y_bar,])
-  p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  swlatex(sw,"\\subsubsection{Cumulated Emissions}")
 
-  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  swlatex(sw,"\\onecolumn")
-  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
-  swfigure(sw,print,p,sw_option="height=8,width=16")
-  swlatex(sw,"\\twocolumn")
-
-  ## ---- Emissions CO2 cumulated ----
-
-  swlatex(sw,"\\subsubsection{Cumulated}")
-
-  toplot <- data[,,"Emi|CO2|Cumulated (Mt CO2/yr)"]
+  toplot <- data[,,"Emi Cumulated|CO2 (Mt CO2)"]
 
   toplot2010 <- setYears(toplot[,2010,], NULL)
   toplot <- toplot - toplot2010
 
-  p <- mipLineHistorical(toplot[mainReg,,"Emi|CO2|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(toplot[mainReg,,"Emi Cumulated|CO2 (Mt CO2)"],x_hist=NULL,
+                         ylab='Emi Cumulated|CO2 [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
 
   p <- mipLineHistorical(toplot[mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+                         ylab='Emi Cumulated|CO2 [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|Land-Use Change|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Land-Use Change|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Emi Cumulated|CDR CO2|Land-Use Change (Mt CO2)"],x_hist=NULL,
+                         ylab='Emi Cumulated|CDR CO2|Land-Use Change [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Land-Use Change|Cumulated (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Land-Use Change|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi Cumulated|CDR CO2|Land-Use Change (Mt CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi Cumulated|CDR CO2|Land-Use Change [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|BECCS|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|BECCS|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Emi Cumulated|CDR CO2|BECCS (Mt CO2)"],x_hist=NULL,
+                         ylab='Emi Cumulated|CDR CO2|BECCS [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|BECCS|Cumulated (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|BECCS|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Emi Cumulated|CDR CO2|BECCS (Mt CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi Cumulated|CDR CO2|BECCS [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  if("Emi|CO2|CDR|DACCS (Mt CO2/yr)" %in% magclass::getNames(data,dim=3)) {
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|DACCS|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|DACCS|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  if("Emi|CDR CO2|DACCS (Mt CO2/yr)" %in% magclass::getNames(data,dim=3)) {
+    p <- mipLineHistorical(data[mainReg,,"Emi Cumulated|CDR CO2|DACCS (Mt CO2)"],x_hist=NULL,
+                           ylab='Emi Cumulated|CDR CO2|DACCS [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,"Emi|CO2|CDR|DACCS|Cumulated (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|DACCS|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    p <- mipLineHistorical(data[,,"Emi Cumulated|CDR CO2|DACCS (Mt CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi Cumulated|CDR CO2|DACCS [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
 
-  if("Emi|CO2|CDR|EW (Mt CO2/yr)" %in% magclass::getNames(data,dim=3)) {
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|EW|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|EW|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  if("Emi|CDR CO2|EW (Mt CO2/yr)" %in% magclass::getNames(data,dim=3)) {
+    p <- mipLineHistorical(data[mainReg,,"Emi Cumulated|CDR CO2|EW (Mt CO2)"],x_hist=NULL,
+                           ylab='Emi Cumulated|CDR CO2|EW [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,"Emi|CO2|CDR|EW|Cumulated (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CO2|CDR|EW|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    p <- mipLineHistorical(data[,,"Emi Cumulated|CDR CO2|EW (Mt CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi Cumulated|CDR CO2|EW [Mt CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Cumulated (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-  
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Cumulated (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|Cumulated (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|Cumulated [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+ 
 
   ## ---- Emissions CDR by sector cumulated
 
-  tot <-"Emi|CO2|Cumulated (Mt CO2/yr)"
-  items <- c("Emi|CO2|Gross Fossil Fuels and Industry|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Carbon Capture and Storage|Fossil|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|Land-Use Change|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|CDR|BECCS|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|CDR|DACCS|Cumulated (Mt CO2/yr)",
-             "Emi|CO2|CDR|EW|Cumulated (Mt CO2/yr)")
+  tot <-"Emi Cumulated|CO2 (Mt CO2)"
+  items <- c("Emi Cumulated|Gross CO2|Energy and Industrial Processes (Mt CO2)",
+             "Emi Cumulated|CO2|Land-Use Change (Mt CO2)",
+             "Emi Cumulated|CDR CO2|BECCS (Mt CO2)",
+             "Emi Cumulated|CDR CO2|DACCS (Mt CO2)",
+             "Emi Cumulated|CDR CO2|EW (Mt CO2)")
+  
   var <- data[,,intersect(items,getNames(data,dim=3))]
-
-  p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
-  p <- p + theme(legend.position="none")
+  
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi Cumulated|CO2 (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
   swfigure(sw,print,p,sw_option="height=3.5,width=7")
 
   p <- mipBarYearData(var[mainReg,y_bar,])
@@ -1915,165 +1936,299 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\twocolumn")
   
   if(mainReg=="EUR"){
-    swlatex(sw,"\\subsection{CO2 - Market}")
+    
+    ## Market Emissions ----
+    
+    swlatex(sw,"\\subsection{Market Emissions}")
+    
+    swlatex(sw,"\\subsubsection{GHG ETS Emissions}")
+    
+    
+    tot <-"Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)"
+    items <- c(
+      "Emi|GHG|CO2Eq|ETS|Energy Supply (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ETS|Industry (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ETS|Transport (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ETS|Extraction (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ETS|Waste (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ETS|non-BECCS CDR (Mt CO2eq/yr)")
+    
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+    p <- p + theme(legend.position="bottom") + 
+      scale_y_continuous("Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    swlatex(sw,"\\subsubsection{GHG ESR Emissions}")
+    
+    tot <-"Emi|GHG|CO2Eq|ESR (Mt CO2eq/yr)"
+    items <- c(
+      "Emi|GHG|CO2Eq|ESR|Buildings (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ESR|Industry (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ESR|Transport (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ESR|Agriculture (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|ESR|Waste (Mt CO2eq/yr)")
+    
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+    p <- p + theme(legend.position="bottom") + 
+      scale_y_continuous("Emi|GHG|CO2Eq|ESR (Mt CO2eq/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    swlatex(sw,"\\subsubsection{GHG Other Emissions - Outisde ETS and ESR}")
+    
+    tot <-"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"
+    items <- c(
+      "Emi|GHG|CO2Eq|Other|Transport (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|Other|Land-Use Change (Mt CO2eq/yr)",
+      "Emi|GHG|CO2Eq|Other|F-Gases (Mt CO2eq/yr)")
+    
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+    p <- p + theme(legend.position="bottom") + 
+      scale_y_continuous("Emi|GHG|CO2Eq|Other - Outside ETS and ESR (Mt CO2eq/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    
+    
+    
+    swlatex(sw,"\\subsubsection{Market Emissions across GHGs}")
+    
     p <- mipLineHistorical(data[mainReg,,"Emi|CO2|ETS (Mt CO2/yr)"],x_hist=NULL,
                            ylab='Emi|CO2|ETS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    if(mainReg=="EUR"){
-      if("Emi|CO2|ETS|Alowances (Mt CO2/yr)" %in% getNames(data,dim=3)){
-        df <- as.quitte(data[mainReg,,"Emi|CO2|ETS|Alowances (Mt CO2/yr)"])
-        p <- p + geom_point(data=df[!is.na(df$value),], aes(x=period, y=value), color="blue", shape=4, size=2)
-      }
-    }
     swfigure(sw,print,p,sw_option="height=8,width=8")  
+    
     p <- mipLineHistorical(data[,,"Emi|CO2|ETS (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                            ylab='Emi|CO2|ETS [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|ESD (Mt CO2/yr)"],x_hist=NULL,
-                           ylab='Emi|CO2|ESD [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    if(mainReg=="EUR"){
-      if("Emi|CO2|ES|Targets (Mt CO2/yr)" %in% getNames(data,dim=3)){
-        df <- as.quitte(data[mainReg,,"Emi|CO2|ES|Targets (Mt CO2/yr)"])
-        p <- p + geom_point(data=df[!is.na(df$value),], aes(x=period, y=value), color="blue", shape=4, size=2)
-      }
-    }
+    
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|ESR (Mt CO2/yr)"],x_hist=NULL,
+                           ylab='Emi|CO2|ESR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|CO2|ESD (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CO2|ESD [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-    if(mainReg=="EUR"){
-      if("Emi|CO2|ES|Targets (Mt CO2/yr)" %in% getNames(data,dim=3)){
-        df <- as.quitte(data[,,"Emi|CO2|ES|Targets (Mt CO2/yr)"][mainReg,,,invert=TRUE])
-        p <- p + geom_point(data=df[!is.na(df$value),], aes(x=period, y=value), color="blue", shape=4, size=2)
-      }
-    }
+    
+    p <- mipLineHistorical(data[,,"Emi|CO2|ESR (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|CO2|ESR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|other - Non ETS and ES (Mt CO2/yr)"],x_hist=NULL,
-                           ylab='Emi|CO2|other - Non ETS and ES [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Other (Mt CO2/yr)"],x_hist=NULL,
+                           ylab='Emi|CO2|Other - Outside ETS and ESR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|CO2|other - Non ETS and ES (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CO2|other - Non ETS and ES [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    
+    p <- mipLineHistorical(data[,,"Emi|CO2|Other (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|CO2|Other - Outside ETS and ESR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
-  }
-  
-
-  ## ---- Emissions CH4 ----
-
-  swlatex(sw,"\\subsection{CH4}")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CH4 (Mt CH4/yr)"],x_hist=histData[mainReg,,"Emi|CH4 (Mt CH4/yr)"],
-                         ylab='Emi|CH4 [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CH4 (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CH4 (Mt CH4/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CH4 [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CH4|Land Use (Mt CH4/yr)"],x_hist=histData[mainReg,,"Emi|CH4|Land Use (Mt CH4/yr)"],
-                         ylab='Emi|CH4|Land Use [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CH4|Land Use (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CH4|Land Use (Mt CH4/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CH4|Land Use [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|CH4|Energy Supply and Demand (Mt CH4/yr)"],x_hist=histData[mainReg,,"Emi|CH4|Energy Supply and Demand (Mt CH4/yr)"],
-                         ylab='Emi|CH4|Energy Supply and Demand [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CH4|Energy Supply and Demand (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CH4|Energy Supply and Demand (Mt CH4/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|CH4|Energy Supply and Demand [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-  
-  if(mainReg=="EUR"){
-    swlatex(sw,"\\subsection{CH4 - Market}")
+    
+    
+    swlatex(sw,"\\subsubsection{Market CH4}")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|CH4|ETS (Mt CH4/yr)"],x_hist=NULL,
                            ylab='Emi|CH4|ETS [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
+    
     p <- mipLineHistorical(data[,,"Emi|CH4|ETS (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                            ylab='Emi|CH4|ETS [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|CH4|ESD (Mt CH4/yr)"],x_hist=NULL,
-                           ylab='Emi|CH4|ESD [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    
+    p <- mipLineHistorical(data[mainReg,,"Emi|CH4|ESR (Mt CH4/yr)"],x_hist=NULL,
+                           ylab='Emi|CH4|ESR [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|CH4|ESD (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CH4|ESD [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    
+    p <- mipLineHistorical(data[,,"Emi|CH4|ESR (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|CH4|ESR [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|CH4|other - Non ETS and ES (Mt CH4/yr)"],x_hist=NULL,
-                           ylab='Emi|CH4|other - Non ETS and ES [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    p <- mipLineHistorical(data[mainReg,,"Emi|CH4|Other (Mt CH4/yr)"],x_hist=NULL,
+                           ylab='Emi|CH4|Other - Outside ETS and ESR [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|CH4|other - Non ETS and ES (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|CH4|other - Non ETS and ES [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    
+    p <- mipLineHistorical(data[,,"Emi|CH4|Other (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|CH4|Other - Outside ETS and ESR [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    
+    swlatex(sw,"\\subsubsection{Market N2O}")
+    
+    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|ETS (kt N2O/yr)"],x_hist=NULL,
+                           ylab='Emi|N2O|ETS [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")  
+    
+    p <- mipLineHistorical(data[,,"Emi|N2O|ETS (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|N2O|ETS [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    
+    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|ESR (kt N2O/yr)"],x_hist=NULL,
+                           ylab='Emi|N2O|ESR [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")  
+    
+    p <- mipLineHistorical(data[,,"Emi|N2O|ESR (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|N2O|ESR [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    
+    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|Other (kt N2O/yr)"],x_hist=NULL,
+                           ylab='Emi|N2O|Other - Outside ETS and ESR [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")  
+    
+    p <- mipLineHistorical(data[,,"Emi|N2O|Other (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|N2O|Other - Outside ETS and ESR [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
   }
+    
+    
+    
+    
+    
+    
+  ## ---- Emissions CH4 ----
+
+  swlatex(sw,"\\subsection{CH4}")
+
+  tot <-"Emi|CH4 (Mt CH4/yr)"
+  items <- c(
+    "Emi|CH4|Extraction (Mt CH4/yr)",
+    "Emi|CH4|Agriculture (Mt CH4/yr)",
+    "Emi|CH4|Land-Use Change (Mt CH4/yr)",
+    "Emi|CH4|Waste (Mt CH4/yr)",
+    "Emi|CH4|Energy Supply (Mt CH4/yr)")
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi|CH4 (Mt CH4/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
+ 
 
   ## ---- Emissions N2O ----
 
   swlatex(sw,"\\subsection{N2O}")
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|N2O (kt N2O/yr)"],x_hist=histData[mainReg,,"Emi|N2O (kt N2O/yr)"],
-                         ylab='Emi|N2O [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|N2O (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|N2O (kt N2O/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|N2O [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  tot <-"Emi|N2O (kt N2O/yr)"
+  items <- c(
+    "Emi|N2O|Agriculture (kt N2O/yr)",
+    "Emi|N2O|Land-Use Change (kt N2O/yr)",
+    "Emi|N2O|Waste (kt N2O/yr)",
+    "Emi|N2O|Transport (kt N2O/yr)",
+    "Emi|N2O|Industry (kt N2O/yr)",
+    "Emi|N2O|Energy Supply (kt N2O/yr)")
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi|N2O (kt N2O/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
   swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|N2O|Land Use (kt N2O/yr)"],x_hist=histData[mainReg,,"Emi|N2O|Land Use (kt N2O/yr)"],
-                         ylab='Emi|N2O|Land Use [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|N2O|Land Use (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|N2O|Land Use (kt N2O/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|N2O|Land Use [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|N2O|Energy Supply and Demand (kt N2O/yr)"],x_hist=histData[mainReg,,"Emi|N2O|Energy Supply and Demand (kt N2O/yr)"],
-                         ylab='Emi|N2O|Energy Supply and Demand [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|N2O|Energy Supply and Demand (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|N2O|Energy Supply and Demand (kt N2O/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|N2O|Energy Supply and Demand [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
+  
   
   ## ---- Emissions F-Gases ----
   swlatex(sw,"\\subsection{F-Gases}")
 
-  p <- mipLineHistorical(data[mainReg,,"Emi|F-Gases (Mt CO2-equiv/yr)"],
-                         ylab='Emi|F-Gases [Mt CO2-eq./yr]',
+  p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|F-Gases (Mt CO2eq/yr)"],
+                         ylab='Emi|GHG|CO2Eq|F-Gases [Mt CO2-eq./yr]',
                          scales="free_y")
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|F-Gases (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                         ylab='Emi|F-Gases [Mt CO2-eq./yr]',
+  p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|F-Gases (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|GHG|CO2Eq|F-Gases [Mt CO2-eq./yr]',
                          scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                          facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-  
-  if(mainReg=="EUR"){
-    swlatex(sw,"\\subsection{N2O - Market}")
-    
-    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|ETS (kt N2O/yr)"],x_hist=NULL,
-                           ylab='Emi|N2O|ETS [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|N2O|ETS (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|N2O|ETS [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-    swfigure(sw,print,p,sw_option="height=9,width=8")
-    
-    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|ESD (kt N2O/yr)"],x_hist=NULL,
-                           ylab='Emi|N2O|ESD [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|N2O|ESD (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|N2O|ESD [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-    swfigure(sw,print,p,sw_option="height=9,width=8")
-    
-    
-    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|other - Non ETS and ES (kt N2O/yr)"],x_hist=NULL,
-                           ylab='Emi|N2O|other - Non ETS and ES [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-    swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|N2O|other - Non ETS and ES (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                           ylab='Emi|N2O|other - Non ETS and ES [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-    swfigure(sw,print,p,sw_option="height=9,width=8")
-  }
-  
-
+ 
   ## ---- ++++ E N E R G Y ++++ ----
 
   swlatex(sw,"\\section{Energy}")

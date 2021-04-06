@@ -30,7 +30,7 @@ calcKayaDecomp <- function(gdx,mif=NULL,ref_year=2005){
       # read data from mif
       mif    <- read.report(mif,as.list=FALSE)
     }
-    emiCO2 <- mif[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"]
+    emiCO2 <- mif[,,"Emi|CO2|Energy (Mt CO2/yr)"]
     fe     <- mif[,,"FE (EJ/yr)"]
     gdp    <- mif[,,"GDP|MER (billion US$2005/yr)"]
     pop    <- mif[,,"Population (million)"]
