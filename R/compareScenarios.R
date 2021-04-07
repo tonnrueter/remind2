@@ -302,7 +302,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\onecolumn")
-  p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+  p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y", total = F)
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
 
