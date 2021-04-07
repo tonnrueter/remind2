@@ -1968,13 +1968,10 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                                + tmp1[,,"Emi|F-Gases (Mt CO2-equiv/yr)"],                            "Emi|Kyoto Gases (Mt CO2-equiv/yr)"))
                                         # this variable contains the value without bunkers even for the GLO total. For the regions, it is identical to the one above (after adjustment at the end of this file)
   if(tran_mod == "complex"){
-    p35_bunker_share_in_nonldv_fe <- readGDX(gdx, c("pm_bunker_share_in_nonldv_fe","p35_bunker_share_in_nonldv_fe"),format="first_found")[,y,]
-
-    tmp4 <- mbind(tmp4,setNames( tmp4[,,"Emi|Kyoto Gases (Mt CO2-equiv/yr)"]-
-                                 p35_bunker_share_in_nonldv_fe*(tmp[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"]-tmp[,,"Emi|CO2|Transport|Pass|Road|LDV|Demand (Mt CO2/yr)"]),
-                                "Emi|Kyoto Gases|w/o Bunkers (Mt CO2-equiv/yr)"))
-    tmp4 <- mbind(tmp4,setNames( p35_bunker_share_in_nonldv_fe*(tmp[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"]-tmp[,,"Emi|CO2|Transport|Pass|Road|LDV|Demand (Mt CO2/yr)"]),
-                                "Emi|CO2|Transport|Bunkers (Mt CO2/yr)"))
+    
+    tmp4 <- mbind(tmp4,
+                  setNames(tmp[,,"Emissions|CO2|Bunkers (Mt CO2/yr)"],"Emi|CO2|Transport|Bunkers (Mt CO2/yr)"),
+                  setNames(tmp4[,,"Emi|Kyoto Gases (Mt CO2-equiv/yr)"]-tmp[,,"Emissions|CO2|Bunkers (Mt CO2/yr)"],"Emi|Kyoto Gases|w/o Bunkers (Mt CO2-equiv/yr)"))
     
   }else if(tran_mod == "edge_esm"){
     ## Int. Freight and Aviation (Bunker) Emissions
