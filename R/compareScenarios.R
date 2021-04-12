@@ -1652,10 +1652,10 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     swlatex(sw,"\\subsubsection{other}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],x_hist=histData[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|other - Non ETS and ES [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
+    p <- mipLineHistorical(data[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|other - Non ETS and ES [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
