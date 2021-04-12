@@ -2982,6 +2982,8 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\subsubsection{per carrier with Bunkers}")
   
   hist_bunkers <- setNames(histData[,,"Eurostat.FE|Transport w/ Bunkers (EJ/yr)"] - histData[,,"Eurostat.FE|Transport (EJ/yr)"],"historical.Eurostat.FE|Transport|Bunkers (EJ/yr)")
+  hist_bunkers <- mbind(histData, hist_bunkers)
+  
   p <- mipLineHistorical(data[mainReg,,"FE|Transport|Bunkers (EJ/yr)"],x_hist=hist_bunkers[mainReg,,"FE|Transport|Bunkers (EJ/yr)"],
                          ylab='FE|Transport|Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
