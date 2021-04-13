@@ -330,7 +330,11 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
     # CDR hydrogen
     setNames((dimSums(mselect(vm_demFeSector,all_enty1="feh2s",emi_sectors="CDR")  ,dim=3,na.rm=T)),                   "FE|CDR|+|Hydrogen (EJ/yr)"),
-    setNames((dimSums(mselect(vm_demFeSector,all_enty1="feh2s",emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|ETS|+|Hydrogen (EJ/yr)")
+    setNames((dimSums(mselect(vm_demFeSector,all_enty1="feh2s",emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|ETS|+|Hydrogen (EJ/yr)"),
+    
+    # CDR heat
+    setNames((dimSums(mselect(vm_demFeSector,all_enty1="fehes",emi_sectors="CDR")  ,dim=3,na.rm=T)),                   "FE|CDR|+|Heat (EJ/yr)"),
+    setNames((dimSums(mselect(vm_demFeSector,all_enty1="fehes",emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|ETS|+|Heat (EJ/yr)")
     
   )
 
@@ -1122,8 +1126,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                  setNames(out[,,"FE|CDR|+|Electricity (EJ/yr)"] - out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|DAC|+|Electricity (EJ/yr)")
     )
     out <- mbind(out,
-                 setNames(out[,,"FE|CDR|DAC|+|Hydrogen (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Gases (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Electricity (EJ/yr)"], "FE|CDR|+|DAC (EJ/yr)"),
-                 setNames(out[,,"FE|CDR|EW|+|Diesel (EJ/yr)"] + out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|+|EW (EJ/yr)")
+                 setNames(out[,,"FE|CDR|DAC|+|Hydrogen (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Gases (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Electricity (EJ/yr)"], "FE|CDR|++|DAC (EJ/yr)"),
+                 setNames(out[,,"FE|CDR|EW|+|Diesel (EJ/yr)"] + out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|++|EW (EJ/yr)")
     )
   }
   
@@ -1255,40 +1259,40 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                           "FE|w/o Non-energy Use|Industry (EJ/yr)"),
                  setNames(out[,,"FE|Industry|+|Liquids (EJ/yr)"]
                           - out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|+|Liquids (EJ/yr)"),
+                          "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
                  setNames(out[,,"FE|Industry|+|Gases (EJ/yr)"]
                           - out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|+|Gases (EJ/yr)"),
+                          "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
                  setNames(out[,,"FE|Industry|+|Solids (EJ/yr)"]
                           - out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|+|Solids (EJ/yr)") )
+                          "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)") )
       
       
       # energy carrier split in FE energy use variables
       out <- mbind(out,
                    # FE industry (without feedstocks) liquids: from fossils, biomass, hydrogen
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|+|Liquids (EJ/yr)"] *
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
                               out[,,"FE|Industry|Liquids|+|Hydrogen (EJ/yr)"] /  
                               out[,,"FE|Industry|+|Liquids (EJ/yr)"],
                             "FE|w/o Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|+|Liquids (EJ/yr)"] *
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
                               out[,,"FE|Industry|Liquids|+|Biomass (EJ/yr)"] /  
                               out[,,"FE|Industry|+|Liquids (EJ/yr)"],
                             "FE|w/o Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|+|Liquids (EJ/yr)"] *
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
                               out[,,"FE|Industry|Liquids|+|Fossil (EJ/yr)"] /  
                               out[,,"FE|Industry|+|Liquids (EJ/yr)"],
                             "FE|w/o Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
                    # FE industry (without feedstocks) gases: from fossils, biomass, hydrogen
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|+|Gases (EJ/yr)"] *
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
                               out[,,"FE|Industry|Gases|+|Hydrogen (EJ/yr)"] /  
                               out[,,"FE|Industry|+|Gases (EJ/yr)"],
                             "FE|w/o Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|+|Gases (EJ/yr)"] *
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
                               out[,,"FE|Industry|Gases|+|Biomass (EJ/yr)"] /  
                               out[,,"FE|Industry|+|Gases (EJ/yr)"],
                             "FE|w/o Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|+|Gases (EJ/yr)"] *
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
                               out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /  
                               out[,,"FE|Industry|+|Gases (EJ/yr)"],
                             "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"))
