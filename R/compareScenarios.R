@@ -1673,10 +1673,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     swlatex(sw,"\\subsubsection{Other - Outside ETS and ESR}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"],
                            ylab='Emi|GHG|CO2Eq|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
+    p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|Other (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|CO2Eq|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
@@ -3140,6 +3140,8 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2
   swlatex(sw,"\\subsubsection{per carrier with Bunkers}")
   
   hist_bunkers <- setNames(histData[,,"Eurostat.FE|Transport w/ Bunkers (EJ/yr)"] - histData[,,"Eurostat.FE|Transport (EJ/yr)"],"historical.Eurostat.FE|Transport|Bunkers (EJ/yr)")
+  hist_bunkers <- mbind(histData, hist_bunkers)
+  
   p <- mipLineHistorical(data[mainReg,,"FE|Transport|Bunkers (EJ/yr)"],x_hist=hist_bunkers[mainReg,,"FE|Transport|Bunkers (EJ/yr)"],
                          ylab='FE|Transport|Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")

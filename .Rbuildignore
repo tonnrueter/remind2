@@ -3,3 +3,4 @@
 ^\.git$
 ^\.buildlibrary$
 ^.*\.zenodo.json$
+^\.github$
