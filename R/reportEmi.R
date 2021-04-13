@@ -19,7 +19,7 @@
 #' 
 #' @importFrom gdx readGDX
 #' @importFrom dplyr %>%
-#' @importFrom magclass mselect dimSums
+#' @importFrom magclass mselect dimSums mselect<- collapseDim getItems
 
 
 reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
@@ -131,6 +131,10 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   vm_co2CCUshort <- readGDX(gdx, "vm_co2CCUshort", field = "l", restore_zeros = F)[,t,]
   # helper variable to release captured CO2 in no CCU capacities are standing anymore to take the captured CO2
   v_co2capturevalve <- readGDX(gdx, "v_co2capturevalve", field = "l", restore_zeros = F)[,t,]
+  
+  
+  # intialize varibles used in dplyr operations
+  all_enty2 <- all_te <- NULL
   
   # Calculate Variables ----
   
