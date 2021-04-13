@@ -266,64 +266,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
       ) * 100
   }
 
-    # TODO: Solids correction still needed?
-    
-    # #### Need to be moved to removed after rewritting reportEmi
-    # #Correction of CO2 emissions for uneven shares of biomass in industry and buildings (not distinguished in REMIND)
-    # #Biomass Direct emissions are considered to be 0. The Solids stationary emissions therefore represent the emissions
-    # # from the combustion of coal only
-    # # In reportEmi however, emissions in Industry and Buildings were computed assuming they both had the same share
-    # # of coal and biomass.
-    # # Below, we correct emissions according to the repartition between coal and biomass assumed in reportFE
-    # #(if Industry and Buildings have the same repartition between coal and biomass, delta_Solids_emissions would be 0)
-    # 
-    # delta_Solids_emissions = setNames(output[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]
-    #                                   * (
-    #                                     (output[,,"FE|Buildings|+|Solids (EJ/yr)"]
-    #                                      /output[,,"FE|Buildings and Industry|Solids (EJ/yr)"]
-    #                                     )
-    #                                     - (output[,,"FE|Buildings|Solids|Coal (EJ/yr)"]
-    #                                        /output[,,"FE|Buildings and Industry|Solids|Coal (EJ/yr)"]
-    #                                     )
-    # 
-    #                                   ),
-    #                                   "Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)")
-    # 
-    # #Due to the use of shares, the global results are incorrect
-    # delta_Solids_emissions["GLO",,] = 0
-    # delta_Solids_emissions["GLO",,] = dimSums(delta_Solids_emissions, dim = 1)
-    # tmp <- mbind(tmp,
-    #              setNames(output[,,"Emi|CO2|Industry|Direct and Indirect|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       + delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Industry|Direct and Indirect (Mt CO2/yr)"),
-    #              setNames(output[,,"Emi|CO2|Buildings|Direct and Indirect|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Buildings|Direct and Indirect (Mt CO2/yr)"),
-    #              setNames(output[,,"Emi|CO2|Industry|Direct|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       + delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Industry|Direct (Mt CO2/yr)"),
-    #              setNames(output[,,"Emi|CO2|Buildings|Direct|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Buildings|Direct (Mt CO2/yr)"),
-    #              setNames(output[,,"Emi|CO2|Buildings|Solids|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Buildings|Solids (Mt CO2/yr)"),
-    # 
-    # 
-    # 
-    #              setNames(output[,,"Emi|CO2|Industry|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       + delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Industry|Direct and Indirect|Gross (Mt CO2/yr)"),
-    #              setNames(output[,,"Emi|CO2|Buildings|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Buildings|Direct and Indirect|Gross (Mt CO2/yr)"),
-    #              setNames(output[,,"Emi|CO2|Buildings|Solids|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"]
-    #                       - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-    #                       "Emi|CO2|Buildings|Solids|Gross (Mt CO2/yr)")
-    # 
-    # 
-    # )
-  
+   
   
   
   out <- mbind(tmp, int_gr)
