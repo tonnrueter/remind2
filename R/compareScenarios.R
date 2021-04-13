@@ -376,12 +376,17 @@ compareScenarios <- function(mif, hist,
 
   p <- mipBarYearData(var[mainReg,y_bar,])
   p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
 
   p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
     guides(fill=guide_legend(ncol=3))
-
   swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
 
   ## ---- FE by sector ----
 
@@ -1642,19 +1647,17 @@ compareScenarios <- function(mif, hist,
                 #"Emi|GHG|ETS|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
                 #"Emi|GHG|ETS|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)"
                 )
+    
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
+                           ylab='Emi|GHG|CO2Eq|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
         
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|CO2Eq|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
-                           hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2030,names(targets)] else NULL,
+                           hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[mainReg,2030,names(targets)]))) histData[mainReg,2030,names(targets)] else NULL,
                            hlines.labels=targets)
     swfigure(sw,print,p,sw_option="height=8,width=8")  
 
-    p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|ETS (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
-                           ylab='Emi|GHG|CO2Eq|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
-                           hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2030,names(targets)] else NULL,
-                           hlines.labels=targets)
-    swfigure(sw,print,p,sw_option="height=9,width=8")
-    
+
     swlatex(sw,"\\subsubsection{ESR}")
     
     targets = c("Emi|GHG|ES|target|40% (Mt CO2-equiv/yr)"="-30% by 2030 (vs. 2005)"#,
@@ -1664,12 +1667,12 @@ compareScenarios <- function(mif, hist,
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|CO2Eq|ESR (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ES (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|CO2Eq|ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
-hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2030,names(targets)] else NULL,
+hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[mainReg,2030,names(targets)]))) histData[mainReg,2030,names(targets)] else NULL,
                            hlines.labels=targets)
     swfigure(sw,print,p,sw_option="height=8,width=8")  
     p <- mipLineHistorical(data[,,"Emi|GHG|CO2Eq|ESR (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|ES (Mt CO2-equiv/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|CO2Eq|ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3,
-                           hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,,invert=TRUE][,2030,names(targets)] else NULL)
+                           hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[mainReg,2030,names(targets)]))) histData[mainReg,,invert=TRUE][,2030,names(targets)] else NULL)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     swlatex(sw,"\\subsubsection{Other - Outside ETS and ESR}")
@@ -1815,10 +1818,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\subsubsection{non-BECCS CDR (Mt CO2/yr)}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|non-BECCS CDR (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Land Use (Mt CO2/yr)"],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|non-BECCS CDR (Mt CO2/yr)"],
                          ylab='Emi|CO2|non-BECCS CDR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|non-BECCS CDR (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Land Use (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+  p <- mipLineHistorical(data[,,"Emi|CO2|non-BECCS CDR (Mt CO2/yr)"][mainReg,,,invert=TRUE],
                          ylab='Emi|CO2|non-BECCS CDR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
