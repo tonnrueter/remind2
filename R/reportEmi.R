@@ -367,9 +367,12 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                # industry emissions: fe carrier emissions - industry CCS
                setNames(  (dimSums(EmiFeCarrier[,,"indst"], dim=3) - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3))*GtC_2_MtCO2,
                           "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"),
-               # transprt emissions: fe carrier emissions
+               # transport emissions: fe carrier emissions
                setNames(  dimSums(EmiFeCarrier[,,"trans"], dim=3)*GtC_2_MtCO2,
-                          "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)")
+                          "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)"),
+               # cdr energy requirement emissions: fe carrier emissions
+               setNames(  dimSums(EmiFeCarrier[,,"CDR"], dim=3)*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)")
   )
   
   # TODO: split into FE carriers (requires industry CCS by FE carrier)
