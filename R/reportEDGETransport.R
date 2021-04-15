@@ -27,7 +27,6 @@ reportEDGETransport <- function(output_folder=".",
   }
   gdx <- file.path(output_folder, "fulldata.gdx")
 
-  regionSubsetList <- toolRegionSubsets(gdx)
   sub_folder = "EDGE-T/"
 
   ## NULL Definitons for codeCheck compliance
@@ -428,12 +427,6 @@ reportEDGETransport <- function(output_folder=".",
             unit="EJ/yr", value=sum(value)),
           by=c("model", "scenario", "region", "period")]), use.names = TRUE)
 
-
-
-  if(!is.null(regionSubsetList)){
-    regions2report = c(regionSubsetList$EUR, regionSubsetList$NEU)
-    toMIF <- toMIF[region %in% regions2report]
-  }
 
   ## Make sure there are no duplicates!
   idx <- anyDuplicated(toMIF, by = c("region", "variable", "period"))
