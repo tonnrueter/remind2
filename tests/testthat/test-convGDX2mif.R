@@ -40,7 +40,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   ## add GDXs for comparison here:
   my_gdxs <- NULL
   if(length(my_gdxs) == 0){
-    download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21_new.gdx",
+    download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21.gdx",
                   file.path(tempdir(), "fulldata.gdx"), mode="wb")
   }
   my_gdxs <- list.files(tempdir(), "*.gdx", full.names = TRUE)
