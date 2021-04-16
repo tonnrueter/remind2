@@ -36,19 +36,14 @@ check_eqs <- function(dt, eqs, scope="all", sens=1e-10){
 
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
 
-  testgdx_folder <- "../testgdxs/"
-  testmif_folder <- "../testmifs/"
-
-  dir.create(testmif_folder, showWarnings = FALSE)
 
   ## add GDXs for comparison here:
-  my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
+  my_gdxs <- NULL
   if(length(my_gdxs) == 0){
-    dir.create(testgdx_folder, showWarnings = FALSE)
-    download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21.gdx",
-                  file.path(testgdx_folder, "fulldata.gdx"), mode="wb")
+    download.file("https://rse.pik-potsdam.de/data/example/fulldata_REMIND21_new.gdx",
+                  file.path(tempdir(), "fulldata.gdx"), mode="wb")
   }
-  my_gdxs <- list.files("../testgdxs/", "*.gdx", full.names = TRUE)
+  my_gdxs <- list.files(tempdir(), "*.gdx", full.names = TRUE)
 
   ## please add variable tests below
   check_integrity <- function(out){
@@ -71,25 +66,32 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   check_compscen <- function(){
     ## save mif with random filename
 
-    my_mifs <- list.files(testmif_folder, "*.mif", full.names = TRUE)
-    histmif <- file.path(testmif_folder, "historical.mif")
+    my_mifs <- list.files(tempdir(), "*.mif", full.names = TRUE)
+    histmif <- file.path(tempdir(), "historical.mif")
     my_mifs <- my_mifs[my_mifs != histmif]
     if(!file.exists(histmif))
       download.file("https://rse.pik-potsdam.de/data/example/historical.mif", histmif)
-    compareScenarios(my_mifs, histmif, fileName=file.path(testmif_folder, "scenarioComparison.pdf"))
-
+    compareScenarios(my_mifs, histmif, fileName=file.path("../", "scenarioComparison.pdf"))
   }
 
+  n<-0
   for(i in my_gdxs) {
+    n <- n+1
     cat(paste0(i,"\n"))
     a <- convGDX2MIF(i)
     print("Check integrity.")
     check_integrity(a)
-    write.report(
-      a, file.path(testmif_folder, sprintf("%s.mif", stri_rand_strings(1, 5))))
+    write.report2(x = collapseNames(a),
+                  file = file.path(tempdir(), sprintf("%s.mif", stri_rand_strings(1, 5))),
+                  scenario = paste0(getItems(a,dim = "scenario"),n),
+                  model = "REMIND")
     cat("\n")
   }
-
+  if (length(my_gdxs) == 1) write.report2(x = collapseNames(a),
+                                          file = file.path(tempdir(), sprintf("%s.mif", stri_rand_strings(1, 5))),
+                                          scenario = paste0(getItems(a,dim = "scenario"),2),
+                                          model = "REMIND")
+  
   print("Check compareScenarios.")
   check_compscen()
 
