@@ -98,8 +98,8 @@ reportEDGETransport <- function(output_folder=".",
               det_veh := "Pass|Road|LDV|Small"]
     datatable[grepl("Mini", vehicle_type),
               det_veh := "Pass|Road|LDV|Mini"]
-    datatable[vehicle_type == "Compact", det_veh := "Pass|Road|LDV|Medium"]
-    datatable[vehicle_type == "Large Car|Midsize Car", det_veh := "Pass|Road|LDV|Large"]
+    datatable[vehicle_type == "Compact Car", det_veh := "Pass|Road|LDV|Medium"]
+    datatable[grepl("Large|Midsize", vehicle_type), det_veh := "Pass|Road|LDV|Large"]
     datatable[grepl("SUV", vehicle_type),
               det_veh := "Pass|Road|LDV|SUV"]
     datatable[grepl("Van|Multipurpose", vehicle_type),
