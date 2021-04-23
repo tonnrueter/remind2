@@ -304,7 +304,7 @@ reportEDGETransport <- function(output_folder=".",
     ## calculate emissions and attribute variable and unit names
     emidem[, value := value*ef][, c("variable", "unit") := list(gsub("FE", "Emi\\|CO2", variable), "Mt CO2/yr")]
 
-    emidem = rbind(copy(emidem)[, c("type", "variable") := list("tailpipe", paste0(variable, "|Tailpipe"))],
+    emi = rbind(copy(emidem)[, c("type", "variable") := list("tailpipe", paste0(variable, "|Tailpipe"))],
                    copy(emidem)[, c("type", "variable") := list("demand", paste0(variable, "|Demand"))])
 
     prodFe <- readgdx(gdx, "vm_prodFE")[, ttot := as.numeric(ttot)]
@@ -313,18 +313,22 @@ reportEDGETransport <- function(output_folder=".",
     prodFe[, se_share := fe_demand/sum(fe_demand), by=c("period", "region", "all_enty")]
     prodFe <- prodFe[all_enty %in% c("fedie", "fepet", "fegat") & se %in% c("segafos", "seliqfos")][, c("se", "te", "fe_demand") := NULL]
 
-    emidem <- prodFe[emidem, on=c("period", "region", "all_enty")]
-    emidem <- emidem[all_enty %in% c("fedie", "fepet", "fegat") & type == "demand", value := value*se_share]
+    emi <- prodFe[emi, on=c("period", "region", "all_enty")]
+    emi <- emi[all_enty %in% c("fedie", "fepet", "fegat") & type == "demand", value := value*se_share]
 
-    emidem[, c("se_share", "type", "ef", "all_enty") := NULL]
+    emi[, c("se_share", "type", "ef", "all_enty") := NULL]
 
     ## aggregate removing the fuel dependency
-    emidem[, variable_agg := gsub("\\|Liquids|\\|Electricity|\\|Hydrogen|\\|Gases", "", variable)]
-    emidem = emidem[, .(value = sum(value)), by = c("model", "scenario", "region", "unit", "period", "variable_agg")]
-    setnames(emidem, old = "variable_agg", new = "variable")
-    emidem = emidem[, .(model, scenario, region, variable, unit, period, value)]
+    emi[, variable_agg := gsub("\\|Liquids|\\|Electricity|\\|Hydrogen|\\|Gases", "", variable)]
+    emi = emi[, .(value = sum(value)), by = c("model", "scenario", "region", "unit", "period", "variable_agg")]
+    setnames(emi, old = "variable_agg", new = "variable")
+    emi = emi[, .(model, scenario, region, variable, unit, period, value)]
 
-    return(emidem)
+    ## add World
+    emi_w = emi[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
+    emi = rbind(emi, emi_w)
+
+    return(emi)
   }
 
   reportingVehNum <- function(demand_vkm){
