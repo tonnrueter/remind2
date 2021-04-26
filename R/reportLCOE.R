@@ -58,6 +58,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  
  # get module realizations
  module2realisation <- readGDX(gdx, "module2realisation")
+ rownames(module2realisation) <- module2realisation$modules
 
  #initialize output array
  LCOE.out <- NULL
@@ -94,8 +95,6 @@ reportLCOE <- function(gdx, output.type = "both"){
  techp     <- readGDX(gdx,c("teChp","techp"),format="first_found")
  teReNoBio <- readGDX(gdx,"teReNoBio")
 
- # switches
- module2realisation <- readGDX(gdx, "module2realisation")
 
  ## parameter
  p_omeg  <- readGDX(gdx,c("pm_omeg","p_omeg"),format="first_found")
@@ -127,9 +126,9 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  # module-specific
  # amount of curtailed electricity
- if (any(module2realisation[,2] == "RLDC")) {
+ if (module2realisation["power",2] == "RLDC") {
    v32_curt <- readGDX(gdx,name=c("v32_curt"),field="l",restore_zeros=FALSE,format="first_found")
-   } else if (any(module2realisation[,2] == "IntC")) {
+   } else if (module2realisation["power",2] == "IntC") {
    v32_curt <- v32_storloss[,ttot_from2005,getNames(vm_prodSe, dim=3)] 
    } else{
    v32_curt <- 0  
@@ -284,9 +283,9 @@ reportLCOE <- function(gdx, output.type = "both"){
  total_ccsInj_cost <- dimReduce(te_annual_inv_cost[getRegions(te_annual_OMF_cost),getYears(te_annual_OMF_cost),"ccsinje"] +
                                                      te_annual_OMF_cost[,,"ccsinje"])
  # distribute ccs injection cost over techs
- te_annual_ccsInj_cost[,,getNames(v_emiTeDetail[,,"cco2"], dim = 3)] <- setNames(total_ccsInj_cost * v_emiTeDetail[,,"cco2"] /
-                                                                         dimSums( v_emiTeDetail[,,"cco2"], dim = 3),
-                                                                         getNames(v_emiTeDetail[,,"cco2"], dim = 3))
+ te_annual_ccsInj_cost[,,teCCS] <- setNames(total_ccsInj_cost * dimSums(v_emiTeDetail[,,"cco2"][,,teCCS], dim = c(3.1,3.2,3.4), na.rm = T) /
+                                                                dimSums( v_emiTeDetail[,,"cco2"], dim = 3, na.rm = T),
+                                                                teCCS)
 
 
  ####### 8. sub-part: co2 cost  #################################
@@ -296,7 +295,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_annual_co2_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,getNames(te_inv_annuity), fill=0)
 
 
- te_annual_co2_cost[,,getNames(v_emiTeDetail[,,"co2"], dim=3)] <- setNames(pm_priceCO2[,getYears(v_emiTeDetail),] * v_emiTeDetail[,,"co2"] * 1e9,
+ te_annual_co2_cost[,,getNames(v_emiTeDetail[,,"co2"], dim=3)] <- setNames(pm_priceCO2[,getYears(v_emiTeDetail),] 
+                                                                           * dimSums(v_emiTeDetail[,,"co2"][,,getNames(v_emiTeDetail[,,"co2"], dim=3)], dim = c(3.1,3.2,3.4), na.rm = T) * 1e9,
                                                                   getNames(v_emiTeDetail[,,"co2"], dim=3))
 
 
@@ -540,10 +540,10 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   
   # all technologies to calculate LCOE for
-  te_LCOE <- c(pe2se$all_te, se2se$all_te,se2fe$all_te,"dac")
+  te_LCOE <- c(pe2se$all_te, se2se$all_te,se2fe$all_te)
   
   # all technologies to calculate investment and O&M LCOE for (needed for CCS, storage, grid cost)
-  te_LCOE_Inv <- c(te_LCOE, as.vector(teStor), as.vector(teGrid), ccs2te$all_te)
+  te_LCOE_Inv <- c(te_LCOE, as.vector(teStor), as.vector(teGrid), ccs2te$all_te, "dac")
  
   # technologies to produce SE
   te_SE_gen <- c(pe2se$all_te, se2se$all_te)
@@ -571,6 +571,9 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   ### conversion factors
   s_twa2mwh <- as.vector(readGDX(gdx,c("sm_TWa_2_MWh","s_TWa_2_MWh","s_twa2mwh"),format="first_found"))
+  
+  # annuity factor from REMIND
+  p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)
   
   
   
@@ -675,8 +678,8 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   # fuels to calculate price for
   fuels <- c("peoil","pegas","pecoal","peur", "pebiolc" , "pebios","pebioil",
-             "seel","seliqbio", "seliqfos", "sesobio","sesofos","seh2","segabio" ,
-              "segafos","sehe")
+             "seel","seliqbio", "seliqfos","seliqsyn", "sesobio","sesofos","seh2","segabio" ,
+              "segafos","segasyn","sehe")
   
   # Primary Energy Price, convert from tr USD 2005/TWa to USD2015/MWh
   Pe.Price <- qm_pebal[,ttot_from2005,unique(pe2se$all_enty)] / (qm_budget+1e-10)*1e12/s_twa2mwh*1.2
@@ -687,10 +690,11 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   Fuel.Price <- mbind(Pe.Price,Se.Seel.Price, Se.Price )[,,fuels]
   
+  
   # Fuel price
   df.Fuel.Price <- as.quitte(Fuel.Price) %>%  
     select(region, period, all_enty, value) %>% 
-    rename(fuel = all_enty, fuel.price = value, opTimeYr = period) %>% 
+    rename(fuel = all_enty, fuel.price = value) %>% 
     # replace zeros by last or (if not available) next value of time series (marginals are sometimes zero if there are other constriants)
     mutate( fuel.price = ifelse(fuel.price == 0, NA, fuel.price)) %>% 
     group_by(region, fuel) %>% 
@@ -698,65 +702,120 @@ reportLCOE <- function(gdx, output.type = "both"){
     ungroup() 
   
   
+
   ### 7. retrieve carbon price
   pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F)
-  
-  df.co2price <- as.quitte(pm_priceCO2) %>% 
+
+  df.co2price <- as.quitte(pm_priceCO2) %>%
     select(region, period, value) %>%
     # where carbon price is NA, it is zero
     # convert from USD2005/tC CO2 to USD2015/tCO2
-    mutate(value = ifelse(is.na(value), 0, value*1.2/3.66)) %>% 
-    rename(co2.price = value, opTimeYr = period)
+    mutate(value = ifelse(is.na(value), 0, value*1.2/3.66)) %>%
+    rename(co2.price = value)
   
-  ### 8. calculate capacity distribution weighted prices over lifetimes of plant
   
-  # capacity distribution over lifetime                  
-  df.pomeg <- as.quitte(p_omeg) %>% 
-    rename(tech = all_te, pomeg = value) %>% 
-    # to save run time, only take p_omeg in ten year time steps only up to lifetimes of 50 years, 
-    # erase region dimension, pomeg same across all regions, only se generating technologies
-    filter(opTimeYr %in% c(1,seq(5,50,5)), region %in% getRegions(vm_costTeCapital)[1]
-           , tech %in% te_LCOE) %>% 
-    select(opTimeYr, tech, pomeg) 
-  
-  # expanded df.omeg, with additional period dimension combined with opTimeYr dimensions,
-  # period will be year of building the plant, 
-  # opTimeYr will be year within lifetime of plant (where only a certain fraction, pomeg, of capacity is still standing)
-  df.pomeg.expand <- df.pomeg %>% 
-    expand(opTimeYr, period = seq(2005,2150,5)) %>%   
-    full_join(df.pomeg) %>% 
-    mutate( opTimeYr = as.numeric(opTimeYr)) %>% 
-    mutate( opTimeYr = ifelse(opTimeYr > 1, opTimeYr + period, period)) %>% 
-    left_join(en2en) %>% 
-    arrange(tech, period, opTimeYr)
-  
+  ### TODO: maybe deleted if not necessary anymore:this is the old section where 
+  # capacity-weighted/discounted averages of fuel and co2 prices are calculated 
+  # over the lifetime of the plant
+
+  # 
+  # # Fuel price
+  # df.Fuel.Price <- as.quitte(Fuel.Price) %>%  
+  #   select(region, period, all_enty, value) %>% 
+  #   rename(fuel = all_enty, fuel.price = value, opTimeYr = period) %>% 
+  #   # replace zeros by last or (if not available) next value of time series (marginals are sometimes zero if there are other constriants)
+  #   mutate( fuel.price = ifelse(fuel.price == 0, NA, fuel.price)) %>% 
+  #   group_by(region, fuel) %>% 
+  #   tidyr::fill(fuel.price, .direction = "downup") %>% 
+  #   ungroup() 
+  # 
+  # 
+
+  # 
+  # ### 8. calculate capacity distribution weighted prices over lifetimes of plant
+  # 
+  # # capacity distribution over lifetime                  
+  # df.pomeg <- as.quitte(p_omeg) %>% 
+  #   rename(tech = all_te, pomeg = value) %>% 
+  #   # to save run time, only take p_omeg in ten year time steps only up to lifetimes of 50 years, 
+  #   # erase region dimension, pomeg same across all regions, only se generating technologies
+  #   filter(opTimeYr %in% c(1,seq(5,50,5)), region %in% getRegions(vm_costTeCapital)[1]
+  #          , tech %in% te_LCOE) %>% 
+  #   select(opTimeYr, tech, pomeg) 
+  # 
+  # # expanded df.omeg, with additional period dimension combined with opTimeYr dimensions,
+  # # period will be year of building the plant, 
+  # # opTimeYr will be year within lifetime of plant (where only a certain fraction, pomeg, of capacity is still standing)
+  # df.pomeg.expand <- df.pomeg %>% 
+  #   expand(opTimeYr, period = seq(2005,2150,5)) %>%   
+  #   full_join(df.pomeg) %>% 
+  #   mutate( opTimeYr = as.numeric(opTimeYr)) %>% 
+  #   mutate( opTimeYr = ifelse(opTimeYr > 1, opTimeYr + period, period)) %>% 
+  #   left_join(en2en) %>% 
+  #   arrange(tech, period, opTimeYr)
+  # 
   
   
   ### 9. weight fuel price and carbon price with capacity density over liftime
   
-  # join fuel price to df.omeg and weigh fuel price by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
-  df.fuel.price.weighted <- df.Fuel.Price %>% 
-    full_join(df.pomeg.expand) %>% 
-    # mean of fuel prices over first 50-years of plant lifetime weighted by pomeg
-    group_by(region, period, fuel, tech) %>% 
-    summarise( fuel.price.weighted.mean = sum(fuel.price * pomeg / sum(pomeg))) %>% 
-    ungroup() 
-  
-  # join carbon price to df.omeg and weigh it by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
-  df.co2price.weighted <- df.co2price %>% 
-    full_join(df.pomeg.expand) %>%    
-    filter( !is.na(tech)) %>%  
-    # mean of carbon price over first 50-years of plant lifetime weighted by pomeg
-    group_by(region, period, tech) %>% 
-    summarise( co2.price.weighted.mean = sum(co2.price * pomeg / sum(pomeg))) %>% 
-    ungroup() 
+  # ### TODO: Is that correct ?fuel price and co2 price with capacity-weighting and discounting
+  # 
+  # # join fuel price to df.omeg and weigh fuel price by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
+  # df.fuel.price.weighted <- df.Fuel.Price %>% 
+  #   full_join(df.pomeg.expand) %>% 
+  #   # calculate discount factor over years at 5%/yr
+  #   mutate( discount = 0.95^(as.numeric(opTimeYr)-as.numeric(period))) %>% 
+  #   # mean of fuel prices over first 50-years of plant lifetime weighted by pomeg and discount factor
+  #   group_by(region, period, fuel, tech) %>% 
+  #   summarise( fuel.price.weighted.mean = mean(fuel.price * pomeg  * discount)) %>% 
+  #   ungroup() 
   
   
+  # ### 7. retrieve carbon price
+  # pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F)
+  # 
+  # df.co2price <- as.quitte(pm_priceCO2) %>% 
+  #   select(region, period, value) %>%
+  #   # where carbon price is NA, it is zero
+  #   # convert from USD2005/tC CO2 to USD2015/tCO2
+  #   mutate(value = ifelse(is.na(value), 0, value*1.2/3.66)) %>% 
+  #   rename(co2.price = value, opTimeYr = period)
   
-  # Note: Discuss whether we still need to discount fuel price/carbon price over time. 
-  # Pomeg only refers to capacity depreciation.  
-  # Note: Anticipated prices in NDC and BAU runs before 2025 are different. 
-  # This calculation only anticipates prices within one scenario. No myopic view included. 
+  # 
+  # # join carbon price to df.omeg and weigh it by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
+  # df.co2price.weighted <- df.co2price %>% 
+  #   full_join(df.pomeg.expand) %>%    
+  #   filter( !is.na(tech)) %>%  
+  #   # calculate discount factor over years at 5%/yr
+  #   mutate( discount = 0.95^(as.numeric(opTimeYr)-as.numeric(period))) %>% 
+  #   # mean of carbon price over first 50-years of plant lifetime weighted by pomeg and discount factor
+  #   group_by(region, period, tech) %>% 
+  #   summarise( co2.price.weighted.mean = mean(co2.price * pomeg * discount)) %>% 
+  #   ungroup() 
+  # 
+  # 
+  # 
+
+  # # join fuel price to df.omeg and weigh fuel price by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
+  # df.fuel.price.weighted <- df.Fuel.Price %>%
+  #   full_join(df.pomeg.expand) %>%
+  #   # mean of fuel prices over first 50-years of plant lifetime weighted by pomeg
+  #   group_by(region, period, fuel, tech) %>%
+  #   summarise( fuel.price.weighted.mean = sum(fuel.price * pomeg / sum(pomeg))) %>%
+  #   ungroup()
+  # 
+  # # join carbon price to df.omeg and weigh it by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
+  # df.co2price.weighted <- df.co2price %>%
+  #   full_join(df.pomeg.expand) %>%
+  #   filter( !is.na(tech)) %>%
+  #   # mean of carbon price over first 50-years of plant lifetime weighted by pomeg
+  #   group_by(region, period, tech) %>%
+  #   summarise( co2.price.weighted.mean = sum(co2.price * pomeg / sum(pomeg))) %>%
+  #   ungroup()
+  
+  
+  
+  
   
   ### 10. get fuel conversion efficiencies 
   pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F)[,ttot_from2005,] # efficiency oftechnologies with time-independent eta
@@ -802,28 +861,55 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   
   ### 12. calculate CO2 capture cost
+  
+  
+  # temporary solution, take LCOD of DAC as the CO2 Capture Cost
+  
+  # TODO: take co2 capture cost from a fitting marginal of REMIND equations
+  
+  ### DAC: calculate Levelized Cost of CO2 from direct air capture
+  # DAC energy demand per unit captured CO2 (EJ/GtC)
+  p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
+  LCOD <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital), 
+                     c("Investment Cost","OMF Cost","Electricity Cost","Heat Cost","Total LCOE"))
+  # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
+  LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*p_teAnnuity[,,"dac"]*1e3
+  LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
+  # elecitricty cost (convert DAC FE demand to GJ/tCO2 and fuel price to USD/GJ)
+  LCOD[,,"Electricity Cost"] <- p33_dac_fedem[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
+  # conversion as above, assume for now that heat is always supplied by district heat
+  LCOD[,,"Heat Cost"] <- p33_dac_fedem[,,"fehes"] / 3.66 * Fuel.Price[,,"seh2"]  / 3.66
+  LCOD[,,"Total LCOE"] <- LCOD[,,"Investment Cost"]+LCOD[,,"OMF Cost"]+LCOD[,,"Electricity Cost"]+LCOD[,,"Heat Cost"]
+  
+  getSets(LCOD)[3] <- "cost"
+  
+  # add dimensions to fit to other tech LCOE
+  LCOD <- LCOD %>% 
+    add_dimension(add = "unit", nm = "US$2015/tCO2") %>%   
+    add_dimension(add = "tech", nm = "dac") %>%  
+    add_dimension(add = "output", nm = "cco2") %>% 
+    add_dimension(add = "type", nm = "marginal") %>% 
+    add_dimension(add = "sector", dim=3.4, nm = "supply-side")
 
   
   # Co2 Capture price, marginal of q_balcapture,  convert from tr USD 2005/GtC to USD2015/tCO2
   qm_balcapture  <- readGDX(gdx,"q_balcapture",field="m", restore_zeros = F)
   Co2.Capt.Price <- qm_balcapture /
-    (qm_budget[,getYears(qm_balcapture),]+1e-10)*1e3*1.2/3.66 ## looks weird
-  # # for now, just assume 50USD/tCO2 for all times and regions (half of typical 100USD/tCO2 BECCS cost)
-  Co2.Capt.Price[,,] <- 50
+                      (qm_budget[,getYears(qm_balcapture),]+1e-10)*1e3*1.2/3.66 ## looks weird
+  
+  
+  ### for now, just assume CO2 Capture Cost = DAC Cost
+  Co2.Capt.Price[,,] <- LCOD["DEU",,"dac"][,,"Total LCOE"]
   
   df.Co2.Capt.Price <- as.quitte(Co2.Capt.Price) %>% 
     rename(Co2.Capt.Price = value) %>% 
     select(region, period, Co2.Capt.Price) 
   
-  
-  # Note: co2 capture cost calculation needs to be checked
-  # set to 0 meanwhile
-  df.Co2.Capt.Price <- df.Co2.Capt.Price %>% 
-                          mutate( Co2.Capt.Price = 0)
+
   
   
   # CO2 required per unit output (for CCU technologies)
-  if( module2realisation$`*`[module2realisation$modules=="CCU"] == "on") {
+  if(module2realisation["CCU",2] == "on") {
     p39_co2_dem <- readGDX(gdx, c("p39_co2_dem","p39_ratioCtoH"), restore_zeros = F)[,,]
   } else {
     # some dummy data, only needed to create the following data frame if CCU is off
@@ -1095,9 +1181,9 @@ reportLCOE <- function(gdx, output.type = "both"){
     # curtailment cost = LCOE(VRE) * curtshare/((1-curtShare)), 
     # where LCOE(VRE) is the generation LCOE of VREs, so Investment Cost + O&M Cost
     
-    if (any(module2realisation[,2] == "RLDC")) {
+    if (module2realisation["power",2] == "RLDC") {
       v32_curt <- readGDX(gdx,name=c("v32_curt"),field="l",restore_zeros=FALSE,format="first_found")
-    } else if (any(module2realisation[,2] == "IntC")) {
+    } else if (module2realisation[,2] == "IntC") {
       v32_curt <- v32_storloss[,ttot_from2005,getNames(vm_prodSe, dim=3)] 
     } else{
       v32_curt <- 0  
@@ -1177,9 +1263,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     
     ### 20. Final Energy Taxes
     
-    
-    module2realisation <- readGDX(gdx, "module2realisation")
-    
+
     # read energy services types transport
     esty_dyn35 <- readGDX(gdx, "esty_dyn35")
     # read energy services buildings, detailed modules
@@ -1231,13 +1315,13 @@ reportLCOE <- function(gdx, output.type = "both"){
     
     ### transport FE Tax
     # transport FE tax simple module
-    if (any(module2realisation[,2]=="complex")) {
+    if (module2realisation["transport",2] == "complex") {
       p21_tau_fe_tax_transport <- readGDX(gdx, "p21_tau_fe_tax_transport")[,ttot_from2005,unique(fe2ue$output)]
       p21_tau_fe_sub_transport <- readGDX(gdx, "p21_tau_fe_sub_transport")[,ttot_from2005,unique(fe2ue$output)]
     }
     
     # transport FE tax EDGE-T module
-    if (any(module2realisation[,2]=="edge_esm")) {
+    if (module2realisation["transport",2] == "edge_esm") {
       p21_tau_fe_tax_transport <- readGDX(gdx, "p21_tau_fe_tax_transport")[,ttot_from2005,unique(fe2es.transport$output)]
       p21_tau_fe_sub_transport <- readGDX(gdx, "p21_tau_fe_sub_transport")[,ttot_from2005,unique(fe2es.transport$output)]
     }
@@ -1445,8 +1529,8 @@ reportLCOE <- function(gdx, output.type = "both"){
     left_join(df.OMV) %>% 
     left_join(df.CapFac) %>% 
     left_join(df.lifetime) %>%   
-    left_join(df.fuel.price.weighted) %>%  
-    left_join(df.co2price.weighted) %>% 
+    left_join(df.Fuel.Price) %>%  
+    left_join(df.co2price) %>% 
     left_join(df.eff) %>% 
     left_join(df.emiFac) %>% 
     left_join(df.emifac.se2fe) %>% 
@@ -1472,7 +1556,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   # replace NA by 0 in certain columns
   # columns where NA should be replaced by 0
-  col.NA.zero <- c("OMF","OMV", "co2.price.weighted.mean", "fuel.price.weighted.mean","co2_dem","emiFac.se2fe","Co2.Capt.Price",
+  col.NA.zero <- c("OMF","OMV", "co2.price", "fuel.price","co2_dem","emiFac.se2fe","Co2.Capt.Price",
                    "secfuel.prod", "secfuel.price", "grid.cost","VREstor.cost", "curtShare","CCStax.cost","CCSCost","FEtax","AddH2TdCost")
   df.LCOE[,col.NA.zero][is.na(df.LCOE[,col.NA.zero])] <- 0
   
@@ -1504,8 +1588,8 @@ reportLCOE <- function(gdx, output.type = "both"){
     # OMF cost LCOE in USD/MWh
     mutate( `OMF Cost` = CAPEX * OMF / (CapFac*8760)*1e3) %>% 
     mutate( `OMV Cost` = OMV) %>% 
-    mutate( `Fuel Cost` = fuel.price.weighted.mean / eff) %>% 
-    mutate( `CO2 Tax Cost` = co2.price.weighted.mean * (emiFac / eff + emiFac.se2fe) * CO2StoreShare) %>% 
+    mutate( `Fuel Cost` = fuel.price / eff) %>% 
+    mutate( `CO2 Tax Cost` = co2.price * (emiFac / eff) * CO2StoreShare) %>% 
     mutate( `CO2 Provision Cost` = Co2.Capt.Price * co2_dem) %>% 
     mutate( `Second Fuel Cost` = -(secfuel.prod * secfuel.price)) %>% 
     mutate( `VRE Storage Cost` = VREstor.cost, `Grid Cost` = grid.cost) %>% 
@@ -1521,7 +1605,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   # if detailed buildings module on, calculate LCOE of fe2ue technologies 
   # following 36_modules/buildings/services_putty/presolve.gms
   
-  if (any(module2realisation$`*` == "services_putty")) {
+  if (module2realisation["buildings",2] == "services_putty") {
     p36_esCapCostImplicit <- readGDX(gdx, "p36_esCapCostImplicit", restore_zeros = F) # capital cost (incl. OMF and implicit discount rate)
     t.run <- getYears(p36_esCapCostImplicit)
     p36_fePrice <- readGDX(gdx, "p36_fePrice", restore_zeros = F)[,t.run,] # FE price
@@ -1586,29 +1670,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   }
   
 
-  ### DAC: calculate Levelized Cost of CO2 from direct air capture
-  # DAC energy demand per unit captured CO2 (EJ/GtC)
-  p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
-  LCOD <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital), 
-                     c("Investment Cost","OMF Cost","Electricity Cost","Heat Cost","Total LCOE"))
-  # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
-  LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*p_teAnnuity[,,"dac"]*1e3
-  LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
-  # elecitricty cost (convert DAC FE demand to GJ/tCO2 and fuel price to USD/GJ)
-  LCOD[,,"Electricity Cost"] <- p33_dac_fedem[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
-  # conversion as above, assume for now that heat is always supplied by H2
-  LCOD[,,"Heat Cost"] <- p33_dac_fedem[,,"feh2s"] / 3.66 * Fuel.Price[,,"seh2"]  / 3.66
-  LCOD[,,"Total LCOE"] <- LCOD[,,"Investment Cost"]+LCOD[,,"OMF Cost"]+LCOD[,,"Electricity Cost"]+LCOD[,,"Heat Cost"]
-  
-  getSets(LCOD)[3] <- "cost"
-  
-  # add dimensions to fit to other tech LCOE
-  LCOD <- LCOD %>% 
-            add_dimension(add = "unit", nm = "US$2015/tCO2") %>%   
-            add_dimension(add = "tech", nm = "dac") %>%  
-            add_dimension(add = "output", nm = "cco2") %>% 
-            add_dimension(add = "type", nm = "marginal") %>% 
-            add_dimension(add = "sector", dim=3.4, nm = "supply-side")
+
   
   # transform marginal LCOE to mif output format
     df.LCOE.out <- df.LCOE %>% 
@@ -1626,7 +1688,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     
     # add DAC levelized cost, buildings UE LCOE to marginal LCOE
     LCOE.mar.out <- mbind(LCOE.mar.out, LCOD)
-    if (any(module2realisation$`*` == "services_putty")) {
+    if (module2realisation["buildings",2] == "services_putty") {
       LCOE.mar.out <- mbind(LCOE.mar.out, UE.LCOE.build)
     } 
     # bind to previous calculations (if there are)
