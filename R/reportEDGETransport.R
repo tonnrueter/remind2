@@ -314,6 +314,8 @@ reportEDGETransport <- function(output_folder=".",
     prodFe <- prodFe[all_enty %in% c("fedie", "fepet", "fegat") & se %in% c("segafos", "seliqfos")][, c("se", "te", "fe_demand") := NULL]
 
     emi <- prodFe[emi, on=c("period", "region", "all_enty")]
+    ## in case no fossil fuels are used (e.g. 100% biodiesel), the value in se_share results NA. set the NA value to 0
+    emi[is.na(se_share), se_share := 0]
     emi <- emi[all_enty %in% c("fedie", "fepet", "fegat") & type == "demand", value := value*se_share]
 
     emi[, c("se_share", "type", "ef", "all_enty") := NULL]
