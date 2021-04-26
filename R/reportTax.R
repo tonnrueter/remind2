@@ -246,16 +246,29 @@ reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,21
       tax_sta_gas_b   <- setNames(vm_cesIO[,,"fegab"]*taxrate_sta_gas_b,        "Taxes|Final Energy|Buildings|Gases (billion US$2005/yr)")
       sub_sta_gas_b    <- -setNames(vm_cesIO[,,"fegab"]*subrate_sta_gas_b,      "Subsidies|Final Energy|Buildings|Gases (billion US$2005/yr)")
       # buildings-electricity 
-      taxrate_sta_ele_b <- setNames(fe_tax[,,"feelb"],                       "Tax rate|Final Energy|Buildings|Electricity (US$2005/GJ)")
-      subrate_sta_ele_b <- setNames(fe_sub[,,"feelb"],                       "Subsidy rate|Final Energy|Buildings|Electricity (US$2005/GJ)")
-      tax_sta_ele_b     <- setNames(vm_cesIO[,,"feelb"]*taxrate_sta_ele_b,      "Taxes|Final Energy|Buildings|Electricity (billion US$2005/yr)")   
-      sub_sta_ele_b    <- -setNames(vm_cesIO[,,"feelb"]*subrate_sta_ele_b,   "Subsidies|Final Energy|Buildings|Electricity (billion US$2005/yr)")
-      
+      if("feelb" %in% getNames(fe_tax)){
+        taxrate_sta_ele_b <- setNames(fe_tax[,,"feelb"],                       "Tax rate|Final Energy|Buildings|Electricity (US$2005/GJ)")
+        subrate_sta_ele_b <- setNames(fe_sub[,,"feelb"],                       "Subsidy rate|Final Energy|Buildings|Electricity (US$2005/GJ)")
+        tax_sta_ele_b     <- setNames(vm_cesIO[,,"feelb"]*taxrate_sta_ele_b,      "Taxes|Final Energy|Buildings|Electricity (billion US$2005/yr)")   
+        sub_sta_ele_b    <- -setNames(vm_cesIO[,,"feelb"]*subrate_sta_ele_b,   "Subsidies|Final Energy|Buildings|Electricity (billion US$2005/yr)")
+      } else {
+        #buildings module with electricity CES split feelb into feelcb, feelhpb, feelrhb 
+        taxrate_sta_ele_b <-  setNames((vm_cesIO[,,"feelcb"]*fe_tax[,,"feelcb"] + vm_cesIO[,,"feelhpb"]*fe_tax[,,"feelhpb"] + vm_cesIO[,,"feelrhb"]*fe_tax[,,"feelrhb"]) / dimSums(vm_cesIO[,,c("feelcb","feelhpb","feelrhb")],dim=3),"Tax rate|Final Energy|Buildings|Electricity (US$2005/GJ)")
+        subrate_sta_ele_b <-  setNames((vm_cesIO[,,"feelcb"]*fe_sub[,,"feelcb"] + vm_cesIO[,,"feelhpb"]*fe_sub[,,"feelhpb"] + vm_cesIO[,,"feelrhb"]*fe_sub[,,"feelrhb"]) / dimSums(vm_cesIO[,,c("feelcb","feelhpb","feelrhb")],dim=3),"Tax rate|Final Energy|Buildings|Electricity (US$2005/GJ)")
+        tax_sta_ele_b     <-  setNames( vm_cesIO[,,"feelcb"]*fe_tax[,,"feelcb"] + vm_cesIO[,,"feelhpb"]*fe_tax[,,"feelhpb"] + vm_cesIO[,,"feelrhb"]*fe_tax[,,"feelrhb"], "Taxes|Final Energy|Buildings|Electricity (billion US$2005/yr)")   
+        sub_sta_ele_b     <- -setNames( vm_cesIO[,,"feelcb"]*fe_sub[,,"feelcb"] + vm_cesIO[,,"feelhpb"]*fe_sub[,,"feelhpb"] + vm_cesIO[,,"feelrhb"]*fe_sub[,,"feelrhb"], "Subsidies|Final Energy|Buildings|Electricity (billion US$2005/yr)")
+      }
       # buildings total
       tax_sta_b     <- setNames(tax_sta_sol_b + tax_sta_liq_b + tax_sta_gas_b + tax_sta_ele_b   ,"Taxes|Final Energy|Buildings (billion US$2005/yr)")
       sub_sta_b     <- setNames(sub_sta_sol_b + sub_sta_liq_b + sub_sta_gas_b + sub_sta_ele_b   ,"Subsidies|Final Energy|Buildings (billion US$2005/yr)")
-      taxrate_sta_b <- setNames(tax_sta_b/ dimSums(vm_cesIO[,,c("fesob","fehob","fegab","feelb","feheb","feh2b")], dim =3),"Tax rate|Final Energy|Buildings (US$2005/GJ)")
-      subrate_sta_b <- setNames(sub_sta_b/ dimSums(vm_cesIO[,,c("fesob","fehob","fegab","feelb","feheb","feh2b")], dim =3),"Subsidy rate|Final Energy|Buildings (US$2005/GJ)")
+      if("feelb" %in% getNames(fe_tax)){
+        taxrate_sta_b <- setNames(tax_sta_b/ dimSums(vm_cesIO[,,c("fesob","fehob","fegab","feelb","feheb","feh2b")], dim =3),"Tax rate|Final Energy|Buildings (US$2005/GJ)")
+        subrate_sta_b <- setNames(sub_sta_b/ dimSums(vm_cesIO[,,c("fesob","fehob","fegab","feelb","feheb","feh2b")], dim =3),"Subsidy rate|Final Energy|Buildings (US$2005/GJ)")
+      } else {
+        #buildings module with electricity CES split feelb into feelcb, feelhpb, feelrhb 
+        taxrate_sta_b <- setNames(tax_sta_b / dimSums(vm_cesIO[,,c("fesob","fehob","fegab","feelcb","feelhpb","feelrhb","feheb","feh2b")], dim =3),"Tax rate|Final Energy|Buildings (US$2005/GJ)")
+        subrate_sta_b <- setNames(sub_sta_b / dimSums(vm_cesIO[,,c("fesob","fehob","fegab","feelcb","feelhpb","feelrhb","feheb","feh2b")], dim =3),"Subsidy rate|Final Energy|Buildings (US$2005/GJ)")
+      }
       
       #Bind all buildings
       tmp_buil = mbind(taxrate_sta_sol_b,subrate_sta_sol_b,tax_sta_sol_b,sub_sta_sol_b,
@@ -510,7 +523,7 @@ reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,21
                               + out[,,"Subsidies|Final Energy|Stationary (billion US$2005/yr)"],
                               "Subsidies|Final Energy (billion US$2005/yr)"))
     
-  }else {
+  } else {
     
     out = mbind(out, setNames(out[,,"Taxes|Final Energy|Transportation (billion US$2005/yr)"]
                               + out[,,"Taxes|Final Energy|Buildings and Industry (billion US$2005/yr)"],
