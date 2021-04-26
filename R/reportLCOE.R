@@ -869,16 +869,27 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   ### DAC: calculate Levelized Cost of CO2 from direct air capture
   # DAC energy demand per unit captured CO2 (EJ/GtC)
-  p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
+  
+  
+  p33_dac_fedem_el <- readGDX(gdx, "p33_dac_fedem_el", restore_zeros = F)
+  p33_dac_fedem_heat <- readGDX(gdx, "p33_dac_fedem_heat", restore_zeros = F)
+  
+  if (is.null(p33_dac_fedem_el) | is.null(p33_dac_fedem_heat)) {
+    p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
+    
+    p33_dac_fedem_el <- p33_dac_fedem[,,"feels"]
+    p33_dac_fedem_heat <- p33_dac_fedem[,,"fehes"]
+  }
+  
   LCOD <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital), 
                      c("Investment Cost","OMF Cost","Electricity Cost","Heat Cost","Total LCOE"))
   # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
   LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*p_teAnnuity[,,"dac"]*1e3
   LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
   # elecitricty cost (convert DAC FE demand to GJ/tCO2 and fuel price to USD/GJ)
-  LCOD[,,"Electricity Cost"] <- p33_dac_fedem[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
-  # conversion as above, assume for now that heat is always supplied by district heat
-  LCOD[,,"Heat Cost"] <- p33_dac_fedem[,,"fehes"] / 3.66 * Fuel.Price[,,"seh2"]  / 3.66
+  LCOD[,,"Electricity Cost"] <-  p33_dac_fedem_el[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
+  # TODO: adapt to FE prices and new CDR FE structure, temporary: conversion as above, assume for now that heat is always supplied by district heat
+  LCOD[,,"Heat Cost"] <- p33_dac_fedem_heat[,,"fehes"] / 3.66 * Fuel.Price[,,"sehe"]  / 3.66
   LCOD[,,"Total LCOE"] <- LCOD[,,"Investment Cost"]+LCOD[,,"OMF Cost"]+LCOD[,,"Electricity Cost"]+LCOD[,,"Heat Cost"]
   
   getSets(LCOD)[3] <- "cost"
@@ -899,7 +910,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   
   ### for now, just assume CO2 Capture Cost = DAC Cost
-  Co2.Capt.Price[,,] <- LCOD["DEU",,"dac"][,,"Total LCOE"]
+  Co2.Capt.Price[,,] <- LCOD[,,"dac"][,,"Total LCOE"]
   
   df.Co2.Capt.Price <- as.quitte(Co2.Capt.Price) %>% 
     rename(Co2.Capt.Price = value) %>% 
@@ -953,8 +964,8 @@ reportLCOE <- function(gdx, output.type = "both"){
   df.secfuel <- as.quitte(pm_prodCouple) %>% 
     rename(tech = all_te, fuel = all_enty, secfuel = all_enty2, secfuel.prod = value) %>% 
     select(region, tech, fuel, secfuel, secfuel.prod) %>%   
-    right_join(df.fuel.price.weighted) %>% 
-    rename(secfuel.price = fuel.price.weighted.mean)
+    right_join(df.Fuel.Price) %>% 
+    rename(secfuel.price = fuel.price)
   
  #  ### VRE integration cost
  #  
