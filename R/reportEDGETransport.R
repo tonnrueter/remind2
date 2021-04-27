@@ -27,6 +27,9 @@ reportEDGETransport <- function(output_folder=".",
   }
   gdx <- file.path(output_folder, "fulldata.gdx")
 
+  ## check the regional aggregation
+  regionSubsetList <- toolRegionSubsets(gdx)
+
   sub_folder = "EDGE-T/"
 
   ## NULL Definitons for codeCheck compliance
@@ -62,7 +65,7 @@ reportEDGETransport <- function(output_folder=".",
 
   ## ES and FE Demand
 
-  reportingESandFE <- function(datatable, mode){
+  reportingESandFE <- function(datatable, mode, regionSubsetList){
 
     datatable[, sector := ifelse(sector %in% c("trn_pass", "trn_aviation_intl"), "Pass", "Freight")]
 
@@ -82,6 +85,8 @@ reportEDGETransport <- function(output_folder=".",
     datatable[subsector_L3 == "Domestic Ship", aggr_veh := "Freight|Navigation"]
 
     datatable[grepl("Bus", vehicle_type), aggr_veh := "Pass|Road|Bus"]
+
+
     if(mode == "ES")
       datatable[grepl("Cycle|Walk", subsector_L3), aggr_nonmot := "Pass|Road|Non-Motorized"]
 
@@ -281,12 +286,22 @@ reportEDGETransport <- function(output_folder=".",
 
     report_tech_w = report_tech[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
     report_tech = rbind(report_tech, report_tech_w)
+
+    ## in case the aggregation features EU sub-regions, include also the aggregated versions
+    if (!is.null(regionSubsetList)){
+      report_EU = report[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)]
+      report_NEU = report[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
+      report = rbind(report, report_EU, report_NEU)
+      report_tech_EU = report_tech[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)]
+      report_tech_NEU = report_tech[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
+      report_tech = rbind(report_tech, report_tech_EU, report_tech_NEU)
+    }
     return(rbindlist(list(report, report_tech)))
   }
 
 
   ## Demand emissions
-  reportingEmi <- function(repFE, gdx){
+  reportingEmi <- function(repFE, gdx, regionSubsetList){
 
     ## load emission factors for fossil fuels
     p_ef_dem <- readgdx(gdx, "p_ef_dem")[all_enty %in% c("fepet", "fedie", "fegas")]  ## MtCO2/EJ
@@ -330,6 +345,13 @@ reportEDGETransport <- function(output_folder=".",
     emi_w = emi[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
     emi = rbind(emi, emi_w)
 
+    ## in case the aggregation features EU sub-regions, include also the aggregated versions
+    if (!is.null(regionSubsetList)){
+      emi_EU = emi[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)]
+      emi_NEU = emi[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
+      emi = rbind(emi, emi_EU, emi_NEU)
+    }
+
     return(emi)
   }
 
@@ -353,21 +375,27 @@ reportEDGETransport <- function(output_folder=".",
   }
 
   repFE <- reportingESandFE(
-      demand_ej,
-    mode ="FE")
+    demand_ej,
+    mode ="FE",
+    regionSubsetList=regionSubsetList)
   repVKM <- reportingESandFE(
     datatable=demand_vkm,
-    mode="VKM")
+    mode="VKM",
+    regionSubsetList=regionSubsetList)
 
   toMIF <- rbindlist(list(
     repFE,
     repVKM,
     reportingESandFE(
       datatable=demand_km,
-      mode="ES"),
+      mode="ES",
+      regionSubsetList=regionSubsetList),
     reportingVehNum(repVKM),
-    reportingEmi(repFE = repFE, gdx = gdx)
+    reportingEmi(repFE = repFE,
+                 gdx = gdx,
+                 regionSubsetList=regionSubsetList)
   ))
+
 
   ## add Road Totals
   toMIF <- rbindlist(list(
@@ -433,7 +461,6 @@ reportEDGETransport <- function(output_folder=".",
             unit="EJ/yr", value=sum(value)),
           by=c("model", "scenario", "region", "period")]), use.names = TRUE)
 
-
   ## Make sure there are no duplicates!
   idx <- anyDuplicated(toMIF, by = c("region", "variable", "period"))
   if(idx){
@@ -443,7 +470,7 @@ reportEDGETransport <- function(output_folder=".",
 
   toMIF <- data.table::dcast(toMIF, ... ~ period, value.var="value")
   setnames(toMIF, colnames(toMIF)[1:5], c("Model", "Scenario", "Region", "Variable", "Unit"))
-  
+
   writeMIF(toMIF, name_mif, append=T)
   deletePlus(name_mif, writemif=T)
 }
