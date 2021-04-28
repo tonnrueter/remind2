@@ -485,8 +485,16 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   }
   
   if (buil_mod == "simple"){
-  tmp <- mbind(tmp,setNames(prices_fe_bi[,,"feels.feelb"], "Price|Final Energy|Electricity|Buildings (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(lowpass(prices_fe_bi[,,"feels.feelb"], fix="both", altFilter=match(2010,time), warn = FALSE)  , "Price|Final Energy|Electricity|Buildings|Moving Avg (US$2005/GJ)"))
+  
+    if("feelb" %in% getNames(prices_fe_bi,dim=2)){
+      tmp <- mbind(tmp,setNames(prices_fe_bi[,,"feels.feelb"], "Price|Final Energy|Electricity|Buildings (US$2005/GJ)"))
+      tmp <- mbind(tmp,setNames(lowpass(prices_fe_bi[,,"feels.feelb"], fix="both", altFilter=match(2010,time), warn = FALSE)  , "Price|Final Energy|Electricity|Buildings|Moving Avg (US$2005/GJ)"))
+    } else {
+      #buildings module with electricity CES split feelb into feelcb, feelhpb, feelrhb 
+      tmp <- mbind(tmp, setNames(dimReduce((cesIO[,,"feelcb"]*prices_fe_bi[,,"feels.feelcb"] + cesIO[,,"feelhpb"]*prices_fe_bi[,,"feels.feelhpb"] + cesIO[,,"feelrhb"]*prices_fe_bi[,,"feels.feelrhb"]) / dimSums(cesIO[,,c("feelcb","feelhpb","feelrhb")],dim=3),dim_exclude = c("tall","all_regi")),"Price|Final Energy|Electricity|Buildings (US$2005/GJ)"))
+      tmp <- mbind(tmp, setNames(lowpass(dimReduce((cesIO[,,"feelcb"]*prices_fe_bi[,,"feels.feelcb"] + cesIO[,,"feelhpb"]*prices_fe_bi[,,"feels.feelhpb"] + cesIO[,,"feelrhb"]*prices_fe_bi[,,"feels.feelrhb"]) / dimSums(cesIO[,,c("feelcb","feelhpb","feelrhb")],dim=3),dim_exclude = c("tall","all_regi")), fix="both", altFilter=match(2010,time), warn = FALSE)  , "Price|Final Energy|Electricity|Buildings|Moving Avg (US$2005/GJ)"))
+    }
+    
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fegas.fegab"], "Price|Final Energy|Gases|Buildings (US$2005/GJ)"))
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fehes.feheb"], "Price|Final Energy|Heat|Buildings (US$2005/GJ)"))
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fehos.fehob"], "Price|Final Energy|Heating Oil|Buildings (US$2005/GJ)"))
