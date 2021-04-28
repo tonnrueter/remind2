@@ -23,12 +23,11 @@
 #' @importFrom lusweave swopen swlatex swfigure swclose
 #' @importFrom mip mipLineHistorical mipBarYearData plotstyle
 #' @importFrom luplot magpie2ggplot2
-#' @importFrom ggplot2 facet_grid ggplot geom_col facet_wrap geom_point aes_ geom_ribbon
+#' @importFrom ggplot2 facet_grid ggplot geom_col facet_wrap geom_point aes_ geom_ribbon guides guide_legend
 #' @importFrom quitte as.quitte
 #' @importFrom data.table as.data.table setnames := data.table
 #' @importFrom utils installed.packages
 #' @importFrom rmndt magpie2dt
-#' @importFrom ggplot2 guides guide_legend
 
 compareScenarios <- function(mif, hist,
                              y=c(seq(2005,2060,5),seq(2070,2100,10)),
@@ -250,7 +249,7 @@ compareScenarios <- function(mif, hist,
                  "\\usepackage[bookmarksopenlevel=section,colorlinks=true,linkbordercolor={0.9882353 0.8352941 0.7098039}]{hyperref}",
                  "\\hypersetup{bookmarks=true,pdfauthor={GES group, PIK}}",
                  "\\usepackage{graphicx}",
-                 "\\usepackage[strings]{underscore}",
+                 "\\catcode`_=12",
                  "\\usepackage{Sweave}",
                  "\\begin{document}",
                  "<<echo=false>>=",
