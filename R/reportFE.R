@@ -592,8 +592,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       'Solids|Steel|Primary'   = 'feso_steel',
       'Solids|Steel|Secondary' = c(),
       'Solids|other'           = 'feso_otherInd',
-      'Solids'                 = c('feso_cement', 'feso_chemicals', 
-                                   'feso_steel', 'feso_otherInd'),
+
       # liquids
       'Liquids|Cement'          = 'feli_cement',
       'Liquids|Chemicals'       = 'feli_chemicals',
@@ -601,8 +600,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       'Liquids|Steel|Primary'   = 'feli_steel',
       'Liquids|Steel|Secondary' = c(),
       'Liquids|other'           = 'feli_otherInd',
-      'Liquids'                 = c('feli_cement', 'feli_chemicals', 
-                                    'feli_steel', 'feli_otherInd'),
+
       # gases
       'Gases|Cement'          = 'fega_cement',
       'Gases|Chemicals'       = 'fega_chemicals',
@@ -610,8 +608,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       'Gases|Steel|Primary'   = 'fega_steel',
       'Gases|Steel|Secondary' = c(),
       'Gases|other'           = 'fega_otherInd',
-      'Gases'                 = c('fega_cement', 'fega_chemicals', 
-                                  'fega_steel', 'fega_otherInd'),
+
       # hydrogen
       'Hydrogen|Cement'          = 'feh2_cement',
       'Hydrogen|Chemicals'       = 'feh2_chemicals',
@@ -619,8 +616,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       'Hydrogen|Steel|Primary'   = 'feh2_steel',
       'Hydrogen|Steel|Secondary' = c(),
       'Hydrogen|other'           = 'feh2_otherInd',
-      'Hydrogen'                 = c('feh2_cement', 'feh2_chemicals', 
-                                     'feh2_steel', 'feh2_otherInd'),
+
       # heat (only used in other Industry subsectors)
       'Heat|Cement'          = c(),
       'Heat|Chemicals'       = c(),
@@ -628,7 +624,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       'Heat|Steel|Primary'   = c(),
       'Heat|Steel|Secondary' = c(),
       'Heat|other'           = 'fehe_otherInd',
-      'Heat'                 = 'fehe_otherInd',
+
       
       # electricity
       'Electricity|Cement' = 'feel_cement',
@@ -647,11 +643,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       'Electricity|other|High-Temperature Heat'         = 'feelhth_otherInd',
       'Electricity|other|Work and Low-Temperature Heat' = 'feelwlth_otherInd',
       
-      'Electricity' = c('feel_cement', 'feelhth_chemicals', 
-                        'feelwlth_chemicals', 'feel_steel_primary',
-                        'feel_steel_secondary', 'feelhth_otherInd',
-                        'feelwlth_otherInd'),
-      
+
       'Electricity|High-Temperature Heat' = c('feelhth_chemicals', 
                                               'feelhth_otherInd'),
       
