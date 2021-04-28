@@ -163,12 +163,12 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
       "Intensity|Final Energy|CO2 (Mt CO2/EJ)"),
     
     setNames(
-        output[,,"Emi|GHG|CO2Eq (Mt CO2eq/yr)"]
+        output[,,"Emi|GHG (Mt CO2eq/yr)"]
       / output[,,"FE (EJ/yr)"],
       "Intensity|Final Energy|GHG (Mt CO2-equiv/EJ)"),
     
     setNames(
-        output[,,"Emi|GHG|CO2Eq (Mt CO2eq/yr)"]
+        output[,,"Emi|GHG (Mt CO2eq/yr)"]
       / output[,,"GDP|MER (billion US$2005/yr)"],
       "Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"),
     

@@ -924,9 +924,9 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     "Price|Secondary Energy|Heat (US$2005/GJ)"                = "SE|Heat (EJ/yr)",
     "Price|Secondary Energy|Liquids|Biomass (US$2005/GJ)"     = "SE|Liquids|Biomass (EJ/yr)",
     # "Price|Secondary Energy|Liquids|Synthetic (CCU) (US$2005/GJ)" = "SE|Liquids|Hydrogen (EJ/yr)",
-    "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|GHG|CO2Eq|++|ETS (Mt CO2eq/yr)",
-    "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|GHG|CO2Eq|++|Other (Mt CO2eq/yr)",
-    "Price|Carbon|ESD (US$2005/t CO2)"                        = "Emi|GHG|CO2Eq|++|ESR (Mt CO2eq/yr)",
+    "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|GHG|++|ETS (Mt CO2eq/yr)",
+    "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|GHG|++|Other (Mt CO2eq/yr)",
+    "Price|Carbon|ESD (US$2005/t CO2)"                        = "Emi|GHG|++|ESR (Mt CO2eq/yr)",
     "Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Buildings|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Industry|ESD|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ETS (US$2005/GJ)" = "FE|Industry|ETS|+|Liquids (EJ/yr)",
@@ -978,7 +978,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   }
   
   
-  if (all(cm_emiscen == 9)) int2ext <- c(int2ext, c( "Price|Carbon (US$2005/t CO2)"  = "Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
+  if (all(cm_emiscen == 9)) int2ext <- c(int2ext, c( "Price|Carbon (US$2005/t CO2)"  = "Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
   
   if (stat_mod == "simple" ){
     int2ext <- c(int2ext, c( "Price|Final Energy|Heating Oil (US$2005/GJ)" = "FE|Other Sector|Liquids (EJ/yr)"),
@@ -1147,15 +1147,15 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   regi_on_gdx <- unique(readGDX(gdx, name = "regi2iso")[,1])
   
   tmp["GLO",,"Price|Carbon (US$2005/t CO2)"] <-
-    dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
-    dimSums(output[regi_on_gdx,,"Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
+    dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
+    dimSums(output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
     (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44
   
   # add other region aggregations carbon price as average over regional pm_pvpRegi's, weighted by total emissions. 
   if (!is.null(regionSubsetList)){
     for(region in names(regionSubsetList)){
-      tmp[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
-        dimSums(output[regionSubsetList[[region]],,"Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
+      tmp[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
+        dimSums(output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
         (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44;
     }
   }
