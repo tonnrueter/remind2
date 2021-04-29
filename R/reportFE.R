@@ -1164,15 +1164,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames(out[,,"FE (EJ/yr)"]             - out[,,"FE|+|Electricity (EJ/yr)"]           - out[,,"FE|+|Heat (EJ/yr)"]          , "FE|Fuels (EJ/yr)") 
   )
   
-  # temporary variables to avoid breaking emi reporting
-  out = mbind(out,
-    setNames(out[,,"FE|Buildings|+|Liquids (EJ/yr)"]     + out[,,"FE|Industry|+|Liquids (EJ/yr)"]    , "FE|Buildings and Industry|Liquids (EJ/yr)"),
-    setNames(out[,,"FE|Buildings|+|Solids (EJ/yr)"]      + out[,,"FE|Industry|+|Solids (EJ/yr)"]     , "FE|Buildings and Industry|Solids (EJ/yr)"),
-    setNames(out[,,"FE|Buildings|+|Gases (EJ/yr)"]       + out[,,"FE|Industry|+|Gases (EJ/yr)"]      , "FE|Buildings and Industry|Gases (EJ/yr)"),
-    setNames(out[,,"FE|Buildings|+|Electricity (EJ/yr)"] + out[,,"FE|Industry|+|Electricity (EJ/yr)"], "FE|Buildings and Industry|Electricity (EJ/yr)"),
-    setNames(out[,,"FE|Buildings|+|Heat (EJ/yr)"]        + out[,,"FE|Industry|+|Heat (EJ/yr)"]       , "FE|Buildings and Industry|Heat (EJ/yr)"),
-    setNames(out[,,"FE|Buildings|+|Hydrogen (EJ/yr)"]    + out[,,"FE|Industry|+|Hydrogen (EJ/yr)"]   , "FE|Buildings and Industry|Hydrogen (EJ/yr)")
-  )
+
   
   # variables required by the exogains code
   # Disaggregate solids between coal, modern biomass and traditional biomass
