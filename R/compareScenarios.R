@@ -1681,7 +1681,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     p <- mipLineHistorical(data[,,"Emi|GHG|Other (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
-    swlatex(sw,"\\onecolumn")
+    swlatex(sw,"\\twocolumn")
   }
 
   ## ---- Emissions CO2 ----
