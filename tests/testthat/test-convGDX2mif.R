@@ -13,7 +13,7 @@ library(stringi)
 ## should be checked for regions ("regional"), only globally ("world") or
 ## both ("all"). Sensitivity determines the allowed offset when comparing
 ## LHS to RHS
-check_eqs <- function(dt, eqs, scope="all", sens=1e-10){
+check_eqs <- function(dt, eqs, scope="all", sens=1e-8){
   if(scope == "regional"){
     dt <- dt[all_regi != "World"]
   }else if(scope == "world"){
