@@ -1,8 +1,6 @@
 #' Read in GDX and calculate emissions, used in convGDX2MIF.R for the
 #' reporting
 #'
-#' Read in emission information from GDX file, information used in
-#' convGDX2MIF.R for the reporting
 #'
 #'
 #' @param gdx a GDX as created by readGDX, or the file name of a gdx
@@ -13,480 +11,1107 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #' 
-#' @author Jessica Strefler, Lavinia Baumstark, Michaja Pehl
+#' @author Felix Schreyer
 #' @examples
 #'
 #'   \dontrun{reportEmi(gdx)}
 #' @export
+#' 
 #' @importFrom gdx readGDX
-#' @importFrom magclass getNames<- getYears collapseNames mbind getYears 
-#'   new.magpie getRegions setYears dimSums mselect replace_non_finite dimReduce
-#' @importFrom dplyr inner_join select filter group_by summarise ungroup mutate
-#'             as_tibble rename %>%
-#' @importFrom tidyr complete nesting unite matches
-#' @importFrom quitte as.quitte character.data.frame
-#' @importFrom rlang .data
-#' @importFrom madrat toolAggregate toolNAreplace
+#' @importFrom dplyr %>%
+#' @importFrom magclass mselect dimSums mselect<- collapseDim getItems
+
 
 reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   
-  if(is.null(output)){
-       output <- reportFE(gdx,regionSubsetList = NULL,t)["GLO",,invert = T]
-  } else {
-       output <- output[c("GLO",names(regionSubsetList)),,invert = T]
-  }
+  # Read Data from GDX ----
   
-  
-  ####### read in needed data #########
+  ####### get realisations #########
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
   
-  #### alternative emissions accounting
-  # Emissions|CO2                       # Emissions|CO2 (Mt CO2/yr)
-  #   |Energy                           ## Emissions|CO2|Energy (Mt CO2/yr)
-  #     |Demand                         ### Emissions|CO2|Energy|Demand (Mt CO2/yr)
-  #       |Industry                     #### Emissions|CO2|Energy|Demand|Industry (Mt CO2/yr)
-  #       |Residential and Commercial   #### Emissions|CO2|Energy|Demand|Residential and Commercial (Mt CO2/yr)
-  #       |Transportation               #### Emissions|CO2|Energy|Demand|Transportation (Mt CO2/yr)
-  #       |AFOFI                        #### Emissions|CO2|Energy|Demand|AFOFI (Mt CO2/yr)
-  #       |Other Sector                 #### Emissions|CO2|Energy|Demand|Other Sector (Mt CO2/yr)
-  #     |Supply (Gross)                 ### Emissions|CO2|Energy|Supply (Gross) (Mt CO2/yr)
-  #       |Electricity                  #### Emissions|CO2|Energy|Supply (Gross)|Electricity (Mt CO2/yr)
-  #       |Gases                        #### Emissions|CO2|Energy|Supply (Gross)|Gases (Mt CO2/yr)
-  #       |Heat                         #### Emissions|CO2|Energy|Supply (Gross)|Heat (Mt CO2/yr)
-  #       |Hydrogen                     #### Emissions|CO2|Energy|Supply (Gross)|Hydrogen (Mt CO2/yr)
-  #       |Liquids                      #### Emissions|CO2|Energy|Supply (Gross)|Liquids (Mt CO2/yr)
-  #       |Solids                       #### Emissions|CO2|Energy|Supply (Gross)|Solids (Mt CO2/yr)
-  #       |Other                        #### Emissions|CO2|Energy|Supply (Gross)|Other (Mt CO2/yr)
-  #     |Negative                       ### Emissions|CO2|Energy|Negative (Mt CO2/yr)
-  #   |Industrial Processes             ## Emissions|CO2|Industrial Processes (Mt CO2/yr)
-  #   |AFOLU                            ## Emissions|CO2|AFOLU (Mt CO2/yr)
-  #   |DACCS sequestered                ## Emissions|CO2|DACCS sequestered (Mt CO2/yr)
-  #   |Other                            ## Emissions|CO2|Other (Mt CO2/yr)
-
-  yy <- c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
   
-  d <- list(
-    "Emissions|CO2 (Mt CO2/yr)"                                               = list("var"="o_emissions", "dim"=NA),
-    "Emissions|CO2|Energy (Mt CO2/yr)"                                        = list("var"="o_emissions_energy", "dim"=NA),
-    "Emissions|CO2|Energy|Demand (Mt CO2/yr)"                                 = list("var"="o_emissions_energy_demand", "dim"=NA),
-    "Emissions|CO2|Energy|Demand|Industry (Mt CO2/yr)"                        = list("var"="o_emissions_energy_demand_sector", "dim"="indst"),
-    "Emissions|CO2|Energy|Demand|Residential and Commercial (Mt CO2/yr)"      = list("var"="o_emissions_energy_demand_sector","dim"="build"),
-    "Emissions|CO2|Energy|Demand|Transportation (Mt CO2/yr)"                  = list("var"="o_emissions_energy_demand_sector","dim"="trans"),
-#   "Emissions|CO2|Energy|Demand|AFOFI (Mt CO2/yr)                            = list("var"=,"dim"=),
-    "Emissions|CO2|Energy|Demand|Other Sector (Mt CO2/yr)"                    = list("var"="o_emissions_energy_demand_sector","dim"=c("CDR", "Waste")),
-    "Emissions|CO2|Energy|Supply|Gross (Mt CO2/yr)"                         = list("var"="o_emissions_energy_supply_gross","dim"=NA),
-    "Emissions|CO2|Energy|Supply|Gross|Electricity (Mt CO2/yr)"             = list("var"="o_emissions_energy_supply_gross_carrier","dim"="seel"),
-    "Emissions|CO2|Energy|Supply|Gross|Gases (Mt CO2/yr)"                   = list("var"="o_emissions_energy_supply_gross_carrier","dim"=c("segabio","segafos")),
-    "Emissions|CO2|Energy|Supply|Gross|Heat (Mt CO2/yr)"                    = list("var"="o_emissions_energy_supply_gross_carrier","dim"="sehe"),
-    "Emissions|CO2|Energy|Supply|Gross|Hydrogen (Mt CO2/yr)"                = list("var"="o_emissions_energy_supply_gross_carrier","dim"="seh2"),
-    "Emissions|CO2|Energy|Supply|Gross|Liquids (Mt CO2/yr)"                 = list("var"="o_emissions_energy_supply_gross_carrier","dim"=c("seliqbio","seliqfos")),
-    "Emissions|CO2|Energy|Supply|Gross|Solids (Mt CO2/yr)"                  = list("var"="o_emissions_energy_supply_gross_carrier","dim"=c("sesobio","sesofos")),
-#    "Emissions|CO2|Energy|Supply|Gross|Other (Mt CO2/yr)"                  = list("var"="","dim"=""),
-    "Emissions|CO2|Energy|Fugitive Emissions (Mt CO2/yr)"                     = list("var"="o_emissions_energy_extraction","dim"=c("pecoal","pegas","peoil")),
-    "Emissions|CO2|Energy|Fugitive Emissions|Solids (Mt CO2/yr)"              = list("var"="o_emissions_energy_extraction","dim"="pecoal"),
-    "Emissions|CO2|Energy|Fugitive Emissions|Gas (Mt CO2/yr)"                 = list("var"="o_emissions_energy_extraction","dim"="pegas"),
-    "Emissions|CO2|Energy|Fugitive Emissions|Oil (Mt CO2/yr)"                 = list("var"="o_emissions_energy_extraction","dim"="peoil"),
-    "Emissions|CO2|Energy|Negative (Mt CO2/yr)"                               = list("var"="o_emissions_energy_negative","dim"=NA),
-    "Emissions|CO2|Industrial Processes (Mt CO2/yr)"                          = list("var"="o_emissions_industrial_processes","dim"=NA),
-    "Emissions|CO2|AFOLU (Mt CO2/yr)"                                         = list("var"="o_emissions_AFOLU","dim"=NA),
-    "Emissions|CO2|DACCS sequestered (Mt CO2/yr)"                             = list("var"="o_emissions_DACCS","dim"=NA),
-    "Emissions|CO2|Other (Mt CO2/yr)"                                         = list("var"="o_emissions_other","dim"=NA),
-
-    "Emissions|CO2|Bunkers (Mt CO2/yr)"                                       = list("var"="o_emissions_bunkers","dim"=NA),
-
-    "Carbon Management|Carbon Capture (Mt CO2/yr)"                            = list("var"="o_capture","dim"=NA),
-    "Carbon Management|Carbon Capture|Energy (Mt CO2/yr)"             = list("var"="o_capture_energy","dim"=NA),
-    "Carbon Management|Carbon Capture|Energy|Electricity (Mt CO2/yr)" = list("var"="o_capture_energy_elec","dim"=NA),
-    "Carbon Management|Carbon Capture|Energy|Other (Mt CO2/yr)"       = list("var"="o_capture_energy_other","dim"=NA),
-    "Carbon Management|Carbon Capture|Direct Air Capture (Mt CO2/yr)" = list("var"="o_capture_cdr","dim"=NA),
-    # not only process industry, but total industry (energy + process), needs to be corrected in core/postsolve.gms as well
-    "Carbon Management|Carbon Capture|Process|Industry (Mt CO2/yr)"=list("var"="o_capture_industry","dim"=NA),
-    "Carbon Management|Carbon Capture|Primary Energy|Biomass (Mt CO2/yr)"     = list("var"="o_capture_energy_bio","dim"=NA),
-    "Carbon Management|Carbon Capture|Primary Energy|Fossil (Mt CO2/yr)"      = list("var"="o_capture_energy_fos", "dim"=NA),
-    "Carbon Management|CCU (Mt CO2/yr)"                                       = list("var"="o_carbon_CCU","dim"=NA),
-    "Carbon Management|Land Use (Mt CO2/yr)"                                  = list("var"="o_carbon_LandUse","dim"=NA),
-    "Carbon Management|Underground Storage (Mt CO2/yr)"                       = list("var"="o_carbon_underground","dim"=NA),
-    "Carbon Management|Carbon reemitted (Mt CO2/yr)"                          = list("var"="o_carbon_reemitted","dim"=NA)
+  # unit conversion parameters needed
+  sm_TWa_2_MWh <- readGDX(gdx, "sm_TWa_2_MWh")  # conversion of TWa (native REMIND energy units) to MWh
+  pm_conv_TWa_EJ <- readGDX(gdx, "pm_conv_TWa_EJ") # conversion of TWa (native REMIND energy units) to EJ
+  sm_c_2_co2 <- readGDX(gdx, "sm_c_2_co2")
+  GtC_2_MtCO2 <- sm_c_2_co2 * 1000 # conversion of GtC to MtCO2
+  sm_tgn_2_pgc <- readGDX(gdx, "sm_tgn_2_pgc")  # conversion of GtN of N2 to GtC Co2eq
+  sm_tgch4_2_pgc <- readGDX(gdx, "sm_tgch4_2_pgc") # conversion of MtCH4 to GtC Co2eq
+  MtN2_to_ktN2O <- 44 / 28 * 1000 # conversion from MtN to ktN2O
+  
+  # other parameters required
+  pm_ts <- readGDX(gdx,"pm_ts") # years per time step of model
+  
+  # switches relevant for emissions reporting
+  cm_multigasscen <- readGDX(gdx, "cm_multigasscen")
+  
+  # sets required
+  emiTe <- readGDX(gdx, "emiTe") # emission gases
+  emi2te <- readGDX(gdx, "emi2te") # conversions to emissions
+  pe2se <- readGDX(gdx, "pe2se") # pe2se conversions
+  se2fe <- readGDX(gdx, "se2fe") # se2fe conversions
+  emiMacSector2emiMac <- readGDX(gdx, "emiMacSector2emiMac") # MAC sector to emissions gas 
+  peFos <- readGDX(gdx, "peFos") # fossil PE carriers
+  emiInd37_fuel <- readGDX(gdx, "emiInd37_fuel") # energy-related industry CCS categories (excl. co2 cement CCS)
+  emiMac2sector <- readGDX(gdx, "emiMac2sector") # mapping of MAC sectors to emissions sectors and gases
+  macSector2emiMkt <- readGDX(gdx, "macSector2emiMkt") # mapping of MAC sectors to emissions markets
+  fe2ppfEn <- readGDX(gdx, "fe2ppfEn") # mapping of FE to bottom-level CES tree nodes
+  
+  # technology sets
+  teCCS <- readGDX(gdx, "teCCS")
+  teBio <- readGDX(gdx, "teBio")
+  teFosCCS <- readGDX(gdx, "teFosCCS")
+  
+  
+  
+  # additional sets needed
+  # SE carriers for solids, liquids, gases
+  if("seliqsyn" %in% se2fe$all_enty) { 
+    se_liq <- c("seliqfos","seliqbio","seliqsyn")
+    se_gas <- c("segafos","segabio","segasyn")
+  } else {
+    se_liq <- c("seliqfos","seliqbio")
+    se_gas <- c("segafos","segabio")  
+  }
+  se_sol <- c("sesofos","sesobio")
+  
+  
+  ### emissions variables from REMIND (see definitions in core/equations.gms)
+  # total GHG emissions
+  vm_co2eq <- readGDX(gdx, "vm_co2eq", field = "l", restore_zeros = F)[,t,]
+  # total emissions by gas 
+  vm_emiAllMkt <- readGDX(gdx, "vm_emiAllMkt", field = "l", restore_zeros = F)[,t,] 
+  # total energy emissions from pe2se and se2fe conversions
+  v_emiTeDetailMkt <- readGDX(gdx, "v_emiTeDetailMkt", field = "l", restore_zeros = F)
+  # emissions from MAC curves (non-energy emissions)
+  vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)[,t,] 
+  # negative emissions from (non-BECCS) CDR (DAC, EW), BECCS is part of (net) energy emissions
+  vm_emiCdr <- readGDX(gdx, "vm_emiCdr", field = "l", restore_zeros = F)[,t,]
+  # exogenous emissions (SO2, BC, OC)
+  pm_emiExog <- readGDX(gdx, "pm_emiExog", field = "l", restore_zeros = F)
+  # F-Gases
+  vm_emiFgas <- readGDX(gdx, "vm_emiFgas", field = "l", restore_zeros = F)[,t,]
+  # Emissions from MACs (currently: all emissions outside of energy CO2 emissions)
+  vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)
+  # energy extraction energy-related CO2 emissions
+  v_emiEnFuelEx <- readGDX(gdx, "v_emiEnFuelEx", field = "l", restore_zeros = F)
+  # set to zero if not available
+  if (is.null(v_emiEnFuelEx)) {
+    v_emiEnFuelEx <- vm_emiMacSector[,,"co2"]*0
+  }
+  
+  ### for emissions of energy system technologies
+  # emission factors of technologies
+  pm_emifac <- readGDX(gdx, "pm_emifac", restore_zeros = F)[,t,]
+  # primary energy demand (pe2se emissions factors applied to)
+  vm_demPE <- readGDX(gdx, "vm_demPE", field = "l",restore_zeros = F)[,t,]
+  # final energy demand (se2fe emissions factors applied to)
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,t,]
+  # set NA values to 0, 
+  # TODO: for some reason some entries in vm_demFeSector like fegas.CDR.ETS are NA, find out why!
+  vm_demFeSector[is.na(vm_demFeSector)] <- 0
+  
+  
+  # secondary energy production
+  vm_prodSe <- readGDX(gdx, "vm_prodSe",field = "l", restore_zeros = F)
+  # parameter to calculate coupled production
+  pm_prodCouple <- readGDX(gdx, "pm_prodCouple", field = "l", restore_zeros = F)
+  
+  ### Carbon management variables
+  # total captured CO2
+  vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = F)[,t,] 
+  # captured CO2 by DAC
+  v33_emiDAC <- readGDX(gdx, "v33_emiDAC", field = "l", restore_zeros = F)[,t,]
+  # captured CO2 by Enhanced Weathering
+  v33_emiEW <- readGDX(gdx, "v33_emiEW", field = "l", restore_zeros = F)[,t,]
+  # stored CO2
+  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)[,t,]
+  
+  
+  # CO2 captured by industry sectors
+  vm_emiIndCCS <- readGDX(gdx, "vm_emiIndCCS", field = "l", restore_zeros = F)[,t,]
+  getSets(vm_emiIndCCS)[3] <- "secInd37" # relabel subsector dimension to match with other parameters
+  
+  # CO2 released by CCU
+  vm_co2CCUshort <- readGDX(gdx, "vm_co2CCUshort", field = "l", restore_zeros = F)[,t,]
+  # helper variable to release captured CO2 in no CCU capacities are standing anymore to take the captured CO2
+  v_co2capturevalve <- readGDX(gdx, "v_co2capturevalve", field = "l", restore_zeros = F)[,t,]
+  
+  
+  # intialize varibles used in dplyr operations
+  all_enty2 <- all_te <- NULL
+  
+  # Calculate Variables ----
+  
+  ## 1. Total GHG Emissions ----
+  
+  out <- NULL
+  out <- mbind(out,
+               
+               # total GHG in Mt CO2eq/yr (CO2, CH4, N2O, F-Gases)
+               setNames(dimSums(vm_emiAllMkt[,,"co2"], dim=3) * GtC_2_MtCO2 +
+                          dimSums(vm_emiAllMkt[,,"ch4"], dim=3) * sm_tgch4_2_pgc * GtC_2_MtCO2 +
+                          dimSums(vm_emiAllMkt[,,"n2o"], dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2 +
+                          vm_emiFgas[,,"emiFgasTotal"],
+                        "Emi|GHG (Mt CO2eq/yr)"),
+               # total CO2 emissions
+               setNames(dimSums(vm_emiAllMkt[,,"co2"],dim=3) * GtC_2_MtCO2,
+                        "Emi|GHG|+|CO2 (Mt CO2eq/yr)"),
+               # total CH4 emissions in CO2eq (convert from MtCH4 to MtCO2eq)
+               setNames(dimSums(vm_emiAllMkt[,,"ch4"],dim=3) * sm_tgch4_2_pgc * GtC_2_MtCO2,
+                        "Emi|GHG|+|CH4 (Mt CO2eq/yr)"),
+               # total N2O emissions in CO2eq (convert from MtN to MtCO2eq)
+               setNames(dimSums(vm_emiAllMkt[,,"n2o"],dim=3) *  sm_tgn_2_pgc * GtC_2_MtCO2,
+                        "Emi|GHG|+|N2O (Mt CO2eq/yr)"),
+               # F-Gases (Mt CO2eq)
+               setNames(vm_emiFgas[,,"emiFgasTotal"],
+                        "Emi|GHG|+|F-Gases (Mt CO2eq/yr)")
+               
   )
   
-  rr <- readGDX(gdx,"regi",format="first_found")
   
-  altEmi <- NULL
-  altEmi <- mbind(altEmi,
-             do.call("mbind",
-                     lapply(names(d), function(v){
-                       #getDim(NA,gdx_data)
-                       gdx_data <- readGDX(gdx, d[[v]]$var, field = 'l', restore_zeros=FALSE, format = 'first_found')
-                       if (length(gdx_data) > 0){
-                         if(!(is.na(d[[v]]$dim[[1]]))){
-                           gdx_data <- dimSums(gdx_data[,,intersect(d[[v]]$dim,getNames(gdx_data,dim=2))],dim=3.2)
-                         }
-                         gdx_data_f <- new.magpie(rr,yy,getNames(gdx_data),fill=0)
-                         gdx_data_f[getRegions(gdx_data),getYears(gdx_data),getNames(gdx_data)] <- gdx_data[getRegions(gdx_data),getYears(gdx_data),getNames(gdx_data)]
-                         gdx_data_f[is.na(gdx_data_f)] <- 0
-                         if ("co2" %in% getNames(gdx_data_f)){
-                           return(setNames(dimSums(gdx_data_f[,,"co2"]), v))
-                         }
-                       }
-                       })
-                     )
+  
+  ## 2. CO2 Emissions ----
+  
+  ### 2.1 Energy CO2 Emissions ----
+  
+  
+  # (splitting q_emiTeMkt into supply-side and demand-side)
+  # pe2se,extraction,CCU -> supply-side
+  # se2fe,industryCCS -> demand-side
+  
+  # calculate share of captured CO2 by energy system, 
+  # to only reattribute energy system captured CO2 to synfuel production, not e.g. DAC CO2
+  p_share_en_cco2 <- (dimSums(mselect(v_emiTeDetailMkt, all_enty2="cco2"), dim=3) + dimSums(vm_emiIndCCS, dim=3)) / dimSums(vm_co2capture, dim=3)
+  p_share_en_cco2[is.na(p_share_en_cco2)] <- 0
+  
+  
+  
+  # supply and demand emissions of conversion technologies
+  emi2te.pe2se.co2 <- emi2te %>% 
+    filter(all_enty2 == "co2") %>% 
+    filter(all_te %in% pe2se$all_te)
+  
+  # co2 emissions factor of pe2se technologies
+  pm_emifac.co2.pe <- dimSums(mselect(pm_emifac, all_te=pe2se$all_te, all_enty2="co2"), dim=c(3.4)) 
+  # co2 emissions factor of fe carriers
+  pm_emifac.co2.fe <- dimSums(mselect(pm_emifac, all_te=se2fe$all_te, all_enty2="co2"), dim=c(3.3,3.4)) 
+  
+  # calculate emissions from pe2se conversions and fe carriers
+  EmiPe2Se <- pm_emifac.co2.pe * vm_demPE[,,getNames(pm_emifac.co2.pe)]
+  EmiFeCarrier <- pm_emifac.co2.fe * vm_demFeSector[,,getNames(pm_emifac.co2.fe)]
+  
+
+  
+  # calculate energy emissions from fuel extraction
+  # to be continued once REMIND PR is in with this variable calculated in GAMS...
+  
+  # calculate total energy supply and demand co2 emissions
+  out <- mbind(out,
+               
+               # supply-side energy CO2 emissions
+               # pe2se emissions
+               setNames((dimSums(EmiPe2Se,dim=3)
+                         # add CCU
+                         + dimSums(vm_co2CCUshort, dim=3)*p_share_en_cco2 
+                         # add CO2 from vented CO2 capture
+                         + v_co2capturevalve 
+                         # add extraction energy-related CO2 emissions  
+                         + dimSums(v_emiEnFuelEx[,,"co2"], dim=3)) 
+                        * GtC_2_MtCO2,
+                        "Emi|CO2|Energy|+|Supply (Mt CO2/yr)"),               
+               # demand-side energy CO2 emissions
+               # fe emissions
+               setNames((dimSums(EmiFeCarrier,dim=3) 
+                         # substract industry CCS
+                         - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3)) * GtC_2_MtCO2,
+                        "Emi|CO2|Energy|+|Demand (Mt CO2/yr)")
+               
   )
   
- 
-
+  #### 2.1.2 Energy Supply ----
   
-  ####### conversion factors ##########
-  s_GWP_CH4 <- readGDX(gdx,c("sm_gwpCH4","s_gwpCH4","s_GWP_CH4"),format="first_found", react = "silent")
-  s_GWP_N2O <- readGDX(gdx,c("s_gwpN2O","s_GWP_N2O"),format="first_found")
-  pm_conv_TWa_EJ <- 31.536
-  TWa_2_EJ <- 31.536
-  GtC_2_MtCO2 <- 44 / 12 * 1000
-  MtN2_to_ktN2O <- 44 / 28 * 1000
-
+  #### calculations required for coupled production
   
-  ppfen_stat  <- readGDX(gdx, c("ppfen_stationary_dyn38",
-                                "ppfen_stationary_dyn28",
-                                "ppfen_stationary"),
-                         format = "first_found", react = "silent")
-  # Realisation of the different modules
+  # calculate shares of first output and second output for technologies with coupled production
+  # filter for positive coupled production parameters of pe2se technologies and only get coupled production and not own consumption
+  pm_prodCouple.prod <- pm_prodCouple[,,intersect(getNames(pm_prodCouple, dim=3),pe2se$all_te)]
+  pm_prodCouple.prod[pm_prodCouple.prod<=0] <- 0
   
-  if ( !is.null(module2realisation) 
-       & (!"CES_structure" %in% module2realisation[,1])) {
-    stat_mod = module2realisation['stationary' == module2realisation$modules,2]
-    tran_mod = module2realisation['transport'  == module2realisation$modules,2]
-    indu_mod = module2realisation['industry'   == module2realisation$modules,2]
-    buil_mod = module2realisation['buildings'  == module2realisation$modules,2]
-  } else {                     
-    # In case the set module2realisation did not exist, find out whether it was 
-    # stationary or buildings-industry
-    if (!is.null(ppfen_stat)) {
-      stat_mod = "simple"
-      indu_mod = "off"
-      buil_mod = "off"
-      tran_mod = "complex"
-    } else {
-      stat_mod = "off"
-      indu_mod = "fixed_shares"
-      buil_mod = "simple"
-      tran_mod = "complex"
-    }
-  }
+  # production of second output
+  vm_prodSe_coupleProd <- pm_prodCouple.prod * vm_prodSe[,,getNames(pm_prodCouple.prod, dim=3)]
   
-  ## switches
-  cm_emiscen <- readGDX(gdx,"cm_emiscen")
-  ## sets
-  pebio      <- readGDX(gdx,c("peBio","pebio"),format="first_found")
-  emi2te     <- readGDX(gdx,"emi2te")
-  cintbyfuel <- readGDX(gdx,c("emi2fuelMine","cintbyfuel"),format="first_found")
-  pe2se      <- readGDX(gdx,"pe2se")
-  se2se      <- readGDX(gdx, "se2se")
-  se2fe      <- readGDX(gdx,"se2fe")
-  fe2ue      <- readGDX(gdx, c("fe2ue", "fe2es"),format="first_found")
-  fety       <- readGDX(gdx,c("entyFe","fety"),format="first_found")
-  sety       <- readGDX(gdx,c("entySe","sety"),format="first_found")
-  pety       <- readGDX(gdx,c("entyPe","pety"),format="first_found")
-  oc2te      <- readGDX(gdx,c("pc2te","oc2te"),format="first_found")
-  teccs    <- readGDX(gdx,c("teCCS","teccs"),format="first_found")
-  tebio    <- readGDX(gdx,c("teBio"),format="first_found")
-  peFos    <- readGDX(gdx,c("peFos"),format="first_found")
+  # calculate weights of emissions distribution for coupled production
+  # weights follow shares of coupled product/total output  
+  p_weights_cp <- vm_prodSe_coupleProd / (vm_prodSe[,,getNames(pm_prodCouple.prod, dim=3)]+vm_prodSe_coupleProd)
+  # for power generating technologies technologies with heat as a coupled product, rescale with halfed heat emissions 
+  # this splits electricity and heat emissions in a chp plant roughly as if both products were produced by 2 seperate plants (Finnish Method)
+  # where the heat plant has about double the efficiency of the power plant
+  mselect(p_weights_cp, all_enty1="seel",all_enty2="sehe") <- 0.5 * mselect(vm_prodSe_coupleProd, all_enty1="seel", all_enty2="sehe") / (mselect(vm_prodSe[,,getNames(pm_prodCouple.prod, dim=3)], all_enty1="seel") + 0.5 * mselect(vm_prodSe_coupleProd, all_enty1="seel", all_enty2="sehe"))
+  
+  # pe2se emissions technologies with coupled production
+  emi.te.cp  <- intersect(paste(getItems(p_weights_cp, dim="all_enty",  full = T),
+                               getItems(p_weights_cp, dim="all_enty1", full = T),
+                               getItems(p_weights_cp, dim="all_te", full = T), sep = "."),
+                         getItems(EmiPe2Se, dim=3))
   
   
-  # the set liquids changed from sepet+sedie to seLiq in REMIND 1.7. Seliq, sega and seso changed to include biomass or Fossil origin after REMIND 2.0
-  se_Liq    <- intersect(c("seliqfos", "seliqbio", "seliq", "sepet","sedie"),sety)
-  se_Gas    <- intersect(c("segafos", "segabio", "sega"),sety)
-  se_Solids <- intersect(c("sesofos", "sesobio", "seso"),sety)
   
-  FE_Liq   <- intersect(c("fehos","fehob","fehoi","fepet","fedie","feliq"),fety)
-  FE_Ga    <- intersect(c("fegas","fegab","fegai","fegat"),fety)
-  FE_H2    <- intersect(c("feh2s","feh2b","feh2i","feh2t"),fety)
-  FE_So    <- intersect(c("fesos","fesob","fesoi"),fety)
-  FE_He    <- intersect(c("fehes","feheb","fehei"),fety)
-  FE_El    <- intersect(c("feels","feeli","feelb","feelt"),fety)
+  # pe2se emissions technologies without coupled production
+  emi.te.nocp <- setdiff(getNames(EmiPe2Se), emi.te.cp )
   
-  FE_Stat_fety     <- c("fegas", "fehos", "fesos", "feh2s", "fehes", "feels")
-  FE_Transp_fety35 <- readGDX(gdx,"FE_Transp_fety35")
-
-  emismacmagpiech4 <- readGDX(gdx,c("emiMacMagpieCH4","emismacmagpiech4"),format="first_found")
-  emismacmagpien2o <- readGDX(gdx,c("emiMacMagpieN2O","emismacmagpien2o"),format="first_found")
-  emiMacExoCH4 <- readGDX(gdx,c("emiMacExoCH4"),format="first_found")
-  emiMacExoN2O <- readGDX(gdx,c("emiMacExoN2O"),format="first_found")
-  ## parameter or variable - see next lines
-  p_emi_fgas <- readGDX(gdx,c("pm_emiFgas","p_emiFgas","p_emi_fgas"),format="first_found", react = "silent")
-  #LB# if old names are used rename set elements
-  if (is.element("Emissions|F-Gases",magclass::getNames(p_emi_fgas))) {
-    magclass::getNames(p_emi_fgas) <- gsub("\\|","_", magclass::getNames(p_emi_fgas))
-    oldNames <- c("Emissions_F-Gases","Emissions_PFC","Emissions_CF4","Emissions_C2F6","Emissions_C6F14","Emissions_HFC_HFC23","Emissions_HFC_HFC32",
-                  "Emissions_HFC_HFC43-10","Emissions_HFC_HFC125","Emissions_HFC_HFC134a","Emissions_HFC_HFC143a","Emissions_HFC_HFC227ea","Emissions_HFC_HFC245fa","Emissions_SF6","Emissions_HFC")
-    newNames <- c("emiFgasTotal","emiFgasPFC","emiFgasCF4","emiFgasC2F6","emiFgasC6F14","emiFgasHFC23","emiFgasHFC32","emiFgasHFC43-10","emiFgasHFC125",
-                  "emiFgasHFC134a","emiFgasHFC143a","emiFgasHFC227ea","emiFgasHFC245fa","emiFgasSF6","emiFgasHFC")
-    for( i in 1:length(oldNames))  {
-      magclass::getNames(p_emi_fgas) <- gsub(oldNames[i],newNames[i], magclass::getNames(p_emi_fgas))
-    }
-  }
-  if(is.null(p_emi_fgas)){p_emi_fgas <- readGDX(gdx,name="vm_emiFgas",field="l",restore_zeros=FALSE)}
-  #  p11_emi_aerosol <- readGDX(gdx,"p11_emi_aerosol")
-  pm_emi_limits_wp4 <- readGDX(gdx,c("p11_emi_limits_wp4", "pm_emi_limits_wp4"),format="first_found", react = "silent")
-  pm_limits_wp4_rcp <- readGDX(gdx,"pm_limits_wp4_rcp",restore_zeros=FALSE, react = "silent")
-  p_cint            <- readGDX(gdx, c("pm_cint","p_cint") ,format="first_found", react = "silent")
-  p_share_seel_s    <- readGDX(gdx, "p_share_seel_s")
-  p_share_seh2_s    <- readGDX(gdx, "p_share_seh2_s")
-  p_share_seliq_s   <- readGDX(gdx, "p_share_seliq_s")
-  p_ef_dem          <- readGDX(gdx, "p_ef_dem")
-  ## temporary workaround to test reverted emission factors for the AR6 reporting
-  # p_ef_dem[,, "fedie"] = 69.3;
-  # p_ef_dem[,, "fehos"] = 69.3;
-  # p_ef_dem[,, "fepet"] = 68.5;
-  # p_ef_dem[,, "fegas"] = 50.3;
-  # p_ef_dem[,, "fegat"] = 50.3;
-  # p_ef_dem[,, "fesos"] = 90.5;
-
-  p_bioshare        <- readGDX(gdx, "p_bioshare")
-  ppfen_stat   <- readGDX(gdx,c("ppfen_stationary_dyn38","ppfen_stationary_dyn28","ppfen_stationary"),format="first_found", react = "silent")
+  # only retain coupled production factors for technologies which have emissions
+  p_weights_cp <- p_weights_cp[,,emi.te.cp ]
+  p_weights_cp[is.na(p_weights_cp)] <- 0
   
-  pm_ts             <- readGDX(gdx,"pm_ts")
-  o37_emiInd <- readGDX(gdx, "o37_emiInd", restore_zeros = FALSE,
-                        react = "silent")
-  o37_cementProcessEmissions <- readGDX(gdx, "o37_cementProcessEmissions",
-                                        restore_zeros = FALSE,
-                                        react = "silent")
-  
-  o37_cementProcessEmissions[is.na(o37_cementProcessEmissions)] <- 0
-  
-  p_eta_conv       <- readGDX(gdx, c("pm_eta_conv","p_eta_conv"), restore_zeros = FALSE,format="first_found")
-  dataoc_tmp       <- readGDX(gdx,c("pm_prodCouple","p_prodCouple","p_dataoc"),restore_zeros=FALSE,format="first_found") 
-  dataoc_tmp[is.na(dataoc_tmp)] <- 0
-  #### adjust regional dimension of dataoc
-  dataoc <- new.magpie(getRegions(p_eta_conv),getYears(dataoc_tmp),magclass::getNames(dataoc_tmp),fill=0)
-  dataoc[getRegions(dataoc_tmp),,] <- dataoc_tmp
-  getSets(dataoc) <- getSets(dataoc_tmp)
-  
-  ####### fix negative values to 0 ##################
-  dataoc[dataoc<0] <- 0
-  oc2te    <- readGDX(gdx,c("pc2te","oc2te"),format="first_found")
-
-  ## variables
-  v_emi <- readGDX(gdx, name = c("vm_emiTeDetail", "v_emiTeDetail", "v_emi"),
-                   field = "l", restore_zeros = FALSE, format = "first_found",
-                   react = "silent")
-  vm_co2capture  <- readGDX(gdx,name=c("vm_co2capture","vm_co2CCS","v_co2CCS","v_ccs"),field="l",restore_zeros=FALSE,format="first_found")
-  vm_co2CCS      <- readGDX(gdx,name=c("vm_co2CCS","v_co2CCS","v_ccs"),field="l",restore_zeros=FALSE,format="first_found")
-  vm_emiengregi  <- readGDX(gdx,name=c("vm_emiTe","vm_emiengregi"),field="l",format="first_found")
-  vm_eminegregi  <- readGDX(gdx,name=c("vm_emiMacSector","vm_eminegregi"),field="l",format="first_found")
-  vm_emicdrregi  <- readGDX(gdx,name=c("vm_emiCdr","vm_emicdrregi"),field="l",format="first_found")
-  vm_co2CCUshort <- readGDX(gdx,name=c("vm_co2CCUshort"),field="l",restore_zeros=FALSE,format="first_found")
-  vm_emiAllMkt   <- readGDX(gdx, 'vm_emiAllMkt', field = 'l', restore_zeros=FALSE, format = 'first_found')
-  v33_emiEW      <- readGDX(gdx,name=c("v33_emiEW"),field="l",format="first_found",react="silent")
-  v33_emiDAC     <- readGDX(gdx,name=c("v33_emiDAC"),field="l",format="first_found",react="silent")
-  vm_sumeminegregi  <- readGDX(gdx,name=c("vm_emiMac","vm_sumeminegregi"),field="l",format="first_found")
-  vm_fuelex      <- readGDX(gdx, name = c("vm_fuExtr","vm_fuelex", "vm_fuelextmp"), field="l",format = "first_found")
-  vm_prodSE      <- readGDX(gdx,name=c("vm_prodSe","v_seprod"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
-  vm_prodSE      <- vm_prodSE[rbind(pe2se,se2se)]
-  vm_prodFe      <- readGDX(gdx,name=c("vm_prodFe","v_feprod","vm_feprod"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
-  vm_prodFe      <- vm_prodFe[se2fe]
-
-
-  vm_demFeForEs <- readGDX(gdx,name = c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found",react = "silent") * pm_conv_TWa_EJ
-
-  vm_demSe       <- readGDX(gdx,name=c("vm_demSe","v_demSe","v_sedem","vm_sedem"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
-  vm_demSe       <- vm_demSe[se2fe]
-  v_co2eq        <- readGDX(gdx,name=c("vm_co2eq","v_co2eq"),field="l",format="first_found")
-  vm_perm        <- readGDX(gdx,name=c("vm_perm"),field="l",format="first_found")
-  vm_cesIO       <- readGDX(gdx,"vm_cesIO",field="l",format="first_found") * pm_conv_TWa_EJ
-  vm_macBase     <- readGDX(gdx, "vm_macBase", field = "l",
-                            restore_zeros = FALSE)
-  
-  vm_macBaseInd    <- readGDX(gdx, c('vm_macBaseInd', "v37_macBaseInd"), field = "l", format = "first_found")
-  vm_emiIndCCS     <- readGDX(gdx, 'vm_emiIndCCS', field = 'l', format = 'first_found')
-  v37_emiIndCCSmax <- readGDX(gdx, 'v37_emiIndCCSmax', field = 'l', 
-                              react = 'silent')
-  if (!is.null(v37_emiIndCCSmax))
-    getSets(v37_emiIndCCSmax) <- sub('all_enty', 'emiInd37', 
-                                     getSets(v37_emiIndCCSmax))
-  pm_macSwitch     <- readGDX(gdx, "pm_macSwitch", field = "l",format="first_found")
-  pm_macAbatLev    <- readGDX(gdx, "pm_macAbatLev", field = "l",format="first_found")
-  
-  
-  ####### calculate minimal temporal resolution #####
-  y <- Reduce(intersect,list(getYears(v_emi),getYears(vm_emiengregi),getYears(vm_eminegregi),getYears(vm_emicdrregi),getYears(vm_co2capture),getYears(vm_co2CCS),getYears(vm_sumeminegregi),getYears(vm_fuelex)))
-  v_emi            <- v_emi[,y,]
-  vm_emiengregi    <- vm_emiengregi[,y,]
-  vm_eminegregi    <- vm_eminegregi[,y,]
-  vm_emicdrregi    <- vm_emicdrregi[,y,]
-  vm_co2capture    <- vm_co2capture[,y,]
-  vm_co2CCS        <- vm_co2CCS[,y,]
-  
-  if(!is.null(vm_emiAllMkt)) {
-    vm_emiAllMkt   <- vm_emiAllMkt[,y,]
-  }
-  vm_prodSE        <- vm_prodSE[,y,]
-  if(!is.null(v33_emiEW)) {
-        v33_emiEW           <- v33_emiEW[,y,]
-        getNames(v33_emiEW) <- "emiEW"
-  }  else {
-    v33_emiEW <- new.magpie(getRegions(v_emi),getYears(v_emi),"emiEW",fill=0)
-    }
-  if(!is.null(v33_emiDAC)) {
-         v33_emiDAC           <- v33_emiDAC[,y,]
-         getNames(v33_emiDAC) <- "emiDAC"
-  }  else {
-    v33_emiDAC <- new.magpie(getRegions(v_emi),getYears(v_emi),"emiDAC",fill=0)
-  }
-  if(!is.null(vm_co2CCUshort)) {
-    if(dim(vm_co2CCUshort)[1]==0) {
-      vm_co2CCUshort <- new.magpie(getRegions(v_emi),getYears(v_emi),"cco2.co2CCUshort.h22ch4.1",fill=0)
-      }  else {
-    vm_co2CCUshort           <- vm_co2CCUshort[,y,]
-      }
-    }  else{
-      vm_co2CCUshort <- new.magpie(getRegions(v_emi),getYears(v_emi),"cco2.co2CCUshort.h22ch4.1",fill=0)
-    }
-  
-  vm_sumeminegregi <- vm_sumeminegregi[,y,]
-  vm_macBase       <- vm_macBase[,y,]
-  vm_fuelex        <- vm_fuelex[,y,]
-  
-  # Patch to force dimension match between all_enty columns
-  getSets(vm_fuelex)[3] <- colnames(cintbyfuel)[2]
-  
-  p_share_seel_s   <- p_share_seel_s[,y,]
-  p_share_seh2_s   <- p_share_seh2_s[,y,]
-  p_share_seliq_s  <- p_share_seliq_s[,y,]
-  p_eta_conv       <- p_eta_conv[,y,]
-  v_co2eq          <- v_co2eq[,y,]
-  v_co2eq          <- v_co2eq[,y,]
-  vm_perm          <- vm_perm[,y,]
-  p_bioshare       <- p_bioshare[,y,]
-  p_emi_fgas       <- p_emi_fgas[,y,]
-  vm_cesIO         <- vm_cesIO[,y,]
-  
-  vm_macBaseInd   <- vm_macBaseInd[,y,]
-  pm_macAbatLev <- pm_macAbatLev[,y,]
-  
-  
-  emiInd37    <- readGDX(gdx,c("emiInd37"),format="first_found")
-  secInd37    <- readGDX(gdx,c("secInd37"),format="first_found")
-  secInd37_2_emiInd37 <- readGDX(gdx,c("secInd37_2_emiInd37"),format="first_found")
-  
-  # pm_macSwitch <- mselect(pm_macSwitch,all_enty = emiInd37) 
-  
-  
-  # vm_macBaseIndRed <- collapseNames(mselect(vm_macBaseInd,all_enty = "fegas",secInd37 = secInd37_2_emiInd37$secInd37))
-  # a <- dimSums(na.rm=TRUE,x=vm_macBaseIndRed[,,] * setNames(pm_macSwitch[,,secInd37_2_emiInd37$emiInd37],secInd37_2_emiInd37$secInd37) * setNames(pm_macAbatLev[,,secInd37_2_emiInd37$emiInd37],secInd37_2_emiInd37$secInd37),3)
+  # # TODO: refactor this to a more elegant way at some point
+  # # assign 1 to those elements not in p_weight_cp
+  #
+  # df.emi.te.cp <- data.frame(all_enty=getItems(EmiPe2Se, dim="all_enty",  full = T),
+  #                            all_enty1=getItems(EmiPe2Se, dim="all_enty1",  full = T),
+  #                            all_te=getItems(EmiPe2Se, dim="all_te",  full = T))
   # 
-  
-  
-  #set calculation
-  pe2se_bioCCS   <- pe2se[pe2se$all_te %in% intersect(tebio, teccs),]
-  pe2se_noBioCCS <- pe2se[!pe2se$all_te %in% intersect(tebio, teccs),]
-  oc2te <- oc2te[!((oc2te$all_te=="gaschp" & (oc2te$all_enty2 %in% se_Gas))|
-                     (oc2te$all_te=="refped" & oc2te$all_enty2=="seel")|
-                     (oc2te$all_te=="refpet" & oc2te$all_enty2=="sehe")|
-                     (oc2te$all_te=="refdip" & oc2te$all_enty2=="seel")|
-                     (oc2te$all_te=="refdip" & oc2te$all_enty2=="sehe")|
-                     (oc2te$all_te=="gash2" & (oc2te$all_enty2 %in% se_Gas))|
-                     (oc2te$all_te=="gash2c" & (oc2te$all_enty2 %in% se_Gas))),]
-  
-  # ---- expand v_emi to include regions w/o data (for testOneRegi) ----
-  v_emi <- v_emi %>% 
-    as.data.frame() %>% 
-    select(-!!sym('Cell')) %>% 
-    unite('data', matches('^Data[0-9]$'), sep = '.') %>% 
-    complete(!!sym('Region') := as.character(readGDX(gdx, 'regi')),
-             nesting(!!sym('Year'), !!sym('data'))) %>% 
-    rename(!!sym(names(attr(v_emi, 'dimnames'))[1]) := !!sym('Region'), 
-           !!sym(names(attr(v_emi, 'dimnames'))[2]) := !!sym('Year'),
-           !!sym(names(attr(v_emi, 'dimnames'))[3]) := !!sym('data')) %>% 
-    as.magpie(tidy = TRUE, replacement = ".")
+  # p_weights_test <- p_weights_cp[df.emi.te.cp]
+  # p_weights_test[is.na(p_weights_test)] <- 1
+  # 
+  # test <- p_weights_test*EmiPe2Se
 
-  ###### Compute share parameter
-  if (is.null(ppfen_stat)){
-    
-    p_share_feels_b <- setNames(collapseNames(output[,y,"FE|Buildings|+|Electricity (EJ/yr)"] / output[,y,"FE|Buildings and Industry|Electricity (EJ/yr)"]),
-                                "feels")
-    p_share_feels_i <- 1 - p_share_feels_b
-    p_share_fehos_b <- setNames(collapseNames(output[,y,"FE|Buildings|+|Liquids (EJ/yr)"] / output[,y,"FE|Buildings and Industry|Liquids (EJ/yr)"]),
-                                "fehos")
-    p_share_fehos_i <- 1 - p_share_fehos_b
-    p_share_fegas_b <-  setNames(collapseNames(output[,y,"FE|Buildings|+|Gases (EJ/yr)"] / output[,y,"FE|Buildings and Industry|Gases (EJ/yr)"]),
-                                 "fegas")
-    p_share_fegas_i <- 1 - p_share_fegas_b
-    
-    p_share_fehes_b <- setNames(
-      collapseNames(
-        output[,y,"FE|Buildings|+|Heat (EJ/yr)"] 
-      / output[,y,"FE|Buildings and Industry|Heat (EJ/yr)"]
-      ),
-      "fehes")
-    p_share_fehes_i <- 1 - p_share_fehes_b
-    
-    p_share_fehes_b <- replace_non_finite(p_share_fehes_b, 0)
-    p_share_fehes_i <- replace_non_finite(p_share_fehes_i, 0)
-    
-    p_share_feh2s_b <- setNames(collapseNames(output[,y,"FE|Buildings|+|Hydrogen (EJ/yr)"] / output[,y,"FE|Buildings and Industry|Hydrogen (EJ/yr)"]),
-                               "feh2s")
-    p_share_feh2s_i <- 1 - p_share_feh2s_b
-    p_share_fesos_b <- setNames(collapseNames(output[,y,"FE|Buildings|+|Solids (EJ/yr)"] / output[,y,"FE|Buildings and Industry|Solids (EJ/yr)"]),
-                                "fesos")
-    p_share_fesos_i <- 1 - p_share_fesos_b
-    p_share_fety_b <- mbind(p_share_feels_b,p_share_fehos_b,p_share_fegas_b,p_share_fehes_b,p_share_feh2s_b,p_share_fesos_b)
-    p_share_fety_i <- mbind(p_share_feels_i,p_share_fehos_i,p_share_fegas_i,p_share_fehes_i,p_share_feh2s_i,p_share_fesos_i)
-  }
-
-  p_share_seel_t    <- collapseNames(output[,y,"FE|Transport|+|Electricity (EJ/yr)"] / output[,y,"FE|+|Electricity (EJ/yr)"])
-  p_share_seh2_t    <- collapseNames(output[,y,"FE|Transport|+|Hydrogen (EJ/yr)"] / output[,y,"FE|+|Hydrogen (EJ/yr)"])
-  p_share_seliq_t   <- collapseNames(output[,y,"FE|Transport|+|Liquids (EJ/yr)"] / output[,y,"FE|+|Liquids (EJ/yr)"])
-  p_share_segas_t   <- collapseNames(output[,y,"FE|Transport|+|Gases (EJ/yr)"] / output[,y,"FE|+|Gases (EJ/yr)"])
-  if (tran_mod == "complex"){
-    p35_share_seel_t_ldv  <- collapseNames(output[,y,"FE|Transport|Pass|Electricity|Road (EJ/yr)"] / output[,y,"FE|+|Electricity (EJ/yr)"])
-    p35_share_seh2_t_ldv  <- collapseNames(output[,y,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"] / output[,y,"FE|+|Hydrogen (EJ/yr)"])
-    p35_share_seliq_t_ldv <- collapseNames(output[,y,"FE|Transport|Pass|Liquids|Road (EJ/yr)"] / output[,y,"FE|+|Liquids (EJ/yr)"])
-  }else if(tran_mod == "edge_esm"){
-    ## Liquids
-    p35_share_feliq_lo  <- collapseNames((output[,y,"FE|Transport|Freight|Long distance|Diesel Liquids (EJ/yr)"] +
-                                          output[,y,"FE|Transport|Pass|Long distance|Diesel Liquids (EJ/yr)"]) /
-                                         output[,y,"FE|Transport|+|Liquids (EJ/yr)"])
-    p35_share_seliq_psm  <- collapseNames((output[,y,"FE|Transport|Pass|Short-Medium distance|Diesel Liquids (EJ/yr)"] +
-                                           output[,y,"FE|Transport|Pass|Short-Medium distance|Petrol Liquids (EJ/yr)"]) /
-                                          output[,y,"FE|+|Liquids (EJ/yr)"])
-    p35_share_seliq_fsm  <- collapseNames(output[,y,"FE|Transport|Freight|Short-Medium distance|Diesel Liquids (EJ/yr)"] / output[,y,"FE|+|Liquids (EJ/yr)"])
-    
-    p35_share_seliq_pl  <- collapseNames((output[,y,"FE|Transport|Pass|Long distance|Diesel Liquids (EJ/yr)"]) /
-                                           output[,y,"FE|+|Liquids (EJ/yr)"])
-    
-    p35_share_seliq_fl  <- collapseNames((output[,y,"FE|Transport|Freight|Long distance|Diesel Liquids (EJ/yr)"]) /
-                                           output[,y,"FE|+|Liquids (EJ/yr)"])
-    
-    ## Electricity
-    p35_share_seel_psm  <- collapseNames(output[,y,"FE|Transport|Pass|Short-Medium distance|Electricity (EJ/yr)"] /
-                                          output[,y,"FE|+|Electricity (EJ/yr)"])
-    p35_share_seel_fsm  <- collapseNames(output[,y,"FE|Transport|Freight|Short-Medium distance|Electricity (EJ/yr)"] /
-                                          output[,y,"FE|+|Electricity (EJ/yr)"])
-    ## Hydrogen
-    p35_share_seh2_psm  <- collapseNames(output[,y,"FE|Transport|Pass|Short-Medium distance|Hydrogen (EJ/yr)"] /
-                                          output[,y,"FE|+|Hydrogen (EJ/yr)"])
-    p35_share_seh2_fsm  <- collapseNames(output[,y,"FE|Transport|Freight|Short-Medium distance|Hydrogen (EJ/yr)"] /
-                                          output[,y,"FE|+|Hydrogen (EJ/yr)"])
-    ## Nat. Gas
-    p35_share_sega_psm  <- collapseNames(output[,y,"FE|Transport|Pass|Short-Medium distance|Gases (EJ/yr)"] /
-                                          output[,y,"FE|+|Gases (EJ/yr)"])
-    p35_share_sega_fsm  <- collapseNames(output[,y,"FE|Transport|Freight|Short-Medium distance|Gases (EJ/yr)"] /
-                                          output[,y,"FE|+|Gases (EJ/yr)"])
-  }
   
   
-  
-  # Share of captured carbon, that is actually sequestered.  The introduction 
-  # of CCU made it necessary to add the "slack" variable v_co2capturevalve, 
-  # that allows for immediate releasing
-  p_share_carbonCapture_stor <- (
-    vm_co2CCS[,,"cco2.ico2.ccsinje.1"]
-    / dimSums(mselect(vm_co2capture, all_enty = "cco2"), dim = 3)
+  out <- mbind(out,
+               
+               # electricity emissions (w/ coupled production)
+               # electricity emissions from pe2se technologies which have no coupled product
+               setNames(  (dimSums( mselect(EmiPe2Se[,,emi.te.nocp], all_enty1="seel"), dim=3)
+                           # emissions from coupled production technologies where electricty is first product
+                           + dimSums( mselect((1-p_weights_cp) * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty1="seel"), dim=3)
+                           # emissions from coupled production technologies where electricty is coupled/second product
+                           + dimSums( mselect(p_weights_cp * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty2="seel"), dim=3))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)" ),
+               # heat emissions (w/ coupled production)
+               # heat emissions from pe2se technologies which have no coupled product
+               setNames(  (dimSums( mselect(EmiPe2Se[,,emi.te.nocp], all_enty1="sehe"), dim=3)
+                           # emissions from coupled production technologies where heat is first product
+                           + dimSums( mselect((1-p_weights_cp) * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty1="sehe"), dim=3)
+                           # emissions from coupled production technologies where heat is coupled/second product
+                           + dimSums( mselect(p_weights_cp * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty2="sehe"), dim=3))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Supply|+|Heat w/ couple prod (Mt CO2/yr)" ),
+               # hydrogen emissions (w/ coupled production)
+               # hydrogen emissions from pe2se technologies which have no coupled product
+               setNames(  (dimSums( mselect(EmiPe2Se[,,emi.te.nocp], all_enty1="seh2"), dim=3)
+                           # emissions from coupled production technologies where hydrogen is first product
+                           + dimSums( mselect((1-p_weights_cp) * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty1="seh2"), dim=3)
+                           # emissions from coupled production technologies where hydrogen is coupled/second product
+                           + dimSums( mselect(p_weights_cp * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty2="seh2"), dim=3))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Supply|+|Hydrogen w/ couple prod (Mt CO2/yr)" ),
+               # supply-side solids emissions (w/ coupled production)
+               # solids emissions from pe2se technologies which have no coupled product
+               setNames(  (dimSums( mselect(EmiPe2Se[,,emi.te.nocp], all_enty1=se_sol), dim=3)
+                           # emissions from coupled production technologies where solids are first product
+                           + dimSums( mselect((1-p_weights_cp) * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty1=se_sol), dim=3)
+                           # emissions from coupled production technologies where solids are coupled/second product
+                           + dimSums( mselect(p_weights_cp * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty2=se_sol), dim=3))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Supply|+|Solids w/ couple prod (Mt CO2/yr)" ),
+               # supply-side liquids emissions (w/ coupled production)
+               # liquids emissions from pe2se technologies which have no coupled product
+               setNames(  (dimSums( mselect(EmiPe2Se[,,emi.te.nocp], all_enty1=se_liq), dim=3)
+                           # emissions from coupled production technologies where liquids are first product
+                           + dimSums( mselect((1-p_weights_cp) * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty1=se_liq), dim=3)
+                           # emissions from coupled production technologies where liquids are coupled/second product
+                           + dimSums( mselect(p_weights_cp * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty2=se_liq), dim=3)
+                           # add CO2 going into liquid synfuels,
+                           + dimReduce(vm_co2CCUshort[,,"MeOH"])*p_share_en_cco2 +
+                             # add v_co2capturevalve (small!) such that it adds up with above levels, has to be added somehwhere
+                             v_co2capturevalve+
+                             # add energy-related extraction CO2 emissions (small!), has to be added somehwhere such that it adds up with above levels
+                             dimSums(v_emiEnFuelEx[,,"co2"], dim=3)
+               )*GtC_2_MtCO2,
+               "Emi|CO2|Energy|Supply|+|Liquids w/ couple prod (Mt CO2/yr)" ),
+               # supply-side gases emissions (w/ coupled production)
+               # gases emissions from pe2se technologies which have no coupled product
+               setNames(  (dimSums( mselect(EmiPe2Se[,,emi.te.nocp], all_enty1=se_gas), dim=3)
+                           # emissions from coupled production technologies where gases are first product
+                           + dimSums( mselect((1-p_weights_cp) * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty1=se_gas), dim=3)
+                           # emissions from coupled production technologies where gases are coupled/second product
+                           + dimSums( mselect(p_weights_cp * EmiPe2Se[,,getNames(p_weights_cp, dim=3)], all_enty2=se_gas), dim=3)
+                           # add CO2 going into synthetic gas
+                           + dimReduce(vm_co2CCUshort[,,"h22ch4"]*p_share_en_cco2))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Supply|+|Gases w/ couple prod (Mt CO2/yr)" )
   )
-  p_share_carbonCapture_stor[is.na(p_share_carbonCapture_stor)] <- 1
+  
+  # split into electric and non-electric energy supply emissions
+  out <- mbind(out,
+               # total gross non-eletric energy supply emissions
+               setNames(out[,,"Emi|CO2|Energy|+|Supply (Mt CO2/yr)"]
+                        - out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"],
+                        "Emi|CO2|Energy|Supply|Non-electric (Mt CO2/yr)"))
   
   
-  ####### internal function for cumulated values ############
+  #### 2.1.3 Energy Demand ----
+  
+  # split into sectors
+  out <- mbind(out,
+               
+               # buidings emissions 
+               setNames(  dimSums(EmiFeCarrier[,,"build"], dim=3)*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)"),
+               # industry emissions: fe carrier emissions - industry CCS
+               setNames(  (dimSums(EmiFeCarrier[,,"indst"], dim=3) - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3))*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"),
+               # transport emissions: fe carrier emissions
+               setNames(  dimSums(EmiFeCarrier[,,"trans"], dim=3)*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)"),
+               # cdr energy requirement emissions: fe carrier emissions
+               setNames(  dimSums(EmiFeCarrier[,,"CDR"], dim=3)*GtC_2_MtCO2,
+                          "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)")
+  )
+  
+  # TODO: split into FE carriers (requires industry CCS by FE carrier)
+  
+  # "Emi|CO2|+|Energy|+|Demand|++|Solids (Mt CO2/yr)"
+  # "Emi|CO2|+|Energy|+|Demand|++|Liquids (Mt CO2/yr)"
+  # "Emi|CO2|+|Energy|+|Demand|++|Gases (Mt CO2/yr)"
+  
+  # 
+  # # in simple industry module "fixed_shares" subsector FE demand obtained by multiplying p37_shIndFE
+  # if (module2realisation["industry",2] == "fixed_shares") {
+  #   
+  #   # fixed share of FE demand of industry subsector
+  #   p37_shIndFE <- readGDX(gdx, "p37_shIndFE", restore_zeros = F)
+  #   # mapping of industry subsectors to industry CCS sectors
+  #   secInd37_2_emiInd37 <- readGDX(gdx, "secInd37_2_emiInd37")
+  #   
+  # 
+  #   # map from pffen to entyFE
+  #   p37_shIndFE <- toolAggregate(p37_shIndFE, rel = fe2ppfEn %>% filter(all_in %in% getNames(p37_shIndFE, dim=1)),
+  #                                from = "all_in", to = "all_enty", dim = 3.1)
+  #   getSets(p37_shIndFE)[c(3)] <- c("all_enty1")
+  # 
+  #   # calculate FE industry demand per subsector
+  #   vm_demFeIndSub <- mselect(vm_demFeSector, emi_sectors = "indst") * p37_shIndFE
+  #   
+  #   pm_emifac.fe <- dimSums(mselect(pm_emifac, all_enty1 = getNames(vm_demFeIndSub, dim = 2), all_enty2="co2"), dim=c(3.3,3.4))
+  #   
+  #   # relabel industry energy CC from CCS sectors to industry sectors
+  #   emiInd37 <- NULL
+  #   vm_emiIndCCS_Sub <- toolAggregate(vm_emiIndCCS[,,emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
+  #                                     from = "emiInd37", to = "secInd37", dim=3)
+  #   vm_emiIndCCS_Sub <- vm_emiIndCCS_Sub * p37_shIndFE
+  #   
+  #   EmiIndSubSec <- pm_emifac.fe * vm_demFeIndSub[,,getNames(pm_emifac.fe)] 
+  #   
+  # }
+  #   
+  #   # TODO: to be continued
+  #   out <- mbind(out,
+  #                
+  #                # solids emissions: direct emissions outside of industry, in industry: direct emissions - industry CCS
+  #                setNames(  dimSums(mselect(EmiFeCarrier,  all_enty1="fesos", emi_sectors = c("build","trans","CDR")), dim=3)
+  #                           # industry emissions calculated via EmiIndSubSec and vm_emiIndCCS_Sub above because industry CCS is defined over industry subsectors
+  #                         + dimSums(mselect(EmiIndSubSec, all_enty1="fesos") - mselect(vm_emiIndCCS_Sub, all_enty1="fesos" dim=3),
+  #                         "Emi|CO2|Energy|Demand|++|Solids (Mt CO2/yr)"),
+  #                         
+  #                         
+  #                         
+  #                         
+
+  
+  # emissions from international transport bunkers
+  out <- mbind(out,
+               setNames(dimSums(mselect(EmiFeCarrier, emi_sectors="trans",all_emiMkt="other"), dim=3)*GtC_2_MtCO2,
+                        "Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"))
+  
+  
+  
+  # TODO: detailed transport, industry and buildings emissions could be appended here
+  # following e.g. "Emi|CO2|Energy|Demand|Transport|Passenger|+|Liquids" etc.
+  
+  #### Total energy CO2 emissions
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|+|Supply (Mt CO2/yr)"] +
+                          out[,,"Emi|CO2|Energy|+|Demand (Mt CO2/yr)"],
+                        "Emi|CO2|+|Energy (Mt CO2/yr)"))
+  
+  
+  ### 2.2 Non-energy CO2 emissions ----
+  
+  # (following q_emiAllMkt)
+  
+  out <- mbind(out,
+               # process CO2 (so far only cement process emissions in REMIND)
+               setNames(dimSums(vm_emiMacSector[,,"co2cement_process"],dim=3) * GtC_2_MtCO2,
+                        "Emi|CO2|+|Process (Mt CO2/yr)"),
+               # process industry CO2 (so far only cement process emissions in REMIND)
+               setNames(dimSums(vm_emiMacSector[,,"co2cement_process"],dim=3) * GtC_2_MtCO2,
+                        "Emi|CO2|Process|+|Industry (Mt CO2/yr)"),
+               # process industry cement CO2 
+               setNames(dimSums(vm_emiMacSector[,,"co2cement_process"],dim=3) * GtC_2_MtCO2,
+                        "Emi|CO2|Process|Industry|+|Cement (Mt CO2/yr)"),
+               # land-use change CO2 
+               setNames(dimSums(vm_emiMacSector[,,"co2luc"],dim=3) * GtC_2_MtCO2,
+                        "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
+               # negative emissions from (non-BECCS) CDR (DACCS, EW)
+               # add CCU from CDR technologies outside of energy system (DAC, EW), 
+               # as vm_emiCdr refers only to captured, not to stored CO2
+               setNames((dimSums(vm_emiCdr[,,"co2"],dim=3) +
+                           dimSums(vm_co2CCUshort, dim=3)*(1-p_share_en_cco2)) * GtC_2_MtCO2,
+                        "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
+  )
+  
+  #### total energy yand industry CO2 emissions
+  out <- mbind(out, 
+               setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
+                        + out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"],
+                        "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"))
+  
+  #### total CO2 emissions
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"] +
+                          out[,,"Emi|CO2|+|Process (Mt CO2/yr)"] +
+                          out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"] +
+                          out[,,"Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)"],
+                        "Emi|CO2 (Mt CO2/yr)"))
+  
+  
+  ## 3. Carbon Management ----
+  
+  # all carbon management variables are defined positive (both carbon sources and sinks)
+  
+  # same calculation as for supply emissions per SE, only for captured CO2 ("cco2")
+  # (also adding first and second product emissions of coupled production technologies)
+  
+  
+  # calculate captured CO2 per pe2se technology
+  pm_emifac.cco2.pe <- dimSums(mselect(pm_emifac, all_te=pe2se$all_te, all_enty2="cco2"), dim=c(3.4)) 
+  CCO2Pe2Se <- pm_emifac.cco2.pe * vm_demPE[,,getNames(pm_emifac.cco2.pe)]
+  
+  # calculate weights of emissions distribution for coupled production
+  # weights follow shares of coupled product/total output  
+  p_weights_cp_cco2 <- vm_prodSe_coupleProd / (vm_prodSe[,,getNames(pm_prodCouple.prod, dim=3)]+vm_prodSe_coupleProd)
+  # for power generating technologies technologies with heat as a coupled product, rescale with halfed heat emissions 
+  # this splits electricity and heat emissions in a chp plant roughly as if both products were produced by 2 seperate plants (Finnish Method)
+  # where the heat plant has about double the efficiency of the power plant
+  mselect(p_weights_cp_cco2, all_enty1="seel",all_enty2="sehe") <- 0.5 * mselect(vm_prodSe_coupleProd, all_enty1="seel", all_enty2="sehe") / (mselect(vm_prodSe[,,getNames(pm_prodCouple.prod, dim=3)], all_enty1="seel") + 0.5 * mselect(vm_prodSe_coupleProd, all_enty1="seel", all_enty2="sehe"))
+  
+  # pe2se emissions technologies with coupled production
+  cco2.te.cp <- intersect(paste(getItems(p_weights_cp_cco2, dim=3, split = T, full = T)$all_enty,
+                               getItems(p_weights_cp_cco2, dim=3, split = T, full = T)$all_enty1,
+                               getItems(p_weights_cp_cco2, dim=3, split = T, full = T)$all_te, sep = "."),
+                         getItems(CCO2Pe2Se, dim=3))
+  
+
+  
+  # pe2se emissions technologies without coupled production
+  cco2.te.nocp <- setdiff(getNames(CCO2Pe2Se), cco2.te.cp )
+  
+  # only retain coupled production factors for technologies which have emissions
+  p_weights_cp_cco2 <- p_weights_cp_cco2[,,cco2.te.cp ]
+  p_weights_cp_cco2[is.na(p_weights_cp_cco2)] <- 0
+
+  
+  
+  # all pe2se BECC technologies
+  te.becc <- intersect(teBio, teCCS)
+  
+  # pe2se BECC by SE carrier
+  out <- mbind(out,
+               
+               # electricity 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=te.becc, all_enty1="seel", all_te=te.becc), dim=3)
+                           # coupled production technologies where electricty is first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1="seel", all_te=te.becc), dim=3)
+                           # coupled production technologies where electricty is coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2="seel", all_te=te.becc), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)" ),
+               # heat 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=te.becc, all_enty1="sehe", all_te=te.becc), dim=3)
+                           # coupled production technologies where heat is first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1="sehe", all_te=te.becc), dim=3)
+                           # coupled production technologies where heat is coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2="sehe", all_te=te.becc), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)" ),
+               # hydrogen 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=te.becc, all_enty1="seh2", all_te=te.becc), dim=3)
+                           # coupled production technologies where hydrogen is first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1="seh2", all_te=te.becc), dim=3)
+                           # coupled production technologies where hydrogen is coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2="seh2", all_te=te.becc), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)" ),
+               # supply-side solids
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=te.becc, all_enty1=se_sol, all_te=te.becc), dim=3)
+                           # coupled production technologies where solids are first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1=se_sol, all_te=te.becc), dim=3)
+                           # coupled production technologies where solids are coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2=se_sol, all_te=te.becc), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)" ),
+               # supply-side liquids
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=te.becc, all_enty1=se_liq, all_te=te.becc), dim=3)
+                           # coupled production technologies where liquids are first product
+                           + dimSums(mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1=se_liq, all_te=te.becc), dim=3)
+                           # coupled production technologies where liquids are coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2=se_liq, all_te=te.becc), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)" ),
+               # supply-side gases 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=te.becc, all_enty1=se_gas, all_te=te.becc), dim=3)
+                           # ecoupled production technologies where gases are first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1=se_gas, all_te=te.becc), dim=3)
+                           # coupled production technologies where gases are coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2=se_gas, all_te=te.becc), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)" )
+  )
+  
+
+  # pe2se fossil capture by SE carrier
+  out <- mbind(out,
+               
+               # electricity 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=teFosCCS, all_enty1="seel", all_te=teFosCCS), dim=3)
+                           # coupled production technologies where electricty is first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1="seel", all_te=teFosCCS), dim=3)
+                           # coupled production technologies where electricty is coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2="seel", all_te=teFosCCS), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Fossil|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)" ),
+               # heat 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=teFosCCS, all_enty1="sehe", all_te=teFosCCS), dim=3)
+                           # coupled production technologies where heat is first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1="sehe", all_te=teFosCCS), dim=3)
+                           # coupled production technologies where heat is coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2="sehe", all_te=teFosCCS), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Fossil|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)" ),
+               # hydrogen 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=teFosCCS, all_enty1="seh2", all_te=teFosCCS), dim=3)
+                           # coupled production technologies where hydrogen is first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1="seh2", all_te=teFosCCS), dim=3)
+                           # coupled production technologies where hydrogen is coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2="seh2", all_te=teFosCCS), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Fossil|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)" ),
+               # supply-side solids
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=teFosCCS, all_enty1=se_sol, all_te=teFosCCS), dim=3)
+                           # coupled production technologies where solids are first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1=se_sol, all_te=teFosCCS), dim=3)
+                           # coupled production technologies where solids are coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2=se_sol, all_te=teFosCCS), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Fossil|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)" ),
+               # supply-side liquids
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=teFosCCS, all_enty1=se_liq, all_te=teFosCCS), dim=3)
+                           # coupled production technologies where liquids are first product
+                           + dimSums(mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1=se_liq, all_te=teFosCCS), dim=3)
+                           # coupled production technologies where liquids are coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2=se_liq, all_te=teFosCCS), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Fossil|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)" ),
+               # supply-side gases 
+               setNames(  (dimSums( mselect(CCO2Pe2Se[,,cco2.te.nocp], all_te=teFosCCS, all_enty1=se_gas, all_te=teFosCCS), dim=3)
+                           # ecoupled production technologies where gases are first product
+                           + dimSums( mselect((1-p_weights_cp_cco2) * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty1=se_gas, all_te=teFosCCS), dim=3)
+                           # coupled production technologies where gases are coupled/second product
+                           + dimSums( mselect(p_weights_cp_cco2 * CCO2Pe2Se[,,getNames(p_weights_cp_cco2, dim=3)], all_enty2=se_gas, all_te=teFosCCS), dim=3))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Fossil|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)" )
+  )
+  
+
+
+  
+  # aggregate carbon capture/source variables
+  out <- mbind(out,
+               
+               # total captured co2 by bio pe2se technologies
+               setNames(  dimSums(mselect(CCO2Pe2Se, all_te=te.becc), dim=3)*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"),
+               # total captured co2 by fossil pe2se technologies
+               setNames(  dimSums(mselect(CCO2Pe2Se, all_te=teFosCCS), dim=3)*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|+|Fossil|Pe2Se (Mt CO2/yr)"),
+               # total co2 captured in industry from energy emissions (to do: split in fossil and bio industry capture)
+               setNames(  dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3)*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|+|Industry Energy (Mt CO2/yr)"),
+               # total co2 captured in industry from proess emissions (only cemnent process CO2 for now)
+               setNames(  dimSums(vm_emiIndCCS[,,"co2cement_process"], dim=3)*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|+|Industry Process (Mt CO2/yr)"),
+               # total co2 captured by DAC
+               setNames(  -v33_emiDAC*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|+|DAC (Mt CO2/yr)"),
+               # total co2 captured by EW
+               setNames(  -v33_emiEW*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|+|EW (Mt CO2/yr)"),
+               # total co2 captured
+               setNames(  vm_co2capture*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources (Mt CO2/yr)")               
+  )
+  
+  
+  
+  
+  
+  # sinks/usage of captured carbon
+  out <- mbind(out,
+               # underground carbon storage
+               setNames(  dimSums(vm_co2CCS, dim=3, na.rm = T)*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sinks|+|Storage (Mt CO2/yr)"),
+               # carbon in synthetic liquids
+               setNames(  collapseDim(vm_co2CCUshort[,,"MeOH"])*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sinks|+|Synthetic Liquids (Mt CO2/yr)"),
+               # carbon in synthetic liquids
+               setNames(  collapseDim(vm_co2CCUshort[,,"h22ch4"])*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sinks|+|Synthetic Gases (Mt CO2/yr)"),
+               # total CO2 used
+               setNames(  (dimSums(vm_co2CCS, dim=3, na.rm = T) + dimSums(vm_co2CCUshort, dim=3, na.rm = T))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sinks (Mt CO2/yr)")               
+  )
+  
+  # total carbon captured and CCS share
+  
+  # compute share of stored carbon from total captured carbon
+  p_share_CCS <- dimSums(vm_co2CCS, dim=3, na.rm = T) / dimSums(vm_co2capture, dim=3) 
+  p_share_CCS[is.infinite(p_share_CCS)] <- 0
+  p_share_CCS[is.na(p_share_CCS)] <- 0
+  
+  out <- mbind(out,
+               
+               # total captured CO2
+               setNames(  dimSums(vm_co2capture, dim=3)*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Capture (Mt CO2/yr)"),
+               # share of stored carbon from total captured carbon
+               setNames(  p_share_CCS*100,
+                          "Carbon Management|Share of Stored CO2 from Captured CO2 (%)")
+               
+  )
+  
+  # calculate some specific carbon sink (CCS) variables
+  out <- mbind(out,
+               
+               # total captured and stored by pe2se BECCS
+               setNames(  out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|+|Fossil|Pe2Se (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|+|Fossil|Pe2Se (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|+|Industry Energy (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|+|Industry Energy (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|+|Industry Process (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|+|Industry Process (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|+|DAC (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|+|EW (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|+|EW (Mt CO2/yr)")
+  )
+  
+  ## 4. Gross Emissions (excl. negative emissions from BECCS) ----
+  
+  
+  #### calculate gross emissions 
+  
+  # TODO: industry BECCS still needs to be added here
+  
+  out <- mbind(out,
+               # gross supply emissions across SE carriers
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Heat w/ couple prod (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|Supply|+|Heat (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Hydrogen w/ couple prod (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|Supply|+|Hydrogen (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Solids w/ couple prod (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|Supply|+|Solids (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Liquids w/ couple prod (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|Supply|+|Liquids (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Gases w/ couple prod (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|Biomass|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|Supply|+|Gases (Mt CO2/yr)"),
+               
+               # total gross supply emissions
+               setNames(out[,,"Emi|CO2|Energy|+|Supply (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy|+|Supply (Mt CO2/yr)"),
+               
+               
+               # total gross demand emissions
+               setNames(out[,,"Emi|CO2|Energy|+|Demand (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)"),
+               
+               # total gross energy emissions
+               setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy (Mt CO2/yr)"),
+               
+               # total gross energy and industrial process emissions
+               setNames(out[,,"Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)"),
+               
+               # total gross emissions
+               setNames(out[,,"Emi|CO2 (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|Gross CO2 (Mt CO2/yr)"))
+  
+  # split into electric and non-electric energy supply emissions
+  out <- mbind(out,
+               # total gross non-eletric energy supply emissions
+               setNames(out[,,"Emi|CO2|Gross|Energy|+|Supply (Mt CO2/yr)"]
+                        - out[,,"Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)"))
+  
+  
+  
+  #### calculate corresponding negative emissions variables by CDR for bar plots with gross emissions
+  # same as "Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)" etc. but negative
+  
+  # only negative land-use change emissions
+  EmiCDR.LUC <- dimSums(vm_emiMacSector[,,"co2luc"], dim=3)
+  EmiCDR.LUC[EmiCDR.LUC>0] <- 0
+  
+  
+  out <- mbind(out,
+               # total negative land-use change emissions
+               setNames(EmiCDR.LUC,
+                        "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),               
+               # total BECCS
+               setNames(-out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|CDR|BECCS (Mt CO2/yr)"),
+               # total DACCS
+               setNames(-out[,,"Carbon Management|Carbon Sources|+|DAC (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
+               # total EW
+               setNames(-out[,,"Carbon Management|Carbon Sources|+|EW (Mt CO2/yr)"]
+                        * p_share_CCS,
+                        "Emi|CO2|CDR|EW (Mt CO2/yr)"))
+  
+
+  
+  
+  ## 5. Non-CO2 GHG Emissions ----                       
+  
+  
+  # join mac mapping of sectors and markets
+  mac.map <- right_join(emiMac2sector, macSector2emiMkt)
+  
+  # create magpie array with MAC emissions per sector, market and gas
+  # MAC emissions comprise non-energy CO2, CH4, N2O emissions
+  EmiMAC <- new.magpie(getRegions(vm_emiMacSector), getYears(vm_emiMacSector),paste(mac.map$all_enty,mac.map$emi_sectors, mac.map$all_emiMkt,mac.map$all_enty1, sep = "."))
+  getSets(EmiMAC) <- c("region","year","macsector","sector","emiMkt","gas") # rename dimensions for sake of understanding
+  EmiMAC[,, mac.map$all_enty] <- vm_emiMacSector[,,mac.map$all_enty]
+  
+  
+  
+  # CH4 and N2O Emissions by sector in native MtCH4 and kt N2O units
+  out <- mbind(out,
+               
+               # CH4 Emissions
+               # total CH4 emissions
+               setNames(  dimSums(mselect(EmiMAC, gas = "ch4"), dim=3)
+                          + dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "ch4"), dim=3),
+                          "Emi|CH4 (Mt CH4/yr)"),
+               # extraction CH4 emissions in MtCH4
+               setNames(  dimSums(mselect(EmiMAC, sector = "extraction", gas = "ch4"), dim=3),
+                          "Emi|CH4|+|Extraction (Mt CH4/yr)"),
+               # extraction CH4 emissions in MtCH4
+               setNames(  dimSums(mselect(EmiMAC, sector = "Agriculture", gas = "ch4"), dim=3),
+                          "Emi|CH4|+|Agriculture (Mt CH4/yr)"),
+               # waste CH4 emissions in MtCH4
+               setNames(  dimSums(mselect(EmiMAC, sector = "Waste", gas = "ch4"), dim=3),
+                          "Emi|CH4|+|Waste (Mt CH4/yr)"),
+               # land-use change CH4 emissions in MtCH4
+               setNames(  dimSums(mselect(EmiMAC, sector = "lulucf", gas = "ch4"), dim=3),
+                          "Emi|CH4|+|Land-Use Change (Mt CH4/yr)"),
+               # CH4 emissions from energy system transformations in MtCH4
+               setNames(  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "ch4"), dim=3),
+                          "Emi|CH4|+|Energy Supply (Mt CH4/yr)"),
+               
+               
+               # N2O Emissions 
+               # total N2O emissions
+               setNames(  (dimSums(mselect(EmiMAC, gas = "n2o"), dim=3)
+                           +  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim=3)) * MtN2_to_ktN2O,
+                          "Emi|N2O (kt N2O/yr)"),
+               # agriculture N2O emissions in kt N2O
+               setNames(  dimSums(mselect(EmiMAC, sector = "Agriculture", gas = "n2o"), dim=3) * MtN2_to_ktN2O,
+                          "Emi|N2O|+|Agriculture (kt N2O/yr)"),
+               # land-use change N2O emissions in kt N2O 
+               setNames(  dimSums(mselect(EmiMAC, sector = "lulucf", gas = "n2o"), dim=3) * MtN2_to_ktN2O,
+                          "Emi|N2O|+|Land-Use Change (kt N2O/yr)"),
+               # Waste N2O emissions in kt N2O
+               setNames(  dimSums(mselect(EmiMAC, sector = "Waste", gas = "n2o"), dim=3) * MtN2_to_ktN2O,
+                          "Emi|N2O|+|Waste (kt N2O/yr)"),
+               # Transport N2O emissions in kt N2O
+               setNames(  dimSums(mselect(EmiMAC, sector = "trans", gas = "n2o"), dim=3) * MtN2_to_ktN2O,
+                          "Emi|N2O|+|Transport (kt N2O/yr)"),
+               # Industry N2O emissions in kt N2O
+               setNames(  dimSums(mselect(EmiMAC, sector = "indst", gas = "n2o"), dim=3) * MtN2_to_ktN2O,
+                          "Emi|N2O|+|Industry (kt N2O/yr)"),
+               # N2O emissions from energy system transformations in kt N2O
+               setNames(  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim=3) * MtN2_to_ktN2O,
+                          "Emi|N2O|+|Energy Supply (kt N2O/yr)")
+  )
+  
+  # CH4 and N2O Emissions by sector in MtCO2eq
+  
+  # convert to MAC emissions to Mt CO2eq
+  EmiMACEq <- EmiMAC
+  EmiMACEq[,,"co2"] <- EmiMAC[,,"co2"] * GtC_2_MtCO2
+  EmiMACEq[,,"ch4"] <- EmiMAC[,,"ch4"] * sm_tgch4_2_pgc * GtC_2_MtCO2
+  EmiMACEq[,,"n2o"] <- EmiMAC[,,"n2o"] * sm_tgn_2_pgc * GtC_2_MtCO2
+  
+  
+  out <- mbind(out,
+               
+               # CH4 Emissions
+               # extraction CH4 emissions in Mt CO2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "extraction", gas = "ch4"), dim=3),
+                          "Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"),
+               # agriculture CH4 emissions in Mt CO2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "Agriculture", gas = "ch4"), dim=3),
+                          "Emi|GHG|CH4|+|Agriculture (Mt CO2eq/yr)"),
+               # waste CH4 emissions in Mt CO2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "Waste", gas = "ch4"), dim=3),
+                          "Emi|GHG|CH4|+|Waste (Mt CO2eq/yr)"),
+               # land-use change CH4 emissions in Mt CO2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "lulucf", gas = "ch4"), dim=3),
+                          "Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"),
+               # CH4 emissions from energy system transformations in Mt CO2eq
+               setNames(  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "ch4"), dim=3)*sm_tgch4_2_pgc * GtC_2_MtCO2,
+                          "Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"),
+               
+               
+               # N2O Emissions 
+               # agriculture N2O emissions in Mt CO2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "Agriculture", gas = "n2o"), dim=3),
+                          "Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"),
+               # Waste N2O emissions in Mt CO2eq 
+               setNames(  dimSums(mselect(EmiMACEq, sector = "Waste", gas = "n2o"), dim=3),
+                          "Emi|GHG|N2O|+|Waste (Mt CO2eq/yr)"),
+               # land-use change N2O emissions in Mt CO2eq 
+               setNames(  dimSums(mselect(EmiMACEq, sector = "lulucf", gas = "n2o"), dim=3),
+                          "Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"),
+               # Transport N2O emissions in Mt CO2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "trans", gas = "n2o"), dim=3),
+                          "Emi|GHG|N2O|+|Transport (Mt CO2eq/yr)"),
+               # Industry N2O emissions in Mt Co2eq
+               setNames(  dimSums(mselect(EmiMACEq, sector = "indst", gas = "n2o"), dim=3),
+                          "Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"),
+               # N2O emissions from energy system transformations in Mt CO2eq/yr
+               setNames(  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2,
+                          "Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)")
+  )
+  
+  
+  ## 6. Emissions across markets ----
+
+    out <- mbind(out,
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="ETS"), dim=3) * GtC_2_MtCO2
+                         + dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="ETS"), dim=3) * sm_tgch4_2_pgc * GtC_2_MtCO2
+                         + dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="ETS"), dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2,
+                         "Emi|GHG|++|ETS (Mt CO2eq/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="ES"), dim=3) * GtC_2_MtCO2
+                         + dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="ES"), dim=3) * sm_tgch4_2_pgc * GtC_2_MtCO2
+                         + dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="ES"), dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2,
+                         "Emi|GHG|++|ESR (Mt CO2eq/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="other"), dim=3) * GtC_2_MtCO2
+                         + dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="other"), dim=3) * sm_tgch4_2_pgc * GtC_2_MtCO2
+                         + dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="other"), dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2
+                         + dimSums(vm_emiFgas[,,"emiFgasTotal"], dim=3),
+                         "Emi|GHG|++|Other (Mt CO2eq/yr)"))
+  
+  
+  
+  # market emissions across gases
+  out <- mbind(out,
+               # CO2
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="ETS"), dim=3) * GtC_2_MtCO2,
+                         "Emi|CO2|++|ETS (Mt CO2/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="ES"), dim=3) * GtC_2_MtCO2,
+                         "Emi|CO2|++|ESR (Mt CO2/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="other"), dim=3) * GtC_2_MtCO2,
+                         "Emi|CO2|++|Other (Mt CO2/yr)"),
+               # CH4
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="ETS"), dim=3),
+                         "Emi|CH4|++|ETS (Mt CH4/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="ES"), dim=3),
+                         "Emi|CH4|++|ESR (Mt CH4/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="other"), dim=3),
+                         "Emi|CH4|++|Other (Mt CH4/yr)"),
+               # N2O
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="ETS"), dim=3) * MtN2_to_ktN2O,
+                         "Emi|N2O|++|ETS (kt N2O/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="ES"), dim=3) * MtN2_to_ktN2O,
+                         "Emi|N2O|++|ESR (kt N2O/yr)"),
+               setNames( dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="other"), dim=3) * MtN2_to_ktN2O,
+                         "Emi|N2O|++|Other (kt N2O/yr)"))
+  
+  
+  # market GHG emissions across sectors
+  out <- mbind(out,
+               # energy supply
+               setNames(
+                 out[,,"Emi|CO2|Energy|+|Supply (Mt CO2/yr)"]
+                 + out[,,"Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"]
+                 + out[,,"Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"],
+                 "Emi|GHG|ETS|+|Energy Supply (Mt CO2eq/yr)"),
+               
+               # industry (energy and process emissions)
+               setNames(
+                 # demand-side co2 emissions (before industry CCS)
+                 (dimSums(mselect(EmiFeCarrier[,,"ETS"], emi_sectors="indst"), dim=3)
+                  # industry CO2 capture 
+                  # TODO: adapt to industry ETS/ESR split
+                  -  dimSums(vm_emiIndCCS[,,emiInd37_fuel]))*GtC_2_MtCO2
+                 + dimSums(mselect(EmiMACEq[,,"ETS"], sector="indst"), dim = 3),
+                 "Emi|GHG|ETS|+|Industry (Mt CO2eq/yr)"),
+               setNames(
+                 # demand-side co2 emissions (before industry CCS)
+                 dimSums(mselect(EmiFeCarrier[,,"ES"], emi_sectors="indst"), dim=3)*GtC_2_MtCO2,
+                 "Emi|GHG|ESR|+|Industry (Mt CO2eq/yr)"),
+               
+               # Transport
+               setNames(
+                 # demand-side co2 emissions (ETS)
+                 (dimSums(mselect(EmiFeCarrier[,,"ETS"], emi_sectors="trans"), dim=3))*GtC_2_MtCO2,
+                 "Emi|GHG|ETS|+|Transport (Mt CO2eq/yr)"),
+               
+               setNames(
+                 # demand-side co2 emissions (ESR)
+                 dimSums(mselect(EmiFeCarrier[,,"ES"], emi_sectors="trans"), dim=3)*GtC_2_MtCO2
+                 + dimSums(mselect(EmiMACEq[,,"ES"], sector="trans"), dim = 3),
+                 "Emi|GHG|ESR|+|Transport (Mt CO2eq/yr)"),
+               
+               setNames(
+                 # demand-side co2 emissions (bunkers)
+                 dimSums(mselect(EmiFeCarrier[,,"other"], emi_sectors="trans"), dim=3)*GtC_2_MtCO2,
+                 "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)"),
+               
+               # Buildings
+               setNames(
+                 # demand-side co2 emissions
+                 dimSums(mselect(EmiFeCarrier[,,"ES"], emi_sectors="build"), dim=3)*GtC_2_MtCO2,
+                 "Emi|GHG|ESR|+|Buildings (Mt CO2eq/yr)"),
+               
+               # CDR
+               setNames(
+                 # demand-side co2 emissions (before industry CCS)
+                 # CDR energy-related emissions
+                 (dimSums(mselect(EmiFeCarrier[,,"ETS"], emi_sectors="CDR"), dim=3)
+                  # Captured CO2 by non-BECCS capture technologies
+                  + dimSums(v33_emiEW + v33_emiDAC, dim=3)
+                  # reemited CCU CO2
+                  + (1-p_share_en_cco2) * dimSums(vm_co2CCUshort, dim=3))*GtC_2_MtCO2,
+                 "Emi|GHG|ETS|+|non-BECCS CDR (Mt CO2eq/yr)"),
+               
+               # Extraction
+               setNames(
+                 out[,,"Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"],
+                 "Emi|GHG|ETS|+|Extraction (Mt CO2eq/yr)"),
+               
+               # Agriculture
+               setNames(
+                 out[,,"Emi|GHG|CH4|+|Agriculture (Mt CO2eq/yr)"]
+                 + out[,,"Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"],
+                 "Emi|GHG|ESR|+|Agriculture (Mt CO2eq/yr)"),
+               
+               # Waste
+               setNames(
+                 dimSums(mselect(EmiMACEq[,,"ETS"], sector="Waste"), dim = 3),
+                 "Emi|GHG|ETS|+|Waste (Mt CO2eq/yr)"),
+               setNames(
+                 dimSums(mselect(EmiMACEq[,,"ES"], sector="Waste"), dim = 3),
+                 "Emi|GHG|ESR|+|Waste (Mt CO2eq/yr)"),
+               
+               setNames(
+                 out[,,"Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"]
+                 + out[,,"Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"]
+                 + out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
+                 "Emi|GHG|Other|+|Land-Use Change (Mt CO2eq/yr)"),
+               
+               # F-Gases
+               setNames(
+                 out[,,"Emi|GHG|+|F-Gases (Mt CO2eq/yr)"],
+                 "Emi|GHG|Other|+|F-Gases (Mt CO2eq/yr)")
+               
+  )
+  
+  
+  ## 7. Internal/Diagnostic Variables ----
+  
+  # (for diagnostics/other reporting scripts) 
+  
+
+  out <- mbind(out,
+               setNames((vm_co2eq - vm_emiMacSector[,,"co2luc"] * (as.vector(cm_multigasscen)!=3)) * GtC_2_MtCO2,
+                        "Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
+  
+  
+  
+  
+  # Aggregation to global and reginonal values  ----
+  
+  # add global values
+  out <- mbind(out,dimSums(out, dim=1))
+  # add other region aggregations
+  if (!is.null(regionSubsetList)) {
+    out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
+  }
+  
+  # Bunker Correction ----
+  
+  ### variables for which bunker emissions should be substracted
+  
+  # international bunker emissions belong to 
+  # sector: energy -> demand -> transport, 
+  # market: other 
+  emi.vars.wBunkers <- c(
+                         # GHG emissions
+                         "Emi|GHG (Mt CO2eq/yr)",
+                         "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
+                         "Emi|GHG|++|Other (Mt CO2eq/yr)",
+                         "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)",
+                         
+                         # CO2 Emissions
+                         "Emi|CO2 (Mt CO2/yr)",
+                         "Emi|CO2|+|Energy (Mt CO2/yr)",
+                         "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
+                         "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
+                         "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
+                         "Emi|CO2|++|Other (Mt CO2/yr)",
+                         
+                         # Gross CO2 Emissions
+                         "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)",
+                         "Emi|CO2|Gross|Energy (Mt CO2/yr)",
+                         "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)")
+  
+  # variable names for emission variables with bunkers, insert w/ Bunkers
+  names.wBunkers <- emi.vars.wBunkers 
+  names.wBunkers <- gsub("Emi\\|CO2","Emi|CO2|w/ Bunkers",names.wBunkers)
+  names.wBunkers <- gsub("Emi\\|GHG","Emi|GHG|w/ Bunkers",names.wBunkers)
+  
+  # emissions variables with bunkers
+  out.wBunkers <- setNames(out[,,emi.vars.wBunkers], names.wBunkers)
+  # remove all pluses from variables with bunkers the "Emi w/ Bunkers" variables do not cover sectors in which bunkers are not relevant and checking aggregation does not make sense
+  getNames(out.wBunkers) <- gsub("\\|\\+\\|","\\|",getNames(out.wBunkers))
+  getNames(out.wBunkers) <- gsub("\\|\\++\\|","\\|",getNames(out.wBunkers))
+  
+  # substract bunkers for standard emissions variables for regional values
+  regs.wo.glob <- getRegions(out)
+  regs.wo.glob <- regs.wo.glob[regs.wo.glob != "GLO"]
+  out[regs.wo.glob,,emi.vars.wBunkers] <- out[regs.wo.glob,,emi.vars.wBunkers] - out[regs.wo.glob,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"]
+  
+  out <- mbind(out,out.wBunkers)
+  
+  # Cumulative Emissions ----
+  
+  # function to calculate cumulated values
   cumulatedValue <- function(var,i_pm_ts=pm_ts){
     ts <- i_pm_ts[,getYears(var),]
     tmp <- new.magpie(getRegions(var),getYears(var),magclass::getNames(var),fill=0)
@@ -500,1933 +1125,45 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     return(tmp)
   }
   
-  #   emi_carrier(v_emi,dataoc,oc2te,sety,pety,"seel","co2",44/12*1000,te=pe2se$all_te,  name="Emissions|CO2|Energy|Supply|Electricity (Mt CO2/yr)"),
+  # emissions variables for which we want to calculate cumulative values
+  vars.cumulate <- c("Emi|GHG (Mt CO2eq/yr)",
+                     "Emi|CO2 (Mt CO2/yr)",
+                     "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
+                     "Emi|CO2|+|Energy (Mt CO2/yr)",
+                     "Emi|CO2|+|Land-Use Change (Mt CO2/yr)",
+                     "Emi|CO2|+|Process (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)",
+                     "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+                     "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
+                     "Emi|CO2|CDR|EW (Mt CO2/yr)",
+                     "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)")
+  
+  
+  # variable names for cumulated emissions variables
+  names.cumul <- vars.cumulate
+  names.cumul <- gsub("Emi\\|CO2","Emi|CO2|Cumulated",names.cumul)
+  names.cumul <- gsub("Emi\\|GHG","Emi|GHG|Cumulated",names.cumul)
+  
+  # calculate cumulated values
+  out.cumul <- setNames(cumulatedValue(out[,,vars.cumulate]), names.cumul)
+  # change unit to Mt CO2
+  getNames(out.cumul) <- gsub("\\/yr","",getNames(out.cumul))
+  # remove all pluses from cumulated variables as those do not cover all sectors and checking aggregation does not make sense
+  getNames(out.cumul) <- gsub("\\|\\+\\|","\\|",getNames(out.cumul))
+  
+  out <- mbind(out, out.cumul)
+  
+  
+  
+  
+  return(out)
   
-  ####### internal function for reporting of coupled production PE2SE ###########   secarrier is the primary SE for which the analysis is performed
-  emi_carrier <- function(v_emi,dataoc,oc2te,sety,pecarrier,secarrier,emity,factor,te=pe2se$all_te,name=NULL){
-    x1 <- NULL
-    x2 <- NULL
-    x3 <- NULL
-    
-    ## all emissions with secarrier as a main product
-    x1 <- dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty=pecarrier,all_enty1=secarrier,all_te=te,all_enty2=emity),dim=3) 
-    
-    ## negative term for couple products by technologies with secarrier as a main product
-    ## identify all techs with secarrier as a main product, create corresponding map for v_emi domain
-    sub_oc2te_secarMain <- oc2te[(oc2te$all_enty %in% pecarrier) & (oc2te$all_enty1 %in% secarrier) & (oc2te$all_enty2 %in% sety)    & (oc2te$all_te %in% te),]
-    
-    subEmi_oc2te_secarMain <- sub_oc2te_secarMain
-    if(length(row.names(subEmi_oc2te_secarMain))!=0){
-      subEmi_oc2te_secarMain$all_enty2 <- emity # replace the couple product column with emission column to fit the v_emi structure
-      x2 <- dimSums(na.rm=TRUE,x=collapseNames(v_emi[subEmi_oc2te_secarMain],collapsedim=3.4)*collapseNames(dataoc[sub_oc2te_secarMain]/(1+dataoc[sub_oc2te_secarMain]),collapsedim=3.4),dim=3)
-    }else{
-      x2 <- new.magpie(getRegions(x1),getYears(x1),magclass::getNames(x1),fill = 0)    
-    }
-    
-    ## additional term for technologies with secarrier as a couple product
-    ## identify all techs with secarrier as a couple product, create corresponding map for v_emi domain      
-    sub_oc2te_secarCP <- oc2te[(oc2te$all_enty %in% pecarrier) & (oc2te$all_enty1 %in% sety)    & (oc2te$all_enty2 %in% secarrier) & (oc2te$all_te %in% te),]
-    subEmi_oc2te_secarCP <- sub_oc2te_secarCP
-    if(length(row.names(subEmi_oc2te_secarCP))!=0){
-      subEmi_oc2te_secarCP$all_enty2 <- emity
-      x3 <- dimSums(na.rm=TRUE,x=collapseNames(v_emi[subEmi_oc2te_secarCP],3.4)*collapseNames(dataoc[sub_oc2te_secarCP]/(1+dataoc[sub_oc2te_secarCP]),collapsedim=3.4),dim=3)
-    }else{
-      x3 <- new.magpie(getRegions(x1),getYears(x1),magclass::getNames(x1),fill = 0)        
-    }
-    out <- (x1-x2+x3)*factor
-    if(!is.null(name)) magclass::getNames(out) <- name
-    return(out)
-  }
-  
-  ####### calculate reporting parameters ############
-  ### CO2 ###
-  tmp <- NULL
-  tmp <- mbind(altEmi,
-    ### please note: at the end of this file, regional CO2 emissions are reduced by bunker emission values emissions are reduced by bunker emission values
-    setNames((vm_emiengregi[,,"co2"] + vm_sumeminegregi[,,"co2"] + vm_emicdrregi[,,"co2"]) * GtC_2_MtCO2,	"Emi|CO2 (Mt CO2/yr)"),
-    setNames((vm_co2CCS[,,"cco2.ico2.ccsinje.1"]) * GtC_2_MtCO2,                               "Emi|CO2|Carbon Capture and Storage (Mt CO2/yr)"),
-    setNames((dimSums(mselect(vm_co2capture,all_enty="cco2"),dim=3)) * GtC_2_MtCO2,            "Emi|CO2|Carbon Capture (Mt CO2/yr)"),
-    # does not containt the IndustryCCS applied to Biogas, Biosolids, Bioliquids ...
-    setNames(
-      dimSums(mselect(v_emi, all_enty = pebio, all_enty2 = "cco2"), dim = 3) 
-    * dimSums(p_share_carbonCapture_stor)
-    * GtC_2_MtCO2,
-    "Emi|CO2|Carbon Capture and Storage|Supply|Biomass (Mt CO2/yr)"
-    ),
-    setNames((dimSums(mselect(v_emi,all_enty=peFos,all_enty2="cco2"),dim=3)) * p_share_carbonCapture_stor * GtC_2_MtCO2,    "Emi|CO2|Carbon Capture and Storage|Fossil|Pe2Se (Mt CO2/yr)"),
-    setNames((dimSums(mselect(v_emi,all_enty1="seel",all_enty2="co2"),dim=3)) * GtC_2_MtCO2,   "Emi|CO2|Electricity Production|w/o couple prod (Mt CO2/yr)"), ## does not account for couple production
-    setNames((dimSums(mselect(v_emi,all_enty1="seh2",all_enty2="co2"),dim=3)) * GtC_2_MtCO2,   "Emi|CO2|Hydrogen Production|w/o couple prod (Mt CO2/yr)"),   ## does not account for couple production
-    setNames((dimSums(mselect(v_emi,all_enty1="sehe",all_enty2="co2"),dim=3)) * GtC_2_MtCO2,   "Emi|CO2|Heat Production|w/o couple prod (Mt CO2/yr)"),  ## does not account for couple production
-
-    # CO2 emissions from CHP are split joule-by-joule between electricity and 
-    # heat
-    setNames(
-      ( v_emi[,,'pecoal.seel.coalchp.co2'] 
-      / (1 + dataoc[,,'pecoal.seel.coalchp.sehe'])
-      * GtC_2_MtCO2
-      ),
-      'Emi|CO2|Electricity|Coal|CHP|w/o CCS (MtCO2/yr)'),
-    
-    setNames(
-      ( v_emi[,,'pecoal.seel.coalchp.co2'] 
-      * dataoc[,,'pecoal.seel.coalchp.sehe']
-      / (1 + dataoc[,,'pecoal.seel.coalchp.sehe'])
-      * GtC_2_MtCO2
-      ),
-      'Emi|CO2|Heat|Coal|CHP|w/o CCS (MtCO2/yr)'),
-    
-    setNames(
-      ( v_emi[,,'pegas.seel.gaschp.co2'] 
-      / (1 + dataoc[,,'pegas.seel.gaschp.sehe'])
-      * GtC_2_MtCO2
-      ),
-      'Emi|CO2|Electricity|Gas|CHP|w/o CCS (MtCO2/yr)'),
-    
-    setNames(
-      ( v_emi[,,'pegas.seel.gaschp.co2'] 
-      * dataoc[,,'pegas.seel.gaschp.sehe']
-      / (1 + dataoc[,,'pegas.seel.gaschp.sehe'])
-      * GtC_2_MtCO2
-      ),
-      'Emi|CO2|Heat|Gas|CHP|w/o CCS (MtCO2/yr)'),
-      
-    ### please note: at the end of this file, regional FFI emissions are reduced by bunker emission values emissions are reduced by bunker emission values
-      setNames((vm_emiengregi[,,"co2"] + vm_eminegregi[,,"co2cement_process"]) * GtC_2_MtCO2,            "Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"),
-    setNames((vm_eminegregi[,,"co2cement_process"]) * GtC_2_MtCO2,                                     "Emi|CO2|Fossil Fuels and Industry|Cement process (Mt CO2/yr)"),
-    setNames((dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty="peoil",all_enty2="co2")[emi2te],dim=3)
-              + dimSums(na.rm=TRUE,x=mselect(p_cint,all_enty="co2",all_enty1="peoil")[cintbyfuel]
-                        * vm_fuelex[,,"peoil"][cintbyfuel], dim=3)
-    ) * GtC_2_MtCO2,                                                                 "Emi|CO2|Fossil Fuels and Industry|Oil|Before IndustryCCS (Mt CO2/yr)"),
-    setNames((dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty="pegas", all_enty2="co2")[emi2te],dim=3)
-              + dimSums(na.rm=TRUE,x=mselect(p_cint,all_enty="co2",all_enty1="pegas")[cintbyfuel]
-                        * vm_fuelex[,,"pegas"][cintbyfuel], dim=3)
-    ) * GtC_2_MtCO2,                                                                 "Emi|CO2|Fossil Fuels and Industry|Gas|Before IndustryCCS (Mt CO2/yr)"),
-    setNames((dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty="pecoal", all_enty2="co2")[emi2te],dim=3) +
-                + dimSums(na.rm=TRUE,x=mselect(p_cint,all_enty="co2",all_enty1="pecoal")[cintbyfuel]
-                          * vm_fuelex[,,"pecoal"][cintbyfuel], dim=3)
-    ) * GtC_2_MtCO2,                                                                 "Emi|CO2|Fossil Fuels and Industry|Coal|Before IndustryCCS (Mt CO2/yr)"),
-    ### please note: at the end of this file, regional FFI demand emissions are reduced by bunker emission values
-    setNames(
-      dimSums(
-        ( p_ef_dem[,,fety]
-        * (1 - p_bioshare[,,fety])
-        )
-      * dimSums(mselect(vm_prodFe, all_enty1 = fety), dim = c(3.1, 3.3),na.rm=TRUE)
-      , dim = 3,na.rm=TRUE),
-      "Emi|CO2|Fossil Fuels and Industry|Demand|Before IndustryCCS (Mt CO2/yr)"),
-    ### please note: at the end of this file, regional Gross FFI emissions are reduced by bunker emission values
-    setNames((vm_emiengregi[,,"co2"] + vm_eminegregi[,,"co2cement_process"]) * GtC_2_MtCO2
-             + (dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty=pebio,all_enty2="cco2"),dim=3)) * GtC_2_MtCO2,    "Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"),
-    setNames((vm_eminegregi[,,"co2luc"] ) * GtC_2_MtCO2,                                         "Emi|CO2|Land-Use Change (Mt CO2/yr)")
-  )
- 
-  
-  if(!is.null(vm_emiAllMkt)) {
-    
-    vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)
-    pm_emifac      <- readGDX(gdx,name=c("pm_emifac"),format="first_found",restore_zeros=FALSE)
-    vm_emiIndCCS   <- readGDX(gdx,name=c("vm_emiIndCCS"),field="l",format="first_found",restore_zeros=FALSE)
-    
-    
-    tmp <- mbind(tmp,
-      # CO2
-      setNames((dimSums(mselect(vm_emiAllMkt,all_enty="co2",all_emiMkt="ETS")  ,dim=3)) * GtC_2_MtCO2, "Emi|CO2|ETS (Mt CO2/yr)"),
-      setNames((dimSums(mselect(vm_emiAllMkt,all_enty="co2",all_emiMkt="ES")   ,dim=3)) * GtC_2_MtCO2, "Emi|CO2|ESD (Mt CO2/yr)"), 
-      setNames((dimSums(mselect(vm_emiAllMkt,all_enty="co2",all_emiMkt="other"),dim=3)) * GtC_2_MtCO2, "Emi|CO2|other - Non ETS and ES (Mt CO2/yr)"),
-      # GHG
-      setNames( GtC_2_MtCO2 * (dimSums(mselect(vm_emiAllMkt,all_enty="co2",all_emiMkt="ETS")  ,dim=3)) #CO2 emissions
-                + s_GWP_CH4 * (dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="ETS") ,dim=3)) #CH4 emissions
-                + s_GWP_N2O * (dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="ETS") ,dim=3)) * MtN2_to_ktN2O / 1000 #N2O emissions
-              , "Emi|GHG|ETS (Mt CO2-equiv/yr)"),
-      setNames( GtC_2_MtCO2 * (dimSums(mselect(vm_emiAllMkt,all_enty="co2",all_emiMkt="ES")  ,dim=3)) #CO2 emissions
-                + s_GWP_CH4 * (dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="ES") ,dim=3)) #CH4 emissions
-                + s_GWP_N2O * (dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="ES") ,dim=3)) * MtN2_to_ktN2O / 1000 #N2O emissions
-                , "Emi|GHG|ESD (Mt CO2-equiv/yr)"),
-      setNames( GtC_2_MtCO2 * (dimSums(mselect(vm_emiAllMkt,all_enty="co2",all_emiMkt="other")  ,dim=3)) #CO2 emissions
-                + s_GWP_CH4 * (dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="other") ,dim=3)) #CH4 emissions
-                + s_GWP_N2O * (dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="other") ,dim=3)) * MtN2_to_ktN2O / 1000 #CH4 emissions
-                , "Emi|GHG|other - Non ETS and ES (Mt CO2-equiv/yr)")
-    )
-    
-    # Effort Sharing emission targets and reference emissions 
-    ESreferenceEmissions <- readGDX(gdx,"f47_ESreferenceEmissions",restore_zeros=FALSE, react = "silent")
-    emiTargetES <- readGDX(gdx,c("pm_emiTargetES","p47_emiTargetES"),format="first_found",restore_zeros=FALSE, react = "silent")
-    if(!(is.null(ESreferenceEmissions))){
-      emiTargetES <- emiTargetES[,,] * GtC_2_MtCO2
-      target <- new.magpie(cells_and_regions=getRegions(tmp),years=getYears(tmp),names="Emi|CO2|ESD|Targets (Mt CO2/yr)")
-      target[getRegions(emiTargetES),intersect(getYears(ESreferenceEmissions),getYears(emiTargetES)),] <- mbind(ESreferenceEmissions, emiTargetES) 
-      tmp <- mbind(tmp, target)
-    } 
-    
-  
-
-    vm_demFeSector <- vm_demFeSector[,yy,]
-    pm_emifac      <- pm_emifac[,yy,]
-    vm_emiIndCCS   <- vm_emiIndCCS[,yy,]
-    
-    
-    indstFEdem <- collapseNames(vm_demFeSector[,,"indst"])
-    indstCCS   <- dimSums(vm_emiIndCCS[,,]) 
-    
-    indst_df <- merge(as.quitte(indstFEdem[,,intersect(getNames(indstFEdem,dim=2),getNames(pm_emifac,dim=2))])[,-c(1,2,4,5)],as.quitte(pm_emifac[,,intersect(getNames(indstFEdem,dim=2),getNames(pm_emifac,dim=2))])[,-c(1,2,4,5)],by=c("all_enty","all_enty1","region","period"))
-    colnames(indst_df) <- c("se","fe","region","period","demFe","emiMkt","emiFactor","tech","emiGas")
-    
-    indst_df <- indst_df %>%
-      mutate(emissions = .data$demFe * .data$emiFactor) 
-    
-    indstEmiMkt <- indst_df %>%
-      group_by(.data$region,.data$emiMkt,.data$period,.data$emiGas) %>%
-      summarise(indstEmiMKT = sum(.data$emissions), .groups = 'drop_last') 
-    
-    # Industry ETS emissions before discounting Industry CCS (Mt CO2)
-    tmp <- mbind(tmp,
-                 setNames(as.magpie(as.data.frame(indstEmiMkt))[,,"ETS.co2"] * GtC_2_MtCO2, "Emi|CO2|Industry|ETS (Mt CO2/yr)"),
-                 setNames(as.magpie(as.data.frame(indstEmiMkt))[,,"ES.co2"] * GtC_2_MtCO2, "Emi|CO2|Industry|ESD (Mt CO2/yr)"),
-                 setNames(as.magpie(as.data.frame(indstEmiMkt))[,,"other.co2"] * GtC_2_MtCO2, "Emi|CO2|Industry|other - Non ETS and ES (Mt CO2/yr)")
-    )
-    ### -------------- Felix's ETS/ESD GHG reporting ------------------------
-    
-    ### intialized variables used in following dplyr pipes, 
-    # only needed for being able to build library
-    
-    region <- NULL
-    period <- NULL
-    all_enty <- NULL
-    all_enty1 <- NULL
-    all_enty2 <- NULL
-    all_emiMkt <- NULL
-    emi_sectors <- NULL
-    all_te <- NULL
-    emiFac <- NULL
-    emi <- NULL
-    value <- NULL
-    
-    ### end initialization
-
-    
-    # constants
-    s_GWP_CH4 <- readGDX(gdx,c("sm_gwpCH4","s_gwpCH4","s_GWP_CH4"),format="first_found", react = "silent")
-    s_GWP_N2O <- readGDX(gdx,c("s_gwpN2O","s_GWP_N2O"),format="first_found")
-    pm_conv_TWa_EJ <- 31.536
-    TWa_2_EJ <- 31.536
-    GtC_2_MtCO2 <- 44 / 12 * 1000
-    MtN2_to_ktN2O <- 44 / 28 * 1000
-      
-    # REMIND variables needed
-    # FE per sector
-    vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)
-    # emission factor
-    pm_emifac      <- readGDX(gdx,name=c("pm_emifac"),format="first_found",restore_zeros=FALSE)
-    # industry CCS
-    vm_emiIndCCS   <- readGDX(gdx,name=c("vm_emiIndCCS"),field="l",format="first_found",restore_zeros=FALSE)
-    # non-energy emissions
-    vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)
-    # mapping mac sector to emission market (EST/ETS)
-    macSector2emiMkt <- readGDX(gdx, "macSector2emiMkt")
-    # mapping mac sector to "reporting" sectors
-    emiMac2sector <- readGDX(gdx, "emiMac2sector")
-    
-    # calculate non-energy/process GHG emissions (MAC emissions) per emissions market
-    df.nonEn.Emi <- as.quitte(vm_emiMacSector[,,emiMac2sector$all_enty]) %>% 
-                      left_join(macSector2emiMkt,by="all_enty") %>% 
-                      left_join(emiMac2sector,by="all_enty") %>%     
-                      # conversion to MtCO2eq (unit conversion and global warming potential)
-                      mutate( value = ifelse(all_enty1 == "co2", value * GtC_2_MtCO2, value)) %>% 
-                      mutate( value = ifelse(all_enty1 == "ch4", value * as.numeric(s_GWP_CH4[,,]), value)) %>%
-                      mutate( value = ifelse(all_enty1 == "n2o", MtN2_to_ktN2O * as.numeric(s_GWP_N2O[,,]) / 1000 * value,
-                                             value)) %>% 
-                      # aggregate to total GHG for sector and market
-                      group_by(region, period, all_emiMkt, emi_sectors) %>% 
-                      summarise( value = sum(value), .groups = 'drop_last') %>% 
-                      ungroup()
-   
-    EmiNonenSector <- as.magpie(df.nonEn.Emi, spatial = 1, temporal = 2, datacol=5)
-   
-    # calculate energy demand-side GHG emissions per emissions market
-    # (multiply sectoral FE demand with se2fe emission factors)
-    df.en.Emi <- as.quitte(vm_demFeSector) %>% 
-                        filter(period >= 2005) %>%  
-                        left_join(as.quitte(pm_emifac) %>% 
-                          select(region, period, all_enty, all_enty1, all_te, all_enty2, value) %>%
-                          filter(all_enty2 %in% c("co2","n2o","ch4")) %>% 
-                          rename( emiFac = value), by=c("region", "period", "all_enty", "all_enty1")) %>% 
-                        # only retain technologies whose emissions 
-                        # are linked to a sector in vm_demFeSector
-                        filter( !is.na(all_te)) %>%
-                        # calculate emissions in REMIND native units 
-                        mutate( emi = value * emiFac) %>% 
-                        # conversion to MtCO2eq 
-                        # (unit conversion and multiplication w/ global warming potential)
-                        mutate( emi = ifelse(all_enty2 == "co2", emi * GtC_2_MtCO2, emi)) %>% 
-                        mutate( emi = ifelse(all_enty2 == "ch4", emi * as.numeric(s_GWP_CH4[,,]), emi)) %>%
-                        mutate( emi = ifelse(all_enty2 == "n2o", 
-                                               MtN2_to_ktN2O * as.numeric(s_GWP_N2O[,,]) / 1000 * emi,
-                                             emi)) %>%   
-                        # aggregate to total GHG for sector and market
-                        group_by(region, period, all_emiMkt, emi_sectors) %>% 
-                        summarise( emi = sum(emi), .groups = 'drop_last') %>% 
-                        ungroup()
-    
-    EmiEnSector <- as.magpie(df.en.Emi, spatial = 1, temporal = 2, datacol=5)
-    
-    
-    ### report industry ETS and ESD emissions
-
-    # Industry ETS energy GHG emissions:
-    # all se2fe ESM industry emissions of ETS - industry energy CCS 
-    tmp <- mbind(tmp,
-                 # industry energy ETS emissions: ESM industry emissions - industry energy CCS (to fix: assume for the moment that all CCS is going to ETS as done in REMIND)
-                 setNames( collapseNames(EmiEnSector[,,"ETS.indst"]) -
-                                 GtC_2_MtCO2 * dimSums(vm_emiIndCCS[,, c("co2cement","co2chemicals","co2steel","co2otherInd")], dim=3), 
-                               "Emi|GHG|Industry|Energy|ETS (Mt CO2-equiv/yr)"),
-                 # industry process ETS emissions: non-energy ETS emissions (process CCS already included)
-                 setNames( collapseNames(EmiNonenSector[,,"ETS.indst"]),
-                                "Emi|GHG|Industry|Process|ETS (Mt CO2-equiv/yr)"),
-                 # industry energy ESD emissions: ESM ESD industry emissions
-                 setNames( collapseNames(EmiEnSector[,,"ES.indst"]), "Emi|GHG|Industry|Energy|ESD (Mt CO2-equiv/yr)")
-                 )
-    
-
-    # industry process ESD emissions: non-energy ESD industry emissions,
-    # if no industry proess assigned to ESD -> 0
-    if ("ES.indst" %in% getNames(EmiNonenSector)) {
-      tmp <- mbind(tmp,
-                   # industry process ESD emissions: non-energy ESD industry emissions,
-                   # if no industry proess assigned to ESD -> 0
-                   setNames( collapseNames(EmiNonenSector[,,"ES.indst"]),
-                             "Emi|GHG|Industry|Process|ESD (Mt CO2-equiv/yr)"))
-    } else {
-      tmp <- mbind(tmp,
-                   setNames( collapseNames(EmiNonenSector[,,"ETS.indst"]*0),
-                             "Emi|GHG|Industry|Process|ESD (Mt CO2-equiv/yr)"))
-    }
-    
-    # total GHG industry process emissions
-    tmp <- mbind(tmp,
-                 setNames(tmp[,,"Emi|GHG|Industry|Process|ESD (Mt CO2-equiv/yr)"] +
-                          tmp[,,"Emi|GHG|Industry|Process|ETS (Mt CO2-equiv/yr)"],
-                          "Emi|GHG|Industry|Process (Mt CO2-equiv/yr)"))
-
-    # total GHG industry emissions per market
-    tmp <- mbind(tmp,
-                 # total industry ETS (after Industry CCS)
-                 setNames( tmp[,,"Emi|GHG|Industry|Energy|ETS (Mt CO2-equiv/yr)"] +
-                           tmp[,,"Emi|GHG|Industry|Process|ETS (Mt CO2-equiv/yr)"],
-                           "Emi|GHG|Industry|ETS (Mt CO2-equiv/yr)"),
-                 # total industry ESD (after Industry CCS)
-                 setNames( tmp[,,"Emi|GHG|Industry|Energy|ESD (Mt CO2-equiv/yr)"] +
-                             tmp[,,"Emi|GHG|Industry|Process|ESD (Mt CO2-equiv/yr)"],
-                           "Emi|GHG|Industry|ESD (Mt CO2-equiv/yr)")
-    )
-    
-    # total industry GHG emissions
-    tmp <- mbind(tmp,
-                 # total industry (after Industry CCS)
-                 setNames( tmp[,,"Emi|GHG|Industry|ETS (Mt CO2-equiv/yr)"] +
-                             tmp[,,"Emi|GHG|Industry|ESD (Mt CO2-equiv/yr)"],
-                           "Emi|GHG|Industry (Mt CO2-equiv/yr)"))
-                 
-                 
-    ### extraction sector (process/non-energy) GHG emissions (fugitive emissions)
-    tmp <- mbind(tmp,
-                 setNames(
-                    # non-energy/process extraction emissions (from MACs) 
-                    collapseNames(EmiNonenSector[,,"ETS.extraction"]),
-                    "Emi|GHG|Fugitive|ETS (Mt CO2-equiv/yr)"))
-    
-    
-    # if no extraction process emissions assigned to ESD -> ESD fugitive = 0
-    if ("ES.extraction" %in% getNames(EmiNonenSector)) {
-      tmp <- mbind(tmp,
-                   setNames( collapseNames(EmiNonenSector[,,"ES.extraction"]),
-                             "Emi|GHG|Fugitive|ESD (Mt CO2-equiv/yr)"))
-    } else {
-      tmp <- mbind(tmp,
-                   setNames( collapseNames(EmiNonenSector[,,"ETS.extraction"]*0),
-                             "Emi|GHG|Fugitive|ESD (Mt CO2-equiv/yr)"))
-    }
-    
-    ### waste (process/non-energy) GHG emissions
-    tmp <- mbind(tmp,
-                 setNames(
-                   collapseNames(EmiNonenSector[,,"ES.Waste"]),
-                   "Emi|GHG|Waste|ESD (Mt CO2-equiv/yr)")
-    )
-    
-    ### agriculture (process/non-energy) GHG emissions
-    tmp <- mbind(tmp,
-                 setNames(
-                   collapseNames(EmiNonenSector[,,"ES.Agriculture"]),
-                   "Emi|GHG|Agriculture|ESD (Mt CO2-equiv/yr)")
-    )
-  }
-  
-  ### FS: total GHG energy and non-energy emissions
-  vm_emiTeMkt <- readGDX(gdx, "vm_emiTeMkt", field = "l", restore_zeros = F)
-  # array to include conversion to Mt and conversion to MtCO2eq by global warming potential
-  GWP <- new.magpie(names = getNames(vm_emiTeMkt, dim=1), fill = 0)
-  GWP[,,"co2"] <- 1 * GtC_2_MtCO2
-  GWP[,,"ch4"] <- 28
-  GWP[,,"n2o"] <- MtN2_to_ktN2O / 1000 * 265
-  
-  # total energy GHG emissions
-  EmiGHGEn <- dimSums(dimReduce(dimSums(vm_emiTeMkt, dim=3.2)) * GWP, dim=3)
-  
-  # total non-energy GHG emissions
-  
-  
-  # non-energy emissions
-  vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)
-  # mapping mac sector to emission market (EST/ETS)
-  macSector2emiMkt <- readGDX(gdx, "macSector2emiMkt")
-  # mapping mac sector to "reporting" sectors
-  emiMac2sector <- readGDX(gdx, "emiMac2sector")
-  
-  # Fugitive emissions
-  EmiGHGFug <- dimReduce(dimSums(vm_emiMacSector[,,c("ch4coal","ch4gas","ch4oil")], dim=3)*GWP[,,c("ch4")])
-  
-  # afolu (IPCC category 3 und 4), agriculture, forestry, land-use change
-  emi_sectors <- NULL
-  afolu.sec <- emiMac2sector %>% 
-                  filter(emi_sectors %in% c("Agriculture", "lulucf"))
-  
-  EmiGHGafolu <-  dimSums(toolAggregate(vm_emiMacSector[,,afolu.sec$all_enty], 
-                                        afolu.sec,from="all_enty", to="all_enty1", dim=3) * 
-                            GWP[,,c("co2","ch4","n2o")], dim=3)
-  
-  
-    
-  # total GHG emissions from MAC curves (incl. fugitive)
-  EmiNonEnGHG <- dimSums(toolAggregate(vm_emiMacSector[,,emiMac2sector$all_enty], 
-                               emiMac2sector,from="all_enty", to="all_enty1", dim=3) * 
-                           GWP[,,c("co2","ch4","n2o")], dim=3)
-  
-  ### GHG reporting total energy and non-energy emissions 
-  # (where energy emissions include fugitive emissions)
-  
-  tmp <- mbind(tmp, 
-               setNames( EmiGHGEn+EmiGHGFug, "Emi|GHG|Energy|incl fugitive (Mt CO2-equiv/yr)"),
-               setNames( EmiNonEnGHG-EmiGHGFug, "Emi|GHG|Non-energy|excl fugitive (Mt CO2-equiv/yr)" ),
-               setNames( EmiGHGafolu, "Emi|GHG|AFOLU (Mt CO2-equiv/yr)"))
-  
-  
-  
-  
-  
-
- 
-  # Emissions by PE and carrier, use function "emi_carrier" declared above ############################################################################
-  tmp <- mbind(tmp,
-    emi_carrier(v_emi,dataoc,oc2te,sety,pebio,"seel","cco2",GtC_2_MtCO2,pe2se$all_te,      name="Emi|CO2|Carbon Capture|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pebio,se_Liq,"cco2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Carbon Capture|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pebio,"seh2","cco2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Carbon Capture|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pebio,"sehe","cco2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Carbon Capture|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pebio,se_Gas,"cco2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Carbon Capture|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pebio,se_Solids,"cco2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Carbon Capture|Biomass|Supply|Solids|w/ couple prod (Mt CO2/yr)"),
-    
-    
-    # note: energy emissions from fuel extraction for oil, gas and coal would still need to be added here! 
-    # (see energy emissions defined in REMIND in q_emiTeMkt)
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,"seel","co2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,"sehe","co2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,"seh2","co2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,se_Liq,"co2",GtC_2_MtCO2,te=pe2se$all_te,    name="Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,se_Gas,"co2",GtC_2_MtCO2,te=pe2se$all_te,    name="Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,se_Solids,"co2",GtC_2_MtCO2,te=pe2se$all_te, name="Emi|CO2|Energy|Supply|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-     
-    # #!!!!!!!!!!ITS is wrong (and all emissions derived from it) not valid anymore as emission factors for fe are discounted already from pe2se transformation
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,se_Liq,"co2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,se_Gas,"co2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-    emi_carrier(v_emi,dataoc,oc2te,sety,pety,se_Solids,"co2",GtC_2_MtCO2,te=pe2se$all_te,  name="Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)")
-  )
-  
-  ### in case of synfuel production -> add CO2 flows into synfuels to liquids and gases supply emissions
-  if (module2realisation["CCU",2] == "on") {
-    p39_co2_dem <- readGDX(gdx, "p39_co2_dem",restore_zeros = F)
-    p39_co2_dem <- dimReduce(p39_co2_dem[,"y2030",]) # only take one year for now
-
-    # calculate CO2 needed for synfuel production
-    tmp <- mbind(tmp,
-                  setNames(p39_co2_dem[,,"MeOH"] * vm_prodSE[,,"MeOH"] * GtC_2_MtCO2 / pm_conv_TWa_EJ,
-                  "Carbon Management|CCU|Liquids (Mt CO2/yr)"),
-                  setNames(p39_co2_dem[,,"h22ch4"] * vm_prodSE[,,"h22ch4"] * GtC_2_MtCO2 / pm_conv_TWa_EJ,
-                  "Carbon Management|CCU|Gases (Mt CO2/yr)"))
-    
-    
-    ## add CCU CO2 flows to respective supply emissions that were captured by energy system technologies (pe2se or industry capture)
-    # first calculate share of captured CO2 by energy system from total CO2 captured
-    # note that DAC CO2 does not enter the energy system variables in the first place, such that DAC CCU does not need to be added
-    p_share_en_cco2 <- (dimSums(mselect(v_emi, all_enty2="cco2"), dim=3) + dimSums(vm_emiIndCCS, dim=3)) / dimSums(vm_co2capture, dim=3)
-    p_share_en_cco2[is.na(p_share_en_cco2)] <- 0
-    
-    tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
-      tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Liquids (Mt CO2/yr)"]*p_share_en_cco2
-    
-    tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
-      tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Gases (Mt CO2/yr)"]*p_share_en_cco2
-            
-     
-    ## add to respective total energy emissions emissions
-    tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
-      tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Liquids (Mt CO2/yr)"]*p_share_en_cco2
-      
-    tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] <- 
-      tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-      tmp[,,"Carbon Management|CCU|Gases (Mt CO2/yr)"]*p_share_en_cco2
-    
-  }
-  
- 
-  tmp <- mbind(tmp,
-               setNames(tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Supply|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"],
-                          "Emi|CO2|Energy|Supply (Mt CO2/yr)"))
-  
-  
-  tmp <- mbind(tmp,
-               setNames(p_share_carbonCapture_stor * tmp[,,"Emi|CO2|Carbon Capture|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"), 
-               setNames(p_share_carbonCapture_stor * tmp[,,"Emi|CO2|Carbon Capture|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"], 
-                        "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"),
-               setNames(p_share_carbonCapture_stor * tmp[,,"Emi|CO2|Carbon Capture|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"],
-                         "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"),
-               setNames(p_share_carbonCapture_stor * tmp[,,"Emi|CO2|Carbon Capture|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"], 
-                         "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"),
-               setNames(p_share_carbonCapture_stor * tmp[,,"Emi|CO2|Carbon Capture|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"],
-                         "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"),
-               setNames(p_share_carbonCapture_stor * tmp[,,"Emi|CO2|Carbon Capture|Biomass|Supply|Solids|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Solids|w/ couple prod (Mt CO2/yr)")
-  )
-
-  
-  tmp <- mbind(tmp, 
-    setNames(tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"],
-              "Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"), 
-    
-    setNames(tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"],
-              "Emi|CO2|Energy|Supply|Heat|Gross|w/ couple prod (Mt CO2/yr)"),
-    
-    setNames(tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"],
-              "Emi|CO2|Energy|Supply|Hydrogen|Gross|w/ couple prod (Mt CO2/yr)"),
-    
-    setNames(tmp[,,"Emi|CO2|Energy|Supply|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"],
-             "Emi|CO2|Energy|Supply|Solids|Gross|w/ couple prod (Mt CO2/yr)"),
-    
-    setNames(tmp[,,"Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"],
-             "Emi|CO2|Energy|Supply|Liquids|Gross|w/ couple prod (Mt CO2/yr)"),
-    
-    setNames(tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"],
-             "Emi|CO2|Energy|Supply|Gases|Gross|w/ couple prod (Mt CO2/yr)"),
-    
-    
-    setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"],
-             "Emi|CO2|Energy|SupplyandDemand|Liquids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-    setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] +  tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"],
-             "Emi|CO2|Energy|SupplyandDemand|Gases|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-    setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"],
-             "Emi|CO2|Energy|SupplyandDemand|Solids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)")
-  )
-  
-  tmp <- mbind(tmp, 
-               setNames(tmp[,,"Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"], "Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)")
-  )
-  
-  tmp <- mbind(tmp,
-    setNames(tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Heat|w/ couple prod (Mt CO2/yr)"] + tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Gases|w/ couple prod (Mt CO2/yr)"] + tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Liquids|w/ couple prod (Mt CO2/yr)"] + tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"] + tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"],
-               "Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"
-            )
-  )
-    
-  ### Industry CCS emissions ##########################################################################################
-  # for debugging purposes
-  # vm_macBaseIndRed <- collapseNames(mselect(vm_macBaseInd,all_enty = "fegas",secInd37 = secInd37_2_emiInd37$secInd37))
-  # a <- dimSums(na.rm=TRUE,x=vm_macBaseIndRed[,,] * setNames(pm_macSwitch[,,secInd37_2_emiInd37$emiInd37],secInd37_2_emiInd37$secInd37) * setNames(pm_macAbatLev[,,secInd37_2_emiInd37$emiInd37],secInd37_2_emiInd37$secInd37),3)
-  
-  if (is.null(v37_emiIndCCSmax)) {   # if not enough data for calculation
-    tmp2 <- new.magpie(
-      cells_and_regions = getRegions(tmp), 
-      years = getYears(tmp), 
-      names = c(
-        paste0('Emi|CO2|Carbon Capture and Storage|IndustryCCS|', 
-               c('fesos', 'fehos', 'fegas'), ' (Mt CO2/yr)'),
-        'Emi|CO2|Carbon Capture and Storage|IndustryCCS|Process (Mt CO2/yr)'),
-      fill = 0)
-  } else {
-    tmp2 <- vm_macBaseInd %>%   # baseline emissions from fuel burning
-      as.quitte() %>%
-      select(.data$period, .data$region, .data$all_enty, .data$secInd37, 
-             .data$value) %>%
-      # does NOT account for process emissions!
-      filter(.data$all_enty %in% fety) %>%
-      rename(fety = .data$all_enty) %>%
-      character.data.frame() %>% 
-      # link emissions emiInd37 to industry sector secInd37
-      inner_join(
-        secInd37_2_emiInd37 %>%
-          filter('co2cement_process' != emiInd37),
-        
-        'secInd37'
-      ) %>% 
-      # Industry MAC is on or off?
-      inner_join(
-        pm_macSwitch %>%
-          as.quitte() %>%
-          select(emiInd37 = .data$all_enty, pm_macSwitch = .data$value) %>%
-          filter(.data$emiInd37 %in% secInd37_2_emiInd37$emiInd37) %>%
-          mutate(emiInd37 = as.character(.data$emiInd37)),
-        
-        'emiInd37'
-      ) %>% 
-      inner_join(
-        # abatement level of industry sector MAC at current CO2 price
-        pm_macAbatLev %>%
-          as.quitte() %>%
-          select(.data$period, .data$region, emiInd37 = .data$all_enty, 
-                 pm_macAbatLev = .data$value) %>%
-          filter(emiInd37 %in% secInd37_2_emiInd37$emiInd37) %>%
-          mutate(emiInd37 = as.character(.data$emiInd37),
-                 region = as.character(.data$region)),
-        
-        c('period', 'region', 'emiInd37')
-      ) %>%
-      inner_join(
-        inner_join(
-          vm_emiIndCCS %>% 
-            as.quitte() %>% 
-            select(.data$period, .data$region, .data$all_enty, 
-                   vm_emiIndCCS = .data$value),
-          
-          v37_emiIndCCSmax %>% 
-            as.quitte() %>% 
-            select(.data$period, .data$region, .data$emiInd37, 
-                   v37_emiIndCCSmax = .data$value),
-          
-          c('period', 'region', 'all_enty' = 'emiInd37')
-        ) %>% 
-          mutate(slack = ifelse(.data$v37_emiIndCCSmax, 
-                                .data$vm_emiIndCCS / .data$v37_emiIndCCSmax, 0),
-                 region = as.character(.data$region),
-                 emiInd37 = as.character(.data$all_enty)) %>% 
-          select(.data$period, .data$region, .data$emiInd37, .data$slack),
-        
-        c('period', 'region', 'emiInd37')
-      ) %>% 
-      as_tibble() %>%
-      group_by(.data$period, .data$region, .data$fety) %>%
-      summarise(
-        value = sum(.data$value * .data$pm_macSwitch * .data$pm_macAbatLev * .data$slack), .groups = 'drop_last') %>%
-      ungroup() %>%
-      mutate(
-        value = .data$value * GtC_2_MtCO2,
-        model = NA,
-        scenario = NA,
-        variable = paste0('Emi|CO2|Carbon Capture and Storage|IndustryCCS|', 
-                          .data$fety, ' (Mt CO2/yr)')) %>%
-      select(.data$model, .data$scenario, .data$region, .data$variable, 
-             .data$period, .data$value) %>%
-      as.quitte() %>%
-      as.magpie() 
-    
-    dimnames(tmp2) <- setNames(dimnames(tmp2), names(dimnames(tmp)))
-    
-    # add cement process emissions
-    tmp2 <- mbind(
-      tmp2, 
-      o37_cementProcessEmissions %>% 
-        as.quitte() %>% 
-        mutate(region = as.character(.data$region)) %>% 
-        inner_join(
-          inner_join(
-            vm_emiIndCCS %>% 
-              as.quitte() %>% 
-              filter('co2cement' == .data$all_enty,
-                     .data$period %in% as.numeric(sub('^y', '', y))) %>% 
-              select(.data$period, .data$region, vm_emiIndCCS = .data$value),
-            
-            v37_emiIndCCSmax %>% 
-              as.quitte() %>% 
-              filter('co2cement' == .data$emiInd37,
-                     .data$period %in% as.numeric(sub('^y', '', y))) %>% 
-              select(.data$period, .data$region, v37_emiIndCCSmax = .data$value),
-            
-            c('period', 'region')
-          ) %>% 
-            mutate(slack = ifelse(.data$v37_emiIndCCSmax, 
-                                  .data$vm_emiIndCCS / .data$v37_emiIndCCSmax, 0),
-                   region = as.character(.data$region)) %>% 
-            select(.data$period, .data$region, .data$slack),
-          
-          c('period', 'region')
-        ) %>% 
-        inner_join(
-          pm_macSwitch %>%
-            as.quitte() %>%
-            filter('co2cement_process' == .data$all_enty) %>% 
-            select(pm_macSwitch = .data$value) %>% 
-            mutate(period = 0) %>% 
-            complete(nesting(pm_macSwitch), 
-                     period = as.numeric(sub('^y', '', y))),
-          
-          'period'
-        ) %>% 
-        inner_join(
-          # abatement level of industry sector MAC at current CO2 price
-          pm_macAbatLev %>%
-            as.quitte() %>%
-            filter('co2cement' == .data$all_enty) %>% 
-            select(.data$period, .data$region, pm_macAbatLev = .data$value) %>%
-            mutate(region = as.character(.data$region)),
-          
-          c('period', 'region')
-        ) %>% 
-        group_by(.data$period, .data$region) %>% 
-        summarise(value = sum( .data$value 
-                               * .data$pm_macSwitch 
-                               * .data$pm_macAbatLev 
-                               * .data$slack)
-                  * GtC_2_MtCO2, .groups = 'drop_last') %>%
-        ungroup() %>% 
-        as.quitte() %>% 
-        as.magpie() %>% 
-        setNames(
-          'Emi|CO2|Carbon Capture and Storage|IndustryCCS|Process (Mt CO2/yr)'))
-  }
-  
-  tmp2 <- mbind(
-    tmp2,
-    setNames( 
-      tmp2[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fegas (Mt CO2/yr)"] 
-      + tmp2[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fesos (Mt CO2/yr)"] 
-      + tmp2[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fehos (Mt CO2/yr)"]
-      + tmp2[,,'Emi|CO2|Carbon Capture and Storage|IndustryCCS|Process (Mt CO2/yr)'],
-      "Emi|CO2|Carbon Capture and Storage|IndustryCCS (Mt CO2/yr)")
-  )
-  
-  
-  ### seperate only industry energy CCS
-  tmp2 <- mbind(tmp2,
-                setNames(tmp2[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fegas (Mt CO2/yr)"]+
-                         tmp2[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fesos (Mt CO2/yr)"]+
-                         tmp2[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fehos (Mt CO2/yr)"],
-                         "Emi|CO2|Carbon Capture and Storage|IndustryCCS|Energy (Mt CO2/yr)"))
-  
-  # adjust all industry CCS variables for CCU/CCS split
-  # rename the above variables to -> "Carbon Capture"
-  # calculate new "Carbon Capture and Storage" variables based on the CCS share of captured CO2
-  tmp2_new <- tmp2
-  # rename industry CCS variables to industry capture variables
-  getNames(tmp2_new) <- gsub(pattern = "Carbon Capture and Storage", 
-                            replacement = "Carbon Capture", 
-                            x = getNames(tmp2))
-  
-  # calculate industry CCS variables by multiplying the CCS share of captured CO2 with the captured carbon
-  tmp2_new <- mbind(tmp2_new,tmp2 * dimReduce(p_share_carbonCapture_stor))
-  
-  tmp <- mbind(tmp, tmp2_new)
-  rm(tmp2_new)
-
-  ### please note: at the end of this file, regional  FFI demand emissions are reduced by bunker emission values
-  tmp <- mbind(
-    tmp, 
-    setNames(
-        tmp[,,"Emi|CO2|Fossil Fuels and Industry|Demand|Before IndustryCCS (Mt CO2/yr)"] 
-      - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS (Mt CO2/yr)"],
-      "Emi|CO2|Fossil Fuels and Industry|Demand|After IndustryCCS (Mt CO2/yr)")
-    )
-  
-  tmp <- mbind(
-    tmp,
-    setNames(
-        tmp[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"] 
-      - tmp[,,"Emi|CO2|Fossil Fuels and Industry|Demand|After IndustryCCS (Mt CO2/yr)"] 
-      - (vm_eminegregi[,,"co2cement_process"] * GtC_2_MtCO2),
-      "Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"
-      ),
-                 
-               # setNames( vm_emiengregi[,,"co2"] * GtC_2_MtCO2
-               #           - dimSums(na.rm=TRUE,x= (p_ef_dem[,,fety]*(1-p_bioshare[,,fety]))
-               #                      * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=fety),dim=c(3.1,3.3))
-               #                      ,dim=3) ,            "Emi|CO2|Fossil Fuels and Industry|Energy Supply|Before IndustryCCS (Mt CO2/yr)"),
-               
-    setNames( tmp[,,"Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"] + tmp[,,"Emi|CO2|Carbon Capture and Storage|Supply|Biomass (Mt CO2/yr)"],
-                         "Emi|CO2|FFaI|Emi to which CO2tax is applied (Mt CO2/yr)")
-  )
-  
- 
-  
-  # Direct emissions by final energy carrier ############################################################################
-  tmp <- mbind(tmp,
-               setNames( dimSums(na.rm=TRUE,x=p_ef_dem[,,FE_Ga] * (1 - p_bioshare[,,FE_Ga]) # biomass is valued at 0 for Demand emissions
-                                 * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_Ga),dim=c(3.1,3.3)),dim=3) , "Emi|CO2|Energy|Demand|Gases|Before IndustryCCS (Mt CO2/yr)"),
-               setNames( dimSums(na.rm=TRUE,x=p_ef_dem[,,FE_Liq] * (1 - p_bioshare[,,FE_Liq]) # biomass is valued at 0 for Demand emissions
-                                 * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_Liq),dim=c(3.1,3.3)),dim=3) , "Emi|CO2|Energy|Demand|Liquids|Before IndustryCCS (Mt CO2/yr)"),
-               setNames( dimSums(na.rm=TRUE,x=p_ef_dem[,,FE_So] * (1 - p_bioshare[,,FE_So]) # biomass is valued at 0 for Demand emissions
-                                 * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_So),dim=c(3.1,3.3)),dim=3) , "Emi|CO2|Energy|Demand|Solids|Before IndustryCCS (Mt CO2/yr)")
-               
-               # setNames( dimSums(na.rm=TRUE,x=p_ef_dem[,,FE_He] * (1 - p_bioshare[,,FE_He]) # biomass is valued at 0 for Demand emissions
-               #                   * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_He),dim=c(3.1,3.3)),dim=3) , "Emi|CO2|Energy|Demand|Heat (Mt CO2/yr)"),
-               # setNames( dimSums(na.rm=TRUE,x=p_ef_dem[,,FE_H2] * (1 - p_bioshare[,,FE_H2]) # biomass is valued at 0 for Demand emissions
-               #                   * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_H2),dim=c(3.1,3.3)),dim=3) , "Emi|CO2|Energy|Demand|H2 (Mt CO2/yr)"),
-               # setNames( dimSums(na.rm=TRUE,x=p_ef_dem[,,FE_El] * (1 - p_bioshare[,,FE_El]) # biomass is valued at 0 for Demand emissions
-               #                   * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_El),dim=c(3.1,3.3)),dim=3) , "Emi|CO2|Energy|Demand|Electricity (Mt CO2/yr)")
-               # 
-  )
-  
-  # Direct emissions by final energy carrier, after industryCCS ############################################################################
-  tmp <- mbind(tmp, 
-               setNames(tmp[,,"Emi|CO2|Energy|Demand|Gases|Before IndustryCCS (Mt CO2/yr)"] - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fegas (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Demand|Gases|After IndustryCCS (Mt CO2/yr)"),
-               setNames(tmp[,,"Emi|CO2|Energy|Demand|Liquids|Before IndustryCCS (Mt CO2/yr)"] - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fehos (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Demand|Liquids|After IndustryCCS (Mt CO2/yr)"),
-               setNames(tmp[,,"Emi|CO2|Energy|Demand|Solids|Before IndustryCCS (Mt CO2/yr)"] - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fesos (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Demand|Solids|After IndustryCCS (Mt CO2/yr)")
-  )
-    
-  # Indirect/Supply emissions by final energy carrier, after industryCCS ############################################################################
-  # tmp <- mbind(tmp, 
-  #              setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] - tmp[,,"Emi|CO2|Energy|Demand|Gases|Before IndustryCCS (Mt CO2/yr)"],
-  #                       "Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-  #              setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] - tmp[,,"Emi|CO2|Energy|Demand|Liquids|Before IndustryCCS (Mt CO2/yr)"] ,
-  #                       "Emi|CO2|Energy|Supply|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"),
-  #              setNames(tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"] - tmp[,,"Emi|CO2|Energy|Demand|Solids|Before IndustryCCS (Mt CO2/yr)"] ,
-  #                       "Emi|CO2|Energy|Supply|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)")
-  # ) 
-    
-
-  tmp <- mbind(tmp,   
-    setNames((p_share_seel_s * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seel",all_enty2="co2")[pe2se],dim=3)
-              + p_share_seh2_s * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seh2",all_enty2="co2")[pe2se],dim=3)
-              + p_share_seliq_s * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-              + dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Gas,all_enty2="co2")[pe2se],dim=3)
-              + dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Solids,all_enty2="co2")[pe2se],dim=3)
-              + dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="sehe",all_enty2="co2")[pe2se],dim=3)
-              + vm_eminegregi[,,"co2cement_process"]
-    ) * GtC_2_MtCO2,                     "Emi|CO2|Other Sector|Direct and Indirect|w/o couple prod (Mt CO2/yr)"), # sectoral emissions (couple production is not considered)
-    setNames((p_share_seel_s    * tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"]
-              + p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"]
-              + p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]
-              + 1 * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]
-              + 1 * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]
-              + 1 * tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"]
-              + vm_eminegregi[,,"co2cement_process"]
-              - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Energy (Mt CO2/yr)"]
-    ),                     "Emi|CO2|Other Sector|Direct and Indirect|w/ couple prod (Mt CO2/yr)"), # sectoral emissions including couple production
-    setNames( dimSums(na.rm=TRUE,x= (p_ef_dem[,,FE_Stat_fety]*(1-p_bioshare[,,FE_Stat_fety]))
-                       * dimSums(na.rm=TRUE,x=mselect(vm_prodFe,all_enty1=FE_Stat_fety),dim=c(3.1,3.3))
-                       ,dim=3) ,                                                  "Emi|CO2|Other Sector|Direct (Mt CO2/yr)"),
-    ### please note: at the end of this file, regional transport emissions are reduced by bunker emission values
-    setNames((  p_share_seel_t  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seel",all_enty2="co2")[pe2se],dim=3)
-                + p_share_seh2_t  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seh2",all_enty2="co2")[pe2se],dim=3)
-                + p_share_seliq_t * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-                + p_share_segas_t * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Gas,all_enty2="co2")[pe2se],dim=3)
-
-    ) * GtC_2_MtCO2,                                                         "Emi|CO2|Transport|w/o couple prod (Mt CO2/yr)"),# sectoral emissions (couple production is not considered)
-    
-    setNames((  p_share_seel_t  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"]
-                + p_share_seh2_t  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"]
-                + p_share_seliq_t * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]
-                + p_share_segas_t * tmp[,,"Emi|CO2|Energy|Supply|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]
-    ),                                                         "Emi|CO2|Transport|w/ couple prod (Mt CO2/yr)"),
-    ### please note: at the end of this file, regional transport emissions are reduced by bunker emission values
-    setNames( dimSums(na.rm=TRUE, (p_ef_dem[,,FE_Transp_fety35]*(1-p_bioshare[,,FE_Transp_fety35]))
-                       * dimSums(na.rm=TRUE,mselect(vm_prodFe,all_enty1=FE_Transp_fety35),dim=c(3.1,3.3))
-                       ,dim=3) ,                                          "Emi|CO2|Transport|Demand (Mt CO2/yr)"),    
-    setNames( dimSums(na.rm=TRUE, p_ef_dem[,,FE_Transp_fety35]
-                       * dimSums(na.rm=TRUE,mselect(vm_prodFe,all_enty1=FE_Transp_fety35),dim=c(3.1,3.3))
-                       ,dim=3) ,                                          "Emi|CO2|Transport|Tailpipe (Mt CO2/yr)")    
-  )
-
-  ## Add some LDV specific emission reporting (complex module only)
-  
-
-  if(tran_mod == "complex"){
-    
-    vm_demFe       <- readGDX(gdx,name=c("v35_demFe","v_demFe","vm_demFe"),field="l",restore_zeros=FALSE,format="first_found") * pm_conv_TWa_EJ
-    vm_demFe       <- vm_demFe[fe2ue]
-    LDV35      <- readGDX(gdx,"LDV35")
-
-    tmp <- mbind(
-      tmp,
-      setNames((  p35_share_seel_t_ldv  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seel",all_enty2="co2")[pe2se],dim=3)
-        + p35_share_seh2_t_ldv  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seh2",all_enty2="co2")[pe2se],dim=3)
-        + p35_share_seliq_t_ldv * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-      ) * GtC_2_MtCO2,                                                        "Emi|CO2|Transport|Pass|Road|LDV (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,FE_Transp_fety35][fe2ue]
-                        * dimSums(na.rm=TRUE,mselect(vm_demFe,all_enty=FE_Transp_fety35,all_te=LDV35),dim=c(3.2,3.3))[fe2ue]
-                       ,dim=3) ,                                         "Emi|CO2|Transport|Pass|Road|LDV|Tailpipe (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,FE_Transp_fety35][fe2ue]*(1-p_bioshare[,,FE_Transp_fety35])[fe2ue]
-                        * dimSums(na.rm=TRUE,mselect(vm_demFe,all_enty=FE_Transp_fety35,all_te=LDV35),dim=c(3.2,3.3))[fe2ue]
-                       ,dim=3) ,                                         "Emi|CO2|Transport|Pass|Road|LDV|Demand (Mt CO2/yr)"),
-      setNames( p35_share_seel_t_ldv  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seel",all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2,                                                         "Emi|CO2|Transport|Pass|Road|LDV|Electricity (Mt CO2/yr)"),
-      setNames( p35_share_seh2_t_ldv  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seh2",all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2,                                                         "Emi|CO2|Transport|Pass|Road|LDV|Hydrogen (Mt CO2/yr)")
-    )    
-  }else if(tran_mod == "edge_esm"){
-    fe2es_dyn35 <- readGDX(gdx,c("fe2es_dyn35"), format = "first_found")
-    vm_demFeForEs_trnsp = vm_demFeForEs[fe2es_dyn35]
-
-    ## Emission shares for technologies
-    tmp <- mbind(
-      tmp,
-      ## Full Emissions (including upstream!)
-      setNames(p35_share_seel_psm  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seel",all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Pass|Short-Medium Distance|Electricity (Mt CO2/yr)"),
-      setNames(p35_share_seh2_psm  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1="seh2",all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Pass|Short-Medium Distance|Hydrogen (Mt CO2/yr)"),
-      setNames(p35_share_seliq_psm  * dimSums(na.rm=TRUE,x=mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Pass|Short-Medium Distance|Liquids (Mt CO2/yr)"),
-      setNames(p35_share_seliq_fsm  * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Freight|Short-Medium Distance|Liquids (Mt CO2/yr)"),
-      setNames(p35_share_seliq_pl  * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Pass|Long Distance|Liquids (Mt CO2/yr)"),
-      setNames(p35_share_seliq_fl  * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Freight|Long Distance|Liquids (Mt CO2/yr)"),
-      setNames(p35_share_sega_psm  * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1=se_Gas,all_enty2="co2")[pe2se],dim=3)
-               * GtC_2_MtCO2, "Emi|CO2|Transport|Pass|Short-Medium Distance|Gases (Mt CO2/yr)"),
-      setNames((p35_share_seel_psm  * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1="seel",all_enty2="co2")[pe2se],dim=3)
-        + p35_share_seh2_psm  * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1="seh2",all_enty2="co2")[pe2se],dim=3)
-        + p35_share_seliq_psm * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1=se_Liq,all_enty2="co2")[pe2se],dim=3)
-        + p35_share_sega_psm * dimSums(na.rm=TRUE,mselect(v_emi,all_enty1=se_Gas,all_enty2="co2")[pe2se],dim=3)
-      ) * GtC_2_MtCO2, "Emi|CO2|Transport|Pass|Short-Medium Distance (Mt CO2/yr)"),
-      ## Demand Side Emissions
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,FE_Transp_fety35]*(1-p_bioshare[,,FE_Transp_fety35]) * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "pass_sm", pmatch=T], dim=c(3.2, 3.3))[,,FE_Transp_fety35], dim=3), "Emi|CO2|Transport|Pass|Short-Medium Distance|Demand (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,c("fedie", "feelt", "fegat")]*(1-p_bioshare[,,c("fedie", "feelt", "fegat")]) * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "frgt_sm", pmatch=T], dim=c(3.2, 3.3))[,,c("fedie", "feelt", "fegat")], dim=3), "Emi|CO2|Transport|Freight|Short-Medium Distance|Demand (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,"fedie"]*(1-p_bioshare[,,"fedie"]) * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "pass_lo", pmatch=T], dim=c(3.2, 3.3))[,,"fedie"], dim=3), "Emi|CO2|Transport|Pass|Long Distance|Demand (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,"fedie"]*(1-p_bioshare[,,"fedie"]) * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "frgt_lo", pmatch=T], dim=c(3.2, 3.3))[,,"fedie"], dim=3), "Emi|CO2|Transport|Freight|Long Distance|Demand (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,FE_Transp_fety35] * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "pass_sm", pmatch=T], dim=c(3.2, 3.3))[,,FE_Transp_fety35], dim=3), "Emi|CO2|Transport|Pass|Short-Medium Distance|Tailpipe (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,c("fedie", "feelt", "fegat")] * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "frgt_sm", pmatch=T], dim=c(3.2, 3.3))[,,c("fedie", "feelt", "fegat")], dim=3), "Emi|CO2|Transport|Freight|Short-Medium Distance|Tailpipe (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,"fedie"] * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "pass_lo", pmatch=T], dim=c(3.2, 3.3))[,,"fedie"], dim=3), "Emi|CO2|Transport|Pass|Long Distance|Tailpipe (Mt CO2/yr)"),
-      setNames( dimSums(na.rm=TRUE,p_ef_dem[,,"fedie"] * dimSums(na.rm=TRUE,vm_demFeForEs_trnsp[,, "frgt_lo", pmatch=T], dim=c(3.2, 3.3))[,,"fedie"], dim=3), "Emi|CO2|Transport|Freight|Long Distance|Tailpipe (Mt CO2/yr)"))
-
-  }
-  
-
-  
-  
-  ### CDR/CCU emissions ##########################################################################################  
-  ### moved here to include industry CCS
-
-  
-  
-  
-  # recalculate industry capture and industry CCS
-  
-  tmp <- mbind(tmp,
-               # industry energy capture
-               setNames( ( p_bioshare[,,"fegas"] * tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|fegas (Mt CO2/yr)"] 
-                           + p_bioshare[,,"fesos"] * tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|fesos (Mt CO2/yr)"]
-                           + p_bioshare[,,"fehos"] * tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|fehos (Mt CO2/yr)"]),
-                         "Emi|CO2|Carbon Capture|Biomass|Energy|Demand|Industry (Mt CO2/yr)"),
-               setNames( ( (1-p_bioshare[,,"fegas"]) * tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|fegas (Mt CO2/yr)"] 
-                           + (1-p_bioshare[,,"fesos"]) * tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|fesos (Mt CO2/yr)"]
-                           + (1-p_bioshare[,,"fehos"]) * tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|fehos (Mt CO2/yr)"]),
-                         "Emi|CO2|Carbon Capture|Fossil|Energy|Demand|Industry (Mt CO2/yr)"),
-               # industry energy CCS
-               setNames( ( p_bioshare[,,"fegas"] * tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fegas (Mt CO2/yr)"] 
-                           + p_bioshare[,,"fesos"] * tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fesos (Mt CO2/yr)"] 
-                           + p_bioshare[,,"fehos"] * tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fehos (Mt CO2/yr)"]),
-                         "Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"),
-               setNames( ( (1-p_bioshare[,,"fegas"]) * tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fegas (Mt CO2/yr)"] 
-                           + (1-p_bioshare[,,"fesos"]) * tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fesos (Mt CO2/yr)"]
-                           + (1-p_bioshare[,,"fehos"]) * tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|fehos (Mt CO2/yr)"]),
-                         "Emi|CO2|Carbon Capture and Storage|Fossil|Energy|Demand|Industry (Mt CO2/yr)")
-  )
-  
-  ### calculate pe2se fossil and biomass Capture and storage
-  tmp <- mbind(tmp,
-               setNames(
-                 dimSums(mselect(v_emi, all_enty = pebio, all_enty2 = "cco2"), dim = 3) 
-                 * dimSums(p_share_carbonCapture_stor)
-                 * GtC_2_MtCO2,
-                 "Emi|CO2|Carbon Capture and Storage|Pe2Se|Biomass (Mt CO2/yr)"
-               ),
-               setNames(
-                 dimSums(mselect(v_emi, all_enty = pebio, all_enty2 = "cco2"), dim = 3) 
-                 * GtC_2_MtCO2,
-                   "Emi|CO2|Carbon Capture|Pe2Se|Biomass (Mt CO2/yr)"
-               ),
-               setNames(
-                 dimSums(mselect(v_emi, all_enty = peFos, all_enty2 = "cco2"), dim = 3) 
-                 * dimSums(p_share_carbonCapture_stor)
-                 * GtC_2_MtCO2,
-                 "Emi|CO2|Carbon Capture and Storage|Pe2Se|Fossil (Mt CO2/yr)"
-               ),
-               setNames(
-                 dimSums(mselect(v_emi, all_enty = peFos, all_enty2 = "cco2"), dim = 3) 
-                 * GtC_2_MtCO2,
-                 "Emi|CO2|Carbon Capture|Pe2Se|Fossil (Mt CO2/yr)"
-               ))
-  
-  # calculate total biomass and fossil capture and CCS
-  # biomass = pe2se biogenic CO2 + industry biogenic CO2
-  # fossil = pe2se energy fossil co2 + indstry energy co2 + industry process CO2
-  tmp <- mbind(tmp,
-               setNames(tmp[,,"Emi|CO2|Carbon Capture|Pe2Se|Biomass (Mt CO2/yr)"] +
-                        tmp[,,"Emi|CO2|Carbon Capture|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
-                              "Emi|CO2|Carbon Capture|Biomass (Mt CO2/yr)"),
-               setNames(tmp[,,"Emi|CO2|Carbon Capture|Pe2Se|Fossil (Mt CO2/yr)"] +
-                          tmp[,,"Emi|CO2|Carbon Capture|Fossil|Energy|Demand|Industry (Mt CO2/yr)"] +
-                          tmp[,,"Emi|CO2|Carbon Capture|IndustryCCS|Process (Mt CO2/yr)"],
-                        "Emi|CO2|Carbon Capture|Fossil (Mt CO2/yr)"),
-               setNames(tmp[,,"Emi|CO2|Carbon Capture and Storage|Pe2Se|Biomass (Mt CO2/yr)"] +
-                          tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
-                        "Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"),
-               setNames(tmp[,,"Emi|CO2|Carbon Capture and Storage|Pe2Se|Fossil (Mt CO2/yr)"] +
-                          tmp[,,"Emi|CO2|Carbon Capture and Storage|Fossil|Energy|Demand|Industry (Mt CO2/yr)"] +
-                          tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Process (Mt CO2/yr)"],
-                        "Emi|CO2|Carbon Capture and Storage|Fossil (Mt CO2/yr)")
-  )
-  
-  
-  # calculate CCU/CDR share parameters
-  
-  # share of captured carbon that is biogenic
-  p_share_cco2_bio <- collapseNames(tmp[,,"Emi|CO2|Carbon Capture|Biomass (Mt CO2/yr)"] / 
-                      tmp[,,"Emi|CO2|Carbon Capture (Mt CO2/yr)"])
-  
-  p_share_cco2_bio[is.na(p_share_cco2_bio)] <- 0
-  p_share_cco2_bio[p_share_cco2_bio[,,]>1] <- 0
-  
-  # pe2se share of captured carbon
-  p_share_cco2_pe2se <- collapseNames((tmp[,,"Emi|CO2|Carbon Capture|Pe2Se|Biomass (Mt CO2/yr)"] +
-                         tmp[,,"Emi|CO2|Carbon Capture|Pe2Se|Fossil (Mt CO2/yr)"])   / 
-                          tmp[,,"Emi|CO2|Carbon Capture (Mt CO2/yr)"] )
-  
-  p_share_cco2_pe2se[is.na(p_share_cco2_pe2se)] <- 0
-  p_share_cco2_pe2se[p_share_cco2_pe2se[,,]>1] <- 0
-  
-  #share of biogenic captured carbon from pe2se technologies
-  p_share_cco2_bio_pe2se <- collapseNames(tmp[,,"Emi|CO2|Carbon Capture|Pe2Se|Biomass (Mt CO2/yr)"]   / 
-    tmp[,,"Emi|CO2|Carbon Capture (Mt CO2/yr)"] )
-  
-  p_share_cco2_bio_pe2se[is.na(p_share_cco2_bio_pe2se)] <- 0
-  p_share_cco2_bio_pe2se[p_share_cco2_bio_pe2se[,,]>1] <- 0
-    
-
-  # share of captured carbon from DAC
-  p_share_cco2_DAC <- collapseNames(replace_non_finite(v33_emiDAC / vm_co2capture))
-  
-  p_share_cco2_DAC[is.na(p_share_cco2_DAC)] <- 0
-  p_share_cco2_DAC[p_share_cco2_DAC[,,]>1] <- 0
-  
-  # share of captured carbon from industry
-  p_share_cco2_ind <- collapseNames((tmp[,,"Emi|CO2|Carbon Capture|Biomass|Energy|Demand|Industry (Mt CO2/yr)"] +
-                       tmp[,,"Emi|CO2|Carbon Capture|Fossil|Energy|Demand|Industry (Mt CO2/yr)"] +
-                       tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Process (Mt CO2/yr)"])/
-    tmp[,,"Emi|CO2|Carbon Capture (Mt CO2/yr)"] )
-  
-  p_share_cco2_ind[is.na(p_share_cco2_ind)] <- 0
-  p_share_cco2_ind[p_share_cco2_ind[,,]>1] <- 0
-  
-  
-  # share of captured fossil carbon from industry
-  p_share_cco2_ind_fos <- collapseNames((tmp[,,"Emi|CO2|Carbon Capture|Fossil|Energy|Demand|Industry (Mt CO2/yr)"] +
-                         tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Process (Mt CO2/yr)"])/
-    tmp[,,"Emi|CO2|Carbon Capture (Mt CO2/yr)"] )
-  
-  p_share_cco2_ind_fos[is.na(p_share_cco2_ind_fos)] <- 0
-  p_share_cco2_ind_fos[p_share_cco2_ind_fos[,,]>1] <- 0
-  
-  
-  ### CDR/CCU Reporting
-
-  # LUC CDR, report only negative values of CO2 LUC as CDR
-  CDRco2luc <- new.magpie(getRegions(vm_eminegregi),getYears(vm_eminegregi),magclass::getNames(vm_eminegregi),fill=0)
-  CDRco2luc <- vm_eminegregi
-  CDRco2luc[CDRco2luc>0] <- 0
-  tmp <- mbind(
-    tmp,
-    
-    setNames(
-      CDRco2luc[,,"co2luc"] * GtC_2_MtCO2,
-      "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),
-    
-    # bioenergy carbon capture: pe2se technology cco2 + industry cco2 biomass
-    setNames(
-      (dimSums(mselect(v_emi, all_enty = pebio, all_enty2 = "cco2"), dim = 3)
-      * GtC_2_MtCO2 
-      + collapseNames(tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"]))*(-1), 
-      "Emi|CO2|BECC (Mt CO2/yr)"),
-    # bioenergy carbon capture: pe2se technology cco2 + industry cco2 biomass
-    setNames(
-      (dimSums(mselect(v_emi, all_enty = pebio, all_enty2 = "cco2"), dim = 3)
-       * GtC_2_MtCO2 
-       + collapseNames(tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"]))
-      * p_share_carbonCapture_stor 
-      * (-1),
-      "Emi|CO2|CDR|BECCS (Mt CO2/yr)"),
-    
-    setNames(v33_emiEW[,,"emiEW"] * GtC_2_MtCO2, "Emi|CO2|CDR|EW (Mt CO2/yr)"),
-    setNames(v33_emiDAC[,,"emiDAC"] * GtC_2_MtCO2, "Emi|CO2|DAC (Mt CO2/yr)"),
-    setNames(
-      v33_emiDAC[,,"emiDAC"] 
-      * p_share_carbonCapture_stor
-      * GtC_2_MtCO2,
-      "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
-    
-    setNames(
-      v33_emiDAC[,,"emiDAC"] * GtC_2_MtCO2 * (-1),
-      "Carbon Sequestration|Direct Air Capture (Mt CO2/yr)")
-  )
-  
-  tmp <- mbind(
-    tmp, 
-    
-    setNames(
-      ( v33_emiEW[,,"emiEW"]
-        + ( ( v33_emiDAC[,,"emiDAC"]
-              - dimSums(
-                mselect(v_emi, all_enty = pebio, all_enty2 = "cco2"), 
-                dim = 3) 
-              - collapseNames(tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"]/
-                                GtC_2_MtCO2)
-                
-        )
-        * p_share_carbonCapture_stor
-        )
-        + CDRco2luc[,,"co2luc"]
-      ) 
-      * GtC_2_MtCO2,
-      "Emi|CO2|CDR (Mt CO2/yr)"),
-    
-    setNames(
-      dimSums(mselect(vm_co2capture, all_enty = "cco2"), dim = 3) 
-      * GtC_2_MtCO2,
-      "Carbon Sequestration|CC (Mt CO2/yr)"),
-    
-    setNames(
-      vm_co2CCS[,,"cco2.ico2.ccsinje.1"] * GtC_2_MtCO2,
-      "Carbon Sequestration|CCS (Mt CO2/yr)"),
-    
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * GtC_2_MtCO2,
-        "Carbon Sequestration|CCU (Mt CO2/yr)"),
-    
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * p_share_cco2_bio * GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Biomass (Mt CO2/yr)"),
-    
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * p_share_cco2_DAC * GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|DAC (Mt CO2/yr)"),
-    
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * (1-p_share_cco2_DAC-p_share_cco2_bio) *
-        GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Fossil (Mt CO2/yr)"),
-    
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * p_share_cco2_ind *
-        GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Industry (Mt CO2/yr)"),
-    # to fix: the following do not fully add up to Carbon Sequestration|CCU
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * p_share_cco2_ind_fos *
-        GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Industry|Fossil (Mt CO2/yr)"),
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * (p_share_cco2_ind - p_share_cco2_ind_fos) *
-        GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Industry|Biomass (Mt CO2/yr)"),
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * p_share_cco2_bio_pe2se *
-        GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Pe2Se|Biomass (Mt CO2/yr)"),
-    setNames(
-      dimSums(vm_co2CCUshort,dim=3) * (p_share_cco2_pe2se - p_share_cco2_bio_pe2se) *
-        GtC_2_MtCO2,
-      "Carbon Sequestration|CCU|Pe2Se|Fossil (Mt CO2/yr)")
-)
-  # cumulative CDR emissions
-  tmp <- mbind(tmp, 
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"]), "Emi|CO2|CDR|Land-Use Change|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|CDR|BECCS (Mt CO2/yr)"]),           "Emi|CO2|CDR|BECCS|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|CDR|EW (Mt CO2/yr)"]),              "Emi|CO2|CDR|EW|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|CDR|DACCS (Mt CO2/yr)"]),           "Emi|CO2|CDR|DACCS|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp[,,"Carbon Sequestration|CCS (Mt CO2/yr)"]),    "Carbon Sequestration|CCS|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|CDR (Mt CO2/yr)"]),                 "Emi|CO2|CDR|Cumulated (Mt CO2/yr)")
-  )
-  
-  
-  
-  ## create the normal aliases for the more detailed names that specify that couple production is included
-  tmp <- mbind(tmp,
-               setNames(tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"], "Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"),
-    ### please note: at the end of this file, regional transport emissions are reduced by bunker emission values
-    setNames(tmp[,,"Emi|CO2|Transport|w/ couple prod (Mt CO2/yr)"],                         "Emi|CO2|Transport (Mt CO2/yr)"),
-    setNames(tmp[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],                         "Emi|CO2|Transport|Direct (Mt CO2/yr)"),
-    setNames(tmp[,,"Emi|CO2|Other Sector|Direct and Indirect|w/ couple prod (Mt CO2/yr)"],  "Emi|CO2|Other Sector|Direct and Indirect (Mt CO2/yr)"),
-    setNames(tmp[,,"Emi|CO2|Fossil Fuels and Industry|Demand|After IndustryCCS (Mt CO2/yr)"],  "Emi|CO2|Fossil Fuels and Industry|Demand (Mt CO2/yr)")
-    )    
-  
-
-  
-  tmp <- mbind(tmp,
-               setNames(tmp[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"] +
-                    tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"] -
-                    tmp[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Supply|Non-Elec|Gross (Mt CO2/yr)")
-  )
-  
-  tmp <- mbind(
-    tmp,
-    setNames(
-        tmp[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"] 
-      - tmp[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"],
-      "Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)")
-    )
-  
-  
-  tmp <- mbind(tmp,
-               setNames(-1 * tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"], 
-                        "Emi|CO2|Carbon Capture and Storage|Biomass|Neg (Mt CO2/yr)") )
-  tmp <- mbind(tmp,
-               setNames(tmp[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"] +
-                          tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Gross (Mt CO2/yr)"))
-  
-  tmp <- mbind(tmp,
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)"]), "Emi|CO2|Energy|Supply|Non-Elec|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Supply|Electricity|Gross|Cumulated (Mt CO2/yr)")
-  )
-  
-  # total energy CO2 emissions (directly from REMIND), this includes industry CCS and CCU!
-  vm_emiTeMkt <- readGDX(gdx, c("vm_emiTeMkt","vm_emiTe"), field = "l", 
-                         restore_zeros = F, format = "first_found")
-  
-  tmp <- mbind(tmp,
-                setNames(dimSums(vm_emiTeMkt[,,"co2"]*GtC_2_MtCO2,dim=3),
-                "Emi|CO2|Energy (Mt CO2/yr)"))
-  
-  
-  tmp <- mbind(tmp,
-               setNames(tmp[,,"Emi|CO2|Energy (Mt CO2/yr)"]+tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Gross (Mt CO2/yr)"))
-  
-  
-  
-  
-  
-  
-  ### If Buildings Industry Structure ############################################################################
-  if (is.null(ppfen_stat)) {
-    
-    if (indu_mod %in% c('fixed_shares', 'subsectors')) {
-      tmp.emi.ind.dir <- setNames(
-        dimSums(x=o37_emiInd[,,"co2"], dim = 3, na.rm = TRUE)
-        * GtC_2_MtCO2,
-        "Emi|CO2|Industry|Direct|FromGamsCalculation (Mt CO2/yr)")
-    } else {
-      tmp.emi.ind.dir <- setNames(
-        dimSums(na.rm=TRUE,x=( p_ef_dem[,,FE_Stat_fety]
-                  * (1 - p_bioshare[,,FE_Stat_fety])
-                  * p_share_fety_i[,,FE_Stat_fety]
-        )
-        * dimSums(na.rm=TRUE,x=mselect(vm_prodFe, all_enty1 = FE_Stat_fety), dim = c(3.1, 3.3)),
-        dim = 3)
-        - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Energy (Mt CO2/yr)"],
-        "Emi|CO2|Industry|Direct|BeforeTradBiomassCorr (Mt CO2/yr)")
-    }
-    
-    # FIXME: This will break the reporting if an unlisted industry module will 
-    # is used. See issue #2399
-    tmp <- mbind(tmp,
-      setNames(
-        ( dimSums(na.rm=TRUE,
-            ( p_ef_dem[,,FE_Stat_fety]
-            * (1 - p_bioshare[,,FE_Stat_fety])
-            * p_share_fety_i[,,FE_Stat_fety]
-            )
-          * dimSums(na.rm=TRUE,mselect(vm_prodFe, all_enty1 = FE_Stat_fety), 
-                    dim = c(3.1, 3.3)), 
-          dim = 3)
-        - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Energy (Mt CO2/yr)"]
-        ), 
-        "Emi|CO2|Industry|Direct|BeforeTradBiomassCorr (Mt CO2/yr)")
-    )
-    
-    tmp <- mbind(
-      tmp, 
-      setNames(collapseNames(p_share_feels_b * p_share_seel_s  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"]) ,
-               "Emi|CO2|Buildings|Electricity (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_feh2s_b * p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Hydrogen (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fehos_b * p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Liquids (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fegas_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Gases (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fesos_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Solids|BeforeTradBiomassCorr (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fehes_b * tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Heat (Mt CO2/yr)"),
-      
-      setNames(( collapseNames(p_share_feels_b * p_share_seel_s  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"])
-               + collapseNames(p_share_feh2s_b * p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"])
-               + collapseNames(p_share_fehos_b * p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-               + collapseNames(p_share_fegas_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-               + collapseNames(p_share_fesos_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-               + collapseNames(p_share_fehes_b * tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"])
-               ),        "Emi|CO2|Buildings|Direct and Indirect|BeforeTradBiomassCorr (Mt CO2/yr)"),
-
-      setNames(dimSums(na.rm=TRUE, ( p_ef_dem[,,FE_Stat_fety]
-                        * (1 - p_bioshare[,,FE_Stat_fety])
-                        * p_share_fety_b[,,FE_Stat_fety]
-                        )
-                      * dimSums(na.rm=TRUE,x=mselect(vm_prodFe, all_enty1 = FE_Stat_fety), dim = c(3.1, 3.3)),
-                      dim = 3) ,
-               "Emi|CO2|Buildings|Direct|BeforeTradBiomassCorr (Mt CO2/yr)"),
-      
-      setNames(collapseNames(p_share_feels_b * p_share_seel_s  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Electricity|Gross (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_feh2s_b * p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|Gross|w/ couple prod (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Hydrogen|Gross (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fehos_b * p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Liquids|Gross (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fegas_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Gases|Gross (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fesos_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Solids|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"),
-      setNames(collapseNames(p_share_fehes_b * tmp[,,"Emi|CO2|Energy|Supply|Heat|Gross|w/ couple prod (Mt CO2/yr)"]),
-               "Emi|CO2|Buildings|Heat|Gross (Mt CO2/yr)"),
-      
-      setNames(( collapseNames(p_share_feels_b * p_share_seel_s  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"])
-                 + collapseNames(p_share_feh2s_b * p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|Gross|w/ couple prod (Mt CO2/yr)"])
-                 + collapseNames(p_share_fehos_b * p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fegas_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fesos_b * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fehes_b * tmp[,,"Emi|CO2|Energy|Supply|Heat|Gross|w/ couple prod (Mt CO2/yr)"])
-      ),        "Emi|CO2|Buildings|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"),
-      
-      # Indirect gets calculated as difference further down in tmp4
-      setNames(( collapseNames(p_share_feels_i * p_share_seel_s  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|w/ couple prod (Mt CO2/yr)"])
-                 + collapseNames(p_share_feh2s_i * p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|w/ couple prod (Mt CO2/yr)"])
-                 + collapseNames(p_share_fehos_i * p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fegas_i * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fesos_i * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fehes_i * tmp[,,"Emi|CO2|Energy|Supply|Heat|w/ couple prod (Mt CO2/yr)"])
-                 - tmp[,,"Emi|CO2|Carbon Capture and Storage|IndustryCCS|Energy (Mt CO2/yr)"]   ## all industry CCS happens in industry
-      ),       "Emi|CO2|Industry|Direct and Indirect|BeforeTradBiomassCorr (Mt CO2/yr)"),
-      
-      setNames(( collapseNames(p_share_feels_i * p_share_seel_s  * tmp[,,"Emi|CO2|Energy|Supply|Electricity|Gross|w/ couple prod (Mt CO2/yr)"])
-                 + collapseNames(p_share_feh2s_i * p_share_seh2_s  * tmp[,,"Emi|CO2|Energy|Supply|Hydrogen|Gross|w/ couple prod (Mt CO2/yr)"])
-                 + collapseNames(p_share_fehos_i * p_share_seliq_s * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Liquids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fegas_i * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Gases|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fesos_i * tmp[,,"Emi|CO2|Energy|SupplyandDemand|Solids|Gross|w/ couple prod|Before IndustryCCS (Mt CO2/yr)"])
-                 + collapseNames(p_share_fehes_i * tmp[,,"Emi|CO2|Energy|Supply|Heat|Gross|w/ couple prod (Mt CO2/yr)"])
-      ),       "Emi|CO2|Industry|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"),
-      
-
-    tmp.emi.ind.dir)
-  }
-  
-  
-  
-
-  
-  
-  
-    ### calculate indirect transport emissions
-    tmp <- mbind(tmp,setNames( tmp[,,"Emi|CO2|Transport (Mt CO2/yr)"]
-                               - tmp[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"]
-                               ,"Emi|CO2|Transport|Indirect (Mt CO2/yr)"))  # For Transport, "direct" was called "demand" before  
-  
-    ### cumulated
-    ### please note: at the end of this file, regional values for "Emi|CO2|Cumulated", "Emi|CO2|Fossil Fuels and Industry|Cumulated" and "Emi|CO2|Gross Fossil Fuels and Industry|Cumulated" are adjusted (substracting bunkers)
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Carbon Capture and Storage (Mt CO2/yr)"]),"Emi|CO2|Carbon Capture and Storage|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Carbon Capture and Storage|Fossil|Pe2Se (Mt CO2/yr)"]),"Emi|CO2|Carbon Capture and Storage|Fossil|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"]),"Emi|CO2|Carbon Capture and Storage|Biomass|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2 (Mt CO2/yr)"]),                           "Emi|CO2|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"]),    "Emi|CO2|Electricity Production|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"]), "Emi|CO2|Fossil Fuels and Industry|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"]), "Emi|CO2|Gross Fossil Fuels and Industry|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Land-Use Change (Mt CO2/yr)"]),           "Emi|CO2|Land-Use Change|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Other Sector|Direct and Indirect (Mt CO2/yr)"]),  "Emi|CO2|Other Sector|Cumulated (Mt CO2/yr)"))
-    tmp <- mbind(tmp,setNames(cumulatedValue(tmp[,,"Emi|CO2|Transport (Mt CO2/yr)"]),                 "Emi|CO2|Transport|w/ Bunkers|Cumulated (Mt CO2/yr)"))
-   
-
-     ### F-Gases ###############################################################################
-    tmp1 <- NULL
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasC2F6"],        "Emi|C2F6 (kt C2F6/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasC6F14"],       "Emi|C6F14 (kt C6F14/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasCF4"],         "Emi|CF4 (kt CF4/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasTotal"],       "Emi|F-Gases (Mt CO2-equiv/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC"],         "Emi|HFC (kt HFC134a-equiv/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC125"],      "Emi|HFC|HFC125 (kt HFC125/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC134a"],     "Emi|HFC|HFC134a (kt HFC134a/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC143a"],     "Emi|HFC|HFC143a (kt HFC143a/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC227ea"],    "Emi|HFC|HFC227ea (kt HFC227ea/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC23"],       "Emi|HFC|HFC23 (kt HFC23/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC245fa"],    "Emi|HFC|HFC245fa (kt HFC245fa/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC32"],       "Emi|HFC|HFC32 (kt HFC32/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasHFC43-10"],    "Emi|HFC|HFC43-10 (kt HFC43-10/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasPFC"],         "Emi|PFC (kt CF4-equiv/yr)"))
-    tmp1 <- mbind(tmp1,setNames( p_emi_fgas[,,"emiFgasSF6"],         "Emi|SF6 (kt SF6/yr)"))
-    
-    
-    ### CH4 ###############################################################################
-    GWP <- c("CO2"=1,"CH4"=28,"N2O"=265)
-    
-    tmp2 <- NULL
-    tmp2 <- mbind(tmp2,setNames( vm_sumeminegregi[,,"ch4"] + vm_emiengregi[,,"ch4"],      "Emi|CH4 (Mt CH4/yr)"))
-    tmp2 <- mbind(tmp2,setNames( cumulatedValue(tmp2[,,"Emi|CH4 (Mt CH4/yr)"]),           "Emi|CH4|Cumulated (Mt CH4/yr)"))
-    if(!is.null(vm_emiAllMkt)) {
-      tmp2 <- mbind(tmp2,
-        setNames((dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="ETS")  ,dim=3)), "Emi|CH4|ETS (Mt CH4/yr)"),
-        setNames((dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="ES")   ,dim=3)), "Emi|CH4|ESD (Mt CH4/yr)"), 
-        setNames((dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="other"),dim=3)), "Emi|CH4|other - Non ETS and ES (Mt CH4/yr)"), 
-        setNames((dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="ETS")  ,dim=3))*GWP["CH4"], "Emi|CH4|ETS|MtCO2eq (Mt CO2-equiv/yr)"),
-        setNames((dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="ES")   ,dim=3))*GWP["CH4"], "Emi|CH4|ESD|MtCO2eq (Mt CO2-equiv/yr)"), 
-        setNames((dimSums(mselect(vm_emiAllMkt,all_enty="ch4",all_emiMkt="other"),dim=3))*GWP["CH4"], "Emi|CH4|other - Non ETS and ES|MtCO2eq (Mt CO2-equiv/yr)"))
-    }
-    tmp2 <- mbind(tmp2,setNames( vm_emiengregi[,,"ch4"],                                  "Emi|CH4|Energy Demand|ResCom (Mt CH4/yr)"))
-    tmp2 <- mbind(
-        tmp2,
-        setNames(vm_eminegregi[,,"ch4coal"] +
-                 vm_eminegregi[,,"ch4gas"] +
-                 vm_eminegregi[,,"ch4oil"],
-                 "Emi|CH4|Energy Supply (Mt CH4/yr)"),
-        setNames(vm_eminegregi[,,"ch4coal"], "Emi|CH4|Energy Supply|Coal (Mt CH4/yr)"),
-        setNames(vm_eminegregi[,,"ch4gas"], "Emi|CH4|Energy Supply|Gas (Mt CH4/yr)"),
-        setNames(vm_eminegregi[,,"ch4oil"], "Emi|CH4|Energy Supply|Oil (Mt CH4/yr)"))
-    tmp2 <- mbind(tmp2,setNames( vm_eminegregi[,,"ch4coal"] + vm_eminegregi[,,"ch4gas"]
-                               + vm_eminegregi[,,"ch4oil"]  + vm_emiengregi[,,"ch4"],    "Emi|CH4|Energy Supply and Demand (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( vm_eminegregi[,,"ch4coal"] + vm_eminegregi[,,"ch4gas"]
-                               + vm_eminegregi[,,"ch4oil"],                              "Emi|CH4|Fossil Fuels and Industry (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( dimSums(na.rm=TRUE,vm_eminegregi[,,emismacmagpiech4],dim=3), "Emi|CH4|Land Use (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( vm_eminegregi[,,"ch4rice"],                       "Emi|CH4|Land Use|+|Rice (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( vm_eminegregi[,,"ch4anmlwst"],                    "Emi|CH4|Land Use|+|Animal waste management (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( vm_eminegregi[,,"ch4animals"],                    "Emi|CH4|Land Use|+|Enteric fermentation (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( dimSums(na.rm=TRUE,vm_macBase[,,emiMacExoCH4],dim=3),                "Emi|CH4|Other (Mt CH4/yr)"))
-  tmp2 <- mbind(tmp2,setNames( (vm_eminegregi[,,"ch4wstl"] + vm_eminegregi[,,"ch4wsts"]),"Emi|CH4|Waste (Mt CH4/yr)"))
-
-  ### N2O ################################################################################
-  tmp3 <- NULL
-  tmp3 <- mbind(tmp3,setNames((vm_sumeminegregi[,,"n2o"] + vm_emiengregi[,,"n2o"]) * MtN2_to_ktN2O,    "Emi|N2O (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames(cumulatedValue(tmp3[,,"Emi|N2O (kt N2O/yr)"]),                           "Emi|N2O|Cumulated (kt N2O/yr)"))
-  if(!is.null(vm_emiAllMkt)) {
-    tmp3 <- mbind(tmp3,
-                  setNames((dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="ETS")  ,dim=3)) * MtN2_to_ktN2O, "Emi|N2O|ETS (kt N2O/yr)"),
-                  setNames((dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="ES")   ,dim=3)) * MtN2_to_ktN2O, "Emi|N2O|ESD (kt N2O/yr)"), 
-                  setNames((dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="other"),dim=3)) * MtN2_to_ktN2O, "Emi|N2O|other - Non ETS and ES (kt N2O/yr)"), 
-                  setNames((dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="ETS")  ,dim=3)) * MtN2_to_ktN2O * GWP["N2O"]/1000, "Emi|N2O|ETS|MtCO2eq (Mt CO2-equiv/yr)"),
-                  setNames((dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="ES")   ,dim=3)) * MtN2_to_ktN2O * GWP["N2O"]/1000, "Emi|N2O|ESD|MtCO2eq (Mt CO2-equiv/yr)"), 
-                  setNames((dimSums(mselect(vm_emiAllMkt,all_enty="n2o",all_emiMkt="other"),dim=3)) * MtN2_to_ktN2O * GWP["N2O"]/1000, "Emi|N2O|other - Non ETS and ES|MtCO2eq (Mt CO2-equiv/yr)")) 
-  }
-  tmp3 <- mbind(tmp3,setNames((vm_emiengregi[,,"n2o"] + vm_eminegregi[,,"n2otrans"]) * MtN2_to_ktN2O,  "Emi|N2O|Energy Supply and Demand (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames((vm_emiengregi[,,"n2o"]) * MtN2_to_ktN2O,                                "Emi|N2O|Energy Supply (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames((vm_eminegregi[,,"n2otrans"]) * MtN2_to_ktN2O,                           "Emi|N2O|Energy Demand|Transport (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames( dimSums(na.rm=TRUE,vm_eminegregi[,,emismacmagpien2o],dim=3) * MtN2_to_ktN2O,       "Emi|N2O|Land Use (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames( vm_eminegregi[,,"n2oanwstm"]                       * MtN2_to_ktN2O,       "Emi|N2O|Land Use|+|Animal Waste Management (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames( dimSums(na.rm=TRUE,vm_eminegregi[,,c("n2ofertin","n2oanwstc","n2ofertcr","n2ofertsom","n2oanwstp")],dim=3) * MtN2_to_ktN2O,       "Emi|N2O|Land Use|+|Agricultural Soils (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames((vm_eminegregi[,,"n2owaste"]) * MtN2_to_ktN2O,                           "Emi|N2O|Waste (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames((vm_eminegregi[,,"n2oadac"] + vm_eminegregi[,,"n2onitac"] ) * MtN2_to_ktN2O, "Emi|N2O|Industry (kt N2O/yr)"))
-  tmp3 <- mbind(tmp3,setNames( dimSums(vm_macBase[,,emiMacExoN2O],dim=3) * MtN2_to_ktN2O,              "Emi|N2O|Other (kt N2O/yr)"))
-
-  ### Other ###############################################################################
-  tmp4 <- NULL
-  ### If Buildings Industry Structure
-  if (is.null(ppfen_stat)) {
-    tmp4 <- mbind(tmp4,setNames( tmp[,,"Emi|CO2|Buildings|Direct and Indirect|BeforeTradBiomassCorr (Mt CO2/yr)"]
-                             - tmp[,,"Emi|CO2|Buildings|Direct|BeforeTradBiomassCorr (Mt CO2/yr)"]
-                             ,"Emi|CO2|Buildings|Indirect (Mt CO2/yr)"))
-    tmp4 <- mbind(tmp4,setNames( tmp[,,"Emi|CO2|Industry|Direct and Indirect|BeforeTradBiomassCorr (Mt CO2/yr)"]
-                             - tmp[,,"Emi|CO2|Industry|Direct|BeforeTradBiomassCorr (Mt CO2/yr)"]
-                             ,"Emi|CO2|Industry|Indirect (Mt CO2/yr)"))
-    tmp4 <- mbind(tmp4,setNames( tmp4[,,"Emi|CO2|Industry|Indirect (Mt CO2/yr)"]
-                              + tmp4[,,"Emi|CO2|Buildings|Indirect (Mt CO2/yr)"]
-                              + tmp[,,"Emi|CO2|Transport|Indirect (Mt CO2/yr)"]
-                              ,"Emi|CO2|Fossil Fuels and Industry|Indirect (Mt CO2/yr)"))  
-
-
-    
-  }
-  
-  tmp4 <- mbind(tmp4,setNames(v_co2eq * GtC_2_MtCO2,                                      "Emi|GHG|International Trading System (Mt CO2-equiv/yr)"))
-  if(cm_emiscen==1|cm_emiscen==9){
-    tmp4 <- mbind(tmp4,setNames(tmp4[,,"Emi|GHG|International Trading System (Mt CO2-equiv/yr)"],"Emi|Allowances (Mt CO2-equiv/yr)"))
-  }else{
-    tmp4 <- mbind(tmp4,setNames(vm_perm * GtC_2_MtCO2,                                    "Emi|Allowances (Mt CO2-equiv/yr)"))
-  }
-  ### please note: at the end of this file, regional GHGtot emissions are reduced by bunker emission values emissions are reduced by bunker emission values
-  tmp4 <- mbind(tmp4,setNames( tmp[,,"Emi|CO2 (Mt CO2/yr)"]
-                               + s_GWP_CH4 * tmp2[,,"Emi|CH4 (Mt CH4/yr)"]
-                               + s_GWP_N2O * tmp3[,,"Emi|N2O (kt N2O/yr)"] / 1000,             "Emi|GHGtot (Mt CO2-equiv/yr)"))
-  tmp4 <- mbind(tmp4,setNames(cumulatedValue(tmp4[,,"Emi|GHGtot (Mt CO2-equiv/yr)"]),            "Emi|GHGtot|Cumulated (Mt CO2-equiv/yr)"))
-  
-  ### please note: at the end of this file, regional Kyoto emissions are reduced by bunker emission values emissions are reduced by bunker emission values
-  tmp4 <- mbind(tmp4,setNames( tmp[,,"Emi|CO2 (Mt CO2/yr)"]
-                               + s_GWP_CH4 * tmp2[,,"Emi|CH4 (Mt CH4/yr)"]
-                               + s_GWP_N2O * tmp3[,,"Emi|N2O (kt N2O/yr)"] / 1000
-                               + tmp1[,,"Emi|F-Gases (Mt CO2-equiv/yr)"],                            "Emi|Kyoto Gases (Mt CO2-equiv/yr)"))
-                                        # this variable contains the value without bunkers even for the GLO total. For the regions, it is identical to the one above (after adjustment at the end of this file)
-  if(tran_mod == "complex"){
-    
-    tmp4 <- mbind(tmp4,
-                  setNames(tmp[,,"Emissions|CO2|Bunkers (Mt CO2/yr)"],"Emi|CO2|Transport|Bunkers (Mt CO2/yr)"),
-                  setNames(tmp4[,,"Emi|Kyoto Gases (Mt CO2-equiv/yr)"]-tmp[,,"Emissions|CO2|Bunkers (Mt CO2/yr)"],"Emi|Kyoto Gases|w/o Bunkers (Mt CO2-equiv/yr)"))
-    
-  }else if(tran_mod == "edge_esm"){
-    ## Int. Freight and Aviation (Bunker) Emissions
-    tmp4 <- mbind(tmp4, setNames(p35_share_feliq_lo * tmp[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"], "Emi|CO2|Transport|Bunkers (Mt CO2/yr)"))
-    
-    ## Kyoto w/o bunkers
-    tmp4 <- mbind(tmp4, setNames(tmp4[,,"Emi|Kyoto Gases (Mt CO2-equiv/yr)"]-tmp4[,,"Emi|CO2|Transport|Bunkers (Mt CO2/yr)"], "Emi|Kyoto Gases|w/o Bunkers (Mt CO2-equiv/yr)"))
-  }
-
-  ## Cumulated Bunker Emissions
-  tmp4 <- mbind(tmp4,setNames(cumulatedValue(tmp4[,,"Emi|CO2|Transport|Bunkers (Mt CO2/yr)"]), "Emi|CO2|Transport|Bunkers|Cumulated (Mt CO2/yr)"))
-  ## Kyoto Gases w/o Bunkers and Landuse
-  tmp4 <- mbind(tmp4,setNames(tmp4[,,"Emi|Kyoto Gases|w/o Bunkers (Mt CO2-equiv/yr)"]-tmp[,,"Emi|CO2|Land-Use Change (Mt CO2/yr)"],
-                              "Emi|Kyoto Gases excl Land-Use Change|w/o Bunkers (Mt CO2-equiv/yr)" ))
-        
-  out <- mbind(tmp,tmp1,tmp2,tmp3,tmp4)
-
-  # ---- report industry CCS emissions ----############################################################################
-  if (!is.null(o37_emiInd) & length(o37_emiInd) != 0) {
-    var <- list(
-      list(name = "Emi|CO2|FFaI|Industry|Cement|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "cement",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Cement|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "cement",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Cement|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "cement",
-                       all_enty1 = "co2")),
-      
-      list(name = "Emi|CO2|FFaI|Industry|Chemicals|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "chemicals",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Chemicals|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "chemicals",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Chemicals|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "chemicals",
-                       all_enty1 = "co2")),
-
-      list(name = "Emi|CO2|FFaI|Industry|Steel|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "steel",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Steel|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "steel",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Steel|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "steel",
-                       all_enty1 = "co2")),
-
-      list(name = "Emi|CO2|FFaI|Industry|other|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "otherInd",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|other|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "otherInd",
-                       all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|other|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "otherInd",
-                       all_enty1 = "co2")),
-
-      list(name = "Emi|CO2|FFaI|Industry|Cement (Mt CO2/yr)",
-           code = list(secInd37 = "cement", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Chemicals (Mt CO2/yr)",
-           code = list(secInd37 = "chemicals", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Steel (Mt CO2/yr)",
-           code = list(secInd37 = "steel", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|other (Mt CO2/yr)",
-           code = list(secInd37 = "otherInd", all_enty1 = "co2")),
-      
-      list(name = "Emi|CO2|FFaI|Industry|Cement|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "cement", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Chemicals|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "chemicals", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Steel|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "steel", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|other|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "otherInd", all_enty1 = "co2")),
-      
-      list(name = "Emi|CO2|FFaI|Industry|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil", all_enty1 = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas", all_enty1 = "co2")),
-      
-      # captured CO2
-      list(name = "Emi|CCO2|FFaI|Industry|Cement|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "cement",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Cement|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "cement",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Cement|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "cement",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Cement|Fuel|Biomass (Mt CO2/yr)",
-           code = list(all_enty = list("pebiolc", "pebioil"),
-                       secInd37 = "cement", all_enty1 = "cco2")),
-
-      list(name = "Emi|CCO2|FFaI|Industry|Chemicals|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "chemicals",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Chemicals|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "chemicals",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Chemicals|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "chemicals",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Chemicals|Fuel|Biomass (Mt CO2/yr)",
-           code = list(all_enty = list("pebiolc", "pebioil"),
-                       secInd37 = "chemicals", all_enty1 = "cco2")),
-
-      list(name = "Emi|CCO2|FFaI|Industry|Steel|Fuel|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", secInd37 = "steel",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Steel|Fuel|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil",  secInd37 = "steel",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Steel|Fuel|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas",  secInd37 = "steel",
-                       all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Steel|Fuel|Biomass (Mt CO2/yr)",
-           code = list(all_enty = list("pebiolc", "pebioil"),
-                       secInd37 = "steel", all_enty1 = "cco2")),
-
-      list(name = "Emi|CCO2|FFaI|Industry|Cement (Mt CO2/yr)",
-           code = list(secInd37 = "cement", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Chemicals (Mt CO2/yr)",
-           code = list(secInd37 = "chemicals", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Steel (Mt CO2/yr)",
-           code = list(secInd37 = "steel", all_enty1 = "cco2")),
-      
-      list(name = "Emi|CCO2|FFaI|Industry|Cement|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "cement", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Chemicals|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "chemicals", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Steel|Fuel (Mt CO2/yr)",
-           code = list(secInd37 = "steel", all_enty1 = "cco2")),
-      
-      list(name = "Emi|CCO2|FFaI|Industry|Coal (Mt CO2/yr)",
-           code = list(all_enty = "pecoal", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Oil (Mt CO2/yr)",
-           code = list(all_enty = "peoil", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Gas (Mt CO2/yr)",
-           code = list(all_enty = "pegas", all_enty1 = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Biomass (Mt CO2/yr)",
-           code = list(all_enty = list("pebiolc", "pebioil"),
-                       all_enty1 = "cco2"))
-    )
-
-    # compute industry emissions from fuel combustion
-    o37_emiInd[is.na(o37_emiInd)] <- 0
-    fuel.emissions <- mbind(
-      lapply(var,
-             function(x) {
-               setNames(dimSums(na.rm=TRUE,x=mselect(o37_emiInd, x$code)) * GtC_2_MtCO2,
-                        x$name)
-             }
-      )
-    )
-    
-    
-    # Adjust Emi|C?CO2|FFaI|Industry variables by the share of sequestered 
-    # carbon (out of captured carbon).
-
-    # for all CO2 variables that have a corresponding CCO2 variable
-    names_CO2 <- getNames(fuel.emissions)[rev(duplicated(
-      sub('\\|CCO2', '|CO2', rev(getNames(fuel.emissions)))))]
-    for (x_CO2 in names_CO2) {
-      
-      x_CCO2 <- sub('\\|CO2', '|CCO2', x_CO2)
-      
-      # CO2' = CO2 + CCO2 * (1 - storage_share)
-      fuel.emissions[,,x_CO2] <- ( 
-          fuel.emissions[,,x_CO2] 
-        + fuel.emissions[,,x_CCO2] * (1 - p_share_carbonCapture_stor)
-      )
-    }
-    
-    # for all CCO2 variables
-    names_CCO2 <- grep('\\|CCO2', getNames(fuel.emissions), value = TRUE)
-    # CCO2' = CCO2 * storage_share
-    fuel.emissions[,,names_CCO2] <- (
-      fuel.emissions[,,names_CCO2] * p_share_carbonCapture_stor
-    )
-    
-    
-    # compute industry process emissions
-    var <- list(
-      list(name = "Emi|CO2|FFaI|Industry|Cement (Mt CO2/yr)",
-           code = list(all_enty = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Cement|Process (Mt CO2/yr)",
-           code = list(all_enty = "co2")),
-      list(name = "Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)",
-           code = list(all_enty = "co2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Cement (Mt CO2/yr)",
-           code = list(all_enty = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Cement|Process (Mt CO2/yr)",
-           code = list(all_enty = "cco2")),
-      list(name = "Emi|CCO2|FFaI|Industry|Process (Mt CO2/yr)",
-           code = list(all_enty = "cco2"))
-    )
-    
-    ife <- which(
-      grepl("Emi\\|C?CO2\\|FFaI\\|Industry\\|Cement \\(Mt CO2/yr\\)",
-            magclass::getNames(fuel.emissions)))
-    infe <- which(
-      !grepl("Emi\\|C?CO2\\|FFaI\\|Industry\\|Cement \\(Mt CO2/yr\\)",
-             magclass::getNames(fuel.emissions)))
-    
-    if (length(o37_cementProcessEmissions)) {
-      process.emissions <- mbind(
-        lapply(var,
-               function(x) {
-                 setNames(
-                   ( dimSums(na.rm=TRUE,x=mselect(o37_cementProcessEmissions, x$code))
-                   * GtC_2_MtCO2
-                   ),
-                   x$name)
-               }
-        )
-      )
-      
-      
-      # Adjust Emi|C?CO2|FFaI|Industry variables by the share of sequestered 
-      # carbon (out of captured carbon).
-      
-      # for all CO2 variables that have a corresponding CCO2 variable
-      names_CO2 <- getNames(process.emissions)[rev(duplicated(
-        sub('\\|CCO2', '|CO2', rev(getNames(process.emissions)))))]
-      for (x_CO2 in names_CO2) {
-        
-        x_CCO2 <- sub('\\|CO2', '|CCO2', x_CO2)
-        
-        # CO2' = CO2 + CCO2 * (1 - storage_share)
-        process.emissions[,,x_CO2] <- ( 
-            process.emissions[,,x_CO2] 
-          + process.emissions[,,x_CCO2] * (1 - p_share_carbonCapture_stor)
-        )
-      }
-      
-      # for all CCO2 variables
-      names_CCO2 <- grep('\\|CCO2', getNames(process.emissions), value = TRUE)
-      # CCO2' = CCO2 * storage_share
-      process.emissions[,,names_CCO2] <- (
-        process.emissions[,,names_CCO2] * p_share_carbonCapture_stor
-      )
-      
-      
-      ipe <- which(
-        grepl("Emi\\|C?CO2\\|FFaI\\|Industry\\|Cement \\(Mt CO2/yr\\)",
-              magclass::getNames(process.emissions)))
-      inpe <- which(
-        !grepl("Emi\\|C?CO2\\|FFaI\\|Industry\\|Cement \\(Mt CO2/yr\\)",
-               magclass::getNames(process.emissions)))
-      
-      out <- mbind(
-        out,
-        fuel.emissions[,,ife] + process.emissions[,,ipe],
-        fuel.emissions[,,infe],
-        process.emissions[,,inpe]
-      )
-    } else {
-      out <- mbind(
-        out,
-        fuel.emissions[,,ife],
-        fuel.emissions[,,infe]
-      )
-    }
-  }
-  
-  # FS: new (temporary) sectoral emissions variables (after merge and synfuel accounting on supply-side)
-  
-  emi2te <- readGDX(gdx, "emi2te") # conversions to emissions
-  
-  ### for emissions of energy system technologies
-  # emission factors of technologies
-  pm_emifac <- readGDX(gdx, "pm_emifac", restore_zeros = F)[,t,]
-  
-  # final energy demand (se2fe emissions factors applied to)
-  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,t,]
-  
-  se2fe <- readGDX(gdx, "se2fe") # se2fe conversions
-  emiInd37_fuel <- readGDX(gdx, "emiInd37_fuel") # energy-related industry CCS categories (excl. co2 cement CCS)
-  
-   # co2 emissions factor of fe carriers
-  pm_emifac.co2.fe <- dimSums(mselect(pm_emifac, all_te=se2fe$all_te, all_enty2="co2"), dim=c(3.3,3.4)) 
-  
-  EmiFeCarrier <- pm_emifac.co2.fe * vm_demFeSector[,,getNames(pm_emifac.co2.fe)]
-  
-  # split into sectors
-  out <- mbind(out,
-               
-               # buidings emissions 
-               setNames(  dimSums(EmiFeCarrier[,,"build"], dim=3)*GtC_2_MtCO2,
-                          "Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"),
-               # industry emissions: fe carrier emissions - industry CC
-               setNames(  (dimSums(EmiFeCarrier[,,"indst"], dim=3) - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3))*GtC_2_MtCO2,
-                          "Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"),
-               # transprt emissions: fe carrier emissions
-               setNames(  dimSums(EmiFeCarrier[,,"trans"], dim=3)*GtC_2_MtCO2,
-                          "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"),
-               # demand-side energy CO2 emissions
-               # fe emissions
-               setNames((dimSums(EmiFeCarrier,dim=3, na.rm = T) 
-                         # substract industry CC
-                         - dimSums(vm_emiIndCCS[,,emiInd37_fuel], dim=3)) * GtC_2_MtCO2,
-                        "Emi|CO2|Energy|Demand (Mt CO2/yr)")
-               
-  )
-  
-  # gross energy industry emissions
-  out <- mbind(out,
-               setNames(out[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"] + 
-                        out[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
-                                   "Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"))
-  
-    
-  # add global values
-  out <- mbind(out,dimSums(na.rm=TRUE,x=out,dim=1))
-  # add other region aggregations
-  if (!is.null(regionSubsetList))
-    out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
-  
-  
-  ### Bunker Correction Part
-  
-
-  # correction of variables containing bunker fuel emissions:
-  all_regs <- getRegions(out)
-  
-  # first copy variables to new names w/ bunkers:
-  out <- mbind(
-    out,
-    setNames(  out[,,"Emi|CO2 (Mt CO2/yr)"],    "Emi|CO2|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"],    "Emi|CO2|Fossil Fuels and Industry|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)"],    "Emi|CO2|Gross Fossil Fuels and Industry|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Fossil Fuels and Industry|Demand|Before IndustryCCS (Mt CO2/yr)"],"Emi|CO2|Fossil Fuels and Industry|Demand|Before IndustryCCS|w/ Bunkers (Mt CO2/yr)"), 
-    setNames(  out[,,"Emi|CO2|Fossil Fuels and Industry|Demand|After IndustryCCS (Mt CO2/yr)"],"Emi|CO2|Fossil Fuels and Industry|Demand|After IndustryCCS|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Energy (Mt CO2/yr)"],"Emi|CO2|Energy|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|GHG|Energy|incl fugitive (Mt CO2-equiv/yr)"],    "Emi|GHG|Energy|incl fugitive|w/ Bunkers (Mt CO2-equiv/yr)"),
-    setNames(  out[,,"Emi|CO2|Energy|Demand (Mt CO2/yr)"],"Emi|CO2|Energy|Demand|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|Kyoto Gases (Mt CO2-equiv/yr)"],    "Emi|Kyoto Gases|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|GHGtot (Mt CO2-equiv/yr)"],    "Emi|GHGtot|w/ Bunkers (Mt CO2-equiv/yr)"),
-    setNames(  out[,,"Emi|CO2|Transport (Mt CO2/yr)"],    "Emi|CO2|Transport|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"],    "Emi|CO2|Transport|Demand|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Transport|Direct (Mt CO2/yr)"],    "Emi|CO2|Transport|Direct|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Transport|w/o couple prod (Mt CO2/yr)"],    "Emi|CO2|Transport|w/o couple prod|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],    "Emi|CO2|Energy|Demand|Transport|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Cumulated (Mt CO2/yr)"],    "Emi|CO2|Cumulated|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Fossil Fuels and Industry|Cumulated (Mt CO2/yr)"],    "Emi|CO2|Fossil Fuels and Industry|Cumulated|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|CO2|Gross Fossil Fuels and Industry|Cumulated (Mt CO2/yr)"],    "Emi|CO2|Gross Fossil Fuels and Industry|Cumulated|w/ Bunkers (Mt CO2/yr)"),
-    setNames(  out[,,"Emi|GHGtot|Cumulated (Mt CO2-equiv/yr)"],    "Emi|GHGtot|Cumulated|w/ Bunkers (Mt CO2-equiv/yr)")
-  )
-  
-
-  ### Aggregate to global values
-  
-  # for all regions (excluding the world region "GLO")...
-  regs <- all_regs[all_regs!= "GLO"]
-    
-  # ...and all variables that include bunker fuels...
-  vars_with_bunkers <- c("Emi|CO2 (Mt CO2/yr)",
-                         "Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)",
-                         "Emi|CO2|Gross Fossil Fuels and Industry (Mt CO2/yr)",
-                         "Emi|CO2|Fossil Fuels and Industry|Demand|Before IndustryCCS (Mt CO2/yr)",
-                         "Emi|CO2|Fossil Fuels and Industry|Demand (Mt CO2/yr)",
-                         "Emi|CO2|Fossil Fuels and Industry|Demand|After IndustryCCS (Mt CO2/yr)",
-                         "Emi|CO2|Energy (Mt CO2/yr)",
-                         "Emi|GHG|Energy|incl fugitive (Mt CO2-equiv/yr)",
-                         "Emi|CO2|Energy|Demand (Mt CO2/yr)",
-                         "Emi|Kyoto Gases (Mt CO2-equiv/yr)",
-                         "Emi|GHGtot (Mt CO2-equiv/yr)",
-                         "Emi|CO2|Transport (Mt CO2/yr)",
-                         "Emi|CO2|Transport|Demand (Mt CO2/yr)",
-                         "Emi|CO2|Transport|Direct (Mt CO2/yr)",
-                         "Emi|CO2|Transport|w/o couple prod (Mt CO2/yr)",
-                         "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"
-                         )
-  for (var in vars_with_bunkers){
-    # ...re-calculate the regional values by substracting the emissions from bunkers.
-    out[regs,,var] <- 
-      out[regs,,var]- 
-      out[regs,,"Emi|CO2|Transport|Bunkers (Mt CO2/yr)"]
-  }
-  #same as above for cumulated values
-    cum_with_bunkers <- c("Emi|CO2|Cumulated (Mt CO2/yr)",
-                           "Emi|CO2|Fossil Fuels and Industry|Cumulated (Mt CO2/yr)",
-                           "Emi|CO2|Gross Fossil Fuels and Industry|Cumulated (Mt CO2/yr)",
-                           "Emi|GHGtot|Cumulated (Mt CO2-equiv/yr)"
-    )
-    for (var in cum_with_bunkers){
-      out[regs,,var] <- 
-        out[regs,,var] - 
-        out[regs,,"Emi|CO2|Transport|Bunkers|Cumulated (Mt CO2/yr)"]
-    } 
-# add cumulative values
-    out <- mbind(out,
-                 setNames(cumulatedValue(out[,,"Emi|CO2|FFaI|Industry|Process (Mt CO2/yr)"]), "Emi|CO2|FFaI|Industry|Process|Cumulated (Mt CO2/yr)"),
-                 setNames(cumulatedValue(out[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"]), "Emi|CO2|Transport|Demand|Cumulated (Mt CO2/yr)"),
-                 setNames(cumulatedValue(out[,,"Emi|CO2|Transport (Mt CO2/yr)"]), "Emi|CO2|Transport|Cumulated (Mt CO2/yr)")
-    )
-    
-    # ---- report specific industry emissions ----
-    if ('subsectors' == indu_mod) {
-      out <- mbind(
-        out,
-        
-        mbind(
-          lapply(
-            list(
-              # <variables to calculate> by dividing <numerator> by 
-              # <denominator>
-              c('Carbon Intensity|Production|Cement (Mt CO2/Mt)',
-                'Emi|CO2|FFaI|Industry|Cement (Mt CO2/yr)',
-                'Production|Industry|Cement (Mt/yr)'),
-              
-              c(paste0('Carbon Intensity|Production|Cement|Fossil|Energy|',
-                       'Demand|Industry (Mt CO2/Mt)'),
-                'Emi|CO2|FFaI|Industry|Cement|Fuel (Mt CO2/yr)',
-                'Production|Industry|Cement (Mt/yr)'),
-              
-              c(paste('Carbon Intensity|Production|Cement|Industrial Processes',
-                      '(Mt CO2/Mt)'),
-                'Emi|CO2|FFaI|Industry|Cement|Process (Mt CO2/yr)',
-                'Production|Industry|Cement (Mt/yr)'),
-              
-              c('Carbon Intensity|Production|Steel (Mt CO2/Mt)',
-                'Emi|CO2|FFaI|Industry|Steel (Mt CO2/yr)',
-                'Production|Industry|Steel (Mt/yr)'),
-              
-              c(paste0('Carbon Intensity|Production|Steel|Fossil|Energy|',
-                       'Demand|Industry (Mt CO2/Mt)'),
-                'Emi|CO2|FFaI|Industry|Steel|Fuel (Mt CO2/yr)',
-                'Production|Industry|Steel (Mt/yr)')),
-            
-            function(x) {
-              # denominator with same dimension names as out
-              tmp_denominator <- `getSets<-`(
-                output[,,x[[3]]][c('GLO', names(regionSubsetList)),, 
-                                 invert = TRUE],
-                value = getSets(out))
-              # add global and regional sums (can't be sure they exist in the 
-              # first place)
-              tmp_denominator <- mbind(
-                tmp_denominator,
-                dimSums(tmp_denominator, dim = 1),
-                calc_regionSubset_sums(tmp_denominator, regionSubsetList))
-              
-              setNames(out[,,x[[2]]] / tmp_denominator, x[[1]])
-            }
-          )
-        )
-      )
-    }
-    
-    return(out)
 }
+
+
+

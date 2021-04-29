@@ -19,7 +19,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass mselect getSets getSets<- getYears dimSums getNames<- mbind
+#' @importFrom magclass mselect getSets getSets<- getYears dimSums getNames<- mbind replace_non_finite
 #' @importFrom abind abind
 
 reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
