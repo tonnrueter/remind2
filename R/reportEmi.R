@@ -1047,10 +1047,15 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   # (for diagnostics/other reporting scripts) 
   
-
+  # required for aggregation of carbon price in reportPrices.R
   out <- mbind(out,
                setNames((vm_co2eq - vm_emiMacSector[,,"co2luc"] * (as.vector(cm_multigasscen)!=3)) * GtC_2_MtCO2,
                         "Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
+  
+  # required for NDC realizations of carbonprice module to run
+  out <- mbind(out,
+               setNames(out[,,"Emi|GHG (Mt CO2eq/yr)"] - out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
+                        "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)"))
   
   
   
@@ -1077,6 +1082,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
                          "Emi|GHG|++|Other (Mt CO2eq/yr)",
                          "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)",
+                         "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
                          
                          # CO2 Emissions
                          "Emi|CO2 (Mt CO2/yr)",
