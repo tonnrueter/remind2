@@ -16,7 +16,7 @@
 #'
 #' @importFrom rmndt approx_dt readMIF writeMIF
 #' @importFrom gdxdt readgdx
-#' @importFrom data.table fread fwrite rbindlist copy
+#' @importFrom data.table fread fwrite rbindlist copy CJ
 #' @export
 
 reportEDGETransport <- function(output_folder=".",
@@ -65,7 +65,7 @@ reportEDGETransport <- function(output_folder=".",
 
   ## ES and FE Demand
 
-  reportingESandFE <- function(datatable, mode, regionSubsetList){
+  reportingESandFE <- function(datatable, mode){
 
     datatable[, sector := ifelse(sector %in% c("trn_pass", "trn_aviation_intl"), "Pass", "Freight")]
 
@@ -124,7 +124,7 @@ reportEDGETransport <- function(output_folder=".",
                        "VKM" = "ES|Transport|VKM|")
 
       ## we only care for non-NA variables (NA is basically *all others*)
-      toadd = dt[!is.na(get(varcol)), .(model="REMIND", scenario=remind_scenario, region,
+      toadd = dt[!is.na(get(varcol)), .(model=cfg$model_name, scenario=remind_scenario, region,
                                         variable=paste0(prefix, get(varcol)),
                                         unit=remind_unit, period=year,
                                         value=get(valcol))]
@@ -288,20 +288,12 @@ reportEDGETransport <- function(output_folder=".",
     report_tech = rbind(report_tech, report_tech_w)
 
     ## in case the aggregation features EU sub-regions, include also the aggregated versions
-    if (!is.null(regionSubsetList)){
-      report_EU = report[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)]
-      report_NEU = report[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
-      report = rbind(report, report_EU, report_NEU)
-      report_tech_EU = report_tech[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)]
-      report_tech_NEU = report_tech[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
-      report_tech = rbind(report_tech, report_tech_EU, report_tech_NEU)
-    }
     return(rbindlist(list(report, report_tech)))
   }
 
 
   ## Demand emissions
-  reportingEmi <- function(repFE, gdx, regionSubsetList){
+  reportingEmi <- function(repFE, gdx){
 
     ## load emission factors for fossil fuels
     p_ef_dem <- readgdx(gdx, "p_ef_dem")[all_enty %in% c("fepet", "fedie", "fegas")]  ## MtCO2/EJ
@@ -345,13 +337,6 @@ reportEDGETransport <- function(output_folder=".",
     emi_w = emi[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
     emi = rbind(emi, emi_w)
 
-    ## in case the aggregation features EU sub-regions, include also the aggregated versions
-    if (!is.null(regionSubsetList)){
-      emi_EU = emi[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)]
-      emi_NEU = emi[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
-      emi = rbind(emi, emi_EU, emi_NEU)
-    }
-
     return(emi)
   }
 
@@ -374,26 +359,68 @@ reportEDGETransport <- function(output_folder=".",
     return(venum)
   }
 
+  reportStockAndSales <- function(){
+    vintages_file <- file.path(output_folder, "vintcomp.csv")
+    if(!file.exists(vintages_file)){
+      print("EDGE-T Reporting: No vintages file found.")
+      return(NULL)
+    }
+
+    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- NULL
+    vintgs <- fread(vintages_file)
+
+    ## backward compat. fix
+    fct <- 1.
+    if("variable" %in% colnames(vintgs)){
+      fct <- 1e-6
+      setnames(vintgs, "variable", "construction_year")
+    }
+ 
+    vintgs[, year_c := as.numeric(gsub("C_", "", construction_year))]
+    ## sales in last 4 years are sales for current timestep
+    vintgs <- vintgs[year - year_c >= 5]
+
+    setnames(vintgs, "full_demand_vkm", "Stock")
+    vintgs[, Stock := Stock * fct]
+    vintgs[, Sales := Stock - sum(vintage_demand_vkm), by=.(year, region, vehicle_type, technology)]
+    vintgs[, c("construction_year", "vintage_demand_vkm", "year_c") := NULL]
+    vintgs <- unique(vintgs)
+
+    vintgs <- data.table::melt(vintgs, measure.vars = c("Stock", "Sales"))
+    ## vkm -> v-num
+    vintgs[, value := value / 15000]
+    vintgs[, variable := sprintf("%s|Transport|LDV|%s|%s", variable, vehicle_type, technology)]
+
+    vintgs[, c("vehicle_type", "technology") := NULL]
+    vintgs <- vintgs[!is.na(value)]
+
+    setnames(vintgs, "year", "period")
+    vintgs <- vintgs[CJ(period=c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+                        region=vintgs$region, variable=vintgs$variable, unique=TRUE),
+                     on=c("period", "region", "variable")]
+
+    vintgs[, `:=`(model=cfg$model_name, scenario=cfg$title, unit="Million vehicles")]
+
+    return(vintgs)
+    
+  }
+
   repFE <- reportingESandFE(
     demand_ej,
-    mode ="FE",
-    regionSubsetList=regionSubsetList)
+    mode ="FE")
   repVKM <- reportingESandFE(
     datatable=demand_vkm,
-    mode="VKM",
-    regionSubsetList=regionSubsetList)
+    mode="VKM")
 
   toMIF <- rbindlist(list(
     repFE,
     repVKM,
     reportingESandFE(
       datatable=demand_km,
-      mode="ES",
-      regionSubsetList=regionSubsetList),
+      mode="ES"),
     reportingVehNum(repVKM),
     reportingEmi(repFE = repFE,
-                 gdx = gdx,
-                 regionSubsetList=regionSubsetList)
+                 gdx = gdx)
   ))
 
 
@@ -460,6 +487,18 @@ reportEDGETransport <- function(output_folder=".",
           .(variable="FE|Transport|Rail",
             unit="EJ/yr", value=sum(value)),
           by=c("model", "scenario", "region", "period")]), use.names = TRUE)
+
+  toMIF <- rbindlist(list(toMIF, reportStockAndSales()), use.names=TRUE)
+
+
+  if (!is.null(regionSubsetList)){
+    toMIF <- rbindlist(list(
+      toMIF,
+      toMIF[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)],
+      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
+    ), use.names=TRUE)
+  }
+
 
   ## Make sure there are no duplicates!
   idx <- anyDuplicated(toMIF, by = c("region", "variable", "period"))
