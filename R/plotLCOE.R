@@ -172,7 +172,8 @@ plotLCOE <- function(LCOEfile, gdx, y=c(2015,2020,2030,2040,2050,2060),reg="all_
                        "segafos" = "segas", "segabio" = "segas")
   
   plot.outputs <- c("seel","seliq","segas","seh2")
-  plot.techs <- c("pc", "igcc", "ngt","ngcc", "ngccc","tnrs","hydro","spv","wind","csp", "biochp","bioigccc",
+  plot.techs <- c("pc", "igcc", "ngt","ngcc", "ngccc","tnrs","hydro","spv","wind","windoff","csp", 
+                  "biochp","bioigccc",
                   "refliq","biodiesel","bioftrec","bioftcrec", "MeOH",
                   "gastr", "biogas","h22ch4",
                   "elh2","elh2VRE", "bioh2", "bioh2c", "gash2c", "coalh2c")
