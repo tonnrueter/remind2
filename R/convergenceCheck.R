@@ -32,8 +32,7 @@ deltarev  <- readGDX(gdx,name=c("p21_deltarev","pm_deltarev"),format="first_foun
 p21_taxrevGHG_iter        <- readGDX(gdx,c("p21_taxrevGHG_iter"),format="first_found")[,y,iter]
 p21_taxrevCCS_iter        <- readGDX(gdx,c("p21_taxrevCCS_iter"),format="first_found")[,y,iter]
 p21_taxrevNetNegEmi_iter  <- readGDX(gdx,c("p21_taxrevNetNegEmi_iter"),format="first_found")[,y,iter]
-p21_taxrevFEtrans_iter    <- readGDX(gdx,c("p21_taxrevFEtrans_iter"),format="first_found")[,y,iter]
-p21_taxrevFEBuildInd_iter <- readGDX(gdx,c("p21_taxrevFEBuildInd_iter"),format="first_found")[,y,iter]
+p21_taxrevFE_iter         <- readGDX(gdx,c("p21_taxrevFE_iter"),format="first_found")[,y,iter]
 p21_taxrevResEx_iter      <- readGDX(gdx,c("p21_taxrevResEx_iter"),format="first_found")[,y,iter]
 p21_taxrevPE2SE_iter      <- readGDX(gdx,c("p21_taxrevPE2SE_iter"),format="first_found")[,y,iter]
 p21_taxrevXport_iter      <- readGDX(gdx,c("p21_taxrevXport_iter"),format="first_found")[,y,iter]
@@ -87,22 +86,13 @@ p <- magpie2ggplot2(p21_taxrevNetNegEmi_iter,color="Data1",color_pal=col,ncol=3,
                     ylab='p21_taxrevNetNegEmi_iter',show_grid=TRUE,legend_ncol=4)
 swfigure(sw,print,p,sw_option="height=10,width=9")
 
-swlatex(sw,"\\subsection{taxrevFEtrans}")
-p <- magpie2ggplot2(p21_taxrevFEtrans_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
-                    ylab='p21_taxrevFEtrans_iter',xlab="iteration",show_grid=TRUE)
+swlatex(sw,"\\subsection{taxrevFE}")
+p <- magpie2ggplot2(p21_taxrevFE_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
+                    ylab='p21_taxrevFE_iter',xlab="iteration",show_grid=TRUE)
 swfigure(sw,print,p,sw_option="height=10,width=9")
 
-p <- magpie2ggplot2(p21_taxrevFEtrans_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
-                    ylab='p21_taxrevFEtrans_iter',show_grid=TRUE,legend_ncol=4)
-swfigure(sw,print,p,sw_option="height=10,width=9")
-
-swlatex(sw,"\\subsection{taxrevFEBuildInd}")
-p <- magpie2ggplot2(p21_taxrevFEBuildInd_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
-                    ylab='p21_taxrevFEBuildInd_iter',xlab="iteration",show_grid=TRUE)
-swfigure(sw,print,p,sw_option="height=10,width=9")
-
-p <- magpie2ggplot2(p21_taxrevFEBuildInd_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
-                    ylab='p21_taxrevFEBuildInd_iter',show_grid=TRUE,legend_ncol=4)
+p <- magpie2ggplot2(p21_taxrevFE_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
+                    ylab='p21_taxrevFE_iter',show_grid=TRUE,legend_ncol=4)
 swfigure(sw,print,p,sw_option="height=10,width=9")
 
 swlatex(sw,"\\subsection{taxrevResEx}")

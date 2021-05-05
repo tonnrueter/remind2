@@ -300,26 +300,26 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   demSe          <- readGDX(gdx,name=c("vm_demSe","v_demSe"),types="variables",field="l",format="first_found",restore_zeros=FALSE)
   cesIO          <- readGDX(gdx,name='vm_cesIO',types="variables",field="l",format="first_found",restore_zeros=FALSE)
   
-  fe_taxCES  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = F)[ppfen_stat_build_ind]
-  fe_subCES  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = F)[ppfen_stat_build_ind]
-  if(is.null(fe_taxCES) & is.null(fe_subCES)){
-    fe_taxCES = readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
-    fe_subCES = readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
-    
-  }
-  getSets(fe_taxCES) = gsub("all_enty","all_in", getSets(fe_taxCES))
-  getSets(fe_subCES) = gsub("all_enty","all_in", getSets(fe_subCES))
-  if (!is.null(all_esty) ){
-    fe_taxES =  readGDX(gdx, name=c("pm_tau_fe_tax_ES_st",'p21_tau_fe_tax_ES_st'),format = "first_found", react = "silent")
-    fe_subES =  readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'),format = "first_found", react = "silent")
-    if (!is.null(fe_taxES)){
-      getSets(fe_taxES) = gsub("all_esty","all_in", getSets(fe_taxES))
-      getSets(fe_subES) = gsub("all_esty","all_in", getSets(fe_subES))
-    }
-  } else {
-    fe_taxES = NULL
-    fe_subES = NULL
-  }
+  # fe_taxCES  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = F)[ppfen_stat_build_ind]
+  # fe_subCES  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = F)[ppfen_stat_build_ind]
+  # if(is.null(fe_taxCES) & is.null(fe_subCES)){
+  #   fe_taxCES = readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
+  #   fe_subCES = readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
+  #   
+  # }
+  # getSets(fe_taxCES) = gsub("all_enty","all_in", getSets(fe_taxCES))
+  # getSets(fe_subCES) = gsub("all_enty","all_in", getSets(fe_subCES))
+  # if (!is.null(all_esty) ){
+  #   fe_taxES =  readGDX(gdx, name=c("pm_tau_fe_tax_ES_st",'p21_tau_fe_tax_ES_st'),format = "first_found", react = "silent")
+  #   fe_subES =  readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'),format = "first_found", react = "silent")
+  #   if (!is.null(fe_taxES)){
+  #     getSets(fe_taxES) = gsub("all_esty","all_in", getSets(fe_taxES))
+  #     getSets(fe_subES) = gsub("all_esty","all_in", getSets(fe_subES))
+  #   }
+  # } else {
+  #   fe_taxES = NULL
+  #   fe_subES = NULL
+  # }
   ## equations
   pebal.m        <- readGDX(gdx,name=c("q_balPe","qm_pebal"),types = "equations",field = "m",format = "first_found")[,,pebal_subset]
   budget.m       <- readGDX(gdx,name='qm_budget',types = "equations",field = "m",format = "first_found") # Alternative: calcPrice
@@ -469,10 +469,11 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   #Final energy prices
   a = abs(mselect(balfinen.m[,y,][finenbal]))/abs((budget.m+1e-10)) # Translate the marginal utility of the constraint into the marginal income (price)
   b = complete_magpie(a) # Due to a strange behaviour of magclass objects addition, we need to use complete_magpie to make the addition
-  prices_fe_bi = (b + mbind(fe_taxCES[,y,getColValues(finenbal,"all_in")],
-                            fe_taxES[,y,getColValues(fe2es,"all_in")])
-                    + mbind(fe_subCES[,y,getColValues(finenbal,"all_in")],
-                            fe_subES[,y,getColValues(fe2es,"all_in")])) * tdptwyr2dpgj  # add the taxes and subsidies for the prices of buildings and industry. For transport, they are in the marginal of febal
+  prices_fe_bi = (b #+ mbind(fe_taxCES[,y,getColValues(finenbal,"all_in")],
+                    #        fe_taxES[,y,getColValues(fe2es,"all_in")])
+                    #+ mbind(fe_subCES[,y,getColValues(finenbal,"all_in")],
+                    #        fe_subES[,y,getColValues(fe2es,"all_in")])
+                  ) * tdptwyr2dpgj  # add the taxes and subsidies for the prices of buildings and industry. For transport, they are in the marginal of febal
   prices_fe_bi = prices_fe_bi[,,getNames(a)]
   
   if (stat_mod == "simple" ){
