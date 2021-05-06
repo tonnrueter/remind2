@@ -86,14 +86,37 @@ p <- magpie2ggplot2(p21_taxrevNetNegEmi_iter,color="Data1",color_pal=col,ncol=3,
                     ylab='p21_taxrevNetNegEmi_iter',show_grid=TRUE,legend_ncol=4)
 swfigure(sw,print,p,sw_option="height=10,width=9")
 
-swlatex(sw,"\\subsection{taxrevFE}")
-p <- magpie2ggplot2(p21_taxrevFE_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
+if(!is.null(p21_taxrevFE_iter)){
+   swlatex(sw,"\\subsection{taxrevFE}")
+   p <- magpie2ggplot2(p21_taxrevFE_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
                     ylab='p21_taxrevFE_iter',xlab="iteration",show_grid=TRUE)
-swfigure(sw,print,p,sw_option="height=10,width=9")
+   swfigure(sw,print,p,sw_option="height=10,width=9")
 
-p <- magpie2ggplot2(p21_taxrevFE_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
+   p <- magpie2ggplot2(p21_taxrevFE_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
                     ylab='p21_taxrevFE_iter',show_grid=TRUE,legend_ncol=4)
-swfigure(sw,print,p,sw_option="height=10,width=9")
+   swfigure(sw,print,p,sw_option="height=10,width=9")
+} else { # this conditional should be deleted once new calibrations are made
+  p21_taxrevFEtrans_iter    <- readGDX(gdx,c("p21_taxrevFEtrans_iter"),format="first_found")[,y,iter]
+  p21_taxrevFEBuildInd_iter <- readGDX(gdx,c("p21_taxrevFEBuildInd_iter"),format="first_found")[,y,iter]
+  
+  swlatex(sw,"\\subsection{taxrevFEtrans}")
+  p <- magpie2ggplot2(p21_taxrevFEtrans_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
+                      ylab='p21_taxrevFEtrans_iter',xlab="iteration",show_grid=TRUE)
+  swfigure(sw,print,p,sw_option="height=10,width=9")
+  
+  p <- magpie2ggplot2(p21_taxrevFEtrans_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
+                      ylab='p21_taxrevFEtrans_iter',show_grid=TRUE,legend_ncol=4)
+  swfigure(sw,print,p,sw_option="height=10,width=9")
+  
+  swlatex(sw,"\\subsection{taxrevFEBuildInd}")
+  p <- magpie2ggplot2(p21_taxrevFEBuildInd_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
+                      ylab='p21_taxrevFEBuildInd_iter',xlab="iteration",show_grid=TRUE)
+  swfigure(sw,print,p,sw_option="height=10,width=9")
+  
+  p <- magpie2ggplot2(p21_taxrevFEBuildInd_iter,color="Data1",color_pal=col,ncol=3,group=NULL,
+                      ylab='p21_taxrevFEBuildInd_iter',show_grid=TRUE,legend_ncol=4)
+  swfigure(sw,print,p,sw_option="height=10,width=9")
+}
 
 swlatex(sw,"\\subsection{taxrevResEx}")
 p <- magpie2ggplot2(p21_taxrevResEx_iter,xaxis="Data1",ncol=3,color="Year",color_pal=col_y,asDate=FALSE,
