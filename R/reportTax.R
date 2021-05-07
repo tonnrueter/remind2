@@ -33,15 +33,8 @@ if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found")))
   out <- NULL
  
   ### FE taxes/subsidies per sector
-  
-  fe_tax  <- readGDX(gdx, name=c("pm_tau_fe_tax"), format="first_found",restore_zeros=FALSE, react = "silent")[,t,] * tdptwyr2dpgj
-  fe_sub_gdx  <- readGDX(gdx, name=c("pm_tau_fe_sub"), format="first_found",restore_zeros=FALSE, react = "silent") * tdptwyr2dpgj
-  # extending fe_sub years and regions
-  fe_sub <- fe_tax; fe_sub[] <- 0 #duplicate fe tax structure in fe_sub
-  fe_sub[getRegions(fe_sub_gdx),getYears(fe_sub_gdx),getNames(fe_sub_gdx)] <- fe_sub_gdx[getRegions(fe_sub_gdx),getYears(fe_sub_gdx),getNames(fe_sub_gdx)]
-  # replacing NAs
-  fe_tax[is.na(fe_tax)] <- 0
-  fe_sub[is.na(fe_sub)] <- 0
+  fe_tax  <- readGDX(gdx, name=c("pm_tau_fe_tax"), format="first_found", react = "silent")[,t,] * tdptwyr2dpgj
+  fe_sub  <- readGDX(gdx, name=c("pm_tau_fe_sub"), format="first_found", react = "silent")[,t,] * tdptwyr2dpgj
   
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
