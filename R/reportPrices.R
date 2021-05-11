@@ -83,6 +83,12 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                "Price|Final Energy|Transport|Gases (US$2005/GJ)"))
   }
 
+  out <- mbind(
+    out,
+    setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fedie", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+             "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"),
+    setNames( dimSums(mselect(p_weights_FEprice_mkt * pm_FEPrice, all_enty1="fepet", emi_sectors = "trans"), dim=3.3, na.rm = T)*tdptwyr2dpgj,
+             "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"))
 
   ## FE Buildings Prices
   out <- mbind(out,
@@ -501,6 +507,8 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                ## transport prices
                "Price|Final Energy|Transport|Electricity (US$2005/GJ)"       = "FE|Transport|+|Electricity (EJ/yr)",
                "Price|Final Energy|Transport|Liquids (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
+               "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|+|Liquids (EJ/yr)",
+               "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|+|Liquids (EJ/yr)",
                "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
 
                ## buildings prices

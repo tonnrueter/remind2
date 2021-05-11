@@ -1131,333 +1131,149 @@ compareScenarios <- function(mif, hist,
 
   ## ---- Prices FE Liquids ----
   
-  # if bracket for new price reporting 
-  # (else is old price reporting, please delete once backwards compatability not needed anymore)
-  if("Price|Final Energy|Transport|Liquids (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-    if("Price|Final Energy|Transport|Liquids (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Buildings|Liquids (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Liquids (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Industry|Liquids (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Liquids (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    ## ---- Prices FE Gases ----
-    
-    if("Price|Final Energy|Transport|Gases (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Gases (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Buildings|Gases (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Gases (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Industry|Gases (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Gases (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    ## ---- Prices FE Solids ----
-    
-    
-    if("Price|Final Energy|Buildings|Solids (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Solids (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Solids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Industry|Solids (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Solids (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Solids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    ## ---- Prices FE Electricity ----
-    
-    if("Price|Final Energy|Transport|Electricity (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Buildings|Electricity (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Electricity (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Electricity (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Industry|Electricity (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Electricity (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Electricity (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    ## ---- Prices FE Hydrogen ----
-    
-    if("Price|Final Energy|Transport|Hydrogen (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Transport|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Industry|Hydrogen (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    ## ---- Prices FE Heat ----
-    
-    
-    if("Price|Final Energy|Buildings|Heat (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Heat (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Heat (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Buildings|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    
-    if("Price|Final Energy|Industry|Heat (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Heat (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Heat (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Industry|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-    }
-    } else {
-      
-      
-      ### plots of old (partially incorrect w.r.t. to taxes) final energy prices, 
-      # please delete once nobody creates compare scenarios pdfs anymore with mif files from after 16.3.2021!!
-      
-      if("Price|Final Energy|Liquids|Transport (US$2005/GJ)" %in% magclass::getNames(data,dim=3)) {
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Liquids|Transport (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Liquids|Transport [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Liquids|Transport (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Liquids|Transport [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Liquids|Transport|LDV|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Liquids|Transport|HDV|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      if("Price|Final Energy|Heating Oil|Buildings (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Heating Oil|Buildings (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Heating Oil|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Heating Oil|Buildings (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Heating Oil|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      if("Price|Final Energy|Heating Oil|Industry (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Heating Oil|Industry (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Heating Oil|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Heating Oil|Industry (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Heating Oil|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      ## ---- Prices FE Gas ----
-      
-      if("Price|Final Energy|Gases|Buildings (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Gases|Buildings (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Gases|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Gases|Buildings (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Gases|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Gases|Buildings|w/ costs for emissions|ESD (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Gases|Buildings|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Gases|Buildings|w/ costs for emissions|ESD (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Gases|Buildings|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      if("Price|Final Energy|Gases|Industry (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Gases|Industry (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Gases|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Gases|Industry (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Gases|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Gases|Industry|w/ costs for emissions|ESD (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Gases|Industry|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Gases|Industry|w/ costs for emissions|ESD (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Gases|Industry|w/ costs for emissions|ESD [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      ## ---- Prices FE Hydrogen ----
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Hydrogen|Buildings (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Hydrogen|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Hydrogen|Buildings (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Hydrogen|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Hydrogen|Industry (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Hydrogen|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Hydrogen|Industry (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Hydrogen|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      
-      ## ---- Prices FE Solids ----
-      
-      if("Price|Final Energy|Solids|Buildings (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Solids|Buildings (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Solids|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Solids|Buildings (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Solids|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      if("Price|Final Energy|Solids|Industry (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Solids|Industry (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Solids|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Solids|Industry (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Solids|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      ## ---- Prices FE Electricity ----
-      
-      p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Electricity|Transport (US$2005/GJ)"],x_hist=NULL,
-                             ylab='Price|Final Energy|Electricity|Transport [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-      swfigure(sw,print,p,sw_option="height=8,width=8")
-      p <- mipLineHistorical(data[,,"Price|Final Energy|Electricity|Transport (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                             ylab='Price|Final Energy|Electricity|Transport [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-      swfigure(sw,print,p,sw_option="height=9,width=8")
-      
-      if("Price|Final Energy|Electricity|Buildings (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Electricity|Buildings (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Electricity|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Electricity|Buildings (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Electricity|Buildings [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      if("Price|Final Energy|Electricity|Industry (US$2005/GJ)" %in% magclass::getNames(data,dim=3)){
-        p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Electricity|Industry (US$2005/GJ)"],x_hist=NULL,
-                               ylab='Price|Final Energy|Electricity|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-        swfigure(sw,print,p,sw_option="height=8,width=8")
-        p <- mipLineHistorical(data[,,"Price|Final Energy|Electricity|Industry (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                               ylab='Price|Final Energy|Electricity|Industry [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-        swfigure(sw,print,p,sw_option="height=9,width=8")
-      }
-      
-      
-      ### end old final energy price plots
-      
-      
-    }
-    
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
 
-    
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Liquids|HDV [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Liquids|HDV [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Liquids|LDV [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Liquids|LDV [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Liquids (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Liquids (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+
+## ---- Prices FE Gases ----
+
+  if("Price|Final Energy|Transport|Gases (US$2005/GJ)" %in% getNames(data,dim=3)){
+    p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Gases (US$2005/GJ)"],x_hist=NULL,
+                           ylab='Price|Final Energy|Transport|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Price|Final Energy|Transport|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
   
- 
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Gases (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Gases (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+
+## ---- Prices FE Solids ----
+
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Solids (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Solids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Solids (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Solids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+
+## ---- Prices FE Electricity ----
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Electricity (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Electricity (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Electricity (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Electricity (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+
+## ---- Prices FE Hydrogen ----
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Transport|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+
+## ---- Prices FE Heat ----
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Heat (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Buildings|Heat (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Buildings|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Industry|Heat (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Final Energy|Industry|Heat (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Final Energy|Industry|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
   
   
   ## ---- Trade ----
