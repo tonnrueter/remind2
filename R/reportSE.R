@@ -310,7 +310,7 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
    }
   if("segafos" %in% se_Gas){
     tmp1 <- mbind(tmp1,
-                  se.prod(prodSe,dataoc,oc2te,sety,pety,"segafos",                     name = "SE|Gases|Non-Biomass (EJ/yr)")
+                  se.prod(prodSe,dataoc,oc2te,sety,pety,"segafos",                     name = "SE|Gases|Fossil (EJ/yr)")
                   )
   }
   

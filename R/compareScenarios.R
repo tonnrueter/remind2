@@ -1010,32 +1010,39 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsubsection{PE Prices}")
 
-  p <- mipLineHistorical(data[mainReg,,"Price|Natural Gas|Primary Level (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Natural Gas|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Primary Energy|Gas (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Primary Energy|Gas [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Natural Gas|Primary Level (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Natural Gas|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Primary Energy|Gas (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Primary Energy|Gas| [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Price|Crude Oil|Primary Level (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Crude Oil|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Primary Energy|Oil (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Primary Energy|Oil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Crude Oil|Primary Level (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Crude Oil|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Primary Energy|Oil (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Primary Energy|Oil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Price|Coal|Primary Level (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Coal|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Primary Energy|Coal (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Primary Energy|Coal [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Coal|Primary Level (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Coal|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Primary Energy|Coal (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Primary Energy|Coal [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Price|Biomass|Primary Level (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Biomass|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Primary Energy|Biomass|Modern (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Primary Energy|Biomass|Modern [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Biomass|Primary Level (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Biomass|Primary Level [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Primary Energy|Biomass|Modern (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Primary Energy|Biomass|Modern [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Primary Energy|Nuclear (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Primary Energy|Nuclear [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Primary Energy|Nuclear (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Primary Energy|Nuclear [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   ## ---- Prices SE ----
@@ -1049,25 +1056,62 @@ compareScenarios <- function(mif, hist,
                          ylab='Price|Secondary Energy|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Liquids (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Secondary Energy|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Liquids|Fossil (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Liquids|Fossil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Liquids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Secondary Energy|Liquids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Liquids|Fossil (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Liquids|Fossil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Gases (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Secondary Energy|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Liquids|Biomass (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Liquids|Biomass [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Gases (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Secondary Energy|Gases [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Liquids|Biomass (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Liquids|Biomass [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
-  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Solids (US$2005/GJ)"],x_hist=NULL,
-                         ylab='Price|Secondary Energy|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+
+    p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Liquids|Hydrogen (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Liquids|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Solids (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Secondary Energy|Solids [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Liquids|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Liquids|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Gases|Fossil (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Gases|Fossil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Gases|Fossil (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Gases|Fossil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Gases|Biomass (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Gases|Biomass [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Gases|Biomass (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Gases|Biomass [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Gases|Hydrogen (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Gases|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Gases|Hydrogen (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Gases|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Solids|Fossil (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Solids|Fossil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Solids|Fossil (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Solids|Fossil [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Solids|Biomass (US$2005/GJ)"],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Solids|Biomass [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Price|Secondary Energy|Solids|Biomass (US$2005/GJ)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Secondary Energy|Solids|Biomass [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+
   p <- mipLineHistorical(data[mainReg,,"Price|Secondary Energy|Hydrogen (US$2005/GJ)"],x_hist=NULL,
                          ylab='Price|Secondary Energy|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
