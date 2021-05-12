@@ -3214,6 +3214,51 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
 
   ## ---- ++++ ENERGY SERVICES ++++ ----
 
+  swlatex(sw,"\\twocolumn")
+  
+  swlatex(sw,"\\section{Energy Services and Products}")
+  
+  ## Buildings
+  items<- c(
+    "FE|Buildings|non-Heating|Electricity|Conventional (EJ/yr)",
+    "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)",
+    "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)",
+    "FE|Buildings|Heating|District Heating (EJ/yr)",
+    "FE|Buildings|Heating|Solids (EJ/yr)",
+    "FE|Buildings|Heating|Liquids (EJ/yr)",
+    "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)",
+    "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)"
+  )
+  
+  if(all(c(items) %in% getNames(data,dim=3))){
+    
+    swlatex(sw,"\\subsection{Buildings}")
+    
+    tot <-"FE|Buildings (EJ/yr)"
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+      guides(fill=guide_legend(ncol=3))
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+  
+  }
+  
+  ## Transport
+  
   items<- c(
     "ES|Transport|Pass (bn pkm/yr)",
     "ES|Transport|Pass|Road|LDV (bn pkm/yr)",
@@ -3232,8 +3277,6 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     
   if(all(c(items) %in% getNames(data,dim=3))){
     
-    swlatex(sw,"\\section{Energy Services and Products}")
-  
     swlatex(sw,"\\subsection{Transport}")
   
     swlatex(sw,"\\onecolumn")
@@ -3427,6 +3470,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swlatex(sw,"\\twocolumn")    
     
   }
+  
   
   ## ---- ++++ C L I M A T E ++++ ----
 

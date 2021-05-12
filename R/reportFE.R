@@ -464,7 +464,23 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   
   # ---- Buildings Module ----
   
-  if (buil_mod %in% c("services_putty", "services_with_capital")){
+  if (buil_mod %in% c("simple")){
+    
+    if("feelhpb" %in% getNames(vm_cesIO)){
+      out <- mbind(out,
+                   setNames(dimSums(vm_cesIO[,,"feelcb"],dim=3,na.rm=T),  "FE|Buildings|non-Heating|Electricity|Conventional (EJ/yr)"),
+                   
+                   setNames(dimSums(vm_cesIO[,,"feelrhb"],dim=3,na.rm=T), "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"feelhpb"],dim=3,na.rm=T), "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"feheb"],dim=3,na.rm=T),   "FE|Buildings|Heating|District Heating (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"fesob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Solids (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"fehob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Liquids (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)")
+      )
+    }
+    
+  } else if (buil_mod %in% c("services_putty", "services_with_capital")){
     
     # sets
     ppfen_build <- readGDX(gdx,c("ppfen_buildings_dyn36","ppfen_buildings_dyn28","ppfen_buildings"),format="first_found", react = "silent")
