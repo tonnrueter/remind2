@@ -28,9 +28,9 @@
 reportTechnology <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
   if(is.null(output)){
     output <- mbind(
-      reportSE(gdx, regionSubsetList,t),
-      reportFE(gdx, regionSubsetList,t),
-      reportEmi(gdx, regionSubsetList,t)
+      reportSE(gdx, regionSubsetList = regionSubsetList,t = t),
+      reportFE(gdx, regionSubsetList = regionSubsetList,t = t),
+      reportEmi(gdx, regionSubsetList = regionSubsetList,t = t)
     )
   }
 
@@ -212,8 +212,8 @@ reportTechnology <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,
       } else if(all(map %in% cdrmap)){
         # CDR technologies need special mapping
         # for global avgs we use CO2 flows as weights
-        int2ext[[report_str("DAC", category, unit)]] <- report_str("DAC", unit="Mt CO2/yr", predicate="Emi|CO2")
-        int2ext[[report_str("CO2 Storage", category, unit)]] <- report_str("Carbon Capture and Storage", unit="Mt CO2/yr", predicate="Emi|CO2")
+        int2ext[[report_str("DAC", category, unit)]] <- report_str("DAC", unit="Mt CO2/yr", predicate="Carbon Management|Carbon Sources|+")
+        int2ext[[report_str("CO2 Storage", category, unit)]] <- report_str("Storage", unit="Mt CO2/yr", predicate="Carbon Management|Carbon Sinks|+")
       }
       return(int2ext)
   }

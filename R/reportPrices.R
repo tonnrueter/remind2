@@ -300,25 +300,29 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   demSe          <- readGDX(gdx,name=c("vm_demSe","v_demSe"),types="variables",field="l",format="first_found",restore_zeros=FALSE)
   cesIO          <- readGDX(gdx,name='vm_cesIO',types="variables",field="l",format="first_found",restore_zeros=FALSE)
   
-  fe_taxCES  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = F)[ppfen_stat_build_ind]
-  fe_subCES  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = F)[ppfen_stat_build_ind]
-  if(is.null(fe_taxCES) & is.null(fe_subCES)){
-    fe_taxCES = readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
-    fe_subCES = readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
-    
-  }
-  getSets(fe_taxCES) = gsub("all_enty","all_in", getSets(fe_taxCES))
-  getSets(fe_subCES) = gsub("all_enty","all_in", getSets(fe_subCES))
-  if (!is.null(all_esty) ){
-    fe_taxES =  readGDX(gdx, name=c("pm_tau_fe_tax_ES_st",'p21_tau_fe_tax_ES_st'),format = "first_found", react = "silent")
-    fe_subES =  readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'),format = "first_found", react = "silent")
-    if (!is.null(fe_taxES)){
-      getSets(fe_taxES) = gsub("all_esty","all_in", getSets(fe_taxES))
-      getSets(fe_subES) = gsub("all_esty","all_in", getSets(fe_subES))
+  fe_tax <- readGDX(gdx, name=c("pm_tau_fe_tax"), format="first_found", react = "silent")
+  fe_sub <- readGDX(gdx, name=c("pm_tau_fe_sub"), format="first_found", react = "silent")
+  if(is.null(fe_tax)){
+    fe_taxCES  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = F)[ppfen_stat_build_ind]
+    fe_subCES  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = F)[ppfen_stat_build_ind]
+    if(is.null(fe_taxCES) & is.null(fe_subCES)){
+      fe_taxCES = readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
+      fe_subCES = readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
+
     }
-  } else {
-    fe_taxES = NULL
-    fe_subES = NULL
+    getSets(fe_taxCES) = gsub("all_enty","all_in", getSets(fe_taxCES))
+    getSets(fe_subCES) = gsub("all_enty","all_in", getSets(fe_subCES))
+    if (!is.null(all_esty) ){
+      fe_taxES =  readGDX(gdx, name=c("pm_tau_fe_tax_ES_st",'p21_tau_fe_tax_ES_st'),format = "first_found", react = "silent")
+      fe_subES =  readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'),format = "first_found", react = "silent")
+      if (!is.null(fe_taxES)){
+        getSets(fe_taxES) = gsub("all_esty","all_in", getSets(fe_taxES))
+        getSets(fe_subES) = gsub("all_esty","all_in", getSets(fe_subES))
+      }
+    } else {
+      fe_taxES = NULL
+      fe_subES = NULL
+    }
   }
   ## equations
   pebal.m        <- readGDX(gdx,name=c("q_balPe","qm_pebal"),types = "equations",field = "m",format = "first_found")[,,pebal_subset]
@@ -469,12 +473,17 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   #Final energy prices
   a = abs(mselect(balfinen.m[,y,][finenbal]))/abs((budget.m+1e-10)) # Translate the marginal utility of the constraint into the marginal income (price)
   b = complete_magpie(a) # Due to a strange behaviour of magclass objects addition, we need to use complete_magpie to make the addition
-  prices_fe_bi = (b + mbind(fe_taxCES[,y,getColValues(finenbal,"all_in")],
+  if(is.null(fe_tax)){
+    prices_fe_bi = (b 
+                    + mbind(fe_taxCES[,y,getColValues(finenbal,"all_in")],
                             fe_taxES[,y,getColValues(fe2es,"all_in")])
                     + mbind(fe_subCES[,y,getColValues(finenbal,"all_in")],
-                            fe_subES[,y,getColValues(fe2es,"all_in")])) * tdptwyr2dpgj  # add the taxes and subsidies for the prices of buildings and industry. For transport, they are in the marginal of febal
-  prices_fe_bi = prices_fe_bi[,,getNames(a)]
-  
+                            fe_subES[,y,getColValues(fe2es,"all_in")])
+    ) * tdptwyr2dpgj #add the taxes and subsidies for the prices of buildings and industry. For transport, they are in the marginal of febal
+  } else {
+    # !!! Need to check if it needs include taxes !!!
+    prices_fe_bi = (b) * tdptwyr2dpgj  # 
+  }
   if (stat_mod == "simple" ){
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"feels.feels"], "Price|Final Energy|Electricity|Stationary (US$2005/GJ)"))
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fegas.fegas"], "Price|Final Energy|Gases (US$2005/GJ)"))
@@ -485,8 +494,16 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   }
   
   if (buil_mod == "simple"){
-  tmp <- mbind(tmp,setNames(prices_fe_bi[,,"feels.feelb"], "Price|Final Energy|Electricity|Buildings (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(lowpass(prices_fe_bi[,,"feels.feelb"], fix="both", altFilter=match(2010,time), warn = FALSE)  , "Price|Final Energy|Electricity|Buildings|Moving Avg (US$2005/GJ)"))
+  
+    if("feelb" %in% getNames(prices_fe_bi,dim=2)){
+      tmp <- mbind(tmp,setNames(prices_fe_bi[,,"feels.feelb"], "Price|Final Energy|Electricity|Buildings (US$2005/GJ)"))
+      tmp <- mbind(tmp,setNames(lowpass(prices_fe_bi[,,"feels.feelb"], fix="both", altFilter=match(2010,time), warn = FALSE)  , "Price|Final Energy|Electricity|Buildings|Moving Avg (US$2005/GJ)"))
+    } else {
+      #buildings module with electricity CES split feelb into feelcb, feelhpb, feelrhb 
+      tmp <- mbind(tmp, setNames(dimReduce((cesIO[,,"feelcb"]*prices_fe_bi[,,"feels.feelcb"] + cesIO[,,"feelhpb"]*prices_fe_bi[,,"feels.feelhpb"] + cesIO[,,"feelrhb"]*prices_fe_bi[,,"feels.feelrhb"]) / dimSums(cesIO[,,c("feelcb","feelhpb","feelrhb")],dim=3),dim_exclude = c("tall","all_regi")),"Price|Final Energy|Electricity|Buildings (US$2005/GJ)"))
+      tmp <- mbind(tmp, setNames(lowpass(dimReduce((cesIO[,,"feelcb"]*prices_fe_bi[,,"feels.feelcb"] + cesIO[,,"feelhpb"]*prices_fe_bi[,,"feels.feelhpb"] + cesIO[,,"feelrhb"]*prices_fe_bi[,,"feels.feelrhb"]) / dimSums(cesIO[,,c("feelcb","feelhpb","feelrhb")],dim=3),dim_exclude = c("tall","all_regi")), fix="both", altFilter=match(2010,time), warn = FALSE)  , "Price|Final Energy|Electricity|Buildings|Moving Avg (US$2005/GJ)"))
+    }
+    
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fegas.fegab"], "Price|Final Energy|Gases|Buildings (US$2005/GJ)"))
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fehes.feheb"], "Price|Final Energy|Heat|Buildings (US$2005/GJ)"))
   tmp <- mbind(tmp,setNames(prices_fe_bi[,,"fehos.fehob"], "Price|Final Energy|Heating Oil|Buildings (US$2005/GJ)"))
@@ -916,9 +933,9 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     "Price|Secondary Energy|Heat (US$2005/GJ)"                = "SE|Heat (EJ/yr)",
     "Price|Secondary Energy|Liquids|Biomass (US$2005/GJ)"     = "SE|Liquids|Biomass (EJ/yr)",
     # "Price|Secondary Energy|Liquids|Synthetic (CCU) (US$2005/GJ)" = "SE|Liquids|Hydrogen (EJ/yr)",
-    "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|CO2|ETS (Mt CO2/yr)",
-    "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|CO2|ESD (Mt CO2/yr)",
-    "Price|Carbon|ESD (US$2005/t CO2)"                        = "Emi|CO2|ESD (Mt CO2/yr)",
+    "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|GHG|++|ETS (Mt CO2eq/yr)",
+    "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|GHG|++|Other (Mt CO2eq/yr)",
+    "Price|Carbon|ESD (US$2005/t CO2)"                        = "Emi|GHG|++|ESR (Mt CO2eq/yr)",
     "Price|Final Energy|Heating Oil|Buildings|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Buildings|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ESD (US$2005/GJ)" = "FE|Industry|ESD|+|Liquids (EJ/yr)",
     "Price|Final Energy|Heating Oil|Industry|w/ costs for emissions|ETS (US$2005/GJ)" = "FE|Industry|ETS|+|Liquids (EJ/yr)",
@@ -970,7 +987,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   }
   
   
-  if (all(cm_emiscen == 9)) int2ext <- c(int2ext, c( "Price|Carbon (US$2005/t CO2)"  = "Emi|CO2|FFaI|Emi to which CO2tax is applied (Mt CO2/yr)"))
+  if (all(cm_emiscen == 9)) int2ext <- c(int2ext, c( "Price|Carbon (US$2005/t CO2)"  = "Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
   
   if (stat_mod == "simple" ){
     int2ext <- c(int2ext, c( "Price|Final Energy|Heating Oil (US$2005/GJ)" = "FE|Other Sector|Liquids (EJ/yr)"),
@@ -1139,15 +1156,15 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   regi_on_gdx <- unique(readGDX(gdx, name = "regi2iso")[,1])
   
   tmp["GLO",,"Price|Carbon (US$2005/t CO2)"] <-
-    dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Emi|CO2|FFaI|Emi to which CO2tax is applied (Mt CO2/yr)"],dim=1 ) /
-    dimSums(output[regi_on_gdx,,"Emi|CO2|FFaI|Emi to which CO2tax is applied (Mt CO2/yr)"],dim=1) /
+    dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
+    dimSums(output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
     (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44
   
   # add other region aggregations carbon price as average over regional pm_pvpRegi's, weighted by total emissions. 
   if (!is.null(regionSubsetList)){
     for(region in names(regionSubsetList)){
-      tmp[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Emi|CO2|FFaI|Emi to which CO2tax is applied (Mt CO2/yr)"],dim=1 ) /
-        dimSums(output[regionSubsetList[[region]],,"Emi|CO2|FFaI|Emi to which CO2tax is applied (Mt CO2/yr)"],dim=1) /
+      tmp[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
+        dimSums(output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
         (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44;
     }
   }
@@ -1168,6 +1185,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   # ---- debug information for industry/subsectors ----
   if ('subsectors' == indu_mod & !is.null(q37_limit_secondary_steel_share.m)) {
     .x <- q37_limit_secondary_steel_share.m[,y,] / budget.m
+    .x <- mbind(.x, calc_regionSubset_sums(.x, regionSubsetList))
     
     tmp2 <- mbind(
       # fake some GLO data
@@ -1195,13 +1213,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
       )
     )
     
-    tmp <- mbind(
-      tmp,
-      mbind(
-        tmp2,
-        calc_regionSubset_sums(tmp2, regionSubsetList)
-      )
-    )
+    tmp <- mbind(tmp, tmp2)
   }
 
   return(tmp)
