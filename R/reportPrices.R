@@ -30,10 +30,69 @@
 #'
 
 #' @export
-reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
+reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
+                         t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
 
-  ### FS: start new price reporting
-  #(from price parameters calculated in core/postsolve.gms)
+  ####### get realisations #########
+  realisation <- readGDX(gdx, "module2realisation")
+
+  ####### conversion factors ##########
+  s_GWP_CH4 <- readGDX(gdx,c("sm_gwpCH4","s_gwpCH4","s_GWP_CH4"),format="first_found", react = "silent")
+  s_GWP_N2O <- readGDX(gdx,c("s_gwpN2O","s_GWP_N2O"),format="first_found", react = "silent")
+  tdptwyr2dpgj <- 31.71   #TerraDollar per TWyear to Dollar per GJ
+  p80_subset   <- c("perm","good","peur","peoil","pegas","pecoal","pebiolc") #TODO: read in from gdx as sets trade
+  ####### read in needed data #########
+
+  #---- Functions
+  find_real_module <- function(module_set, module_name){
+    return(module_set[module_set$modules == module_name,2])
+  }
+
+  indu_mod = find_real_module(realisation,"industry")
+
+  ## parameter
+  shift_p        <- readGDX(gdx,name="p30_pebiolc_pricshift",format="first_found")[, t,]
+  mult_p         <- readGDX(gdx,name="p30_pebiolc_pricmult",format="first_found")[, t,]
+  pric_mag       <- readGDX(gdx,name="p30_pebiolc_pricemag",format="first_found")[, t,]
+  pric_emu_pre   <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop",format="first_found")[, t,]
+  pric_emu_pre_shifted <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop_shifted",format="first_found")[, t,]
+  bio_tax_factor <- readGDX(gdx,name="p21_tau_bioenergy_tax",format="first_found")[, t,]
+  pm_pvp        <- readGDX(gdx,name=c("pm_pvp","p80_pvp"),format="first_found")[, t, p80_subset]
+  pm_dataemi     <- readGDX(gdx,name=c("pm_emifac","pm_dataemi"),format="first_found",restore_zeros=FALSE)[,t, c("pegas.seel.ngt.co2","pecoal.seel.pc.co2")]
+  pm_pvpRegi     <- readGDX(gdx,name='pm_pvpRegi',format="first_found")[, t, "perm"]
+  pm_taxCO2eq    <- readGDX(gdx,name=c("pm_taxCO2eq","pm_tau_CO2_tax"),format="first_found")[, t,]
+  pm_taxCO2eqSCC     <- readGDX(gdx,name='pm_taxCO2eqSCC',format="first_found")[, t,]
+  pm_taxemiMkt <- readGDX(gdx,name="pm_taxemiMkt",format="first_found")[, t,]
+  ## variables
+  pric_emu       <- readGDX(gdx,name="vm_pebiolc_price",field="l",format="first_found")[, t,]
+
+  ## equations
+  budget.m       <- readGDX(gdx,name='qm_budget',types = "equations",field = "m",format = "first_found")[, t,] # Alternative: calcPrice
+  balcapture.m   <- readGDX(gdx,name=c("q_balcapture", "q12_balcapture"), field = "m", restore_zeros = F)[, t,]
+
+  esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found")[, t,]
+
+  cm_emiscen     <- readGDX(gdx,name='cm_emiscen',format="first_found")
+
+  q37_limit_secondary_steel_share.m <- readGDX(
+    gdx, name = 'q37_limit_secondary_steel_share', types = 'equation',
+    field = 'm', react = 'silent')[, t,]
+
+  #####################################
+  #choose the CES entries names for transport
+  if (!is.null(esm2macro.m)) {
+    name_trsp=c("fepet","ueLDVt","fedie","ueHDVt","feelt","ueelTt")
+    name_trsp=name_trsp[name_trsp%in%getNames(esm2macro.m)]
+  }
+  #####################################
+
+  ####### pm_pvp = EPS results in fantasy carbon prices
+
+  for(yr in getYears(pm_pvp)){
+    if(pm_pvp[,yr,"good"] == 0){
+      pm_pvp[,yr,"good"] = 0.0001;
+    }
+  }
 
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
@@ -46,8 +105,6 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   demSe          <- readGDX(gdx,name=c("vm_demSe","v_demSe"),
                             types="variables",field="l",format="first_found",
                             restore_zeros=FALSE)[,t,]
-
-  tdptwyr2dpgj <- 31.71   # conversion factor trUSD2005/TWa to USD2005/GJ
 
   ## weights for market aggregtion of prices: FE share of market
   p_weights_FEprice_mkt <- dimSums(vm_demFeSector, dim=3.1, na.rm = T) / dimSums(vm_demFeSector, dim=c(3.1,3.4), na.rm = T)
@@ -177,7 +234,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                                   substr(getNames(out.lowpass),
                                          nchar(getNames(out.lowpass))-12,
                                          nchar(getNames(out.lowpass))))
-  ## bind to output object
+
   out <- mbind(out,out.lowpass)
 
   ## add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code)
@@ -185,215 +242,6 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   out2[,getYears(out), ] <- out
 
   out <- out2
-
-
-  ### end new price reporting
-
-  if(is.null(output)){
-    output <- reportPE(gdx,regionSubsetList = regionSubsetList,t = t)
-    output <- mbind(output,reportSE(gdx,regionSubsetList = regionSubsetList,t = t))
-    output <- mbind(output,reportFE(gdx,regionSubsetList = regionSubsetList,t = t))
-    output <- mbind(output,reportEmi(gdx,regionSubsetList = regionSubsetList,t = t))
-    output <- mbind(output,reportExtraction(gdx,regionSubsetList = regionSubsetList,t = t))
-    output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList = regionSubsetList,t = t)[,getYears(output),])
-  }
-
-  #---- Functions
-  find_real_module <- function(module_set, module_name){
-    return(module_set[module_set$modules == module_name,2])
-  }
-
-
-  #---- End of Functions
-
-  ####### get realisations #########
-  realisation <- readGDX(gdx, "module2realisation")
-
-  ####### get power realisations #########
-  realisation <- readGDX(gdx, "module2realisation")
-  power_realisation <- if ("power" %in% realisation[, 1]) realisation[which(realisation[,1] == "power"),2]
-
-  ####### conversion factors ##########
-  s_GWP_CH4 <- readGDX(gdx,c("sm_gwpCH4","s_gwpCH4","s_GWP_CH4"),format="first_found", react = "silent")
-  s_GWP_N2O <- readGDX(gdx,c("s_gwpN2O","s_GWP_N2O"),format="first_found", react = "silent")
-  TWa_2_EJ     <- 31.536
-  tdptwyr2dpgj <- 31.71   #TerraDollar per TWyear to Dollar per GJ
-  p80_subset   <- c("perm","good","peur","peoil","pegas","pecoal","pebiolc") #TODO: read in from gdx as sets trade
-  pebal_subset <- c("pebiolc","peoil","pegas","pecoal","peur")
-  ####### read in needed data #########
-  ## sets
-  fe_transp_fety35 <- readGDX(gdx,name="FE_Transp_fety35",types="sets",format="first_found", react = "silent")
-  se2fe          <- readGDX(gdx,name="se2fe",types="sets",format="first_found", react = "silent")
-  sety           <- readGDX(gdx,c("entySe","sety"),types="sets",format="first_found", react = "silent")
-  fety           <- readGDX(gdx,name=c("entyFe","fety"),types="sets",format="first_found", react = "silent")
-  finenbal       <- readGDX(gdx,name=c("fe2ppfEn","finenbal"),types="sets",format="first_found", react = "silent")
-  all_esty       <- readGDX(gdx,name=c("all_esty"),types="sets",format="first_found", react = "silent")
-  if(!is.null(all_esty)){
-  fe2es          <- readGDX(gdx,name=c("fe2es"),types="sets",format="first_found", react = "silent")
-  fe2es          <- unique(fe2es[c("all_enty","all_esty")])
-  colnames(fe2es) <- gsub("all_esty","all_in", colnames(fe2es))
-  } else {
-    fe2es = NULL
-  }
-  ppfenfromes    <- readGDX(gdx,name=c("ppfEnFromEs","ppfenfromes"),types="sets",format="first_found", react = "silent")
-  finenbalfehos  <- finenbal %>% filter(.data$all_enty == "fehos")
-  ppfKap  <- readGDX(gdx,"ppfKap")
-
-  ppfen_stat <- readGDX(gdx,c("ppfen_stationary_dyn38","ppfen_stationary_dyn28","ppfen_stationary"),format="first_found", react = "silent")
-  if (length(ppfen_stat) == 0) ppfen_stat = NULL
-  ppfen_build <- readGDX(gdx,c("ppfen_buildings_dyn36","ppfen_buildings_dyn28","ppfen_buildings"),format="first_found", react = "silent")
-  ue_dyn36 <- readGDX(gdx,c("ue_dyn36"),format="first_found", react = "silent")
-  ppfen_build <- setdiff(ppfen_build, ue_dyn36)
-  ppfen_ind <- readGDX(gdx,c("ppfen_industry_dyn37","ppfen_industry_dyn28","ppfen_industry"),format="first_found", react = "silent")
-  ppfen_stat_build_ind <- c(ppfen_stat,ppfen_build,ppfen_ind)
-
-  # Realisation of the different modules
-  if ( !is.null(realisation) & (!"CES_structure" %in% realisation[, 1] )){
-    stat_mod = find_real_module(realisation,"stationary")
-    tran_mod = find_real_module(realisation,"transport")
-    indu_mod = find_real_module(realisation,"industry")
-    buil_mod = find_real_module(realisation,"buildings")
-  } else {
-    if ( !is.null(ppfen_stat)){   # In case the set realisation did not exist, find out whether it was stationary or buildings-industry
-      stat_mod = "simple"
-      indu_mod = "off"
-      buil_mod = "off"
-    } else {
-      stat_mod = "off"
-      indu_mod = "fixed_shares"
-      buil_mod = "simple"
-    }
-  }
-
-  if (indu_mod %in% c('fixed_shares', 'subsectors')) {
-    fe2ppfen37 <- readGDX(gdx, 'fe2ppfen') %>%
-      filter(.data$all_in %in% ppfen_ind)
-  }
-
-  ## parameter
-  shift_p        <- readGDX(gdx,name="p30_pebiolc_pricshift",format="first_found")
-  mult_p         <- readGDX(gdx,name="p30_pebiolc_pricmult",format="first_found")
-  pric_mag       <- readGDX(gdx,name="p30_pebiolc_pricemag",format="first_found")
-  pric_emu_pre   <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop",format="first_found")
-  pric_emu_pre_shifted <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop_shifted",format="first_found")
-  bio_tax_factor <- readGDX(gdx,name="p21_tau_bioenergy_tax",format="first_found")
-  pm_pvp        <- readGDX(gdx,name=c("pm_pvp","p80_pvp"),format="first_found")[,,p80_subset]
-  pm_ts          <- readGDX(gdx,name='pm_ts',format="first_found")
-  pm_dataemi     <- readGDX(gdx,name=c("pm_emifac","pm_dataemi"),format="first_found",restore_zeros=FALSE)[,,c("pegas.seel.ngt.co2","pecoal.seel.pc.co2")]
-  pm_pvpRegi     <- readGDX(gdx,name='pm_pvpRegi',format="first_found")[,,"perm"]
-  pm_taxCO2eq    <- readGDX(gdx,name=c("pm_taxCO2eq","pm_tau_CO2_tax"),format="first_found")
-  pm_taxCO2eqSCC     <- readGDX(gdx,name='pm_taxCO2eqSCC',format="first_found")
-  pm_delta_kap <- readGDX(gdx, c("pm_delta_kap", "p_delta_kap"), format = "first_found")
-  if(is.null(getNames(pm_delta_kap))) pm_delta_kap = setNames(pm_delta_kap,"kap")
-  pm_taxemiMkt <- readGDX(gdx,name="pm_taxemiMkt",format="first_found")
-  ## variables
-  pric_emu       <- readGDX(gdx,name="vm_pebiolc_price",field="l",format="first_found")
-  prodFE         <- readGDX(gdx,name='vm_prodFe',field="l",format="first_found",restore_zeros = FALSE)
-  prodSE         <- readGDX(gdx,name='vm_prodSe',field="l",format="first_found",restore_zeros = FALSE)
-  cesIO          <- readGDX(gdx,name='vm_cesIO',types="variables",field="l",format="first_found",restore_zeros=FALSE)
-
-  fe_tax <- readGDX(gdx, name=c("pm_tau_fe_tax"), format="first_found", react = "silent")
-  fe_sub <- readGDX(gdx, name=c("pm_tau_fe_sub"), format="first_found", react = "silent")
-  if(is.null(fe_tax)){
-    fe_taxCES  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = F)[ppfen_stat_build_ind]
-    fe_subCES  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = F)[ppfen_stat_build_ind]
-    if(is.null(fe_taxCES) & is.null(fe_subCES)){
-      fe_taxCES = readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
-      fe_subCES = readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind]
-
-    }
-    getSets(fe_taxCES) = gsub("all_enty","all_in", getSets(fe_taxCES))
-    getSets(fe_subCES) = gsub("all_enty","all_in", getSets(fe_subCES))
-    if (!is.null(all_esty) ){
-      fe_taxES =  readGDX(gdx, name=c("pm_tau_fe_tax_ES_st",'p21_tau_fe_tax_ES_st'),format = "first_found", react = "silent")
-      fe_subES =  readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'),format = "first_found", react = "silent")
-      if (!is.null(fe_taxES)){
-        getSets(fe_taxES) = gsub("all_esty","all_in", getSets(fe_taxES))
-        getSets(fe_subES) = gsub("all_esty","all_in", getSets(fe_subES))
-      }
-    } else {
-      fe_taxES = NULL
-      fe_subES = NULL
-    }
-  }
-  ## equations
-  pebal.m        <- readGDX(gdx,name=c("q_balPe","qm_pebal"),types = "equations",field = "m",format = "first_found")[,,pebal_subset]
-  budget.m       <- readGDX(gdx,name='qm_budget',types = "equations",field = "m",format = "first_found") # Alternative: calcPrice
-  sebal.m        <- readGDX(gdx,name=c("q_balSe","q_sebal"),types="equations",field="m",format="first_found")
-  balcapture.m   <- readGDX(gdx,name=c("q_balcapture", "q12_balcapture"), field = "m", restore_zeros = F)
-  if (!is.null(power_realisation)) {
-    sebalSeel.m    <- readGDX(gdx,name="q32_balSe",types="equations",field="m",format="first_found")
-  }
-  esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found")
-  febal.m        <- readGDX(gdx,name=c("qm_balFe","q_balFe","q_febal"),types="equations",field="m",format="first_found",restore_zeros=FALSE)[,,fety]
-  balfinen.m     <- readGDX(gdx,name=c("qm_balFeForCesAndEs","qm_balFeForCes","q_balFeForCes","q_balfinen"),types="equations",field="m",format="first_found", react = "silent")
-
-  if(is.null(balfinen.m)){
-    # aggregating febal to have the expected dimension by the older reporting code
-    febal.m <- setNames(febal.m, gsub(".([^.]*)$","",getNames(febal.m)))
-    mapping <- data.frame(from = getNames(febal.m),to = gsub("^[^.]+.","",getNames(febal.m)))
-    w <- setNames(prodFE[,,getNames(febal.m)], gsub(".([^.]*)$","",getNames(prodFE[,,getNames(febal.m)])))
-    febal.m <- toolAggregate(dimReduce(febal.m,3),mapping,weight = w, dim=3)
-    balfinen.m <- febal.m
-  }
-
-  cm_emiscen     <- readGDX(gdx,name='cm_emiscen',format="first_found")
-
-  q37_limit_secondary_steel_share.m <- readGDX(
-    gdx, name = 'q37_limit_secondary_steel_share', types = 'equation',
-    field = 'm', react = 'silent')
-
-  #####################################
-  #choose the CES entries names for transport
-  if (!is.null(esm2macro.m)) {
-  name_trsp=c("fepet","ueLDVt","fedie","ueHDVt","feelt","ueelTt")
-  name_trsp=name_trsp[name_trsp%in%getNames(esm2macro.m)]
-  }
-  #####################################
-
-  ####### calculate minimal temporal resolution #####
-  y <- Reduce(intersect,list(getYears(febal.m, as.integer = T),getYears(prodFE, as.integer = T),getYears(sebal.m, as.integer = T),getYears(prodSE, as.integer = T)))
-  febal.m        <- febal.m[,y,]
-  balfinen.m     <- balfinen.m[,y,]
-  budget.m       <- budget.m[,y,]
-  sebal.m        <- sebal.m[,y,]
-  if (!is.null(power_realisation)) {
-    sebalSeel.m    <- sebalSeel.m[,y,]
-  }
-  pm_pvp         <- pm_pvp[,y,]
-  pebal.m        <- pebal.m[,y,]
-  shift_p        <- shift_p[,y,]
-  mult_p         <- mult_p[,y,]
-  pric_mag       <- pric_mag[,y,]
-  pric_emu_pre   <- pric_emu_pre[,y,]
-  pric_emu_pre_shifted <- pric_emu_pre_shifted[,y,]
-  pric_emu       <- pric_emu[,y,]
-  bio_tax_factor <- bio_tax_factor[,y,]
-  if (!is.null(esm2macro.m)) {
-  esm2macro.m    <- esm2macro.m[,y,]
-  }
-  pm_dataemi     <- pm_dataemi[,y,]
-  pm_ts          <- pm_ts[,y,]
-  pm_pvpRegi     <- pm_pvpRegi[,y,]
-  pm_taxCO2eq    <- pm_taxCO2eq[,y,]
-  if (!is.null(pm_taxemiMkt)){
-        pm_taxemiMkt <- pm_taxemiMkt[,y,]
-  }
-  if (!is.null(pm_taxCO2eqSCC)) {
-       pm_taxCO2eqSCC <- pm_taxCO2eqSCC[,y,]
-  }
-  cesIO <- cesIO[,y,]
-
-  ####### pm_pvp = EPS results in fantasy carbon prices
-    for(t in getYears(pm_pvp)){
-     if(pm_pvp[,t,"good"] == 0){
-         pm_pvp[,t,"good"] = 0.0001;
-         }
-    }
-
-  ####### calculate reporting parameters ############
-  tmp <- NULL
-
 
   # Calculate and append new variables to magpie object
   # Costs and prices for purpose-grown 2nd gen. bioenergy
@@ -404,36 +252,35 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   # - results from emulator based on REMIND demand (after main solve)
   # - results from emulator based on REMIND demand multiplied with shiftfactor (after main solve)
 
-  time <- getYears(budget.m,as.integer=TRUE)
-  regs <- getRegions(budget.m)
-
-  # report variables
-  tmp <- NULL
-  tmp <- mbind(tmp,setNames(shift_p,                                                   "Internal|Price|Biomass|Shiftfactor ()"))
-  tmp <- mbind(tmp,setNames(mult_p,                                                    "Internal|Price|Biomass|Multfactor ()"))
-  tmp <- mbind(tmp,setNames(pric_mag * tdptwyr2dpgj,                                   "Internal|Price|Biomass|MAgPIE (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(pric_emu_pre * tdptwyr2dpgj,                               "Internal|Price|Biomass|Emulator presolve (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(pric_emu_pre_shifted * tdptwyr2dpgj,                       "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(pric_emu * tdptwyr2dpgj,                                   "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj,             "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"))
+  out <- mbind(
+    out,
+    setNames(shift_p, "Internal|Price|Biomass|Shiftfactor ()"),
+    setNames(mult_p, "Internal|Price|Biomass|Multfactor ()"),
+    setNames(pric_mag * tdptwyr2dpgj, "Internal|Price|Biomass|MAgPIE (US$2005/GJ)"),
+    setNames(pric_emu_pre * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve (US$2005/GJ)"),
+    setNames(pric_emu_pre_shifted * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"),
+    setNames(pric_emu * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"),
+    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"))
 
 
   # energy services
   if (!is.null(esm2macro.m)) {
-    tmp <- mbind(tmp,setNames(abs(esm2macro.m[,,name_trsp[2]]/(budget.m+1e-10)) * tdptwyr2dpgj , "Price|Energy Service|Transport nonLDV (US$2005/GJ)"))
-    tmp <- mbind(tmp,setNames(abs(esm2macro.m[,,name_trsp[1]]/(budget.m+1e-10)) * tdptwyr2dpgj , "Price|Energy Service|Transport LDV (US$2005/GJ)"))
+    out <- mbind(
+      out,
+      setNames(abs(esm2macro.m[,,name_trsp[2]]/(budget.m+1e-10)) * tdptwyr2dpgj , "Price|Energy Service|Transport nonLDV (US$2005/GJ)"),
+      setNames(abs(esm2macro.m[,,name_trsp[1]]/(budget.m+1e-10)) * tdptwyr2dpgj , "Price|Energy Service|Transport LDV (US$2005/GJ)"))
   }
 
 
-  tmp <- mbind(tmp,setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
-  tmp <- mbind(tmp,setNames(abs(pm_taxCO2eq) * 1000 * 12/44, "Price|Carbon|Guardrail (US$2005/t CO2)"))
-  CaptureBal_tmp <- new.magpie(getRegions(tmp), getYears(tmp), fill = NA)
+  out <- mbind(out,setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
+  out <- mbind(out,setNames(abs(pm_taxCO2eq) * 1000 * 12/44, "Price|Carbon|Guardrail (US$2005/t CO2)"))
+  CaptureBal_tmp <- new.magpie(getRegions(out), getYears(out), fill = NA)
   CaptureBal_tmp[,getYears(balcapture.m),] <- balcapture.m
-  tmp <- mbind(tmp, setNames(CaptureBal_tmp / (budget.m+1e-10) / 3.66 * 1e3,
+  out <- mbind(out, setNames(CaptureBal_tmp / (budget.m+1e-10) / 3.66 * 1e3,
                "Price|Carbon|Captured (US$2005/t CO2)"))
 
   if (is.null(regionSubsetList$EUR)) {
-    tmp <- mbind(tmp,setNames(pm_taxCO2eq * 1000 * 12/44, "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"))
+    out <- mbind(out,setNames(pm_taxCO2eq * 1000 * 12/44, "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"))
   } else {
     co2EUprice <- pm_taxCO2eq * 1000 * 12/44
     co2EUprice[getRegions(pm_taxCO2eq)[!getRegions(pm_taxCO2eq) %in% regionSubsetList$EUR],,] <- 0
@@ -441,21 +288,21 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
     for (r in regionSubsetList$EUR){
       co2EUprice[r,,] <- as.vector(co2EUprice[priceReg,,])
     }
-    tmp <- mbind(tmp,setNames(co2EUprice, "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"))
+    out <- mbind(out,setNames(co2EUprice, "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"))
   }
 
   if (!is.null(pm_taxemiMkt)) {
-    tmp <- mbind(tmp,setNames(pm_taxemiMkt[,,"ETS"] * 1000 * 12/44, "Price|Carbon|ETS (US$2005/t CO2)"))
-    tmp <- mbind(tmp,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)"))
-    tmp <- mbind(tmp,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESD (US$2005/t CO2)"))
+    out <- mbind(out,setNames(pm_taxemiMkt[,,"ETS"] * 1000 * 12/44, "Price|Carbon|ETS (US$2005/t CO2)"))
+    out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)"))
+    out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESD (US$2005/t CO2)"))
   }
 
   if (!is.null(pm_taxCO2eqSCC)) {
-      tmp <- mbind(tmp,setNames(abs(pm_taxCO2eqSCC) * 1000 * 12/44, "Price|Carbon|SCC (US$2005/t CO2)"))
+      out <- mbind(out,setNames(abs(pm_taxCO2eqSCC) * 1000 * 12/44, "Price|Carbon|SCC (US$2005/t CO2)"))
   }
 
-  tmp <- mbind(tmp,setNames(tmp[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
-  tmp <- mbind(tmp,setNames(tmp[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_CH4, "Price|CH4 (US$2005/t CH4)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_CH4, "Price|CH4 (US$2005/t CH4)"))
 
 
   # ---- mapping of weights for the variables for global aggregation ----
@@ -534,38 +381,45 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
                  "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)")
   }
 
-  ## bind new price variables to old variables
-  tmp <- mbind(tmp, out)
-
   ## moving averages
-  avgs <- grep("Moving Avg", getNames(tmp), value=TRUE)
+  avgs <- grep("Moving Avg", getNames(out), value=TRUE)
   int2ext <- c(int2ext, stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs))
+
+  ## bind to output object
+  if(is.null(output)){
+    output <- reportPE(gdx,regionSubsetList = regionSubsetList,t = t)
+    output <- mbind(output,reportSE(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportFE(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportEmi(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportExtraction(gdx,regionSubsetList = regionSubsetList,t = t))
+    output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList = regionSubsetList,t = t)[,getYears(output),])
+  }
 
   output[is.na(output)] <- 0  # substitute na by 0
 
   # add global prices
-  map <- data.frame(region=getRegions(tmp),world="GLO",stringsAsFactors=FALSE)
-  tmp_GLO <- new.magpie("GLO",getYears(tmp),magclass::getNames(tmp),fill=0)
+  map <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
+  tmp_GLO <- new.magpie("GLO",getYears(out),magclass::getNames(out),fill=0)
 
   for (i2e in names(int2ext)){
-    tmp_GLO["GLO",,i2e] <- speed_aggregate(tmp[,,i2e],map,weight=output[map$region,,int2ext[i2e]])
-    for(t in getYears(tmp)){
+    tmp_GLO["GLO",,i2e] <- speed_aggregate(out[,,i2e],map,weight=output[map$region,,int2ext[i2e]])
+    for(t in getYears(out)){
       if(all(output[map$region,t,int2ext[i2e]]==0)){
         tmp_GLO["GLO",t,i2e] <- NA
       }
     }
   }
-  tmp <- mbind(tmp,tmp_GLO)
+  out <- mbind(out,tmp_GLO)
 
   # add other region aggregations
   if (!is.null(regionSubsetList)){
-    tmp_RegAgg <- new.magpie(names(regionSubsetList),getYears(tmp),magclass::getNames(tmp),fill=0)
+    tmp_RegAgg <- new.magpie(names(regionSubsetList),getYears(out),magclass::getNames(out),fill=0)
     for(region in names(regionSubsetList)){
       tmp_RegAgg_ie2 <- do.call("mbind",lapply(names(int2ext), function(i2e) {
         map <- data.frame(region=regionSubsetList[[region]],parentRegion=region,stringsAsFactors=FALSE)
-        result <- speed_aggregate(tmp[regionSubsetList[[region]],,i2e],map,weight=output[regionSubsetList[[region]],,int2ext[i2e]])
+        result <- speed_aggregate(out[regionSubsetList[[region]],,i2e],map,weight=output[regionSubsetList[[region]],,int2ext[i2e]])
         getRegions(result) <- region
-        for(t in getYears(tmp)){
+        for(t in getYears(out)){
           if(all(output[regionSubsetList[[region]],t,int2ext[i2e]]==0)){
             result[region,t,i2e] <- NA
           }
@@ -574,45 +428,45 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
       }))
       tmp_RegAgg[region,,names(int2ext)] <- tmp_RegAgg_ie2[region,,names(int2ext)]
     }
-    tmp <- mbind(tmp,tmp_RegAgg)
+    out <- mbind(out, tmp_RegAgg)
   }
 
-  tmp[is.na(tmp)] <- 0  # tmp is NA if weight is zero for all regions within the GLO or the specific region aggregation. Therefore, we replace all NAs with zeros.
+  out[is.na(out)] <- 0  # out is NA if weight is zero for all regions within the GLO or the specific region aggregation. Therefore, we replace all NAs with zeros.
 
   # prices that are same for all regions, including GLO
-  glob_price <- new.magpie(getRegions(tmp),getYears(tmp),fill=0)
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"peur"]*1000
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP1|Uranium (billionDpktU)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"peoil"]*1000
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP1|Oil (billionDpTWyr)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"pegas"]*1000
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP1|Gas (billionDpTWyr)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"pecoal"]*1000
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP1|Coal (billionDpTWyr)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"pebiolc"]*1000
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP1|Biomass (billionDpTWyr)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"good"]*1000
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP2|Good ()"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"perm"]
-  tmp <- mbind(tmp,setNames(glob_price,                             "PVP3|Permit ()"))
+  glob_price <- new.magpie(getRegions(out),getYears(out),fill=0)
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"peur"]*1000
+  out <- mbind(out,setNames(glob_price,                             "PVP1|Uranium (billionDpktU)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"peoil"]*1000
+  out <- mbind(out,setNames(glob_price,                             "PVP1|Oil (billionDpTWyr)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"pegas"]*1000
+  out <- mbind(out,setNames(glob_price,                             "PVP1|Gas (billionDpTWyr)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"pecoal"]*1000
+  out <- mbind(out,setNames(glob_price,                             "PVP1|Coal (billionDpTWyr)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"pebiolc"]*1000
+  out <- mbind(out,setNames(glob_price,                             "PVP1|Biomass (billionDpTWyr)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"good"]*1000
+  out <- mbind(out,setNames(glob_price,                             "PVP2|Good ()"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"perm"]
+  out <- mbind(out,setNames(glob_price,                             "PVP3|Permit ()"))
 
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"peur"]/pm_pvp[,,"good"] * tdptwyr2dpgj
-  tmp <- mbind(tmp,setNames(glob_price,                                       "Price|Uranium|World Market (US$2005/GJ)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"peoil"]/pm_pvp[,,"good"] * tdptwyr2dpgj
-  tmp <- mbind(tmp,setNames(glob_price,                                       "Price|Oil|World Market (US$2005/GJ)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"pegas"]/pm_pvp[,,"good"] * tdptwyr2dpgj
-  tmp <- mbind(tmp,setNames(glob_price,                                       "Price|Gas|World Market (US$2005/GJ)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"pecoal"]/pm_pvp[,,"good"] * tdptwyr2dpgj
-  tmp <- mbind(tmp,setNames(glob_price,                                       "Price|Coal|World Market (US$2005/GJ)"))
-  for(i in getRegions(tmp)) glob_price[i,,] <- pm_pvp[,,"pebiolc"]/pm_pvp[,,"good"] * tdptwyr2dpgj
-  tmp <- mbind(tmp,setNames(glob_price,                                       "Price|Biomass|World Market (US$2005/GJ)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"peur"]/pm_pvp[,,"good"] * tdptwyr2dpgj
+  out <- mbind(out,setNames(glob_price,                                       "Price|Uranium|World Market (US$2005/GJ)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"peoil"]/pm_pvp[,,"good"] * tdptwyr2dpgj
+  out <- mbind(out,setNames(glob_price,                                       "Price|Oil|World Market (US$2005/GJ)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"pegas"]/pm_pvp[,,"good"] * tdptwyr2dpgj
+  out <- mbind(out,setNames(glob_price,                                       "Price|Gas|World Market (US$2005/GJ)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"pecoal"]/pm_pvp[,,"good"] * tdptwyr2dpgj
+  out <- mbind(out,setNames(glob_price,                                       "Price|Coal|World Market (US$2005/GJ)"))
+  for(i in getRegions(out)) glob_price[i,,] <- pm_pvp[,,"pebiolc"]/pm_pvp[,,"good"] * tdptwyr2dpgj
+  out <- mbind(out,setNames(glob_price,                                       "Price|Biomass|World Market (US$2005/GJ)"))
 
   ## special global prices
 
   #AJS calc global carbon price as average over regional pm_pvpRegi's, weighted by total emissions.
   regi_on_gdx <- unique(readGDX(gdx, name = "regi2iso")[,1])
 
-  tmp["GLO",,"Price|Carbon (US$2005/t CO2)"] <-
+  out["GLO",,"Price|Carbon (US$2005/t CO2)"] <-
     dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
     dimSums(output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
     (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44
@@ -620,28 +474,28 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
   # add other region aggregations carbon price as average over regional pm_pvpRegi's, weighted by total emissions.
   if (!is.null(regionSubsetList)){
     for(region in names(regionSubsetList)){
-      tmp[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
+      out[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
         dimSums(output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
         (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44;
     }
   }
 
   ## not meaningful global prices set to NA
-  tmp["GLO",,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
+  out["GLO",,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
 
   if (!is.null(regionSubsetList$EUR))
-    tmp["EUR",,"Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"] <- as.vector(co2EUprice[priceReg,,])
+    out["EUR",,"Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"] <- as.vector(co2EUprice[priceReg,,])
 
   ## not meaningful region aggregation prices set to NA
   if (!is.null(regionSubsetList)){
     for(region in names(regionSubsetList)){
-      tmp[region,,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
+      out[region,,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
     }
   }
 
   # ---- debug information for industry/subsectors ----
   if ('subsectors' == indu_mod & !is.null(q37_limit_secondary_steel_share.m)) {
-    .x <- q37_limit_secondary_steel_share.m[,y,] / budget.m
+    .x <- q37_limit_secondary_steel_share.m[, t,] / budget.m
     .x <- mbind(.x, calc_regionSubset_sums(.x, regionSubsetList))
 
     tmp2 <- mbind(
@@ -662,7 +516,7 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
             c('ue_otherInd',        '|other',           'arbitrary unit', 1)),
           function(x) {
             setNames(
-              ( tmp[,,paste0('Price|CES_input|', x[1], ' ('), pmatch = 'left']
+              ( out[,,paste0('Price|CES_input|', x[1], ' ('), pmatch = 'left']
                 * as.numeric(x[4])
               ),
               paste0('Debug|Price|Industry', x[2], ' (US$2005/', x[3], ')'))
@@ -670,8 +524,8 @@ reportPrices <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060
       )
     )
 
-    tmp <- mbind(tmp, tmp2)
+    out <- mbind(out, tmp2)
   }
 
-  return(tmp)
+  return(out)
 }
