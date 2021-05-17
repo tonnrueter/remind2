@@ -1688,6 +1688,37 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   
 
   ## ---- CDR ----
+  swlatex(sw,"\\subsubsection{CDR}")
+  
+  tot <-"Emi|CO2 (Mt CO2/yr)"
+  items <- c("Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
+             "Emi|CO2|Land-Use Change (Mt CO2/yr)",
+             "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|EW (Mt CO2/yr)")
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi|CO2 (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
   
   
   p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|BECCS (Mt CO2/yr)"],x_hist=NULL,
