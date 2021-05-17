@@ -354,8 +354,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                ## transport prices
                "Price|Final Energy|Transport|Electricity (US$2005/GJ)"       = "FE|Transport|+|Electricity (EJ/yr)",
                "Price|Final Energy|Transport|Liquids (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
-               "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|+|Liquids (EJ/yr)",
-               "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|+|Liquids (EJ/yr)",
                "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
 
                ## buildings prices
@@ -374,12 +372,23 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                "Price|Final Energy|Industry|Heat (US$2005/GJ)"       = "FE|Industry|+|Heat (EJ/yr)",
                "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|+|Solids (EJ/yr)"
                )
-
-
-  if (module2realisation["transport",2] == "edge_esm") {
+  
+  
+  
+  # transport-specific mappings depending on realization
+  
+  if (module2realisation["transport",2] == "complex") {
     int2ext <- c(int2ext,
-                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)")
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|+|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|+|Liquids (EJ/yr)")
+  } else if (module2realisation["transport",2] == "edge_esm") {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|Diesel Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|Pass|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)")          
   }
+  
+ 
 
   ## moving averages
   avgs <- grep("Moving Avg", getNames(out), value=TRUE)

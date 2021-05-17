@@ -1116,6 +1116,16 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                "ES|Transport|Freight|Long distance (bn tkm/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_pass_lo",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # trillion to billion pkm
                "ES|Transport|Pass|Long distance (bn pkm/yr)"))
+    
+    
+    # calculate total diesel and petrol liquids across all modes, needed in reportPrices
+    out <- mbind(out,
+                 setNames(out[,,"FE|Transport|Pass|Short-Medium distance|Diesel Liquids (EJ/yr)"]+
+                          out[,,"FE|Transport|Pass|Long distance|Diesel Liquids (EJ/yr)"] +
+                          out[,,"FE|Transport|Freight|Short-Medium distance|Diesel Liquids (EJ/yr)"] +
+                          out[,,"FE|Transport|Freight|Long distance|Diesel Liquids (EJ/yr)"],
+                          "FE|Transport|Diesel Liquids (EJ/yr)"))
+
   }
   
   
