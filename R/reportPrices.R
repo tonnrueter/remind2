@@ -14,7 +14,7 @@
 #'
 #' @return MAgPIE object - contains the price variables
 #' @importFrom luscale speed_aggregate
-#' @author David Klein
+#' @author Alois Dirnaichner, Felix Schreyer, David Klein
 #' @seealso \code{\link{convGDX2MIF}}
 #' @examples
 #'
