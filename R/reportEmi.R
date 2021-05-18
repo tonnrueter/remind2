@@ -827,6 +827,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   EmiMAC[,, mac.map$all_enty] <- vm_emiMacSector[,,mac.map$all_enty]
   
   
+  ### 5.1 non-CO2 GHG by sector ----
   
   # CH4 and N2O Emissions by sector in native MtCH4 and kt N2O units
   out <- mbind(out,
@@ -927,6 +928,55 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                setNames(  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2,
                           "Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)")
   )
+  
+  
+  
+  ### 5.2 Total GHG for specific sectors ----
+  
+  ## Sectors that are often needed to for data comparisons like IPCC sectors etc. 
+  
+  # AFOLU (agriculture, forestry and other land-use) GHG emissions (IPCC category 3 and 4)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"]
+                      + out[,,"Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"]
+                      + out[,,"Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"]
+                      + out[,,"Emi|GHG|CH4|+|Agriculture (Mt CO2eq/yr)"]
+                      + out[,,"Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"],
+                            "Emi|GHG|AFOLU (Mt CO2eq/yr)"))
+  
+  
+  # Energy GHG Emissions incl. fugitive emissions (IPCC category 1) 
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"],
+                            "Emi|GHG|Energy (Mt CO2eq/yr)"))
+  
+  
+  # Industry GHG Emissions (energy-related and process, IPCC catogory 1A2 + IPCC category 2)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
+                        + out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
+                        "Emi|GHG|Industry (Mt CO2eq/yr)"))
+  
+  # Industrial Process GHG Emissions (IPCC category 2)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
+                        "Emi|GHG|Process|Industry (Mt CO2eq/yr)"))
+  
+  
+  # Waste Emissions (IPCC category 5), 
+  # note: waste CO2 emissions from combustion of waste in incineration plants are accounted here but in industry energy demand emimssions 
+  # as industry energy emissions are calculated based on the total FE (incl. non-energy use) going into industry
+  out <- mbind(out,
+               setNames(out[,,"Emi|GHG|CH4|+|Waste (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Waste (Mt CO2eq/yr)"],
+                        "Emi|GHG|Waste (Mt CO2eq/yr)"))
+  
+  
   
   
   ## 6. Emissions across markets ----
@@ -1063,6 +1113,8 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   )
   
   
+  
+  
   ## 7. Internal/Diagnostic Variables ----
   
   # (for diagnostics/other reporting scripts) 
@@ -1103,6 +1155,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|GHG|++|Other (Mt CO2eq/yr)",
                          "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)",
                          "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
+                         "Emi|GHG|Energy (Mt CO2eq/yr)",
                          
                          # CO2 Emissions
                          "Emi|CO2 (Mt CO2/yr)",
