@@ -802,12 +802,12 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\twocolumn")
-  p <- mipLineHistorical(data[mainReg,,"Price|Carbon|ESD (US$2005/t CO2)"],x_hist=NULL,
-                         ylab='Price|Carbon|ESD [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Carbon|ESR (US$2005/t CO2)"],x_hist=NULL,
+                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Carbon|ESD (US$2005/t CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Carbon|ESD [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Carbon|ESR (US$2005/t CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\twocolumn")
