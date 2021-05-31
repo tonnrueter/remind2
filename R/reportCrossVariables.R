@@ -197,9 +197,9 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
-    output[,,"FE|Transport|+|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Liquids|Transport (US$2005/GJ)"] +
-    output[,,"FE|Transport|+|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Hydrogen|Transport (US$2005/GJ)"] +
-    output[,,"FE|Transport|+|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Electricity|Transport (US$2005/GJ)"], 
+    output[,,"FE|Transport|+|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
+    output[,,"FE|Transport|+|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
+    output[,,"FE|Transport|+|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"], 
                        "Expenditure|Transport|Fuel (billion $US/yr)"))
   
   # calculate intensities growth
