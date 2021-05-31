@@ -931,11 +931,121 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   
   
-  ### 5.2 Total GHG for specific sectors ----
+  ### 5.2 Total GHG across sectors ----
   
-  ## Sectors that are often needed to for data comparisons like IPCC sectors etc. 
+  ## GHG emissions across sectors
   
-  # AFOLU (agriculture, forestry and other land-use) GHG emissions (IPCC category 3 and 4)
+  # noting which IPCC sector it comes close to
+  
+  
+  
+  # Energy GHG Emissions incl. fugitive emissions (IPCC category 1) 
+  # Note: unclear status of negative emissions (non-BECCS CDR we have in separate sector below)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Transport (Mt CO2eq/yr)"],
+                        "Emi|GHG|+++|Energy (Mt CO2eq/yr)"))
+  
+  # Industrial Process GHG Emissions (IPCC category 2)
+  out <-  mbind(out,
+                setNames(out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
+                         + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
+                         "Emi|GHG|+++|Process|Industry (Mt CO2eq/yr)"))
+  
+  # agriculture GHG Emissions (without energy-use in agriculture) (IPCC category 3)
+  out <-  mbind(out,
+              setNames(out[,,"Emi|GHG|CH4|+|Agriculture (Mt CO2eq/yr)"]
+                     + out[,,"Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"],
+                         "Emi|GHG|+++|Agriculture (Mt CO2eq/yr)"))
+  
+  
+  # LULUCF GHG Emissions (IPCC category 4)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"],
+                        "Emi|GHG|+++|Land-Use Change (Mt CO2eq/yr)"))
+  
+  # Waste Emissions (IPCC category 5), 
+  # note: waste CO2 emissions from combustion of waste in incineration plants are accounted here but in industry energy demand emimssions 
+  # as industry energy emissions are calculated based on the total FE (incl. non-energy use) going into industry
+  out <- mbind(out,
+               setNames(out[,,"Emi|GHG|CH4|+|Waste (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Waste (Mt CO2eq/yr)"],
+                        "Emi|GHG|+++|Waste (Mt CO2eq/yr)"))
+  
+  # non-BECCS CDR from CDR module
+  out <-  mbind(out,
+                setNames(out[,,"Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)"],
+                         "Emi|GHG|+++|non-BECCS CDR (Mt CO2eq/yr)"))
+  
+  ## GHG emissions within energy sector
+  
+  # GHG energy supply emissions, incl. fugitive (IPCC category 1A1+1B1)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|+|Supply (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"]
+                        + out[,,"Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"],
+                        "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"))
+  
+  # GHG energy demand emissions 
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|+|Demand (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Transport (Mt CO2eq/yr)"],
+                        "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"))
+  
+  ## gross GHG variables (ecxl. negative emissions from BECCS)
+  out <- mbind(out,
+  
+  # total gross supply emissions
+  setNames(out[,,"Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"]
+           + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+           * p_share_CCS,
+           "Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"),
+  
+  
+  # total gross demand emissions
+  setNames(out[,,"Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"],
+           "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)"),
+  
+  # total gross energy emissions
+  setNames(out[,,"Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
+           + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
+           * p_share_CCS,
+           "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
+  
+  
+  )
+
+  
+  # electric and non-electric supply GHG emissions (needed for total GHG stacked plots with gross emissions)
+  
+  
+  # split into electric and non-electric energy supply emissions
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"],
+                        "Emi|GHG|Gross|Energy|Supply|Electricity (Mt CO2eq/yr)"),              
+               setNames(out[,,"Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"]
+                        - out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"],
+                        "Emi|GHG|Gross|Energy|Supply|Non-electric (Mt CO2eq/yr)"))
+  
+  
+  
+  ## further GHG emissions variables per sector that are often needed 
+  
+  # Industry GHG Emissions (energy-related and process, IPCC catogory 1A2 + IPCC category 2)
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
+                        + out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
+                        + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
+                        "Emi|GHG|Industry (Mt CO2eq/yr)"))
+  
+
+  # AFOLU (agriculture and lulucf) GHG emissions (IPCC category 3 and 4)
   out <- mbind(out,
                setNames(out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"]
                       + out[,,"Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"]
@@ -945,36 +1055,8 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                             "Emi|GHG|AFOLU (Mt CO2eq/yr)"))
   
   
-  # Energy GHG Emissions incl. fugitive emissions (IPCC category 1) 
-  out <- mbind(out,
-               setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
-                        + out[,,"Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"]
-                        + out[,,"Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"]
-                        + out[,,"Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"],
-                            "Emi|GHG|Energy (Mt CO2eq/yr)"))
-  
-  
-  # Industry GHG Emissions (energy-related and process, IPCC catogory 1A2 + IPCC category 2)
-  out <- mbind(out,
-               setNames(out[,,"Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
-                        + out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
-                        + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
-                        "Emi|GHG|Industry (Mt CO2eq/yr)"))
-  
-  # Industrial Process GHG Emissions (IPCC category 2)
-  out <- mbind(out,
-               setNames(out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
-                        + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
-                        "Emi|GHG|Process|Industry (Mt CO2eq/yr)"))
-  
-  
-  # Waste Emissions (IPCC category 5), 
-  # note: waste CO2 emissions from combustion of waste in incineration plants are accounted here but in industry energy demand emimssions 
-  # as industry energy emissions are calculated based on the total FE (incl. non-energy use) going into industry
-  out <- mbind(out,
-               setNames(out[,,"Emi|GHG|CH4|+|Waste (Mt CO2eq/yr)"]
-                        + out[,,"Emi|GHG|N2O|+|Waste (Mt CO2eq/yr)"],
-                        "Emi|GHG|Waste (Mt CO2eq/yr)"))
+
+
   
   
   
@@ -1155,7 +1237,12 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|GHG|++|Other (Mt CO2eq/yr)",
                          "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)",
                          "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
-                         "Emi|GHG|Energy (Mt CO2eq/yr)",
+                         "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
+                         "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
+                         
+                         # Gross GHG Emissions
+                         "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
+                         "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)",
                          
                          # CO2 Emissions
                          "Emi|CO2 (Mt CO2/yr)",
