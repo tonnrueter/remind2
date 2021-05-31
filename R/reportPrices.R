@@ -293,8 +293,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   if (!is.null(pm_taxemiMkt)) {
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ETS"] * 1000 * 12/44, "Price|Carbon|ETS (US$2005/t CO2)"))
-    out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)"))
-    out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESD (US$2005/t CO2)"))
+    out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESR (US$2005/t CO2)"))
   }
 
   if (!is.null(pm_taxCO2eqSCC)) {
@@ -334,8 +333,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Secondary Energy|Liquids|Hydrogen (US$2005/GJ)"             = "SE|Liquids|Hydrogen (EJ/yr)",
     "Price|Secondary Energy|Gases|Hydrogen (US$2005/GJ)"             = "SE|Gases|Hydrogen (EJ/yr)",
     "Price|Carbon|ETS (US$2005/t CO2)"                        = "Emi|GHG|++|ETS (Mt CO2eq/yr)",
-    "Price|Carbon|National Climate Target Non-ETS (US$2005/t CO2)" = "Emi|GHG|++|Other (Mt CO2eq/yr)",
-    "Price|Carbon|ESD (US$2005/t CO2)"                        = "Emi|GHG|++|ESR (Mt CO2eq/yr)"
+    "Price|Carbon|ESR (US$2005/t CO2)"                        = "Emi|GHG|++|ESR (Mt CO2eq/yr)"
     )
 
   if (!is.null(esm2macro.m)) {

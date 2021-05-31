@@ -670,12 +670,15 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                # underground carbon storage
                setNames(  dimSums(vm_co2CCS, dim=3, na.rm = T)*GtC_2_MtCO2,
                           "Carbon Management|Carbon Sinks|+|Storage (Mt CO2/yr)"),
+               # carbon in synfuels
+               setNames(  collapseDim(dimSums(vm_co2CCUshort[,,c("MeOH","h22ch4")], dim=3, na.rm = T))*GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sinks|+|CCU (Mt CO2/yr)"),
                # carbon in synthetic liquids
                setNames(  collapseDim(vm_co2CCUshort[,,"MeOH"])*GtC_2_MtCO2,
-                          "Carbon Management|Carbon Sinks|+|Synthetic Liquids (Mt CO2/yr)"),
+                          "Carbon Management|Carbon Sinks|CCU|+|Synthetic Liquids (Mt CO2/yr)"),
                # carbon in synthetic liquids
                setNames(  collapseDim(vm_co2CCUshort[,,"h22ch4"])*GtC_2_MtCO2,
-                          "Carbon Management|Carbon Sinks|+|Synthetic Gases (Mt CO2/yr)"),
+                          "Carbon Management|Carbon Sinks|CCU|+|Synthetic Gases (Mt CO2/yr)"),
                # total CO2 used
                setNames(  (dimSums(vm_co2CCS, dim=3, na.rm = T) + dimSums(vm_co2CCUshort, dim=3, na.rm = T))*GtC_2_MtCO2,
                           "Carbon Management|Carbon Sinks (Mt CO2/yr)")               
@@ -1086,7 +1089,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          + dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="other"), dim=3) * sm_tgch4_2_pgc * GtC_2_MtCO2
                          + dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="other"), dim=3) * sm_tgn_2_pgc * GtC_2_MtCO2
                          + dimSums(vm_emiFgas[,,"emiFgasTotal"], dim=3),
-                         "Emi|GHG|++|Other (Mt CO2eq/yr)"))
+                         "Emi|GHG|++|Outside ETS and ESR (Mt CO2eq/yr)"))
   
   
   
@@ -1098,21 +1101,21 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="ES"), dim=3) * GtC_2_MtCO2,
                          "Emi|CO2|++|ESR (Mt CO2/yr)"),
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="co2",all_emiMkt="other"), dim=3) * GtC_2_MtCO2,
-                         "Emi|CO2|++|Other (Mt CO2/yr)"),
+                         "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)"),
                # CH4
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="ETS"), dim=3),
                          "Emi|CH4|++|ETS (Mt CH4/yr)"),
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="ES"), dim=3),
                          "Emi|CH4|++|ESR (Mt CH4/yr)"),
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="ch4",all_emiMkt="other"), dim=3),
-                         "Emi|CH4|++|Other (Mt CH4/yr)"),
+                         "Emi|CH4|++|Outside ETS and ESR (Mt CH4/yr)"),
                # N2O
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="ETS"), dim=3) * MtN2_to_ktN2O,
                          "Emi|N2O|++|ETS (kt N2O/yr)"),
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="ES"), dim=3) * MtN2_to_ktN2O,
                          "Emi|N2O|++|ESR (kt N2O/yr)"),
                setNames( dimSums(mselect(vm_emiAllMkt, all_enty="n2o",all_emiMkt="other"), dim=3) * MtN2_to_ktN2O,
-                         "Emi|N2O|++|Other (kt N2O/yr)"))
+                         "Emi|N2O|++|Outside ETS and ESR (kt N2O/yr)"))
   
   
   # market GHG emissions across sectors
@@ -1153,7 +1156,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                setNames(
                  # demand-side co2 emissions (bunkers)
                  dimSums(mselect(EmiFeCarrier[,,"other"], emi_sectors="trans"), dim=3)*GtC_2_MtCO2,
-                 "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)"),
+                 "Emi|GHG|Outside ETS and ESR|+|Transport (Mt CO2eq/yr)"),
                
                # Buildings
                setNames(
@@ -1195,12 +1198,12 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                  out[,,"Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"]
                  + out[,,"Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"]
                  + out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
-                 "Emi|GHG|Other|+|Land-Use Change (Mt CO2eq/yr)"),
+                 "Emi|GHG|Outside ETS and ESR|+|Land-Use Change (Mt CO2eq/yr)"),
                
                # F-Gases
                setNames(
                  out[,,"Emi|GHG|+|F-Gases (Mt CO2eq/yr)"],
-                 "Emi|GHG|Other|+|F-Gases (Mt CO2eq/yr)")
+                 "Emi|GHG|Outside ETS and ESR|+|F-Gases (Mt CO2eq/yr)")
                
   )
   
@@ -1244,8 +1247,8 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          # GHG emissions
                          "Emi|GHG (Mt CO2eq/yr)",
                          "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
-                         "Emi|GHG|++|Other (Mt CO2eq/yr)",
-                         "Emi|GHG|Other|+|Transport (Mt CO2eq/yr)",
+                         "Emi|GHG|++|Outside ETS and ESR (Mt CO2eq/yr)",
+                         "Emi|GHG|Outside ETS and ESR|+|Transport (Mt CO2eq/yr)",
                          "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
                          "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
                          "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
@@ -1261,7 +1264,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
                          "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
                          "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
-                         "Emi|CO2|++|Other (Mt CO2/yr)",
+                         "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)",
                          
                          # Gross CO2 Emissions
                          "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)",

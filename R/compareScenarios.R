@@ -844,12 +844,12 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\twocolumn")
-  p <- mipLineHistorical(data[mainReg,,"Price|Carbon|ESD (US$2005/t CO2)"],x_hist=NULL,
-                         ylab='Price|Carbon|ESD [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  p <- mipLineHistorical(data[mainReg,,"Price|Carbon|ESR (US$2005/t CO2)"],x_hist=NULL,
+                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Carbon|ESD (US$2005/t CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Carbon|ESD [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  p <- mipLineHistorical(data[,,"Price|Carbon|ESR (US$2005/t CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\twocolumn")
@@ -1577,10 +1577,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     swlatex(sw,"\\subsubsection{Other - Outside ETS and ESR}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Other (Mt CO2eq/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Outside ETS and ESR (Mt CO2eq/yr)"],
                            ylab='Emi|GHG|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
-    p <- mipLineHistorical(data[,,"Emi|GHG|Other (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
+    p <- mipLineHistorical(data[,,"Emi|GHG|Outside ETS and ESR (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|Other - outside ETS and ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     swlatex(sw,"\\twocolumn")
@@ -1955,18 +1955,18 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     
     swlatex(sw,"\\subsubsection{GHG Other Emissions - Outisde ETS and ESR}")
     
-    tot <-"Emi|GHG|Other (Mt CO2eq/yr)"
+    tot <-"Emi|GHG|Outside ETS and ESR (Mt CO2eq/yr)"
     items <- c(
-      "Emi|GHG|Other|Transport (Mt CO2eq/yr)",
-      "Emi|GHG|Other|Land-Use Change (Mt CO2eq/yr)",
-      "Emi|GHG|Other|F-Gases (Mt CO2eq/yr)")
+      "Emi|GHG|Outside ETS and ESR|Transport (Mt CO2eq/yr)",
+      "Emi|GHG|Outside ETS and ESR|Land-Use Change (Mt CO2eq/yr)",
+      "Emi|GHG|Outside ETS and ESR|F-Gases (Mt CO2eq/yr)")
     
     
     var <- data[,,intersect(items,getNames(data,dim=3))]
     
     p <- mipArea(var[mainReg,,],scales="free_y", total = F)
     p <- p + theme(legend.position="bottom") + 
-      scale_y_continuous("Emi|GHG|Other - Outside ETS and ESR (Mt CO2eq/yr)") +
+      scale_y_continuous("Emi|GHG|Outside ETS and ESR (Mt CO2eq/yr)") +
       geom_line(data=as.quitte(data[mainReg,,tot]), 
                 mapping=aes(period, value),
                 size=1.3)
@@ -2008,11 +2008,11 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Other (Mt CO2/yr)"],x_hist=NULL,
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Outside ETS and ESR (Mt CO2/yr)"],x_hist=NULL,
                            ylab='Emi|CO2|Other - Outside ETS and ESR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
     
-    p <- mipLineHistorical(data[,,"Emi|CO2|Other (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+    p <- mipLineHistorical(data[,,"Emi|CO2|Outside ETS and ESR (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                            ylab='Emi|CO2|Other - Outside ETS and ESR [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
@@ -2037,11 +2037,11 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|CH4|Other (Mt CH4/yr)"],x_hist=NULL,
+    p <- mipLineHistorical(data[mainReg,,"Emi|CH4|Outside ETS and ESR (Mt CH4/yr)"],x_hist=NULL,
                            ylab='Emi|CH4|Other - Outside ETS and ESR [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
     
-    p <- mipLineHistorical(data[,,"Emi|CH4|Other (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+    p <- mipLineHistorical(data[,,"Emi|CH4|Outside ETS and ESR (Mt CH4/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                            ylab='Emi|CH4|Other - Outside ETS and ESR [Mt CH4/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
@@ -2066,11 +2066,11 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     
-    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|Other (kt N2O/yr)"],x_hist=NULL,
+    p <- mipLineHistorical(data[mainReg,,"Emi|N2O|Outside ETS and ESR (kt N2O/yr)"],x_hist=NULL,
                            ylab='Emi|N2O|Other - Outside ETS and ESR [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")  
     
-    p <- mipLineHistorical(data[,,"Emi|N2O|Other (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+    p <- mipLineHistorical(data[,,"Emi|N2O|Outside ETS and ESR (kt N2O/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                            ylab='Emi|N2O|Other - Outside ETS and ESR [kt N2O/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
