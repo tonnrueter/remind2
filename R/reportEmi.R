@@ -469,15 +469,12 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   # (following q_emiAllMkt)
   
   out <- mbind(out,
-               # process CO2 (so far only cement process emissions in REMIND)
+               # industrial process CO2 (so far only cement process emissions in REMIND)
                setNames(dimSums(vm_emiMacSector[,,"co2cement_process"],dim=3) * GtC_2_MtCO2,
-                        "Emi|CO2|+|Process (Mt CO2/yr)"),
-               # process industry CO2 (so far only cement process emissions in REMIND)
-               setNames(dimSums(vm_emiMacSector[,,"co2cement_process"],dim=3) * GtC_2_MtCO2,
-                        "Emi|CO2|Process|+|Industry (Mt CO2/yr)"),
+                        "Emi|CO2|+|Industrial Processes (Mt CO2/yr)"),
                # process industry cement CO2 
                setNames(dimSums(vm_emiMacSector[,,"co2cement_process"],dim=3) * GtC_2_MtCO2,
-                        "Emi|CO2|Process|Industry|+|Cement (Mt CO2/yr)"),
+                        "Emi|CO2|Industrial Processes|+|Cement (Mt CO2/yr)"),
                # land-use change CO2 
                setNames(dimSums(vm_emiMacSector[,,"co2luc"],dim=3) * GtC_2_MtCO2,
                         "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
@@ -491,7 +488,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   #### total energy yand industry CO2 emissions
   out <- mbind(out, 
                setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
-                        + out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"],
+                        + out[,,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"],
                         "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"))
   
   #### total CO2 emissions
@@ -951,9 +948,9 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   # Industrial Process GHG Emissions (IPCC category 2)
   out <-  mbind(out,
-                setNames(out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
+                setNames(out[,,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]
                          + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
-                         "Emi|GHG|+++|Process|Industry (Mt CO2eq/yr)"))
+                         "Emi|GHG|+++|Industrial Processes (Mt CO2eq/yr)"))
   
   # agriculture GHG Emissions (without energy-use in agriculture) (IPCC category 3)
   out <-  mbind(out,
@@ -998,6 +995,19 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                         + out[,,"Emi|GHG|N2O|+|Transport (Mt CO2eq/yr)"],
                         "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"))
   
+  
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)"],
+                        "Emi|GHG|Energy|Demand|+|Buildings (Mt CO2eq/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"],
+                        "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)"]
+                      + out[,,"Emi|GHG|N2O|+|Transport (Mt CO2eq/yr)"],
+                        "Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)"))
+  
+  
+
+  
   ## gross GHG variables (ecxl. negative emissions from BECCS)
   out <- mbind(out,
   
@@ -1040,7 +1050,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   # Industry GHG Emissions (energy-related and process, IPCC catogory 1A2 + IPCC category 2)
   out <- mbind(out,
                setNames(out[,,"Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
-                        + out[,,"Emi|CO2|Process|+|Industry (Mt CO2/yr)"]
+                        + out[,,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]
                         + out[,,"Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"],
                         "Emi|GHG|Industry (Mt CO2eq/yr)"))
   
@@ -1239,6 +1249,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
                          "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
                          "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
+                         "Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)",
                          
                          # Gross GHG Emissions
                          "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
@@ -1298,7 +1309,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                      "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
                      "Emi|CO2|+|Energy (Mt CO2/yr)",
                      "Emi|CO2|+|Land-Use Change (Mt CO2/yr)",
-                     "Emi|CO2|+|Process (Mt CO2/yr)",
+                     "Emi|CO2|+|Industrial Processes (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)",
