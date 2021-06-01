@@ -500,39 +500,44 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     }
   }
 
-  # ---- debug information for industry/subsectors ----
-  if ('subsectors' == indu_mod & !is.null(q37_limit_secondary_steel_share.m)) {
-    .x <- q37_limit_secondary_steel_share.m[, t,] / budget.m
-    .x <- mbind(.x, calc_regionSubset_sums(.x, regionSubsetList))
-
-    tmp2 <- mbind(
-      # fake some GLO data
-      setNames(
-        mbind(.x, dimSums(.x * NA, dim = 1)),
-        'Debug|Industry|Secondary Steel Premium (US$2005)'),
-
-      mbind(
-        lapply(
-          list(
-            c('ue_industry',        '',                 'arbitrary unit', 1),
-            c('ue_cement',          '|Cement',          't cement',       1e3),
-            c('ue_chemicals',       '|Chemicals',       'arbitrary unit', 1),
-            c('ue_steel',           '|Steel',           't Steel',        1e3),
-            c('ue_steel_primary',   '|Steel|Primary',   't Steel',        1e3),
-            c('ue_steel_secondary', '|Steel|Secondary', 't Steel',        1e3),
-            c('ue_otherInd',        '|other',           'arbitrary unit', 1)),
-          function(x) {
-            setNames(
-              ( out[,,paste0('Price|CES_input|', x[1], ' ('), pmatch = 'left']
-                * as.numeric(x[4])
-              ),
-              paste0('Debug|Price|Industry', x[2], ' (US$2005/', x[3], ')'))
-          })
-      )
-    )
-
-    out <- mbind(out, tmp2)
-  }
+  # comment out this section for now as errors, debug this section if needed
+  # # ---- debug information for industry/subsectors ----
+  # if ('subsectors' == indu_mod & !is.null(q37_limit_secondary_steel_share.m)) {
+  #   
+  #   t <- getYears(budget.m)
+  #   
+  #   .x <- q37_limit_secondary_steel_share.m[, t,] / budget.m
+  #   .x <- mbind(.x, calc_regionSubset_sums(.x, regionSubsetList))
+  #   
+  # 
+  #   tmp2 <- mbind(
+  #     # fake some GLO data
+  #     setNames(
+  #       mbind(.x, dimSums(.x * NA, dim = 1)),
+  #       'Debug|Industry|Secondary Steel Premium (US$2005)'),
+  # 
+  #     mbind(
+  #       lapply(
+  #         list(
+  #           c('ue_industry',        '',                 'arbitrary unit', 1),
+  #           c('ue_cement',          '|Cement',          't cement',       1e3),
+  #           c('ue_chemicals',       '|Chemicals',       'arbitrary unit', 1),
+  #           c('ue_steel',           '|Steel',           't Steel',        1e3),
+  #           c('ue_steel_primary',   '|Steel|Primary',   't Steel',        1e3),
+  #           c('ue_steel_secondary', '|Steel|Secondary', 't Steel',        1e3),
+  #           c('ue_otherInd',        '|other',           'arbitrary unit', 1)),
+  #         function(x) {
+  #           setNames(
+  #             ( out[,,paste0('Price|CES_input|', x[1], ' ('), pmatch = 'left']
+  #               * as.numeric(x[4])
+  #             ),
+  #             paste0('Debug|Price|Industry', x[2], ' (US$2005/', x[3], ')'))
+  #         })
+  #     )
+  #   )
+  # 
+  #   out <- mbind(out, tmp2)
+  # }
 
   return(out)
 }
