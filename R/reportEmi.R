@@ -940,7 +940,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   
   # Energy GHG Emissions incl. fugitive emissions (IPCC category 1) 
-  # Note: unclear status of negative emissions (non-BECCS CDR we have in separate sector below)
+  # Note: non-BECCS CDR is outside of our energy emissions, not clear how IPCC categories go about that
   out <- mbind(out,
                setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
                         + out[,,"Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"]
