@@ -50,7 +50,8 @@ reportCapacity <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(20
   tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,c("tnrs","fnrs")],dim=3),"Cap|Electricity|Nuclear (GW)"))
   tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,c("spv","csp")],dim=3),  "Cap|Electricity|Solar (GW)"))
   tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,"wind"],dim=3),          "Cap|Electricity|Wind|Onshore (GW)"))
-  tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,"windoff"],dim=3),          "Cap|Electricity|Wind|Offshore (GW)"))
+  if (all(c("windoff") %in% magclass::getNames(vm_cap,dim=1))) {
+  tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,"windoff"],dim=3),       "Cap|Electricity|Wind|Offshore (GW)"))}
   tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,"hydro"],dim=3),         "Cap|Electricity|Hydro (GW)"))
   tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,"dot"],dim=3),           "Cap|Electricity|Oil (GW)"))
   tmp1 <- mbind(tmp1,setNames(dimSums(vm_cap[,,c("igcc","pc","coalchp","igccc","pco","pcc")],dim=3),"Cap|Electricity|Coal (GW)"))
