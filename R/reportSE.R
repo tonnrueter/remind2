@@ -38,6 +38,7 @@ reportSE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   ## sets
   pe2se    <- readGDX(gdx,"pe2se")
   se2se    <- readGDX(gdx,"se2se")
+  te    <- readGDX(gdx,"all_te")
   tefosccs <- readGDX(gdx,c("teFosCCS","tefosccs"),format="first_found")
   teccs    <- readGDX(gdx,c("teCCS","teccs"),format="first_found")
   tenoccs  <- readGDX(gdx,c("teNoCCS","tenoccs"),format="first_found")
