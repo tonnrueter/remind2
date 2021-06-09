@@ -738,7 +738,8 @@ compareScenarios <- function(mif, hist,
              "SE|Electricity|Biomass|w/o CCS (EJ/yr)",
              "SE|Electricity|Solar|CSP (EJ/yr)",
              "SE|Electricity|Solar|PV (EJ/yr)",
-             "SE|Electricity|Wind (EJ/yr)",
+             "SE|Electricity|Wind|Onshore (EJ/yr)",
+             "SE|Electricity|Wind|Offshore (EJ/yr)",
              "SE|Electricity|Hydrogen (EJ/yr)",
              "SE|Electricity|Net Imports (EJ/yr)")
 
@@ -2228,7 +2229,8 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
               "Cap|Electricity|Hydrogen (GW)",
               "Cap|Electricity|Storage|Battery (GW)",
               "Cap|Electricity|Solar (GW)",
-              "Cap|Electricity|Wind (GW)")
+              "Cap|Electricity|Wind|Onshore (GW)",
+              "Cap|Electricity|Wind|Offshore (GW)")
   var <- data[,,intersect(items,getNames(data,dim=3))]
 
   p <- mipArea(var[mainReg,,],scales="free_y")
