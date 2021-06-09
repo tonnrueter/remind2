@@ -227,16 +227,16 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
 
   tmp_aux <- NULL
   names_capacities <- c("Cap|Electricity|Gas (GW)",
-    "Cap|Electricity|Nuclear (GW)",
-    "Cap|Electricity|Coal (GW)",
-    "Cap|Electricity|Biomass (GW)",
-    "Cap|Electricity|Hydrogen (GW)",
-    "Cap|Electricity|Geothermal (GW)",
-    "Cap|Electricity|Oil (GW)")
+                        "Cap|Electricity|Nuclear (GW)",
+                        "Cap|Electricity|Coal (GW)",
+                        "Cap|Electricity|Biomass (GW)",
+                        "Cap|Electricity|Hydrogen (GW)",
+                        "Cap|Electricity|Geothermal (GW)",
+                        "Cap|Electricity|Oil (GW)")
   names_capacities <- intersect(names_capacities, getNames(tmp1))
 
   tmp_aux <- mbind(tmp_aux, setNames(dimSums(tmp1[, , names_capacities], dim = 3) + 0.6 * tmp1[, , "Cap|Electricity|Hydro (GW)"] + tmp[, , "Cap|Electricity|Storage|Battery (GW)"],
-    "Cap|Electricity|Estimated firm capacity counting hydro at 0p6 (GW)"))
+                        "Cap|Electricity|Estimated firm capacity counting hydro at 0p6 (GW)"))
   tmp1 <- mbind(tmp1, tmp_aux)
 
 
