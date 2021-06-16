@@ -1042,10 +1042,10 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   # split into electric and non-electric energy supply emissions
   out <- mbind(out,
-               setNames(out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"],
+               setNames(out[,,"Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|Supply|Electricity (Mt CO2eq/yr)"),              
-               setNames(out[,,"Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"]
-                        - out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"],
+               setNames(out[,,"Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"]
+                        - out[,,"Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|Supply|Non-electric (Mt CO2eq/yr)"))
   
   
