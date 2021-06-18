@@ -118,7 +118,6 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,t,]
   # set NA values to 0, 
   # TODO: for some reason some entries in vm_demFeSector like fegas.CDR.ETS are NA, find out why!
-  # TODO: find out why there are actually non-zero FEs (like in solids transport) in REMIND
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
 
   
@@ -230,9 +229,6 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
 
 
-  # calculate energy emissions from fuel extraction
-  # to be continued once REMIND PR is in with this variable calculated in GAMS...
-  
   # calculate total energy supply and demand co2 emissions
   out <- mbind(out,
                
@@ -391,54 +387,68 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                           "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)")
   )
   
-  # TODO: split into FE carriers (requires industry CCS by FE carrier)
+  # split of demand-side emissions into FE carriers
   
-  # "Emi|CO2|+|Energy|+|Demand|++|Solids (Mt CO2/yr)"
-  # "Emi|CO2|+|Energy|+|Demand|++|Liquids (Mt CO2/yr)"
-  # "Emi|CO2|+|Energy|+|Demand|++|Gases (Mt CO2/yr)"
-  
-  # 
-  # # in simple industry module "fixed_shares" subsector FE demand obtained by multiplying p37_shIndFE
-  # if (module2realisation["industry",2] == "fixed_shares") {
-  #   
-  #   # fixed share of FE demand of industry subsector
-  #   p37_shIndFE <- readGDX(gdx, "p37_shIndFE", restore_zeros = F)
-  #   # mapping of industry subsectors to industry CCS sectors
-  #   secInd37_2_emiInd37 <- readGDX(gdx, "secInd37_2_emiInd37")
-  #   
-  # 
-  #   # map from pffen to entyFE
-  #   p37_shIndFE <- toolAggregate(p37_shIndFE, rel = fe2ppfEn %>% filter(all_in %in% getNames(p37_shIndFE, dim=1)),
-  #                                from = "all_in", to = "all_enty", dim = 3.1)
-  #   getSets(p37_shIndFE)[c(3)] <- c("all_enty1")
-  # 
-  #   # calculate FE industry demand per subsector
-  #   vm_demFeIndSub <- mselect(vm_demFeSector, emi_sectors = "indst") * p37_shIndFE
-  #   
-  #   pm_emifac.fe <- dimSums(mselect(pm_emifac, all_enty1 = getNames(vm_demFeIndSub, dim = 2), all_enty2="co2"), dim=c(3.3,3.4))
-  #   
-  #   # relabel industry energy CC from CCS sectors to industry sectors
-  #   emiInd37 <- NULL
-  #   vm_emiIndCCS_Sub <- toolAggregate(vm_emiIndCCS[,,emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
-  #                                     from = "emiInd37", to = "secInd37", dim=3)
-  #   vm_emiIndCCS_Sub <- vm_emiIndCCS_Sub * p37_shIndFE
-  #   
-  #   EmiIndSubSec <- pm_emifac.fe * vm_demFeIndSub[,,getNames(pm_emifac.fe)] 
-  #   
-  # }
-  #   
-  #   # TODO: to be continued
-  #   out <- mbind(out,
-  #                
-  #                # solids emissions: direct emissions outside of industry, in industry: direct emissions - industry CCS
-  #                setNames(  dimSums(mselect(EmiFeCarrier,  all_enty1="fesos", emi_sectors = c("build","trans","CDR")), dim=3)
-  #                           # industry emissions calculated via EmiIndSubSec and vm_emiIndCCS_Sub above because industry CCS is defined over industry subsectors
-  #                         + dimSums(mselect(EmiIndSubSec, all_enty1="fesos") - mselect(vm_emiIndCCS_Sub, all_enty1="fesos" dim=3),
-  #                         "Emi|CO2|Energy|Demand|++|Solids (Mt CO2/yr)"),
-  #                         
-  #                         
-  #                         
-  #                         
+
+  # in simple industry module "fixed_shares" subsector FE demand obtained by multiplying p37_shIndFE
+  # TODO: this part still needs to be done for industry subsectors
+  if (module2realisation["industry",2] == "fixed_shares") {
+
+    # fixed share of FE demand of industry subsector
+    p37_shIndFE <- readGDX(gdx, "p37_shIndFE", restore_zeros = F)
+    # mapping of industry subsectors to industry CCS sectors
+    secInd37_2_emiInd37 <- readGDX(gdx, "secInd37_2_emiInd37")
+
+
+    # map from pffen to entyFE
+    p37_shIndFE <- toolAggregate(p37_shIndFE, rel = fe2ppfEn %>% filter(all_in %in% getNames(p37_shIndFE, dim=1)),
+                                 from = "all_in", to = "all_enty", dim = 3.1)
+    getSets(p37_shIndFE)[c(3)] <- c("all_enty1")
+
+    # calculate FE industry demand per subsector
+    vm_demFeIndSub <- mselect(vm_demFeSector, emi_sectors = "indst", all_enty1 = filter(entyFe2Sector, emi_sectors == "indst")$all_enty1) * p37_shIndFE
+
+   
+    # relabel industry energy CC from CCS sectors to industry sectors
+    emiInd37 <- NULL
+    vm_emiIndCCS_Sub <- toolAggregate(vm_emiIndCCS[,,emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
+                                      from = "emiInd37", to = "secInd37", dim=3)
+    
+    
+    # calculate captured CO2 per subsector and FE carrier by multiplying subsectoral share of fesos, fehos, fegas in total FE from fesos, fehos and fegas with the captured CO2 by subsector
+    vm_emiIndCCS_Sub <- vm_emiIndCCS_Sub * dimSums(mselect(vm_demFeIndSub, all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.3,3.4)) / dimSums(mselect(vm_demFeIndSub, all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.2,3.3,3.4))
+    
+    
+    
+    # calculate industry emissions by subsector (before industry CCS) 
+    pm_emifac.fe.indst <- dimSums(mselect(pm_emifac, all_enty1 = getNames(vm_demFeIndSub, dim = 2), all_enty2="co2"), dim=c(3.3,3.4))
+    EmiIndSubSec <- pm_emifac.fe.indst * vm_demFeIndSub[,,getNames(pm_emifac.fe.indst)]
+    
+
+
+
+    
+    # calculate demand-side Solids, Liquids and gases emissions (after industry CCS)
+    out <- mbind(out,
+                 
+                 # solids emissions: direct solids emissions of all sectors - industry CCS of solids
+                 setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = "fesos"), dim = 3)
+                            - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1="fesos"), dim = 3))*GtC_2_MtCO2,
+                                      "Emi|CO2|Energy|Demand|++|Solids (Mt CO2/yr)"),
+                 
+                 # liquids emissions: direct liquids emissions of all sectors - industry CCS of liquids
+                 setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = c("fehos","fepet","fedie")), dim = 3)
+                             - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1="fehos"), dim = 3))*GtC_2_MtCO2,
+                            "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)"),
+                 
+                 # gases emissions: direct gases emissions of all sectors - industry CCS of gases
+                 setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = "fegas"), dim = 3)
+                             - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1="fegas"), dim = 3))*GtC_2_MtCO2,
+                            "Emi|CO2|Energy|Demand|++|Gases (Mt CO2/yr)")
+    )
+    
+  }
+
 
   
   # emissions from international transport bunkers
@@ -1229,7 +1239,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   
   
-  # Aggregation to global and reginonal values  ----
+  # Aggregation to global and regional values  ----
   
   # add global values
   out <- mbind(out,dimSums(out, dim=1))
