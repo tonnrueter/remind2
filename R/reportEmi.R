@@ -34,7 +34,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   }
   
   # intialize varibles used in dplyr operations
-  all_enty2 <- all_te <- all_enty <- all_enty1 <- emi_sectors <- all_emiMkt <- NULL
+  all_enty2 <- all_te <- all_enty <- all_enty1 <- emi_sectors <- all_emiMkt <- all_in <- NULL
   
   # Read Data from GDX ----
   
