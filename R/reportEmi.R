@@ -25,6 +25,14 @@
 
 reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   
+  
+  
+  # emissions calculation requires information from other reporting functions
+  if(is.null(output)){
+    cat("Executing reportFE\n")
+    output <- mbind(output,reportFE(gdx,regionSubsetList,t))
+  }
+  
   # intialize varibles used in dplyr operations
   all_enty2 <- all_te <- all_enty <- all_enty1 <- emi_sectors <- all_emiMkt <- NULL
   
@@ -1357,7 +1365,87 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                         "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)"))
   
   
-  
+  ## 8. Emissions w/o non-energy use ----
+  # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
+  # TODO: add non-energy use variables for all regionmappings and sector realizations
+
+  # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/CO2 content from/of FE carriers which are used as feedstocks in industry.
+  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)) {
+
+    out <- mbind(out,
+                 # liquids
+                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Liquids (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Liquids (EJ/yr)"],
+                          "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Liquids (Mt CO2/yr)"),
+                 # gases
+                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Gases (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Gases (EJ/yr)"],
+                          "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Gases (Mt CO2/yr)"),
+                 # solids
+                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Solids (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Solids (EJ/yr)"],
+                          "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Solids (Mt CO2/yr)"))
+    
+    # total non-energy use emissions
+    out <- mbind(out,
+                 setNames(out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry|Solids (Mt CO2/yr)"]+
+                            out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry|Liquids (Mt CO2/yr)"]+
+                            out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry|Gases (Mt CO2/yr)"],
+                          "Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"))
+    
+    
+    # calculate emissions variables w/o non-energy use
+    # TODO: once proper accounting of non-energy use/feedstocks has been done for all cases, consider making the standard "Emi|CO2 (Mt CO2/yr)" etc. variables 
+    # the ones without non-energy use and add an extra set "w/ Non-energy use" as this is likely a more sensible default
+    
+    ### variables for which non-energy emissions should be substracted
+    
+    emi.vars.wNonEn <- c(
+      # GHG emissions
+      "Emi|GHG (Mt CO2eq/yr)",
+      "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
+      "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
+      "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
+      "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
+      "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)",
+      
+      # Gross GHG Emissions
+      "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
+      "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)",
+      "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)",
+      
+      # CO2 Emissions
+      "Emi|CO2 (Mt CO2/yr)",
+      "Emi|CO2|+|Energy (Mt CO2/yr)",
+      "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
+      "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
+      "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
+
+      
+      # Gross CO2 Emissions
+      "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)",
+      "Emi|CO2|Gross|Energy (Mt CO2/yr)",
+      "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
+      "Emi|CO2|Gross|Energy|Demand|+|Industry (Mt CO2/yr)")
+    
+    # variable names, insert w/o non-energy use
+    names.wNonEn <- emi.vars.wNonEn 
+    names.wNonEn <- gsub("Emi\\|CO2","Emi|CO2|w/o Non-energy Use",names.wNonEn)
+    names.wNonEn <- gsub("Emi\\|GHG","Emi|GHG|w/o Non-energy Use",names.wNonEn)
+    
+    # remove all pluses from the "Emi w/o Non-energy Use" variables as they do not cover sectors in which non-energy use not relevant and checking aggregation does not make sense
+    names.wNonEn <- gsub("\\|\\+\\|","\\|",names.wNonEn)
+    names.wNonEn <- gsub("\\|\\++\\|","\\|",names.wNonEn)
+    
+    # emissions variables with non-energy use
+    out.wNonEn <- setNames(out[,,emi.vars.wNonEn], names.wNonEn)
+
+    
+    # substract non-energy use
+    out.wNonEn[,,names.wNonEn] <- out.wNonEn[,,names.wNonEn] - dimReduce(out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"])
+    
+    out <- mbind(out,out.wNonEn)
+                 
+
+  }
+
   
   # Aggregation to global and regional values  ----
   
@@ -1407,6 +1495,23 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Gross|Energy (Mt CO2/yr)",
                          "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
                          "Emi|CO2|Gross|Energy|Demand|+|Transport (Mt CO2/yr)")
+  
+  
+  
+  # if non-energy use variables exist, also do bunker correction for variables w/o non-energy use
+  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)) {
+    emi.vars.wBunkers.wNonEn <- intersect(emi.vars.wBunkers,emi.vars.wNonEn)
+    
+    # remove all pluses from the "Emi w/o Non-energy Use" variables as they do not cover sectors in which non-energy use not relevant and checking aggregation does not make sense
+    emi.vars.wBunkers.wNonEn <- gsub("\\|\\+\\|","\\|",emi.vars.wBunkers.wNonEn)
+    emi.vars.wBunkers.wNonEn <- gsub("\\|\\++\\|","\\|",emi.vars.wBunkers.wNonEn)
+    
+    emi.vars.wBunkers.wNonEn <- gsub("Emi\\|CO2","Emi|CO2|w/o Non-energy Use",emi.vars.wBunkers.wNonEn)
+    emi.vars.wBunkers.wNonEn <- gsub("Emi\\|GHG","Emi|GHG|w/o Non-energy Use",emi.vars.wBunkers.wNonEn)
+    
+    emi.vars.wBunkers <- c( emi.vars.wBunkers,emi.vars.wBunkers.wNonEn )
+    
+  }
   
   # variable names for emission variables with bunkers, insert w/ Bunkers
   names.wBunkers <- emi.vars.wBunkers 
