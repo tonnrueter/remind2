@@ -20,6 +20,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom dplyr %>%
 #' @importFrom magclass mselect dimSums mselect<- collapseDim getItems
+#' @importFrom madrat toolAggregate
 
 
 reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
@@ -442,7 +443,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                             "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)"),
                  
                  # gases emissions: direct gases emissions of all sectors - industry CCS of gases
-                 setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = "fegas"), dim = 3)
+                 setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegas","fegat")), dim = 3)
                              - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1="fegas"), dim = 3))*GtC_2_MtCO2,
                             "Emi|CO2|Energy|Demand|++|Gases (Mt CO2/yr)")
     )
@@ -671,6 +672,43 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                           "Carbon Management|Carbon Sources (Mt CO2/yr)")               
   )
   
+  # split industry capture into fossil, biomass, synfuel
+  # TODO: still needs to be done for industry subsectors, so far only fixed_shares
+  
+  if (module2realisation["industry",2] == "fixed_shares") {
+   # calculate bioenergy shares in industry solids, liquids and gases per subsector 
+   BioShare.FE.Indst <- dimSums(mselect( dimSums(vm_demFeIndSub, dim=c(3.4)) / dimSums(vm_demFeIndSub, dim=c(3.1,3.4)), all_enty=c("sesobio","seliqbio","segabio"), all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.3))
+   # calculate synfuel shares in industry liquids and gases per subsector, only liquids and gases synfuels exist 
+   SynShare.FE.Indst <- dimSums(mselect( dimSums(vm_demFeIndSub, dim=c(3.4)) / dimSums(vm_demFeIndSub, dim=c(3.1,3.4)), all_enty=c("seliqsyn","segasyn"), all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.3))
+   # calculate fossil shares in industry solids, liquids and gases per subsector 
+   FosShare.FE.Indst <- dimSums(mselect( dimSums(vm_demFeIndSub, dim=c(3.4)) / dimSums(vm_demFeIndSub, dim=c(3.1,3.4)), all_enty=c("sesofos","seliqfos","segafos"), all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.3))
+   
+   
+   out <- mbind(out,
+                setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim=3)*GtC_2_MtCO2, 
+                         "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
+                # only liquids and gases synfuels exist, so exclude solids here
+                setNames(dimSums(SynShare.FE.Indst * mselect(vm_emiIndCCS_Sub, all_enty1=c("fehos","fegas")), dim=3)*GtC_2_MtCO2, 
+                         "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
+                setNames(dimSums( FosShare.FE.Indst * vm_emiIndCCS_Sub, dim=3)*GtC_2_MtCO2, 
+                         "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
+                         
+   
+  } else {
+    
+    # Note: for now just set biomass and synfuel industry carbon capture to zero in order to not break the reporting for industry subsectors, 
+    # needs to be done with real values later once used with subsectors!
+    out <- mbind(out,
+                 setNames(dimSums(vm_emiIndCCS, dim=3)*GtC_2_MtCO2*0, 
+                          "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
+                 # only liquids and gases synfuels exist, so exclude solids here
+                 setNames(dimSums(vm_emiIndCCS, dim=3)*GtC_2_MtCO2*0, 
+                          "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
+                 setNames(dimSums(vm_emiIndCCS, dim=3)*GtC_2_MtCO2, 
+                          "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
+    
+    
+  }
   
   
   
@@ -716,6 +754,13 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                           "Carbon Management|Carbon Sinks|Storage|+|Fossil|Pe2Se (Mt CO2/yr)"),
                setNames(  out[,,"Carbon Management|Carbon Sources|+|Industry Energy (Mt CO2/yr)"]*p_share_CCS,
                           "Carbon Management|Carbon Sinks|Storage|+|Industry Energy (Mt CO2/yr)"),
+               # subcategories of industry energy CCS depending on whether the FE that industry demands comes from fossil, biomass or synfuel origin
+               setNames(  out[,,"Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Fossil (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"),
+               setNames(  out[,,"Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"]*p_share_CCS,
+                          "Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"),
                setNames(  out[,,"Carbon Management|Carbon Sources|+|Industry Process (Mt CO2/yr)"]*p_share_CCS,
                           "Carbon Management|Carbon Sinks|Storage|+|Industry Process (Mt CO2/yr)"),
                setNames(  out[,,"Carbon Management|Carbon Sources|+|DAC (Mt CO2/yr)"]*p_share_CCS,
@@ -731,6 +776,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   # TODO: industry BECCS still needs to be added here
   
+  # calculate gross emissions in energy supply sector
   out <- mbind(out,
                # gross supply emissions across SE carriers
                setNames(out[,,"Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"]
@@ -760,31 +806,46 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                
                # total gross supply emissions
                setNames(out[,,"Emi|CO2|Energy|+|Supply (Mt CO2/yr)"]
-                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        * p_share_CCS,
-                        "Emi|CO2|Gross|Energy|+|Supply (Mt CO2/yr)"),
-               
-               
-               # total gross demand emissions
-               setNames(out[,,"Emi|CO2|Energy|+|Demand (Mt CO2/yr)"],
-                        "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)"),
-               
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|+|Supply (Mt CO2/yr)"))
+  
+  
+  # calculate gross emissions in energy demand sectors
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
+                      + out[,,"Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+                          "Emi|CO2|Gross|Energy|Demand|+|Industry (Mt CO2/yr)"),
+               # buildings and transport do not capture emissions in REMIND, so gross emissions = net emissions
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|Demand|+|Buildings (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|Demand|+|Transport (Mt CO2/yr)"),
+               setNames(out[,,"Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|Demand|+|CDR (Mt CO2/yr)"),
+               # total gross energy demand emissions
+               setNames(out[,,"Emi|CO2|Energy|+|Demand (Mt CO2/yr)"]
+                      + out[,,"Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)"))
+  
+  
+  # total gross variables
+  out <- mbind(out,
                # total gross energy emissions
                setNames(out[,,"Emi|CO2|+|Energy (Mt CO2/yr)"]
-                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        * p_share_CCS,
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy (Mt CO2/yr)"),
                
                # total gross energy and industrial process emissions
                setNames(out[,,"Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"]
-                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        * p_share_CCS,
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)"),
                
                # total gross emissions
                setNames(out[,,"Emi|CO2 (Mt CO2/yr)"]
-                        + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        * p_share_CCS,
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        + out[,,"Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
                         "Emi|CO2|Gross (Mt CO2/yr)"))
   
   # split into electric and non-electric energy supply emissions
@@ -809,16 +870,13 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                setNames(EmiCDR.LUC,
                         "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),               
                # total BECCS
-               setNames(-out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        * p_share_CCS,
+               setNames(-out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
                         "Emi|CO2|CDR|BECCS (Mt CO2/yr)"),
                # total DACCS
-               setNames(-out[,,"Carbon Management|Carbon Sources|+|DAC (Mt CO2/yr)"]
-                        * p_share_CCS,
+               setNames(-out[,,"Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)"],
                         "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
                # total EW
-               setNames(-out[,,"Carbon Management|Carbon Sources|+|EW (Mt CO2/yr)"]
-                        * p_share_CCS,
+               setNames(-out[,,"Carbon Management|Carbon Sinks|Storage|+|EW (Mt CO2/yr)"],
                         "Emi|CO2|CDR|EW (Mt CO2/yr)"))
   
 
@@ -1028,19 +1086,35 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   
   # total gross supply emissions
   setNames(out[,,"Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"]
-           + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-           * p_share_CCS,
+           + out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
            "Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"),
   
   
   # total gross demand emissions
-  setNames(out[,,"Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"],
+  setNames(out[,,"Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"]
+        +  out[,,"Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
            "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)"),
+  
+  setNames(out[,,"Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"]
+           +  out[,, "Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+           "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)"),
+  
+  
+  setNames(out[,,"Emi|GHG|Energy|Demand|+|Buildings (Mt CO2eq/yr)"],
+           "Emi|GHG|Gross|Energy|Demand|+|Buildings (Mt CO2eq/yr)"),
+  
+  
+  setNames(out[,,"Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)"],
+           "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)"),
+  
+  
+  setNames(out[,,"Emi|GHG|Energy|Demand|+|CDR (Mt CO2eq/yr)"],
+           "Emi|GHG|Gross|Energy|Demand|+|CDR (Mt CO2eq/yr)"),
   
   # total gross energy emissions
   setNames(out[,,"Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
-           + out[,,"Carbon Management|Carbon Sources|+|Biomass|Pe2Se (Mt CO2/yr)"]
-           * p_share_CCS,
+           + out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
+           + out[,, "Carbon Management|Carbon Sinks|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
            "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
   
   
@@ -1269,6 +1343,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          # Gross GHG Emissions
                          "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
                          "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)",
+                         "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)",
                          
                          # CO2 Emissions
                          "Emi|CO2 (Mt CO2/yr)",
@@ -1276,12 +1351,14 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
                          "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
                          "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
+                         "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)",
                          "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)",
                          
                          # Gross CO2 Emissions
                          "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)",
                          "Emi|CO2|Gross|Energy (Mt CO2/yr)",
-                         "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)")
+                         "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
+                         "Emi|CO2|Gross|Energy|Demand|+|Transport (Mt CO2/yr)")
   
   # variable names for emission variables with bunkers, insert w/ Bunkers
   names.wBunkers <- emi.vars.wBunkers 
