@@ -93,10 +93,12 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "dot"], dim = 3),           "Cap|Electricity|Oil|w/o CCS (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "spv"], dim = 3),                 "Cap|Electricity|Solar|PV (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "csp"], dim = 3),                 "Cap|Electricity|Solar|CSP (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "wind"], dim = 3),                "Cap|Electricity|Wind|Onshore (GW)"))
+  
   if ("windoff" %in% magclass::getNames(vm_cap, dim = 1)) {
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windoff"], dim = 3),                "Cap|Electricity|Wind|Offshore (GW)"))
-  }
+    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "wind"], dim = 3),                "Cap|Electricity|Wind|Onshore (GW)"))
+    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windoff"], dim = 3),             "Cap|Electricity|Wind|Offshore (GW)"))
+    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwindoff"], dim = 3) * 1.2,   "Cap|Electricity|Storage|Battery|For Wind Offshore (GW)"))
+  } 
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storspv"], dim = 3) * 4,         "Cap|Electricity|Storage|Battery|For PV (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwind"], dim = 3) * 1.2,      "Cap|Electricity|Storage|Battery|For Wind (GW)"))
 
@@ -139,9 +141,13 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngcc"], dim = 3),           "New Cap|Electricity|Gas|CC|w/o CCS (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "spv"], dim = 3),            "New Cap|Electricity|Solar|PV (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "csp"], dim = 3),            "New Cap|Electricity|Solar|CSP (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "wind"], dim = 3),           "New Cap|Electricity|Wind|Onshore (GW/yr)"))
+
   if ("windoff" %in% magclass::getNames(vm_deltaCap, dim = 1)) {
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "wind"], dim = 3),           "New Cap|Electricity|Wind|Onshore (GW/yr)"))
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "windoff"], dim = 3),        "New Cap|Electricity|Wind|Offshore (GW/yr)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("wind", "windoff")], dim = 3),    "New Cap|Electricity|Wind (GW/yr)"))
+  } else {
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "wind"], dim = 3),           "New Cap|Electricity|Wind (GW/yr)"))
   }
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "hydro"], dim = 3),         "New Cap|Electricity|Hydro (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngccc"], dim = 3),          "New Cap|Electricity|Gas|w/ CCS (GW/yr)"))
@@ -155,11 +161,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "bioigccc"], dim = 3),               "New Cap|Electricity|Biomass|w/ CCS (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biochp", "bioigcc")], dim = 3),    "New Cap|Electricity|Biomass|w/o CCS (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("spv", "csp")], dim = 3),           "New Cap|Electricity|Solar (GW/yr)"))
-  if ("windoff" %in% magclass::getNames(vm_deltaCap, dim = 1)) {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("wind", "windoff")], dim = 3),    "New Cap|Electricity|Wind (GW/yr)"))
-  } else {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "wind"], dim = 3),                   "New Cap|Electricity|Wind (GW/yr)"))
-  }
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "storspv"], dim = 3) * 4,            "New Cap|Electricity|Storage|Battery|For PV (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "storwind"], dim = 3) * 1.2,         "New Cap|Electricity|Storage|Battery|For Wind (GW/yr)"))
   # Newly built capacities hydrogen
