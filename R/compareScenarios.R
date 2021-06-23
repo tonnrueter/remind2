@@ -315,7 +315,7 @@ compareScenarios <- function(mif, hist,
              "Emi|GHG|Gross|Energy|Supply|Non-electric (Mt CO2eq/yr)",
              "Emi|GHG|Energy|Demand|Transport (Mt CO2eq/yr)",
              "Emi|GHG|Energy|Demand|Buildings (Mt CO2eq/yr)",
-             "Emi|GHG|Energy|Demand|Industry (Mt CO2eq/yr)",
+             "Emi|GHG|Gross|Energy|Demand|Industry (Mt CO2eq/yr)",
              "Emi|GHG|Industrial Processes (Mt CO2eq/yr)",
              "Emi|GHG|Agriculture (Mt CO2eq/yr)",
              "Emi|GHG|Land-Use Change (Mt CO2eq/yr)",
@@ -356,7 +356,7 @@ compareScenarios <- function(mif, hist,
              "Emi|CO2|Land-Use Change (Mt CO2/yr)",
              "Emi|CO2|Industrial Processes (Mt CO2/yr)",
              "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)",
-             "Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)",
+             "Emi|CO2|Gross|Energy|Demand|Industry (Mt CO2/yr)",
              "Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)",
              "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
              "Emi|CO2|Gross|Energy|Supply|Electricity (Mt CO2/yr)",
@@ -1699,6 +1699,14 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],
                          ylab='Emi|CO2|Energy|Demand|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Gross|Energy|Demand|Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Gross|Energy|Demand|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Emi|CO2|Gross|Energy|Demand|Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Gross|Energy|Demand|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\subsubsection{Transport}")
