@@ -47,6 +47,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   CDR_mod <- module2realisation[module2realisation$modules == "CDR", 2]
 
   sety       <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
+  all_te    <- readGDX(gdx, "all_te")
   # calculate maximal temporal resolution
   p_dataeta    <- readGDX(gdx, name = c("pm_dataeta", "p_dataeta"), format = "first_found")
   p_eta_conv   <- readGDX(gdx, name = c("pm_eta_conv", "p_eta_conv"), format = "first_found")
@@ -163,6 +164,12 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     techmap[["refdip"]] <- "Liquids|Oil"
   }
 
+  if ("windoff" %in%  all_te) {
+    techmap[["windoff"]] <- "Electricity|Wind|Offshore"
+    techmap[["storwindoff"]] <- "Electricity|Wind|Offshore"
+  } 
+  
+  
   bar_and <- function(str) {
     ## prepend pipe if not empty
     ifelse(str == "", str, paste0("|", str))
