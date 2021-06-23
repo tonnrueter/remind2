@@ -1268,9 +1268,14 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       out.nechem <- suppressWarnings(as.magpie(df.out.nechem, spatial=1, temporal=2, datacol=4))
       out.nechem <- out.nechem[getRegions(out), getYears(out),]
       
-  
+      # set NAs to zero
+      out.nechem[is.na( out.nechem)] <- 0
+      
+      
       # bind FE non-energy use to output object
       out <- mbind(out, out.nechem)
+      
+
       
       # add further FE variables needed in ARIADNE
       out <- mbind(out,
