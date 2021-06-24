@@ -738,11 +738,16 @@ compareScenarios <- function(mif, hist,
              "SE|Electricity|Biomass|w/o CCS (EJ/yr)",
              "SE|Electricity|Solar|CSP (EJ/yr)",
              "SE|Electricity|Solar|PV (EJ/yr)",
-             "SE|Electricity|Wind|Onshore (EJ/yr)",
-             "SE|Electricity|Wind|Offshore (EJ/yr)",
              "SE|Electricity|Hydrogen (EJ/yr)",
              "SE|Electricity|Net Imports (EJ/yr)")
 
+  if ("SE|Electricity|Wind|Offshore (EJ/yr)" %in% magclass::getNames(data, dim = 3)) {
+    items <- append(items, c( "SE|Electricity|Wind|Onshore (EJ/yr)",
+                              "SE|Electricity|Wind|Offshore (EJ/yr)"))
+   } else {
+     items <- append(items, c( "SE|Electricity|Wind (EJ/yr)"))
+   }
+  
   var <- data[,,intersect(items,getNames(data,dim=3))]
   
   # correct SE|Electricity|Hydrogen, current value is FE, SE can be calculated by estimating turbine efficiency
@@ -2236,9 +2241,15 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
               "Cap|Electricity|Geothermal (GW)",
               "Cap|Electricity|Hydrogen (GW)",
               "Cap|Electricity|Storage|Battery (GW)",
-              "Cap|Electricity|Solar (GW)",
-              "Cap|Electricity|Wind|Onshore (GW)",
-              "Cap|Electricity|Wind|Offshore (GW)")
+              "Cap|Electricity|Solar (GW)")
+  
+  if ("Cap|Electricity|Wind|Offshore (GW)" %in% magclass::getNames(data, dim = 3)) {
+    items <- append(items, c( "Cap|Electricity|Wind|Onshore (GW)",
+                              "Cap|Electricity|Wind|Offshore (GW)"))
+  } else {
+    items <- append(items, c( "Cap|Electricity|Wind (GW)"))
+  }
+  
   var <- data[,,intersect(items,getNames(data,dim=3))]
 
   p <- mipArea(var[mainReg,,],scales="free_y")

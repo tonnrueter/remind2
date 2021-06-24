@@ -47,6 +47,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   CDR_mod <- module2realisation[module2realisation$modules == "CDR", 2]
 
   sety       <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
+  all_te    <- readGDX(gdx, "all_te")
   # calculate maximal temporal resolution
   p_dataeta    <- readGDX(gdx, name = c("pm_dataeta", "p_dataeta"), format = "first_found")
   p_eta_conv   <- readGDX(gdx, name = c("pm_eta_conv", "p_eta_conv"), format = "first_found")
@@ -115,10 +116,8 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "tnrs" = "Electricity|Nuclear",
     "spv" = "Electricity|Solar|PV",
     "csp" = "Electricity|Solar|CSP",
-    "wind" = "Electricity|Wind",
     "storspv" = "Electricity|Storage|Battery|For PV",
     "storcsp" = "Electricity|Storage|Battery|For CSP",
-    "storwind" = "Electricity|Storage|Battery|For Wind",
     "biogas" = "Gases|Biomass|w/o CCS",
     "coalgas" = "Gases|Coal|w/o CCS",
     "bioh2c" = "Hydrogen|Biomass|w/ CCS",
@@ -163,6 +162,16 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     techmap[["refdip"]] <- "Liquids|Oil"
   }
 
+  if ("windoff" %in% all_te) {
+    techmap <- append(techmap, c("wind" = "Electricity|Wind|Onshore",
+                                 "storwind" = "Electricity|Storage|Battery|For Wind Onshore",
+                                 "windoff" = "Electricity|Wind|Offshore",
+                                 "storwindoff" = "Electricity|Storage|Battery|For Wind Offshore"))
+  }  else {
+    techmap <- append(techmap, c("wind" = "Electricity|Wind",
+                                 "storwind" = "Electricity|Storage|Battery|For Wind"))
+  }
+  
   bar_and <- function(str) {
     ## prepend pipe if not empty
     ifelse(str == "", str, paste0("|", str))
@@ -202,8 +211,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
       ## storage needs a special mapping
       int2ext[[report_str("Electricity|Storage|Battery|For PV", category, unit)]] <- report_str("Electricity|Solar|PV", unit = "EJ/yr", predicate = "SE")
       int2ext[[report_str("Electricity|Storage|Battery|For CSP", category, unit)]] <- report_str("Electricity|Solar|CSP", unit = "EJ/yr", predicate = "SE")
+      
+      if ("windoff" %in% all_te) {
+      int2ext[[report_str("Electricity|Storage|Battery|For Wind Onshore", category, unit)]] <- report_str("Electricity|Wind|Onshore", unit = "EJ/yr", predicate = "SE")
+      int2ext[[report_str("Electricity|Storage|Battery|For Wind Offshore", category, unit)]] <- report_str("Electricity|Wind|Offshore", unit = "EJ/yr", predicate = "SE")
+      } else {
       int2ext[[report_str("Electricity|Storage|Battery|For Wind", category, unit)]] <- report_str("Electricity|Wind", unit = "EJ/yr", predicate = "SE")
-
+      }
+      
     } else if (all(map %in% carmap)) {
       ## cars need a special mapping, too
       ## for global avgs we use FEs as weights

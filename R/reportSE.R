@@ -228,12 +228,10 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(prodSe, dataoc, oc2te, sety, "pesol", "seel",                     name = "SE|Electricity|Solar (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, "pesol", "seel", te = "csp",         name = "SE|Electricity|Solar|CSP (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, "pesol", "seel", te = "spv",         name = "SE|Electricity|Solar|PV (EJ/yr)"),
-    se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",        name = "SE|Electricity|Wind (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, c("pewin", "pesol"), "seel",          name = "SE|Electricity|WindSolar (EJ/yr)"),
     se.prodLoss(prodSe, dataoc, oc2te, sety, "pesol", "seel",                 name = "SE|Electricity|Curtailment|Solar (EJ/yr)"),
     se.prodLoss(prodSe, dataoc, oc2te, sety, "pesol", "seel", te = "csp",     name = "SE|Electricity|Curtailment|Solar|CSP (EJ/yr)"),
     se.prodLoss(prodSe, dataoc, oc2te, sety, "pesol", "seel", te = "spv",     name = "SE|Electricity|Curtailment|Solar|PV (EJ/yr)"),
-    se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",    name = "SE|Electricity|Curtailment|Wind (EJ/yr)"),
     se.prodLoss(prodSe, dataoc, oc2te, sety, c("pewin", "pesol"), "seel",      name = "SE|Electricity|Curtailment|WindSolar (EJ/yr)"),
     setNames(se.prod(prodSe, dataoc, oc2te, sety, input_gas, se_Gas) + tmp1[, , "SE|Gases|Waste (EJ/yr)"], "SE|Gases (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, pebio, se_Gas,                       name = "SE|Gases|Biomass (EJ/yr)"),
@@ -311,12 +309,23 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     )
   }
 
+# adding compatibility for windoffshore
   if ("windoff" %in% all_te) {
     tmp1 <- mbind(tmp1,
-      se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "windoff",     name = "SE|Electricity|Wind Offshore (EJ/yr)"),
-      se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "windoff", name = "SE|Electricity|Curtailment|Wind Offshore(EJ/yr)")
-      )
+      se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",     name = "SE|Electricity|Wind|Onshore (EJ/yr)"),
+      se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind", name = "SE|Electricity|Curtailment|Wind|Onshore (EJ/yr)"),
+      se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "windoff",     name = "SE|Electricity|Wind|Offshore (EJ/yr)"),
+      se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "windoff", name = "SE|Electricity|Curtailment|Wind|Offshore (EJ/yr)"),
+      se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = c("wind","windoff"),     name = "SE|Electricity|Wind (EJ/yr)"),
+      se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = c("wind","windoff"), name = "SE|Electricity|Curtailment|Wind (EJ/yr)") )
+  } else {
+    tmp1 <- mbind(tmp1,
+      se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",        name = "SE|Electricity|Wind (EJ/yr)"),
+      se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",    name = "SE|Electricity|Curtailment|Wind (EJ/yr)")
+    )
   }
+        
+      
   
   if ("segafos" %in% se_Gas) {
     tmp1 <- mbind(tmp1,
