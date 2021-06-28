@@ -35,7 +35,16 @@ compareScenarios <- function(mif, hist,
                              y_bar=c(2010,2030,2050,2100),
                              reg=NULL, mainReg="GLO", fileName="CompareScenarios.pdf",
                              sr15marker_RCP=NULL) {
-
+  # reg = NULL
+  # mif= "~/source/remind2_test/REMIND_generic_default_windoff_withoutPlus.mif"
+  # hist = "~/source/remind2_test/historical.mif"
+  # mainReg="GLO"
+  # fileName="CompareScenarios.pdf"
+  # sr15marker_RCP=NULL
+  # y=c(seq(2005,2060,5),seq(2070,2100,10))
+  # y_hist=c(seq(1960,2020,1), seq(2025,2100,5))
+  # y_bar=c(2010,2030,2050,2100)
+  
   lineplots_perCap <- function(data, vars, percap_factor, ylabstr,
                                global=FALSE, mainReg_plot=mainReg, per_gdp=FALSE, histdata_plot=NULL){
 
@@ -769,6 +778,28 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
 
+  if ("SE|Electricity|Wind|Offshore (EJ/yr)" %in% magclass::getNames(data, dim = 3)) {
+  
+  swlatex(sw,"\\onecolumn")
+  offshore <- as.data.frame(var[,,"SE|Electricity|Wind|Onshore (EJ/yr)"][mainReg,,,invert=TRUE])
+  
+  p <- ggplot() + geom_line(data=offshore, aes(x=Year, y=Value, linetype=Data1)) +
+    facet_wrap(~Region, nrow = 4, scales = 'free_y')
+  
+  # print(p)
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
+  swlatex(sw,"\\onecolumn")
+  offshore <- as.data.frame(var[,,"SE|Electricity|Wind|Offshore (EJ/yr)"][mainReg,,,invert=TRUE])
+  
+  p <- ggplot() + geom_line(data=offshore, aes(x=Year, y=Value, linetype=Data1)) +
+    facet_wrap(~Region, nrow = 4, scales = 'free_y')
+  
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+
+  }
   ## ---- SE non-electric by carrier ----
 
   swlatex(sw,"\\subsection{SE non-electric by carrier}")
@@ -2300,6 +2331,22 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                          ylab=var,scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
+  if ("Cap|Electricity|Wind|Offshore (GW)" %in% magclass::getNames(data, dim = 3)) {
+    var <- "Cap|Electricity|Wind|Onshore (GW)"
+    swlatex(sw,"\\onecolumn")
+    p <-mipLineHistorical(data[mainReg,,var],x_hist=histData[mainReg,,var],
+                          ylab=var,scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    var <- "Cap|Electricity|Wind|Offshore (GW)"
+    swlatex(sw,"\\onecolumn")
+    p <-mipLineHistorical(data[mainReg,,var],x_hist=histData[mainReg,,var],
+                          ylab=var,scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+  }
   swlatex(sw,"\\subsubsection{Solar}")
   var <- "Cap|Electricity|Solar (GW)"
   p <- mipLineHistorical(data[mainReg,,var],x_hist=histData[mainReg,,var],

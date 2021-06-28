@@ -321,6 +321,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   } else {
     tmp1 <- mbind(tmp1,
       se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",        name = "SE|Electricity|Wind (EJ/yr)"),
+      se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",        name = "SE|Electricity|Wind|Onshore (EJ/yr)"),
       se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",    name = "SE|Electricity|Curtailment|Wind (EJ/yr)")
     )
   }
