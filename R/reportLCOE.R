@@ -505,7 +505,7 @@ reportLCOE <- function(gdx, output.type = "both"){
    AddH2TdCost <- NULL
    `Additional H2 t&d Cost` <- NULL
    emi_sectors <- NULL
-   fe2es.buildings <- entyFe2Sector <- pm_tau_fe_tax_ES_st <- pm_tau_fe_sub_ES_st <- NULL
+   fe2es.buildings <- pm_tau_fe_tax_ES_st <- pm_tau_fe_sub_ES_st <- NULL
   
   ##############################################
   
@@ -1275,8 +1275,10 @@ reportLCOE <- function(gdx, output.type = "both"){
     
     ### 20. Final Energy Taxes
     
-    pm_tau_fe_tax <- readGDX(gdx, "pm_tau_fe_tax")[,ttot_from2005,entyFe2Sector$all_enty1]
-    pm_tau_fe_sub <- readGDX(gdx, "pm_tau_fe_sub")[,ttot_from2005,entyFe2Sector$all_enty1]
+    entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
+    
+    pm_tau_fe_tax <- readGDX(gdx, "pm_tau_fe_tax")[,ttot_from2005,entyFe2Sector$all_enty]
+    pm_tau_fe_sub <- readGDX(gdx, "pm_tau_fe_sub")[,ttot_from2005,entyFe2Sector$all_enty]
     
     
     sector.mapping <- c("build" = "buildings", "indst" = "industry", "trans" = "transport")
