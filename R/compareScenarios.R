@@ -746,7 +746,7 @@ compareScenarios <- function(mif, hist,
                               "SE|Electricity|Wind|Offshore (EJ/yr)"))
    } else {
      items <- append(items, c( "SE|Electricity|Wind (EJ/yr)"))
-     var[,, "SE|Electricity|Wind|Onshore (EJ/yr)"] <- var[,,"SE|Electricity|Wind (EJ/yr)"]
+     # var[,, "SE|Electricity|Wind|Onshore (EJ/yr)"] <- var[,,"SE|Electricity|Wind (EJ/yr)"]
    }
   
   var <- data[,,intersect(items,getNames(data,dim=3))]
