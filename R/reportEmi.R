@@ -1485,9 +1485,6 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
                          "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
                          "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
-                         "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)",
-                         # Note: this assumes that all bunker fuels are liquids
-                         "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)", 
                          "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)",
                          
                          # Gross CO2 Emissions
@@ -1495,6 +1492,13 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Gross|Energy (Mt CO2/yr)",
                          "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
                          "Emi|CO2|Gross|Energy|Demand|+|Transport (Mt CO2/yr)")
+  
+  # TODO: remove this if clause once the below variable are there for industry subsectors, too
+  if (module2realisation["industry",2] == "fixed_shares") {
+    # Note: this assumes that all bunker fuels are liquids
+    emi.vars.wBunkers <- c( emi.vars.wBunkers,     "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)",  "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)")
+    
+  }
   
   
   
