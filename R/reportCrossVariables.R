@@ -112,9 +112,31 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   tmp <- mbind(tmp,setNames(
                    output[r,,"Energy Investments (billion US$2005/yr)"]
                   -output[r,,"Energy Investments|Electricity (billion US$2005/yr)"],"Energy Investments|Non-Elec (billion US$2005/yr)"))
+  # gas capacity factor
   tmp <- mbind(tmp,setNames(
-                   output[r,,"SE|Electricity|Gas (EJ/yr)"] / output[r,,"Cap|Electricity|Gas (GW)"] / TWa_2_EJ * 1000,
-                   "Capacity Factor|Electricity|Gas (GW)"))
+                   output[r,,"SE|Electricity|Gas (EJ/yr)"] / output[r,,"Cap|Electricity|Gas (GW)"] / TWa_2_EJ * 1000 * 100,
+                   "Capacity Factor|Electricity|Gas (%)"))
+  
+  # wind real capacity factor (before curtailment)
+  tmp <- mbind(tmp,setNames(
+                   output[r,,"SE|Electricity|Wind (EJ/yr)"] / output[r,,"Cap|Electricity|Wind (GW)"] / TWa_2_EJ * 1000 * 100,
+                   "Theoretical Capacity Factor|Electricity|Wind (%)"))
+  
+  # wind capacity factor  (with curtailment considered)
+  tmp <- mbind(tmp,setNames(
+                   (output[r,,"SE|Electricity|Wind (EJ/yr)"] - output[r,,"SE|Electricity|Curtailment|Wind (EJ/yr)"]) / 
+                    output[r,,"Cap|Electricity|Wind (GW)"] / TWa_2_EJ * 1000 * 100, "Real Capacity Factor|Electricity|Wind (%)"))
+  
+  # solar real capacity factor (before curtailment)
+  tmp <- mbind(tmp,setNames(
+                    output[r,,"SE|Electricity|Solar (EJ/yr)"] / output[r,,"Cap|Electricity|Solar (GW)"] / TWa_2_EJ * 1000 * 100,
+                    "Theoretical Capacity Factor|Electricity|Solar (%)"))
+  
+  # solar capacity factor  (with curtailment considered)
+  tmp <- mbind(tmp,setNames(
+                   (output[r,,"SE|Electricity|Solar (EJ/yr)"] - output[r,,"SE|Electricity|Curtailment|Solar (EJ/yr)"]) / 
+                    output[r,,"Cap|Electricity|Solar (GW)"] / TWa_2_EJ * 1000 * 100, "Real Capacity Factor|Electricity|Solar (%)"))
+  
   
     # add global values
   tmp <- mbind(tmp,dimSums(tmp,dim=1))
@@ -126,15 +148,27 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   map <- data.frame(region=getRegions(tmp["GLO",,,invert=TRUE]),world="GLO",stringsAsFactors=FALSE)
   tmp["GLO",,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- 
             speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Oil (EJ/yr)"])
-  tmp["GLO",,"Capacity Factor|Electricity|Gas (GW)"] <- 
-    speed_aggregate(tmp[map$region,,"Capacity Factor|Electricity|Gas (GW)"],map,weight=output[map$region,,"Cap|Electricity|Gas (GW)"])
+  tmp["GLO",,"Capacity Factor|Electricity|Gas (%)"] <- 
+    speed_aggregate(tmp[map$region,,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[map$region,,"Cap|Electricity|Gas (GW)"])   
+  tmp["GLO",,"Real Capacity Factor|Electricity|Wind (%)"] <- 
+    speed_aggregate(tmp[map$region,,"Real Capacity Factor|Electricity|Wind (%)"],map,weight=output[map$region,,"Cap|Electricity|Wind (GW)"])
+  tmp["GLO",,"Theoretical Capacity Factor|Electricity|Wind (%)"] <- 
+    speed_aggregate(tmp[map$region,,"Theoretical Capacity Factor|Electricity|Wind (%)"],map,weight=output[map$region,,"Cap|Electricity|Wind (GW)"])
+  tmp["GLO",,"Real Capacity Factor|Electricity|Solar (%)"] <- 
+    speed_aggregate(tmp[map$region,,"Real Capacity Factor|Electricity|Solar (%)"],map,weight=output[map$region,,"Cap|Electricity|Solar (GW)"])
+  tmp["GLO",,"Theoretical Capacity Factor|Electricity|Solar (%)"] <- 
+    speed_aggregate(tmp[map$region,,"Theoretical Capacity Factor|Electricity|Solar (%)"],map,weight=output[map$region,,"Cap|Electricity|Solar (GW)"])
   
   # correct region aggregated values for intensive variables (prices, LCOES, Capacity factors) 
   if (!is.null(regionSubsetList)){
     for (region in names(regionSubsetList)){
       map <- data.frame(region=regionSubsetList[[region]],parentRegion=region,stringsAsFactors=FALSE)
       tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Oil (EJ/yr)"])
-      tmp[region,,"Capacity Factor|Electricity|Gas (GW)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Capacity Factor|Electricity|Gas (GW)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Gas (GW)"])
+      tmp[region,,"Capacity Factor|Electricity|Gas (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Gas (GW)"])
+      tmp[region,,"Real Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Real Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
+      tmp[region,,"Theoretical Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Theoretical Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
+      tmp[region,,"Real Capacity Factor|Electricity|Solar (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Real Capacity Factor|Electricity|Solar (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Solar (GW)"])
+      tmp[region,,"Theoretical Capacity Factor|Electricity|Solar (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Theoretical Capacity Factor|Electricity|Solar (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Solar (GW)"])
     }
   }
   
