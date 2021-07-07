@@ -1099,6 +1099,13 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                         + out[,,"Emi|GHG|N2O|+|Waste (Mt CO2eq/yr)"],
                         "Emi|GHG|+++|Waste (Mt CO2eq/yr)"))
   
+  # F-Gases
+  # report as extra category outside of sectors as this is exogenuous to REMIND
+  # choose a slightly different name as variable to avoid that duplicates occur in scripts where pluses are removed
+  out <- mbind(out,
+               setNames(out[,,"Emi|GHG|+|F-Gases (Mt CO2eq/yr)"],
+                        "Emi|GHG|+++|F-Gas (Mt CO2eq/yr)"))
+  
   # non-BECCS CDR from CDR module
   out <-  mbind(out,
                 setNames(out[,,"Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)"],
