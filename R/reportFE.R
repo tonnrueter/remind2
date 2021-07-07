@@ -617,10 +617,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                                             "FE|Buildings|Space Heating|Hydrogen (EJ/yr)")],dim=3,na.rm=T),        "FE|Buildings|Space Heating (EJ/yr)")
                   
     )
-    
-    out <-  mbind(out,
-                   setNames(p36_floorspace,        "Energy Service|Buildings|Floor Space (bn m2/yr)")
-                   )
   }
   
   # ---- Industry Module ----
