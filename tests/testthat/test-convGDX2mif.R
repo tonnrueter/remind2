@@ -20,14 +20,14 @@ check_eqs <- function(dt, eqs, scope="all", sens=1e-8){
     dt <- dt[all_regi == "World"]
   }
 
-  for(LHS in names(eqs)){
+  for(LHS in 1:length(names(eqs))){
     exp <- parse(text=eqs[[LHS]])
     dt[, total := eval(exp), by=.(all_regi, ttot, scenario, model)]
 
-    dt[, diff := total - get(LHS)]
+    dt[, diff := total - get(names(eqs)[LHS])]
     if(nrow(dt[abs(diff) > sens]) > 0){
       fail(
-        sprintf("Check on data integrity failed for %s", LHS))
+        sprintf("Check on data integrity failed for %s", names(eqs)[LHS]))
     }
     ## expect_equal(dt[["total"]], dt[[LHS]], tolerance = sens)
   }
