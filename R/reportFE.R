@@ -329,7 +329,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
     # CDR
     setNames((dimSums(mselect(vm_demFeSector,emi_sectors="CDR")  ,dim=3,na.rm=T)),                  "FE|++|CDR (EJ/yr)"),
-    setNames((dimSums(mselect(vm_demFeSector,emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|++|ETS (EJ/yr)"),  
+    setNames((dimSums(mselect(vm_demFeSector,emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|+++|ETS (EJ/yr)"),  
     
     # CDR liquids
     setNames((dimSums(mselect(vm_demFeSector,all_enty1="fedie",emi_sectors="CDR")  ,dim=3,na.rm=T)),                     "FE|CDR|+|Liquids (EJ/yr)"),
