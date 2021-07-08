@@ -80,7 +80,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     cat(paste0(i,"\n"))
     a <- convGDX2MIF(i)
     print("Check integrity.")
-#    check_integrity(a)
+    check_integrity(a)
     write.report2(x = collapseNames(a),
                   file = file.path(tempdir(), sprintf("%s.mif", stri_rand_strings(1, 5))),
                   scenario = paste0(getItems(a,dim = "scenario"),n),
