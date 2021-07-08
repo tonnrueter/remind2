@@ -508,6 +508,18 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                    setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"),
                    setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)")
       )
+      out <- mbind(out,
+                   setNames(
+                     out[, , "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|District Heating (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Solids (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Liquids (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Hydrogen (EJ/yr)"],
+                     "FE|Buildings|Heating (EJ/yr)"
+                   )
+      )
     }
     
   } else if (buil_mod %in% c("services_putty", "services_with_capital")){
