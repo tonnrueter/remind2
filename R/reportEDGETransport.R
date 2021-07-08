@@ -373,6 +373,7 @@ reportEDGETransport <- function(output_folder=".",
     venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, c("value", "annual_mileage") := NULL]
     venum[, unit := "tsd veh"]
     setnames(venum, "ven", "value")
+    venum = venum[,.(model, scenario, region, variable, unit, period, value)]
     return(venum)
   }
 
