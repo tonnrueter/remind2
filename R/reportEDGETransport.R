@@ -52,6 +52,7 @@ reportEDGETransport <- function(output_folder=".",
   demand_km <- readRDS(datapath(fname = "demandF_plot_pkm.RDS"))[
     , demand_F := demand_F * 1e-3] ## million -> billion pkm
   load_factor <- readRDS(datapath(fname = "loadFactor.RDS"))
+  annual_mileage <- readRDS(datapath(fname = "annual_mileage.RDS"))
   demand_vkm <- merge(demand_km, load_factor, by=c("year", "region", "vehicle_type"))
   demand_vkm[, demand_VKM := demand_F/loadFactor] ## billion vkm
 
@@ -340,20 +341,36 @@ reportEDGETransport <- function(output_folder=".",
     return(emi)
   }
 
-  reportingVehNum <- function(demand_vkm){
-    ## sources for truck mileage are from DE:
-    ## https://www.kba.de/DE/Statistik/Kraftverkehr/VerkehrKilometer/vk_revisionsbericht_2019_pdf.pdf?__blob=publicationFile&v=1
+  reportingVehNum <- function(demand_vkm, annual_mileage){
     venum <- copy(demand_vkm)
-    venum[grepl("Road|LDV", variable, fixed=TRUE), ven := value/15e-3] # billion vehicle-km -> thousand vehicles
-    venum[grepl("Road|Truck", variable, fixed=TRUE), ven := value/30e-3]
-    venum[grepl("Road|Truck (0-3.5t)", variable, fixed=TRUE), ven := value/20e-3]
-    venum[grepl("Road|Truck (40t)", variable, fixed=TRUE), ven := value/100e-3]
+    ## merge annual mileage
+    anmil <- copy(annual_mileage)
+    anmil[grepl("Subcompact", vehicle_type),
+          variable := "Pass|Road|LDV|Small"]
+    anmil[grepl("Mini", vehicle_type),
+          variable := "Pass|Road|LDV|Mini"]
+    anmil[vehicle_type == "Compact Car", variable := "Pass|Road|LDV|Medium"]
+    anmil[grepl("Large Car|Midsize Car", vehicle_type), variable := "Pass|Road|LDV|Large"]
+    anmil[grepl("SUV", vehicle_type),
+          variable := "Pass|Road|LDV|SUV"]
+    anmil[grepl("Van|Multipurpose", vehicle_type),
+          variable := "Pass|Road|LDV|Van"]
+    anmil[grepl("Motorcycle|Scooter|Moped", vehicle_type),
+          variable := "Pass|Road|LDV|Two-Wheelers"]
+    anmil[grepl("^Truck", vehicle_type),
+          variable := sprintf("Freight|Road|%s", vehicle_type)]
+    anmil[grepl("Bus", vehicle_type),
+          variable := "Pass|Road|Bus"]
 
-    ## https://de.statista.com/statistik/daten/studie/251746/umfrage/durchschnittliche-fahrleistung-von-kraftomnibussen-in-deutschland/
-    venum[grepl("Pass|Road|Bus", variable, fixed=TRUE), ven := value/45e-3]
+    anmil <- anmil[,.(region, period = year, variable, annual_mileage)]
+
+    anmil <- approx_dt(anmil, unique(demand_vkm$period), xcol = "period", ycol = "annual_mileage", idxcols = c("region", "variable"), extrapolate = T)
+    anmil <- anmil[, variable := paste0("ES|Transport|VKM|", variable)]
+    venum <- merge(demand_vkm, anmil, by = c("variable", "region", "period"))
+    venum[, ven := value/annual_mileage] # billion vehicle-km -> thousand vehicles
 
     venum <- venum[!is.na(ven)]
-    venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, value := NULL]
+    venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, c("value", "annual_mileage") := NULL]
     venum[, unit := "tsd veh"]
     setnames(venum, "ven", "value")
     return(venum)
@@ -418,7 +435,8 @@ reportEDGETransport <- function(output_folder=".",
     reportingESandFE(
       datatable=demand_km,
       mode="ES"),
-    reportingVehNum(repVKM),
+    reportingVehNum(repVKM,
+                    annual_mileage),
     reportingEmi(repFE = repFE,
                  gdx = gdx)
   ))

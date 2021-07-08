@@ -1118,11 +1118,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
     vm_demFeForEs_trnsp = vm_demFeForEs[fe2es_dyn35]
     
-    if(tran_mod == "edge_esm"){
-      p35_pass_FE_share_transp <- dimSums(vm_demFeForEs_trnsp[,,"esdie_pass_",pmatch=TRUE], dim=3,na.rm=T) /
-        dimSums(vm_demFeForEs_trnsp[,,"esdie_",pmatch=TRUE], dim=3,na.rm=T)
-    }
-    
     out <- mbind(out,
       setNames(dimSums(vm_demFeForEs_trnsp[,,"eselt_frgt_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Freight|Electricity (EJ/yr)"),
       setNames(dimSums(vm_demFeForEs_trnsp[,,"eselt_pass_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Pass|Electricity (EJ/yr)"),
