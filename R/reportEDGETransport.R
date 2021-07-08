@@ -365,6 +365,7 @@ reportEDGETransport <- function(output_folder=".",
     anmil <- anmil[,.(region, period = year, variable, annual_mileage)]
 
     anmil <- approx_dt(anmil, unique(demand_vkm$period), xcol = "period", ycol = "annual_mileage", idxcols = c("region", "variable"), extrapolate = T)
+    anmil<- unique(anmil[,c("period", "region", "variable", "annual_mileage")])
     anmil <- anmil[, variable := paste0("ES|Transport|VKM|", variable)]
     venum <- merge(demand_vkm, anmil, by = c("variable", "region", "period"))
     venum[, ven := value/annual_mileage] # billion vehicle-km -> thousand vehicles
@@ -373,6 +374,7 @@ reportEDGETransport <- function(output_folder=".",
     venum[, variable := gsub("|VKM", "|VNUM", variable, fixed=TRUE)][, c("value", "annual_mileage") := NULL]
     venum[, unit := "tsd veh"]
     setnames(venum, "ven", "value")
+    venum = venum[,.(model, scenario, region, variable, unit, period, value)]
     return(venum)
   }
 
