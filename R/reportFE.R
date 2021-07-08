@@ -21,7 +21,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames 
 #'                      dimSums getNames<- as.data.frame as.magpie
-#' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join
+#' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
 #' 
@@ -29,7 +29,7 @@
 #' 
 
 reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
-  fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <- NULL
+  fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <- all_enty <- all_enty1 <- all_te NULL
   
   ####### conversion factors ##########
   TWa_2_EJ     <- 31.536
@@ -41,7 +41,16 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   # ---- read in needed data
   
   # ---- sets
-  #se2fe <- readGDX(gdx,"se2fe")
+  se2fe <- readGDX(gdx,"se2fe")
+  entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
+  sector2emiMkt <- readGDX(gdx, "sector2emiMkt")
+  
+  demFemapping <- full_join(entyFe2Sector, sector2emiMkt) %>% 
+                  # rename such that all_enty1 always signifies the FE carrier like in vm_demFeSector
+                    rename(all_enty1 = all_enty) %>% 
+                    left_join(se2fe) %>% 
+                    select(-all_te)
+  
   #sety <- readGDX(gdx,c("entySe","sety"),format="first_found")
   
   # ---- parameter
@@ -54,6 +63,13 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   #vm_prodFe  <- vm_prodFe[se2fe]
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
+  
+  # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
+  vm_demFeSector_new <- vm_demFeSector[demFemapping]
+  
+  # only retain combinations of SE, FE, te which actually exist in the model (qm_balFe)
+  vm_prodFe <- vm_prodFe[se2fe]
+  
   
   # temporary backwards compatability: this can be removed, once a new test gdx after March 2021 is used
   if ("seliqsyn" %in% getNames(vm_prodFe, dim=1)) {
