@@ -396,8 +396,9 @@ reportEDGETransport <- function(output_folder=".",
     }
  
     vintgs[, year_c := as.numeric(gsub("C_", "", construction_year))]
-    ## sales in last 4 years are sales for current timestep
-    vintgs <- vintgs[year - year_c >= 5]
+
+    ## stock is the full stock up to the end of the current year
+    ## sales are the sales of the current year
 
     setnames(vintgs, "full_demand_vkm", "Stock")
     vintgs[, Stock := Stock * fct]
