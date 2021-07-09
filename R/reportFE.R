@@ -505,6 +505,11 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   
   # ---- Buildings Module ----
   
+  p36_floorspace <- readGDX(gdx, "p36_floorspace")[, t, ]
+  if (!is.null(p36_floorspace)) {
+    out <- mbind(out, setNames(p36_floorspace, "Energy Service|Buildings|Floor Space (bn m2/yr)"))
+  }
+
   if (buil_mod %in% c("simple")){
     
     if("feelhpb" %in% getNames(vm_cesIO)){
@@ -519,6 +524,18 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                    setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"),
                    setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)")
       )
+      out <- mbind(out,
+                   setNames(
+                     out[, , "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|District Heating (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Solids (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Liquids (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Hydrogen (EJ/yr)"],
+                     "FE|Buildings|Heating (EJ/yr)"
+                   )
+      )
     }
     
   } else if (buil_mod %in% c("services_putty", "services_with_capital")){
@@ -526,9 +543,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     # sets
     ppfen_build <- readGDX(gdx,c("ppfen_buildings_dyn36","ppfen_buildings_dyn28","ppfen_buildings"),format="first_found", react = "silent")
     esty_build <-  readGDX(gdx,c("esty_dyn36"),format="first_found", react = "silent")
-    
-    # parameter
-    p36_floorspace <- readGDX(gdx,"p36_floorspace")[,t,]
     
     #var
     v_prodEs <- readGDX(gdx,name = c("v_prodEs"), field="l",restore_zeros = F, format = "first_found", react = "silent")[,t,]* TWa_2_EJ
@@ -631,10 +645,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                                             "FE|Buildings|Space Heating|Hydrogen (EJ/yr)")],dim=3,na.rm=T),        "FE|Buildings|Space Heating (EJ/yr)")
                   
     )
-    
-    out <-  mbind(out,
-                   setNames(p36_floorspace,        "Energy Service|Buildings|Floor Space (bn m2/yr)")
-                   )
   }
   
   # ---- Industry Module ----
