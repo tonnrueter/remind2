@@ -104,6 +104,11 @@ reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,
     tmp <- mbind(tmp,setNames((1-p_costsPEtradeMp[,,"seliqsyn"]) * Mport[,,"seliqsyn"] * TWa_2_EJ, "Trade|Imports|SE|Liquids|Hydrogen (EJ/yr)"))
     tmp <- mbind(tmp,setNames(Xport[,,"seliqsyn"] * TWa_2_EJ,                                    "Trade|Exports|SE|Liquids|Hydrogen (EJ/yr)"))
     
+    tmp <- mbind(tmp,setNames(trade_net[,,"segasyn"] * TWa_2_EJ,                                "Trade|SE|Gases|Hydrogen (EJ/yr)"))
+    # for now p_costsPEtradeMp is zero for SE trade, adapt once SE trade transport cost implemented
+    tmp <- mbind(tmp,setNames((1-p_costsPEtradeMp[,,"segasyn"]) * Mport[,,"segasyn"] * TWa_2_EJ, "Trade|Imports|SE|Gases|Hydrogen (EJ/yr)"))
+    tmp <- mbind(tmp,setNames(Xport[,,"segasyn"] * TWa_2_EJ,                                    "Trade|Exports|SE|Gases|Hydrogen (EJ/yr)"))
+    
 
     
   }
