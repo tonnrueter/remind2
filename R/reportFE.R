@@ -521,8 +521,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                    setNames(dimSums(vm_cesIO[,,"feheb"],dim=3,na.rm=T),   "FE|Buildings|Heating|District Heating (EJ/yr)"),
                    setNames(dimSums(vm_cesIO[,,"fesob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Solids (EJ/yr)"),
                    setNames(dimSums(vm_cesIO[,,"fehob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Liquids (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)")
+                   setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Hydrogen (EJ/yr)")
       )
       out <- mbind(out,
                    setNames(
@@ -531,7 +531,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                        out[, , "FE|Buildings|Heating|District Heating (EJ/yr)"] +
                        out[, , "FE|Buildings|Heating|Solids (EJ/yr)"] +
                        out[, , "FE|Buildings|Heating|Liquids (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Gases (EJ/yr)"] +
                        out[, , "FE|Buildings|Heating|Hydrogen (EJ/yr)"],
                      "FE|Buildings|Heating (EJ/yr)"
                    )

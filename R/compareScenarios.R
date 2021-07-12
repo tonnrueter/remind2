@@ -3225,8 +3225,8 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     "FE|Buildings|Heating|District Heating (EJ/yr)",
     "FE|Buildings|Heating|Solids (EJ/yr)",
     "FE|Buildings|Heating|Liquids (EJ/yr)",
-    "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)",
-    "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)"
+    "FE|Buildings|Heating|Gases (EJ/yr)",
+    "FE|Buildings|Heating|Hydrogen (EJ/yr)"
   )
   
   if(all(c(items) %in% getNames(data,dim=3))){
