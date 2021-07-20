@@ -152,7 +152,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "hydro"], dim = 3),         "New Cap|Electricity|Hydro (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngccc"], dim = 3),          "New Cap|Electricity|Gas|w/ CCS (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("ngcc", "ngt", "gaschp")], dim = 3), "New Cap|Electricity|Gas|w/o CCS (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngt"], dim = 3),            "New Cap|Electricity|Gas|CT (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngt"], dim = 3),            "New Cap|Electricity|Gas|GT (GW/yr)"))
   if (all(c("h2turbVRE", "h2turb") %in% magclass::getNames(vm_cap, dim = 1))) {
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h2turb", "h2turbVRE")], dim = 3),            "New Cap|Electricity|Hydrogen (GW/yr)"))
   }
