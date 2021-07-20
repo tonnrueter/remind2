@@ -86,6 +86,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngccc"], dim = 3),               "Cap|Electricity|Gas|CC|w/ CCS (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngcc"], dim = 3),                "Cap|Electricity|Gas|CC|w/o CCS (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngccc"], dim = 3),               "Cap|Electricity|Gas|w/ CCS (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngt"], dim = 3),                 "Cap|Electricity|Gas|GT (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("igcc", "pc", "coalchp")], dim = 3), "Cap|Electricity|Coal|w/o CCS (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp")], dim = 3), "Cap|Electricity|Gas|w/o CCS (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("bioigccc")], dim = 3),         "Cap|Electricity|Biomass|w/ CCS (GW)"))
