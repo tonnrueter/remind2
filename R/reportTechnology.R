@@ -97,6 +97,10 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   getSets(p_eta_conv)[3]   <- getSets(inco0)[3]
 
   v_adjustteinv_avg <- collapseNames(readGDX(gdx, name = c("o_avgAdjCostInv"), field = "l", format = "first_found")[, y, ])
+  if (is.null(v_adjustteinv_avg)) {
+    v_adjustteinv_avg <- v_investcost[,,]*0
+  }
+  
   ############ build reporting #####################
 
   techmap <- c(
@@ -250,14 +254,16 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   
   ### Capital cost including adjustment cost ###
-  
+  if (!is.null(v_adjustteinv_avg)) {
   category <- "Capital Costs|w/ Adj Costs"
   unit <- "US$2005/kW"
   factor <- 1000.
   
+  
   tmp <- bind_category(tmp, v_investcost+v_adjustteinv_avg, category, unit, factor, techmap)
   int2ext <- get_global_mapping(category, unit, techmap)
-
+  }
+  
   if (tran_mod == "complex") {
     unit <- "US$2005/veh"
     tmp <- bind_category(tmp, v_investcost, category, unit, factor, carmap)
