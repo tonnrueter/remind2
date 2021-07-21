@@ -118,6 +118,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "tnrs" = "Electricity|Nuclear",
     "spv" = "Electricity|Solar|PV",
     "csp" = "Electricity|Solar|CSP",
+	"h2turb" = "Electricity|Hydrogen",
     "storspv" = "Electricity|Storage|Battery|For PV",
     "storcsp" = "Electricity|Storage|Battery|For CSP",
     "biogas" = "Gases|Biomass|w/o CCS",

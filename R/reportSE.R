@@ -357,7 +357,9 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
       setNames(mselect(vm_Mport - vm_Xport, all_enty = "seel") * pm_conv_TWa_EJ,
         "SE|Electricity|Net Imports (EJ/yr)"),
       setNames(mselect(vm_Mport - vm_Xport, all_enty = "seliqsyn") * pm_conv_TWa_EJ,
-        "SE|Liquids|Hydrogen|Net Imports (EJ/yr)"))
+        "SE|Liquids|Hydrogen|Net Imports (EJ/yr)"),
+      setNames(mselect(vm_Mport - vm_Xport, all_enty = "segasyn") * pm_conv_TWa_EJ,
+               "SE|Gases|Hydrogen|Net Imports (EJ/yr)"))
   }
 
 

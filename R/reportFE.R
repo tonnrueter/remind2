@@ -21,7 +21,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames 
 #'                      dimSums getNames<- as.data.frame as.magpie
-#' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join
+#' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
 #' 
@@ -29,7 +29,7 @@
 #' 
 
 reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
-  fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <- NULL
+  fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <- all_enty <- all_enty1 <- all_te <- NULL
   
   ####### conversion factors ##########
   TWa_2_EJ     <- 31.536
@@ -41,7 +41,16 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   # ---- read in needed data
   
   # ---- sets
-  #se2fe <- readGDX(gdx,"se2fe")
+  se2fe <- readGDX(gdx,"se2fe")
+  entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
+  sector2emiMkt <- readGDX(gdx, "sector2emiMkt")
+  
+  demFemapping <- full_join(entyFe2Sector, sector2emiMkt) %>% 
+                  # rename such that all_enty1 always signifies the FE carrier like in vm_demFeSector
+                    rename(all_enty1 = all_enty) %>% 
+                    left_join(se2fe) %>% 
+                    select(-all_te)
+  
   #sety <- readGDX(gdx,c("entySe","sety"),format="first_found")
   
   # ---- parameter
@@ -54,6 +63,13 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   #vm_prodFe  <- vm_prodFe[se2fe]
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
+  
+  # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
+  vm_demFeSector_new <- vm_demFeSector[demFemapping]
+  
+  # only retain combinations of SE, FE, te which actually exist in the model (qm_balFe)
+  vm_prodFe <- vm_prodFe[se2fe]
+  
   
   # temporary backwards compatability: this can be removed, once a new test gdx after March 2021 is used
   if ("seliqsyn" %in% getNames(vm_prodFe, dim=1)) {
@@ -329,7 +345,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
     # CDR
     setNames((dimSums(mselect(vm_demFeSector,emi_sectors="CDR")  ,dim=3,na.rm=T)),                  "FE|++|CDR (EJ/yr)"),
-    setNames((dimSums(mselect(vm_demFeSector,emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|++|ETS (EJ/yr)"),  
+    setNames((dimSums(mselect(vm_demFeSector,emi_sectors="CDR", all_emiMkt="ETS")  ,dim=3,na.rm=T)), "FE|CDR|+++|ETS (EJ/yr)"),  
     
     # CDR liquids
     setNames((dimSums(mselect(vm_demFeSector,all_enty1="fedie",emi_sectors="CDR")  ,dim=3,na.rm=T)),                     "FE|CDR|+|Liquids (EJ/yr)"),
@@ -489,6 +505,11 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   
   # ---- Buildings Module ----
   
+  p36_floorspace <- readGDX(gdx, "p36_floorspace")[, t, ]
+  if (!is.null(p36_floorspace)) {
+    out <- mbind(out, setNames(p36_floorspace, "Energy Service|Buildings|Floor Space (bn m2/yr)"))
+  }
+
   if (buil_mod %in% c("simple")){
     
     if("feelhpb" %in% getNames(vm_cesIO)){
@@ -500,8 +521,20 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                    setNames(dimSums(vm_cesIO[,,"feheb"],dim=3,na.rm=T),   "FE|Buildings|Heating|District Heating (EJ/yr)"),
                    setNames(dimSums(vm_cesIO[,,"fesob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Solids (EJ/yr)"),
                    setNames(dimSums(vm_cesIO[,,"fehob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Liquids (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Natural Gas (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases|Hydrogen (EJ/yr)")
+                   setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases (EJ/yr)"),
+                   setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Hydrogen (EJ/yr)")
+      )
+      out <- mbind(out,
+                   setNames(
+                     out[, , "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|District Heating (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Solids (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Liquids (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Gases (EJ/yr)"] +
+                       out[, , "FE|Buildings|Heating|Hydrogen (EJ/yr)"],
+                     "FE|Buildings|Heating (EJ/yr)"
+                   )
       )
     }
     
@@ -510,9 +543,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     # sets
     ppfen_build <- readGDX(gdx,c("ppfen_buildings_dyn36","ppfen_buildings_dyn28","ppfen_buildings"),format="first_found", react = "silent")
     esty_build <-  readGDX(gdx,c("esty_dyn36"),format="first_found", react = "silent")
-    
-    # parameter
-    p36_floorspace <- readGDX(gdx,"p36_floorspace")[,t,]
     
     #var
     v_prodEs <- readGDX(gdx,name = c("v_prodEs"), field="l",restore_zeros = F, format = "first_found", react = "silent")[,t,]* TWa_2_EJ
@@ -615,10 +645,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                                             "FE|Buildings|Space Heating|Hydrogen (EJ/yr)")],dim=3,na.rm=T),        "FE|Buildings|Space Heating (EJ/yr)")
                   
     )
-    
-    out <-  mbind(out,
-                   setNames(p36_floorspace,        "Energy Service|Buildings|Floor Space (bn m2/yr)")
-                   )
   }
   
   # ---- Industry Module ----
@@ -1102,11 +1128,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     
     vm_demFeForEs_trnsp = vm_demFeForEs[fe2es_dyn35]
     
-    if(tran_mod == "edge_esm"){
-      p35_pass_FE_share_transp <- dimSums(vm_demFeForEs_trnsp[,,"esdie_pass_",pmatch=TRUE], dim=3,na.rm=T) /
-        dimSums(vm_demFeForEs_trnsp[,,"esdie_",pmatch=TRUE], dim=3,na.rm=T)
-    }
-    
     out <- mbind(out,
       setNames(dimSums(vm_demFeForEs_trnsp[,,"eselt_frgt_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Freight|Electricity (EJ/yr)"),
       setNames(dimSums(vm_demFeForEs_trnsp[,,"eselt_pass_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Pass|Electricity (EJ/yr)"),
@@ -1172,6 +1193,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     out <- mbind(out,
                  setNames(vm_otherFEdemand[,,"feh2s"],        "FE|CDR|DAC|+|Hydrogen (EJ/yr)"),
                  setNames(vm_otherFEdemand[,,"fegas"],        "FE|CDR|DAC|+|Gases (EJ/yr)"),
+                 setNames(vm_otherFEdemand[,,"fehes"],        "FE|CDR|DAC|+|Heat (EJ/yr)"),
                  setNames(vm_otherFEdemand[,,"fedie"],        "FE|CDR|EW|+|Diesel (EJ/yr)"),
                  setNames(s33_rockgrind_fedem*dimSums(v33_grindrock_onfield[,,],dim=3,na.rm=T),        "FE|CDR|EW|+|Electricity (EJ/yr)")
     )
@@ -1179,7 +1201,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                  setNames(out[,,"FE|CDR|+|Electricity (EJ/yr)"] - out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|DAC|+|Electricity (EJ/yr)")
     )
     out <- mbind(out,
-                 setNames(out[,,"FE|CDR|DAC|+|Hydrogen (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Gases (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Electricity (EJ/yr)"], "FE|CDR|++|DAC (EJ/yr)"),
+                 setNames(out[,,"FE|CDR|DAC|+|Hydrogen (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Gases (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Electricity (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Heat (EJ/yr)"], "FE|CDR|++|DAC (EJ/yr)"),
                  setNames(out[,,"FE|CDR|EW|+|Diesel (EJ/yr)"] + out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|++|EW (EJ/yr)")
     )
   }
