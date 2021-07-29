@@ -118,9 +118,9 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("h22ch4")], dim = 3), "Cap|Gases|Hydrogen (GW)"))
 
   # liquids
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("refliq", "bioftrec", "bioftcrec", "coalftrec", "coalftcrec", "MeOH")], dim = 3), "Cap|Liquids (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("refliq", "bioftrec", "bioftcrec", "coalftrec", "coalftcrec", "MeOH","biodiesel", "bioeths", "bioethl")], dim = 3), "Cap|Liquids (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("refliq")], dim = 3), "Cap|Liquids|Oil (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("bioftrec", "bioftcrec")], dim = 3), "Cap|Liquids|Biomass (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("bioftrec", "bioftcrec","biodiesel", "bioeths", "bioethl")], dim = 3), "Cap|Liquids|Biomass (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("coalftrec", "coalftcrec")], dim = 3), "Cap|Liquids|Coal (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("MeOH")], dim = 3), "Cap|Liquids|Hydrogen (GW)"))
 
