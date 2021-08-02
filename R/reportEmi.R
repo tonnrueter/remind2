@@ -1458,7 +1458,8 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     
     
     # variable names, insert w/o non-energy use
-    names.wNonEn <- c(emi.vars.wNonEn.inclWaste,emi.vars.wNonEn.exclWaste) 
+    emi.vars.wNonEn <- c(emi.vars.wNonEn.inclWaste,emi.vars.wNonEn.exclWaste) 
+    names.wNonEn <- emi.vars.wNonEn
     names.wNonEn <- gsub("Emi\\|CO2","Emi|CO2|w/o Non-energy Use",names.wNonEn)
     names.wNonEn <- gsub("Emi\\|GHG","Emi|GHG|w/o Non-energy Use",names.wNonEn)
     
@@ -1467,7 +1468,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     names.wNonEn <- gsub("\\|\\++\\|","\\|",names.wNonEn)
     
     # calulate emissions variables with non-energy use
-    out.wNonEn <- out[,,c(emi.vars.wNonEn.inclWaste,emi.vars.wNonEn.exclWaste)]
+    out.wNonEn <- out[,,emi.vars.wNonEn]
     # for aggregate emissions: substract non-energy use carbon and add waste incineration emissions  
     out.wNonEn[,,emi.vars.wNonEn.inclWaste] <- out.wNonEn[,,emi.vars.wNonEn.inclWaste] - out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"] + out[,,"Emi|CO2|w/o Non-energy Use|Waste Incineration (Mt CO2/yr)"]  
     # for energy related emissions: substract non-energy use carbon
@@ -1476,7 +1477,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     
     
     # insert "w/o Non-energy Use" label in variable names
-    out.wNonEn <- setNames(out.wNonEn[,,c(emi.vars.wNonEn.inclWaste,emi.vars.wNonEn.exclWaste)], names.wNonEn)
+    out.wNonEn <- setNames(out.wNonEn[,,emi.vars.wNonEn], names.wNonEn)
 
 
     out <- mbind(out,out.wNonEn)
