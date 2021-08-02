@@ -1376,18 +1376,22 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
 
-  # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/CO2 content from/of FE carriers which are used as feedstocks in industry.
+  # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)) {
 
+    
+    # calculate non-energy use emissions (= feedstock carbon content) as industry emissions before CCS per energy carrier * share of feedstocks in final energy
+    # take industry emissions before CCS as feedstocks cannot be used for CCS
+    # this is a temporary approximation in the reporting, but should eventually be adapted in REMIND by having a seperate feedstock FE of which the carbon cannot be captured
     out <- mbind(out,
                  # liquids
-                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Liquids (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Liquids (EJ/yr)"],
+                 setNames( dimSums(mselect(EmiFeCarrier, all_enty1 = c("fehos"), emi_sectors = "indst"), dim = 3)*GtC_2_MtCO2*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Liquids (EJ/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Liquids (Mt CO2/yr)"),
                  # gases
-                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Gases (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Gases (EJ/yr)"],
+                 setNames(dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegas"), emi_sectors = "indst"), dim = 3)*GtC_2_MtCO2*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Gases (EJ/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Gases (Mt CO2/yr)"),
                  # solids
-                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Solids (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Solids (EJ/yr)"],
+                 setNames(dimSums(mselect(EmiFeCarrier, all_enty1 = c("fesos"), emi_sectors = "indst"), dim = 3)*GtC_2_MtCO2*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Solids (EJ/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Solids (Mt CO2/yr)"))
     
     # total non-energy use emissions
