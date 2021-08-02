@@ -1376,18 +1376,22 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
 
-  # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/CO2 content from/of FE carriers which are used as feedstocks in industry.
+  # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)) {
 
+    
+    # calculate non-energy use emissions (= feedstock carbon content) as industry emissions before CCS per energy carrier * share of feedstocks in final energy
+    # take industry emissions before CCS as feedstocks cannot be used for CCS
+    # this is a temporary approximation in the reporting, but should eventually be adapted in REMIND by having a seperate feedstock FE of which the carbon cannot be captured
     out <- mbind(out,
                  # liquids
-                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Liquids (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Liquids (EJ/yr)"],
+                 setNames( dimSums(mselect(EmiFeCarrier, all_enty1 = c("fehos"), emi_sectors = "indst"), dim = 3)*GtC_2_MtCO2*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Liquids (EJ/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Liquids (Mt CO2/yr)"),
                  # gases
-                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Gases (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Gases (EJ/yr)"],
+                 setNames(dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegas"), emi_sectors = "indst"), dim = 3)*GtC_2_MtCO2*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Gases (EJ/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Gases (Mt CO2/yr)"),
                  # solids
-                 setNames(out[,,"Emi|CO2|Energy|Demand|Industry|+|Solids (Mt CO2/yr)"]*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Solids (EJ/yr)"],
+                 setNames(dimSums(mselect(EmiFeCarrier, all_enty1 = c("fesos"), emi_sectors = "indst"), dim = 3)*GtC_2_MtCO2*output[getRegions(out),,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"]/output[getRegions(out),,"FE|Industry|+|Solids (EJ/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry|Solids (Mt CO2/yr)"))
     
     # total non-energy use emissions
@@ -1397,18 +1401,37 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                             out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry|Gases (Mt CO2/yr)"],
                           "Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"))
     
+
+    
     
     # calculate emissions variables w/o non-energy use
     # TODO: once proper accounting of non-energy use/feedstocks has been done for all cases, consider making the standard "Emi|CO2 (Mt CO2/yr)" etc. variables 
     # the ones without non-energy use and add an extra set "w/ Non-energy use" as this is likely a more sensible default
     
-    ### variables for which non-energy emissions should be substracted
     
-    emi.vars.wNonEn <- c(
+    ### reattribution of a fraction of non-energy use carbon as waste emissions (plastic products that get combusted in waste incineration plants within the region)
+    # fraction of non-energy use emissions that gets reattributed as waste CO2 emissions (reporting assumption)
+    # as this analysis only used for Germany, take 50% which is current fraction of plastic waste to be incinerated
+    # https://www.umweltbundesamt.de/daten/ressourcen-abfall/verwertung-entsorgung-ausgewaehlter-abfallarten/kunststoffabfaelle#kunststoffe-produktion-verwendung-und-verwertung
+    WasteFraction <- 0.5
+    
+    out <- mbind(out,
+                 setNames(WasteFraction*out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"],
+                          "Emi|CO2|w/o Non-energy Use|Waste Incineration (Mt CO2/yr)"))
+    
+    ### variables for which non-energy emissions should be substracted but waste fraction added
+    emi.vars.wNonEn.inclWaste <- c(
       # GHG emissions
       "Emi|GHG (Mt CO2eq/yr)",
       "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
       "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
+
+      # CO2 Emissions
+      "Emi|CO2 (Mt CO2/yr)")
+
+    ### variables for which non-energy emissions should be substracted (and no waste fraction added)
+    emi.vars.wNonEn.exclWaste <- c(
+      # GHG emissions
       "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
       "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
       "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)",
@@ -1419,12 +1442,11 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
       "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)",
       
       # CO2 Emissions
-      "Emi|CO2 (Mt CO2/yr)",
       "Emi|CO2|+|Energy (Mt CO2/yr)",
       "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
       "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
       "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
-
+      
       
       # Gross CO2 Emissions
       "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)",
@@ -1432,8 +1454,12 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
       "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
       "Emi|CO2|Gross|Energy|Demand|+|Industry (Mt CO2/yr)")
     
+    
+    
+    
     # variable names, insert w/o non-energy use
-    names.wNonEn <- emi.vars.wNonEn 
+    emi.vars.wNonEn <- c(emi.vars.wNonEn.inclWaste,emi.vars.wNonEn.exclWaste) 
+    names.wNonEn <- emi.vars.wNonEn
     names.wNonEn <- gsub("Emi\\|CO2","Emi|CO2|w/o Non-energy Use",names.wNonEn)
     names.wNonEn <- gsub("Emi\\|GHG","Emi|GHG|w/o Non-energy Use",names.wNonEn)
     
@@ -1441,13 +1467,19 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     names.wNonEn <- gsub("\\|\\+\\|","\\|",names.wNonEn)
     names.wNonEn <- gsub("\\|\\++\\|","\\|",names.wNonEn)
     
-    # emissions variables with non-energy use
-    out.wNonEn <- setNames(out[,,emi.vars.wNonEn], names.wNonEn)
+    # calulate emissions variables with non-energy use
+    out.wNonEn <- out[,,emi.vars.wNonEn]
+    # for aggregate emissions: substract non-energy use carbon and add waste incineration emissions  
+    out.wNonEn[,,emi.vars.wNonEn.inclWaste] <- out.wNonEn[,,emi.vars.wNonEn.inclWaste] - out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"] + out[,,"Emi|CO2|w/o Non-energy Use|Waste Incineration (Mt CO2/yr)"]  
+    # for energy related emissions: substract non-energy use carbon
+    # (waste incineration emissions are treated as a separate category here outside of energy emissions to avoid attribution compliations down the energy emissions tree)  
+    out.wNonEn[,,emi.vars.wNonEn.exclWaste] <- out.wNonEn[,,emi.vars.wNonEn.exclWaste] - out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"] 
+    
+    
+    # insert "w/o Non-energy Use" label in variable names
+    out.wNonEn <- setNames(out.wNonEn[,,emi.vars.wNonEn], names.wNonEn)
 
-    
-    # substract non-energy use
-    out.wNonEn[,,names.wNonEn] <- out.wNonEn[,,names.wNonEn] - dimReduce(out[,,"Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"])
-    
+
     out <- mbind(out,out.wNonEn)
                  
 
