@@ -160,6 +160,38 @@ compareScenarios <- function(mif, hist,
   
   ## read model results
   mifData <- lapply(mif, function(file){read.report(file,as.list=FALSE)})
+  mifData0 <- mifData # make a copy
+  
+  ## check if there are repeated scenario names in mifs to be compared
+  # get scenarios in all mif files
+  mifScenarios <- c()
+  for(i in 1:length(mifData0)){ 
+      mifScenarios <-c(mifScenarios, magclass::getNames(mifData0[[i]],fulldim = TRUE)[["scenario"]])
+  }
+  
+  # print a warning message on repeated names
+  uniqueScenarioName = unique(unlist(mifScenarios, use.names = FALSE))
+  if (length(uniqueScenarioName) < length(mifScenarios)){
+    warning(paste0("There are repeated scenario names in comparison! Appending numerical value to repeated names"))
+  }
+  
+  # append numerical value to repeated names
+  mifScenarios_new <- c()
+  for(i in 1:length(uniqueScenarioName)){
+    unique_element = uniqueScenarioName[[i]]
+    k = 1
+    for(j in 1:length(mifScenarios)){
+      if (mifScenarios[[j]] == unique_element){
+        mifScenarios_new <-c(mifScenarios_new, paste0(unique_element, "_", k))
+        k = k + 1
+      }
+    }
+  }
+  
+  for(i in 1:length(mifScenarios)){
+    magclass::getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
+  }
+  
   
   # get regions present all mif files
   for(i in 1:length(mifData)){ 
