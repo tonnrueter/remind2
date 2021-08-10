@@ -25,6 +25,12 @@ convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(20
  
   # Define region subsets
   regionSubsetList <- toolRegionSubsets(gdx)
+  # ADD EU-27 region aggregation if possible
+  if("EUR" %in% names(regionSubsetList)){
+    regionSubsetList <- c(regionSubsetList,list(
+      "EU27"=c("ENC","EWN","ECS","ESC","ECE","FRA","DEU","ESW")
+    ))
+  }
     
   # make the reporting
   output <- NULL
