@@ -738,6 +738,11 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
    FosShare.FE.Indst <- dimSums(mselect( dimSums(vm_demFeIndSub, dim=c(3.4)) / dimSums(vm_demFeIndSub, dim=c(3.1,3.4)), all_enty=c("sesofos","seliqfos","segafos"), all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.3))
    
    
+   # if no solids/liquids/gases in subsector -> NaN, set share to zero
+   BioShare.FE.Indst[is.nan(BioShare.FE.Indst)] <- 0
+   SynShare.FE.Indst[is.nan(SynShare.FE.Indst)] <- 0
+   FosShare.FE.Indst[is.nan(FosShare.FE.Indst)] <- 0
+   
    out <- mbind(out,
                 setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim=3)*GtC_2_MtCO2, 
                          "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),

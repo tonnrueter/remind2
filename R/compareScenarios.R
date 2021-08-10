@@ -352,6 +352,7 @@ compareScenarios <- function(mif, hist,
              "Emi|GHG|Agriculture (Mt CO2eq/yr)",
              "Emi|GHG|Land-Use Change (Mt CO2eq/yr)",
              "Emi|GHG|Waste (Mt CO2eq/yr)",
+             "Emi|GHG|F-Gas (Mt CO2eq/yr)",
              "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
              "Emi|CO2|CDR|EW (Mt CO2/yr)")
