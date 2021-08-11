@@ -738,6 +738,11 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
    FosShare.FE.Indst <- dimSums(mselect( dimSums(vm_demFeIndSub, dim=c(3.4)) / dimSums(vm_demFeIndSub, dim=c(3.1,3.4)), all_enty=c("sesofos","seliqfos","segafos"), all_enty1=c("fesos","fehos","fegas")), dim=c(3.1,3.3))
    
    
+   # if no solids/liquids/gases in subsector -> NaN, set share to zero
+   BioShare.FE.Indst[is.nan(BioShare.FE.Indst)] <- 0
+   SynShare.FE.Indst[is.nan(SynShare.FE.Indst)] <- 0
+   FosShare.FE.Indst[is.nan(FosShare.FE.Indst)] <- 0
+   
    out <- mbind(out,
                 setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim=3)*GtC_2_MtCO2, 
                          "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
@@ -915,11 +920,15 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   # same as "Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)" etc. but negative
   
   # only negative land-use change emissions
-  EmiCDR.LUC <- dimSums(vm_emiMacSector[,,"co2luc"], dim=3)
+  EmiCDR.LUC <- dimSums(vm_emiMacSector[,,"co2luc"], dim=3)*GtC_2_MtCO2
   EmiCDR.LUC[EmiCDR.LUC>0] <- 0
   
   
+  # Emi|CO2|CDR is defined negative
   out <- mbind(out,
+               # total CDR
+               setNames(EmiCDR.LUC-out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]-out[,,"Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)"]-out[,,"Carbon Management|Carbon Sinks|Storage|+|EW (Mt CO2/yr)"],
+                        "Emi|CO2|CDR (Mt CO2/yr)"), 
                # total negative land-use change emissions
                setNames(EmiCDR.LUC,
                         "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),               
@@ -1370,6 +1379,11 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   out <- mbind(out,
                setNames(out[,,"Emi|GHG (Mt CO2eq/yr)"] - out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
                         "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)"))
+  
+  
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2 (Mt CO2/yr)"] - out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
+                        "Emi|CO2|w/o Land-Use Change (Mt CO2/yr)"))
   
   
   ## 8. Emissions w/o non-energy use ----
