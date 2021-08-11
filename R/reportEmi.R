@@ -920,11 +920,15 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   # same as "Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)" etc. but negative
   
   # only negative land-use change emissions
-  EmiCDR.LUC <- dimSums(vm_emiMacSector[,,"co2luc"], dim=3)
+  EmiCDR.LUC <- dimSums(vm_emiMacSector[,,"co2luc"], dim=3)*GtC_2_MtCO2
   EmiCDR.LUC[EmiCDR.LUC>0] <- 0
   
   
+  # Emi|CO2|CDR is defined negative
   out <- mbind(out,
+               # total CDR
+               setNames(EmiCDR.LUC-out[,,"Carbon Management|Carbon Sinks|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]-out[,,"Carbon Management|Carbon Sinks|Storage|+|DAC (Mt CO2/yr)"]-out[,,"Carbon Management|Carbon Sinks|Storage|+|EW (Mt CO2/yr)"],
+                        "Emi|CO2|CDR (Mt CO2/yr)"), 
                # total negative land-use change emissions
                setNames(EmiCDR.LUC,
                         "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),               
@@ -1375,6 +1379,11 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   out <- mbind(out,
                setNames(out[,,"Emi|GHG (Mt CO2eq/yr)"] - out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
                         "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)"))
+  
+  
+  out <- mbind(out,
+               setNames(out[,,"Emi|CO2 (Mt CO2/yr)"] - out[,,"Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
+                        "Emi|CO2|w/o Land-Use Change (Mt CO2/yr)"))
   
   
   ## 8. Emissions w/o non-energy use ----
