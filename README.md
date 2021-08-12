@@ -2,7 +2,7 @@
 
 R package **remind2**, version **1.40.0**
 
-[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)   [![R build status](https://github.com/pfuehrlich-pik/remind2/workflows/check/badge.svg)](https://github.com/pfuehrlich-pik/remind2/actions) [![codecov](https://codecov.io/gh/pfuehrlich-pik/remind2/branch/master/graph/badge.svg)](https://codecov.io/gh/pfuehrlich-pik/remind2) [![r-universe](https://pik-piam.r-universe.dev/badges/remind2)](https://pik-piam.r-universe.dev/ui#builds)
+[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)     [![r-universe](https://pik-piam.r-universe.dev/badges/remind2)](https://pik-piam.r-universe.dev/ui#builds)
 
 ## Purpose and Functionality
 
