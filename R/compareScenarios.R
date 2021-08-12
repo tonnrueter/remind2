@@ -1600,7 +1600,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   # emission markets
-  if(mainReg=="EUR"){
+  if(mainReg %in% c("EUR","EU27")){
     swlatex(sw,"\\subsection{GHG - Market}")
     
     swlatex(sw,"\\subsubsection{ETS}")
@@ -1979,7 +1979,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
   
-  if(mainReg=="EUR"){
+  if(mainReg %in% c("EUR","EU27")){
     
     ## Market Emissions ----
     
