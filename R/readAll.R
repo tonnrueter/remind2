@@ -1,3 +1,7 @@
+#' readAll
+#'
+#' This function was copied from magpie::read_all to remove the magpie dependency.
+#'
 #' @importFrom magclass ndata mbind
 readAll <- function(pathToGdx, func, asList = TRUE, ...) {
   if (!is.list(pathToGdx)) {
@@ -17,7 +21,7 @@ readAll <- function(pathToGdx, func, asList = TRUE, ...) {
     }
   }
   if (!all(lapply(out, ndata) == ndata(out[[1]]))) {
-    stop("ERROR: different data dimensions. Can't read_all")
+    stop("ERROR: different data dimensions. Can't readAll")
   }
   if (asList) {
     return(out)
