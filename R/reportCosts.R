@@ -68,8 +68,6 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   se_Liq    <- intersect(potentialseLiq,sety)
   teccs        <- readGDX(gdx,c("teCCS","teccs"),format="first_found")
   pebio        <- readGDX(gdx,c("peBio","pebio"),format="first_found")
-  ppfen_stat   <- readGDX(gdx,c("ppfen_stationary_dyn38","ppfen_stationary_dyn28","ppfen_stationary"),format="first_found", react = "silent")
-  if (length(ppfen_stat) == 0) ppfen_stat = NULL
   fe2ppfen37 <- readGDX(gdx, 'fe2ppfen37', react = 'silent')
   emiMacMagpie    <- readGDX(gdx,c("emiMacMagpie"),format="first_found")
   emiMacMagpieN2O <- readGDX(gdx,c("emiMacMagpieN2O"),format="first_found")
@@ -347,31 +345,8 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   #######################################
   ########## Energy costs ###############
   #######################################
-  if (!is.null(ppfen_stat)){
-    ##### CDR
-    price_feels <- abs(balfinen.m[,,"feels.feels"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Electricity|Stationary (US$2005/GJ)")
-    price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
-    price_fehes <- abs(balfinen.m[,,"fehes.fehes"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ #  "Price|Final Energy|Heat|
-    price_fegas <- abs(balfinen.m[,,"fegas.fegas"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Gas (US$2005/GJ)")
-    price_feh2s <- abs(balfinen.m[,,"feh2s.feh2s"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Hydrogen|Stationary (US$2005/GJ)")
-    
-    # reduce names in 3rd dimension
-    price_feels <- setNames(price_feels,"feels") # reduce feels.feels to feels
-    price_fehes <- setNames(price_fehes,"fehes") # reduce fehes.fehes to fehes
-    price_fegas <- setNames(price_fegas,"fegas") # reduce fegas.fegas to fegas
-    price_feh2s <- setNames(price_feh2s,"feh2s") # reduce feh2s.feh2s to feh2s
-    
-    tmp  <- mbind(tmp,setNames(price_feels * vm_otherFEdemand[,,"feels"] * pm_conv_TWa_EJ, "Energy costs CDR|Electricity (billion US$2005/yr)"))   
-    tmp  <- mbind(tmp,setNames(price_fedie * vm_otherFEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"))
-    tmp  <- mbind(tmp,setNames((price_fegas * vm_otherFEdemand[,,"fegas"] + price_feh2s * vm_otherFEdemand[,,"feh2s"]) * pm_conv_TWa_EJ, "Energy costs CDR|Heat (billion US$2005/yr)"))
-    
-    tmp  <- mbind(tmp,setNames(price_feels * vm_otherFEdemand[,,"feels"] * pm_conv_TWa_EJ + 
-                                 price_fedie * vm_otherFEdemand[,,"fedie"] * pm_conv_TWa_EJ +
-                                 price_fehes * vm_otherFEdemand[,,"fehes"] * pm_conv_TWa_EJ,
-                               "Energy costs CDR (billion US$2005/yr)"))
-  } else {
-    
-    if (!is.null(balfinen.m)){
+  {
+    if (!is.null(balfinen.m)) {
       
       if ('subsectors' == industry_module) {
         fe2ppfen37_feels <- filter(fe2ppfen37, 'feels' == .data$all_enty)
@@ -453,6 +428,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
                                  price_fegai * vm_otherFEdemand[,,"fegas"] * pm_conv_TWa_EJ +
                                  price_feh2i * vm_otherFEdemand[,,"feh2s"] * pm_conv_TWa_EJ,
                                "Energy costs CDR (billion US$2005/yr)"))
+    }
   }
   
   #######################################

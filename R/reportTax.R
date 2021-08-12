@@ -248,13 +248,11 @@ if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found")))
   } else {
     fe2es = NULL
   }
-  ppfen_stat <- readGDX(gdx,c("ppfen_stationary_dyn38","ppfen_stationary_dyn28","ppfen_stationary"),format="first_found", react = "silent")
-  if (length(ppfen_stat) == 0) ppfen_stat = NULL
   ppfen_build <- readGDX(gdx,c("ppfen_buildings_dyn36","ppfen_buildings_dyn28","ppfen_buildings"),format="first_found", react = "silent")
   ue_dyn36 <- readGDX(gdx,c("ue_dyn36"),format="first_found", react = "silent")
   ppfen_build <- setdiff(ppfen_build, ue_dyn36)
   ppfen_ind <- readGDX(gdx,c("ppfen_industry_dyn37","ppfen_industry_dyn28","ppfen_industry"),format="first_found", react = "silent")
-  ppfen_stat_build_ind <- c(ppfen_stat,ppfen_build,ppfen_ind)
+  ppfen_build_ind <- c(ppfen_build, ppfen_ind)
   
   esty_build <- readGDX(gdx,c("esty_dyn36"),format="first_found", react = "silent")
   esty_trans <- readGDX(gdx,c("esty_dyn35"),format="first_found", react = "silent")
@@ -262,20 +260,11 @@ if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found")))
   
   # Realisation of the different modules
   if ( !is.null(module2realisation) & (!"CES_structure" %in% module2realisation[, 1] )){
-    stat_mod = find_real_module(module2realisation,"stationary")
-    tran_mod = find_real_module(module2realisation,"transport")
     indu_mod = find_real_module(module2realisation,"industry")
     buil_mod = find_real_module(module2realisation,"buildings")
-  } else {                                                       
-    if ( !is.null(ppfen_stat)){   # In case the set module2realisation did not exist, find out whether it was stationary or buildings-industry
-      stat_mod = "simple"
-      indu_mod = "off"
-      buil_mod = "off"
-    } else {
-      stat_mod = "off"
-      indu_mod = "fixed_shares"
-      buil_mod = "simple"
-    }
+  } else {
+    indu_mod = "fixed_shares"
+    buil_mod = "simple"
   }
   
   
@@ -299,10 +288,10 @@ if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found")))
   if(is.null(fe_tax) & is.null(fe_sub)){
     
     fe_tax = mbind(readGDX(gdx, name=c('p21_tau_fe_tax_transport'), format= "first_found")[,,fety35],
-                   readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_stat_build_ind],
+                   readGDX(gdx, name=c('pm_tau_fe_tax_bit_st','p21_tau_fe_tax_bit_st'), format= "first_found")[,,ppfen_build_ind],
                    readGDX(gdx, name=c('pm_tau_fe_tax_ES_st','p21_tau_fe_tax_ES_st'), format= "first_found", react = "silent")[,,esty_bt])
     fe_sub = mbind(readGDX(gdx, name=c('p21_tau_fe_sub_transport'), format= "first_found")[,,fety35],
-                   readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_stat_build_ind],
+                   readGDX(gdx, name=c('pm_tau_fe_sub_bit_st','p21_tau_fe_sub_bit_st'), format= "first_found")[,,ppfen_build_ind],
                    readGDX(gdx, name=c('pm_tau_fe_sub_ES_st','p21_tau_fe_sub_ES_st'), format= "first_found", react = "silent")[,,esty_bt])
     
     # Some versions of REMIND have B-I-T but no differentiated taxes for Buildings and Industry
@@ -388,7 +377,7 @@ if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found")))
   #--- Stationary module or Undifferentiated taxes for Buil and Indu
   
   
-  if (stat_mod == "simple" | !splitVersion){
+  if (!splitVersion){
     # stationary-solids
     taxrate_sta_sol <- setNames(fe_tax[,,"fesos"],                       "Tax rate|Final Energy|Stationary|Solids (US$2005/GJ)")
     subrate_sta_sol <- setNames(fe_sub[,,"fesos"],                       "Subsidy rate|Final Energy|Stationary|Solids (US$2005/GJ)")
@@ -716,7 +705,7 @@ if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found")))
   # put all together
   out <- mbind(tmp_trp, tmp_stat, tmp_b_i)
   
-  if (stat_mod == "simple" | !splitVersion) {
+  if (!splitVersion) {
     
     out = mbind(out, setNames(out[,,"Taxes|Final Energy|Transportation (billion US$2005/yr)"]
                               + out[,,"Taxes|Final Energy|Stationary (billion US$2005/yr)"],
