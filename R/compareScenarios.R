@@ -1605,10 +1605,7 @@ compareScenarios <- function(mif, hist,
     
     swlatex(sw,"\\subsubsection{ETS}")
 
-    targets = c("Emi|GHG|ETS|target|40% (Mt CO2-equiv/yr)"="-43% by 2030 (vs. 2005)" #,
-                #"Emi|GHG|ETS|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
-                #"Emi|GHG|ETS|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)"
-                )
+    targets = c("Emi|GHG|ETS|target|61% (Mt CO2-equiv/yr)"="-61% by 2030 (vs. 2005)")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -1622,10 +1619,7 @@ compareScenarios <- function(mif, hist,
 
     swlatex(sw,"\\subsubsection{ESR}")
     
-    targets = c("Emi|GHG|ES|target|40% (Mt CO2-equiv/yr)"="-30% by 2030 (vs. 2005)"#,
-                #"Emi|GHG|ES|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
-                #"Emi|GHG|ES|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)"
-                )
+    targets = c("Emi|GHG|ES|target|40% (Mt CO2-equiv/yr)"="-40% by 2030 (vs. 2005)")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ESR (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ES (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
