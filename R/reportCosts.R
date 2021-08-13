@@ -208,9 +208,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   }
  
   # operation and maintenance costs
-   op_costs <- function(ei,eo,te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost) {
-     
-   
+  op_costs <- function(ei,eo,te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost) {
     # Check whether a mapping with energy transfering technologies is given or just technologies
     if (!is.null(e2e)) {
       sub_e2e         <- e2e[(e2e$all_enty %in% ei) & (e2e$all_enty1 %in% eo) & (e2e$all_te %in% te),]
@@ -427,8 +425,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
                                price_fegai * vm_otherFEdemand[,,"fegas"] * pm_conv_TWa_EJ +
                                price_feh2i * vm_otherFEdemand[,,"feh2s"] * pm_conv_TWa_EJ,
                              "Energy costs CDR (billion US$2005/yr)"))
-  }
-  
+
   #######################################
   ########## Total Energy costs #########
   #######################################
