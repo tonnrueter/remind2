@@ -87,15 +87,11 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   # Define current realisation for the different modules
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
-  
-  ppfen_stat <- readGDX(gdx,c("ppfen_stationary_dyn38","ppfen_stationary_dyn28","ppfen_stationary"),format="first_found", react = "silent")
-  if (length(ppfen_stat) == 0) ppfen_stat = NULL
-  
+
   find_real_module <- function(module_set, module_name){
     return(module_set[module_set$modules == module_name,2])
   }
-  
-  stat_mod = find_real_module(module2realisation,"stationary")
+
   tran_mod = find_real_module(module2realisation,"transport")
   indu_mod = find_real_module(module2realisation,"industry")
   buil_mod = find_real_module(module2realisation,"buildings")
@@ -1205,23 +1201,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                  setNames(out[,,"FE|CDR|EW|+|Diesel (EJ/yr)"] + out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|++|EW (EJ/yr)")
     )
   }
-  
-  
-  #--- Stationary Module ---
-  ## warning report is probably broken for stationary only runs (should we simply remove this module as it is quite outdated?)
-  # if (stat_mod == "simple"){
-  #   out <- mbind(out,
-  #     setNames((dimSums(vm_cesIO[,,"feels"],dim=3) + vm_otherFEdemand[,,"feels"]),          "FE|Stationary|Electricity (EJ/yr)"),
-  #     setNames((dimSums(vm_cesIO[,,"fegas"],dim=3) + vm_otherFEdemand[,,"fegas"]),          "FE|Stationary|Gases (EJ/yr)"),
-  #     setNames(dimSums(vm_cesIO[,,"fesos"],dim=3),          "FE|Stationary|Solids (EJ/yr)"),
-  #     setNames((dimSums(vm_cesIO[,,"fehos"],dim=3) + vm_otherFEdemand[,,"fedie"]),          "FE|Stationary|Liquids (EJ/yr)"),
-  #     setNames((dimSums(vm_cesIO[,,"feh2s"],dim=3) + vm_otherFEdemand[,,"feh2s"]),          "FE|Stationary|Hydrogen (EJ/yr)"),
-  #     setNames(dimSums(vm_cesIO[,,"fehes"],dim=3),          "FE|Stationary|Heat (EJ/yr)")
-  #   )
-  #  # setNames(out[,,"FE|+|Electricity (EJ/yr)"] / TWa_2_EJ * 1000 * 1.1 * 1.4, "Cap|Electricity|Peak Demand|Estimated from FE x 1p4 x 1p1 (GW)") 
-  # }
-  
-  
+
   #--- Additional Variables
   
   out <- mbind(out,
@@ -1435,10 +1415,6 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
    setNames(out[,,'FE|Transport|Fuels (EJ/yr)'] / out[,,'FE|++|Transport (EJ/yr)'] * 100, 'FE|Transport|Fuels|Share (%)'),
    setNames(out[,,'FE|Fuels (EJ/yr)'] / out[,,'FE (EJ/yr)'] * 100, 'FE|Fuels|Share (%)')
   )
-  
-  # # change Other Sector to Buildings and Industry if this is the structure used
-  # if (stat_mod == "off"){ 
-  #   magclass::getNames(out2) <- sub("Other Sector","Buildings and Industry", magclass::getNames(out2))
 
   return(out)
 }
