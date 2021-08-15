@@ -23,7 +23,7 @@
 reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
 # temporary conditional to keep old backwards compatibility until new calibrations are made. After that, the old tax reporting code should be deleted. 
-if(is.null(readGDX(gdx, name=c('pm_tau_fe_tax_bit_st'), format= "first_found"))){
+if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", react = "silent"))) {
   
   ### conversion factors
   TWa_2_EJ     <- 31.536
