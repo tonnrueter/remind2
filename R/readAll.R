@@ -1,7 +1,22 @@
 #' readAll
 #'
-#' This function was copied from magpie::read_all to remove the magpie dependency.
+#' (This function was copied from magpie::read_all to remove the magpie dependency.)
+#' Function to read in input from multiple gdx files.
 #'
+#' @param pathToGdx A vector or list. Can contain either the filenames of gdx files or GDX lists as created by readGDX.
+#'                  If it is named, the names will also be used for the output)
+#' @param func The output function that should be executed on the gdx files. E.g. emissions
+#' @param asList If TRUE, the output will be a list of length(gdx). If FALSE, read_all tries to store everything in one
+#'               magpie object.
+#' @param ... Additional arguments passed to func.
+#' @return A list of magpie objects (as.list=TRUE) or one magpie object (as.list=FALSE) with the output returned by func
+#'         for all the gdx files
+#' @author Markus Bonsch
+#' @examples
+#' \dontrun{
+#' gdxPaths <- c(baseline = "fulldata1.gdx", policy = "fulldata2.gdx")
+#' croparea <- read_all(gdxPaths, func = croparea, level = "glo", crop_aggr = TRUE, asList = TRUE)
+#' }
 #' @importFrom magclass ndata mbind
 readAll <- function(pathToGdx, func, asList = TRUE, ...) {
   if (!is.list(pathToGdx)) {
@@ -32,7 +47,6 @@ readAll <- function(pathToGdx, func, asList = TRUE, ...) {
     getNames(out) <- sub("\\.$", "", getNames(out))
     getNames(out) <- sub("^\\.", "", getNames(out))
     return(out)
-    print("no")
   } else {
     inp <- out
     if (is.null(names(inp))) {

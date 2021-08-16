@@ -35,7 +35,7 @@ check_eqs <- function(dt, eqs, scope="all", sens=1e-8){
 }
 
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
-
+  skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)))
 
   ## add GDXs for comparison here:
   my_gdxs <- NULL

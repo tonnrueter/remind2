@@ -11,7 +11,8 @@
 #' @examples
 #' \dontrun{
 #' read.reportEntry("output/SSP2-ref", entry = "Emi|Kyoto Gases (Mt CO2eq/yr)")
-#'   remind2:::readAll(outputdirs, read.reportEntry, entry = "Emi|Kyoto Gases (Mt CO2eq/yr)", asList = FALSE)
+#'   remind2:::readAll(outputdirs, read.reportEntry, entry = "Emi|Kyoto Gases (Mt CO2eq/yr)",
+#'                     asList = FALSE)
 #' }
 #' @importFrom lucode2 getScenNames
 #' @importFrom magclass read.report collapseNames
