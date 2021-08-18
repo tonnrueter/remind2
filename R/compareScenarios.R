@@ -3138,6 +3138,32 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
 
   }
+  
+  # Industry sub-sectors
+  if("FE|Industry|Steel (EJ/yr)" %in% magclass::getNames(data,dim=3)){
+    swlatex(sw,"\\subsubsection{per sector}")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Steel (EJ/yr)"],x_hist=histData[mainReg,,"FE|Industry|Steel (EJ/yr)"],
+                           ylab='FE|Industry|Steel [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Steel (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Industry|Steel (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Steel [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Cement (EJ/yr)"],x_hist=histData[mainReg,,"FE|Industry|Cement (EJ/yr)"],
+                           ylab='FE|Industry|Cement [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Cement (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Industry|Cement (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Cement [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Chemicals (EJ/yr)"],x_hist=histData[mainReg,,"FE|Industry|Chemicals (EJ/yr)"],
+                           ylab='FE|Industry|Chemicals [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Chemicals (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Industry|Chemicals (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Chemicals [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
 
   ## ---- FE Line Transport ----
 
