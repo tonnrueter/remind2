@@ -3590,6 +3590,56 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     
   }
   
+  ## Industry Production
+  
+  items <- c(
+    "Production|Industry|Steel (Mt/yr)",
+    "Production|Industry|Steel|Primary (Mt/yr)",
+    "Production|Industry|Steel|Secondary (Mt/yr)",
+    "Production|Industry|Cement (Mt/yr)",
+    "Value Added|Industry|Chemicals (billion US$2005/yr)"
+  )
+  
+  if(all(c(items) %in% magclass::getNames(data,dim=3))){
+    swlatex(sw, "\\subsection{Industry Production}")
+    swlatex(sw, "\\subsubsection{per sector}")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel (Mt/yr)"],
+                           ylab='Production|Industry|Steel [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Steel (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Steel (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Steel [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel|Primary (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel|Primary (Mt/yr)"],
+                           ylab='Production|Industry|Steel|Primary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Steel|Primary (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Steel|Primary (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Steel|Primary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel|Secondary (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel|Secondary (Mt/yr)"],
+                           ylab='Production|Industry|Steel|Secondary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Steel|Secondary (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Steel|Secondary (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Steel|Secondary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Cement (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Cement (Mt/yr)"],
+                           ylab='Production|Industry|Cement [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Cement (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Cement (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Cement [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Value Added|Industry|Chemicals (billion US$2005/yr)"],x_hist=histData_NA[mainReg,,"Value Added|Industry|Chemicals (billion US$2005/yr)"],
+                           ylab="Value Added|Industry|Chemicals (billion US$2005/yr)",scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab="Value Added|Industry|Chemicals (billion US$2005/yr)",scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
+  
   
   ## ---- ++++ C L I M A T E ++++ ----
 
