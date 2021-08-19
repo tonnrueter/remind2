@@ -1616,7 +1616,7 @@ compareScenarios <- function(mif, hist,
         
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
-                           hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[mainReg,2030,names(targets)]))) histData[mainReg,2030,names(targets)] else NULL,
+                           hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2030,names(targets)] else NULL,
                            hlines.labels=targets)
     swfigure(sw,print,p,sw_option="height=8,width=8")  
 
