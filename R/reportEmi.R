@@ -488,13 +488,13 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
     
     out <- mbind(out,
                  setNames( (dimSums(mselect(EmiIndSubSec, secInd37="steel"), dim=3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37="steel"), dim=3))*GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industy|++|Steel (Mt CO2/yr)"),
+                           "Emi|CO2|Energy|Demand|Industry|++|Steel (Mt CO2/yr)"),
                  setNames( (dimSums(mselect(EmiIndSubSec, secInd37="cement"), dim=3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37="cement"), dim=3))*GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industy|++|Cement (Mt CO2/yr)"),
+                           "Emi|CO2|Energy|Demand|Industry|++|Cement (Mt CO2/yr)"),
                  setNames( (dimSums(mselect(EmiIndSubSec, secInd37="chemicals"), dim=3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37="chemicals"), dim=3))*GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industy|++|Chemicals (Mt CO2/yr)"),
+                           "Emi|CO2|Energy|Demand|Industry|++|Chemicals (Mt CO2/yr)"),
                  setNames( (dimSums(mselect(EmiIndSubSec, secInd37="otherInd"), dim=3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37="otherInd"), dim=3))*GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industy|++|Other Industry (Mt CO2/yr)"))
+                           "Emi|CO2|Energy|Demand|Industry|++|Other Industry (Mt CO2/yr)"))
     
   } else {
     
