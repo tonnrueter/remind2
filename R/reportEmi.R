@@ -478,7 +478,9 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                  
                  # transport
                  setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = c("fedie","fepet"), emi_sectors = "trans"), dim = 3))*GtC_2_MtCO2,
-                            "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)")
+                            "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)"),
+                 setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegat"), emi_sectors = "trans"), dim = 3))*GtC_2_MtCO2,
+                            "Emi|CO2|Energy|Demand|Transport|+|Gases (Mt CO2/yr)")
                  
                  
     )
@@ -592,7 +594,9 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                      
                      # transport
                      setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = c("fedie","fepet"), emi_sectors = "trans"), dim = 3))*GtC_2_MtCO2,
-                                "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)")
+                                "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)"),
+                     setNames(  (dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegat"), emi_sectors = "trans"), dim = 3))*GtC_2_MtCO2,
+                                "Emi|CO2|Energy|Demand|Transport|+|Gases (Mt CO2/yr)")
                      
                      
         )
@@ -1675,8 +1679,8 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
                          "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
                          "Emi|CO2|Gross|Energy|Demand|+|Transport (Mt CO2/yr)")
   
-  # TODO: remove this if clause once the below variable are there for industry subsectors, too
-  if (module2realisation["industry",2] == "fixed_shares") {
+  # TODO: remove this if clause once the below variable are there for industry subsectors
+  if ( (module2realisation["industry",2] == "fixed_shares") | (!is.null(o37_demFeIndSub))) {
     # Note: this assumes that all bunker fuels are liquids
     emi.vars.wBunkers <- c( emi.vars.wBunkers,     "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)",  "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)")
     
