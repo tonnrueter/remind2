@@ -409,12 +409,20 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   
   ### FE carriers from specific PE origin
 
-  p_share_coal_liq <- dimSums(mselect(vm_prodSe, all_enty="pecoal", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3)
-  p_share_oil_liq <- dimSums(mselect(vm_prodSe, all_enty="peoil", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3)
-  p_share_gas_liq <- dimSums(mselect(vm_prodSe, all_enty="pegas", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3)
+  p_share_coal_liq <- dimSums(mselect(vm_prodSe, all_enty="pecoal", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3, na.rm = T)
+  p_share_oil_liq <- dimSums(mselect(vm_prodSe, all_enty="peoil", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3, na.rm = T)
+  p_share_gas_liq <- dimSums(mselect(vm_prodSe, all_enty="pegas", all_enty1="seliqfos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="seliqfos"), dim=3, na.rm = T)
+  
+  
+  p_share_coal_liq[is.na(p_share_coal_liq)] <- 0
+  p_share_oil_liq[is.na(p_share_oil_liq)] <- 0
+  p_share_gas_liq[is.na(p_share_gas_liq)] <- 0
 
-  p_share_ngas_gas <- dimSums(mselect(vm_prodSe, all_enty="pegas", all_enty1="segafos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="segafos"), dim=3)
-  p_share_coal_gas <- dimSums(mselect(vm_prodSe, all_enty="pecoal", all_enty1="segafos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="segafos"), dim=3)
+  p_share_ngas_gas <- dimSums(mselect(vm_prodSe, all_enty="pegas", all_enty1="segafos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="segafos"), dim=3, na.rm = T)
+  p_share_coal_gas <- dimSums(mselect(vm_prodSe, all_enty="pecoal", all_enty1="segafos"), dim=3) / dimSums(mselect(vm_prodSe, all_enty1="segafos"), dim=3, na.rm = T)
+  
+  p_share_ngas_gas[is.na(p_share_ngas_gas)] <- 0
+  p_share_coal_gas[is.na(p_share_coal_gas)] <- 0
 
   # origin of fossil liquids and gases
   out <- mbind(out,
