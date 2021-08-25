@@ -166,7 +166,7 @@ compareScenarios <- function(mif, hist,
   # get scenarios in all mif files
   mifScenarios <- c()
   for(i in 1:length(mifData0)){ 
-      mifScenarios <-c(mifScenarios, magclass::getNames(mifData0[[i]],fulldim = TRUE)[["scenario"]])
+      mifScenarios <-c(mifScenarios, getNames(mifData0[[i]],fulldim = TRUE)[["scenario"]])
   }
   
   # print a warning message on repeated names
@@ -189,7 +189,7 @@ compareScenarios <- function(mif, hist,
     mifScenarios_new <- mifScenarios
     #rename scenario names
     for(i in 1:length(mifScenarios)){
-      magclass::getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
+      getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
     }
   }
   
