@@ -39,30 +39,33 @@ if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", 
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
   
-  entyFe_map = list(
-    "Stationary" = c(
-      "Solids"      = "fesos",
-      "Liquids"     = "fehos",
-      "Gases"       = "fegas",
-      "Hydrogen"    = "feh2s",
-      "Heat"        = "fehes",
-      "Electricity" = "feels"
-    ),
-    "Transportation" = c(
-      "Liquids|LDV" = "fepet",
+  commonFinalEnergyVariables <- c(
+    Solids      = "fesos",
+    Liquids     = "fehos",
+    Gases       = "fegas",
+    Hydrogen    = "feh2s",
+    Heat        = "fehes",
+    Electricity = "feels"
+  )
+
+  entyFe_map <- list(
+    CDR            = commonFinalEnergyVariables,
+    Buildings      = commonFinalEnergyVariables,
+    Industry       = commonFinalEnergyVariables,
+    Transportation = c(
+      "Liquids|LDV"     = "fepet",
       "Liquids|non-LDV" = "fedie",
-      "Gases"       = "fegat",
-      "Hydrogen"    = "feh2t",
-      "Electricity" = "feelt"
+      Gases             = "fegat",
+      Hydrogen          = "feh2t",
+      Electricity       = "feelt"
     )
   )
-  entyFe_map$Industry <- entyFe_map$Buildings <- entyFe_map$CDR <- entyFe_map$Stationary 
 
   sector_map <- c(
-    "Transportation" = "trans",
-    "Buildings"      = "build",
-    "Industry"       = "indst",
-    "CDR"            = "CDR"
+    Transportation = "trans",
+    Buildings      = "build",
+    Industry       = "indst",
+    CDR            = "CDR"
   )
   
   out <- mbind(
@@ -374,7 +377,7 @@ if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", 
                   tax_trp_el, sub_trp_el,
                   tax_trp,sub_trp)
   
-  #--- Stationary module or Undifferentiated taxes for Buil and Indu
+  #--- Undifferentiated taxes for Buil and Indu
   
   
   if (!splitVersion){
