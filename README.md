@@ -1,8 +1,14 @@
 # The REMIND R package (2nd generation)
 
+<<<<<<< HEAD
 R package **remind2**, version **1.43.0**
 
 [![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)     [![r-universe](https://pik-piam.r-universe.dev/badges/remind2)](https://pik-piam.r-universe.dev/ui#builds)
+=======
+R package **remind2**, version **1.42.1**
+
+[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)   [![R build status](https://github.com/pik-piam/remind2/workflows/check/badge.svg)](https://github.com/pik-piam/remind2/actions) [![codecov](https://codecov.io/gh/pik-piam/remind2/branch/master/graph/badge.svg)](https://codecov.io/gh/pik-piam/remind2)
+>>>>>>> 05d92b92e5de894835f68602eec7fed1d9e47707
 
 ## Purpose and Functionality
 
