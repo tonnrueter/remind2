@@ -171,25 +171,26 @@ compareScenarios <- function(mif, hist,
   
   # print a warning message on repeated names
   uniqueScenarioName = unique(unlist(mifScenarios, use.names = FALSE))
+  
   if (length(uniqueScenarioName) < length(mifScenarios)){
     warning(paste0("There are repeated scenario names in comparison! Appending numerical value to repeated names"))
-  }
-  
-  #get duplicated names
-  dup_names = mifScenarios[duplicated(mifScenarios)]
-  
-  #append a numerical value to the repeated names
-  for (i in 1:length(dup_names)){
-    dup_name = dup_names[[i]]
-    #number of duplicates
-    dupnum <- seq(1,length(mifScenarios[mifScenarios == dup_name]))
-    mifScenarios[mifScenarios == dup_name] <- paste0(mifScenarios[mifScenarios == dup_name], "_", dupnum)  
-  }
-  
-  mifScenarios_new <- mifScenarios
-  #rename scenario names
-  for(i in 1:length(mifScenarios)){
-    magclass::getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
+ 
+    #get duplicated names
+    dup_names = mifScenarios[duplicated(mifScenarios)]
+    
+    #append a numerical value to the repeated names
+    for (i in 1:length(dup_names)){
+      dup_name = dup_names[[i]]
+      #number of duplicates
+      dupnum <- seq(1,length(mifScenarios[mifScenarios == dup_name]))
+      mifScenarios[mifScenarios == dup_name] <- paste0(mifScenarios[mifScenarios == dup_name], "_", dupnum)  
+    }
+    
+    mifScenarios_new <- mifScenarios
+    #rename scenario names
+    for(i in 1:length(mifScenarios)){
+      magclass::getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
+    }
   }
   
   # get regions present all mif files
