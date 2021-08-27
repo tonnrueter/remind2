@@ -8,4 +8,3 @@ AcceptedNotes:
 - unable to verify current time
 AutocreateReadme: yes
 allowLinterWarnings: yes
-UseGithubActions: no
