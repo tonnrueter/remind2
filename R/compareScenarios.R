@@ -3521,6 +3521,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     }
   }
     
+    swlatex(sw,"\\twocolumn")
     
     # Vehicles Stock
     
@@ -3542,6 +3543,8 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                  "Est H2 LDV Stock (million vehicles)",
                  "Est ICE LDV Stock (million vehicles)")
       var <- data[,,intersect(items,getNames(data,dim=3))]
+      
+      swlatex(sw,"\\twocolumn")
       
       p <- mipArea(var[mainReg,,],total=data[mainReg,,tot],scales="free_y")
       p <- p + theme(legend.position="none")
