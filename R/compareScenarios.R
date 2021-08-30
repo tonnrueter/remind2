@@ -3144,6 +3144,64 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
 
   }
   
+  # Biomass and Fossil (add historical data when available)
+  
+  items <- c("FE|Industry|Liquids|Biomass (EJ/yr)",
+             "FE|Industry|Solids|Biomass (EJ/yr)",
+             "FE|Industry|Gases|Biomass (EJ/yr)",
+             "FE|Industry|Liquids|Fossil (EJ/yr)",
+             "FE|Industry|Solids|Fossil (EJ/yr)",
+             "FE|Industry|Gases|Fossil (EJ/yr)"
+  )
+  
+  if(all(c(items) %in% magclass::getNames(data,dim=3))){
+
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Liquids|Biomass (EJ/yr)"],
+                           ylab='FE|Industry|Liquids|Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Liquids|Biomass (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Liquids|Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Gases|Biomass (EJ/yr)"],
+                           ylab='FE|Industry|Gases|Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Gases|Biomass (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Gases|Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Solids|Biomass (EJ/yr)"],
+                           ylab='FE|Industry|Solids|Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Solids|Biomass (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Solids|Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Liquids|Fossil (EJ/yr)"],
+                           ylab='FE|Industry|Liquids|Fossil [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Liquids|Fossil (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Liquids|Fossil [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Gases|Fossil (EJ/yr)"],
+                           ylab='FE|Industry|Gases|Fossil [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Gases|Fossil (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Gases|Fossil [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Solids|Fossil (EJ/yr)"],
+                           ylab='FE|Industry|Solids|Fossil [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Solids|Fossil (EJ/yr)"][mainReg,,,invert=TRUE],
+                           ylab='FE|Industry|Solids|Fossil [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+
+  }
+
+  
   # Industry subsectors
   
   items <- c("FE|Industry|Steel (EJ/yr)",
@@ -3402,11 +3460,11 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
       "ES|Transport|Pass|non-LDV (bn pkm/yr)"
     )
     
-    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. (km/yr)",
+    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. [km/yr]",
                           global = T, per_gdp = F)
     swfigure(sw,print,p,sw_option="height=9,width=16")
     
-    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. (km/yr)",
+    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. [km/yr]",
                           global = F, per_gdp = F)
     swfigure(sw,print,p,sw_option="height=9,width=16")
     
@@ -3415,11 +3473,11 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     
     swlatex(sw,"\\subsubsection{Energy Services for Passanger Transport (per Capita, GDP)}")
     
-    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. (km/yr)",
+    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. [km/yr]",
                           global = T, per_gdp = T)
     swfigure(sw,print,p,sw_option="height=9,width=16")
     
-    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. (km/yr)",
+    p <- lineplots_perCap(data, items, 1e3, "Mobility Demand per Cap. [km/yr]",
                           global = F, per_gdp = T)
     swfigure(sw,print,p,sw_option="height=9,width=16")
     
@@ -3442,12 +3500,12 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
       swlatex(sw,"\\twocolumn")
       
       p <- mipBarYearData(var_cap[mainReg,y_bar,], 
-                          ylab = "Mobility Demand for LDV per Capita (km/yr)")
+                          ylab = "Mobility Demand for LDV per Capita [km/yr]")
       p <- p + theme(legend.position="none")
       swfigure(sw,print,p,sw_option="height=4.5,width=7")
       
       p <- mipBarYearData(var_cap[,y_bar,][mainReg,,,invert=TRUE], 
-                          ylab = "Mobility Demand for LDV per Capita (km/yr)") +
+                          ylab = "Mobility Demand for LDV per Capita [km/yr]") +
         guides(fill=guide_legend(ncol=3))
       swfigure(sw,print,p,sw_option="height=9,width=8")
       
@@ -3709,10 +3767,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
     p <- mipLineHistorical(data[mainReg,,"Value Added|Industry|Chemicals (billion US$2005/yr)"],x_hist=histData_NA[mainReg,,"Value Added|Industry|Chemicals (billion US$2005/yr)"],
-                           ylab="Value Added|Industry|Chemicals (billion US$2005/yr)",scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+                           ylab="Value Added|Industry|Chemicals [billion US$2005/yr]",scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
-                           ylab="Value Added|Industry|Chemicals (billion US$2005/yr)",scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+                           ylab="Value Added|Industry|Chemicals [billion US$2005/yr]",scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
   
