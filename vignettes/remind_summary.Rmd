@@ -25,7 +25,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 The `REMIND_summary_*.pdf` compiles plots of REMIND's most relevant output variables contained in the REMIND_generic.mif. To have it generated automatically after a REMIND finished it needs to be listed in the default.cfg:
 
 ```{r, eval=FALSE}
-cfg$output <- c("reporting","validation","validationSummary")
+cfg$output <- c("reporting", "validation", "validationSummary")
 ```
 
 This will cause the script `scripts/output/single/validationSummary.R` to be executed at the end of a REMIND run, which in turn calls the function `validationSummary()` from the remind2 library that finally produces the `REMIND_summary_*.pdf`.
