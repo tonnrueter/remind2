@@ -1,8 +1,8 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.42.4**
+R package **remind2**, version **1.42.5**
 
-[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)   [![R build status](https://github.com/pik-piam/remind2/workflows/check/badge.svg)](https://github.com/pik-piam/remind2/actions) [![codecov](https://codecov.io/gh/pik-piam/remind2/branch/master/graph/badge.svg)](https://codecov.io/gh/pik-piam/remind2)
+[![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)    
 
 ## Purpose and Functionality
 
@@ -46,7 +46,10 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R (2021). _remind2: The REMIND R package (2nd generation)_. R package version 1.42.4, <URL: https://github.com/pik-piam/remind2>.
+Rodrigues R (2021). _remind2: The REMIND R
+package (2nd generation)_. R package version
+1.42.5, <URL:
+https://github.com/pik-piam/remind2>.
 
 A BibTeX entry for LaTeX users is
 
@@ -55,7 +58,7 @@ A BibTeX entry for LaTeX users is
   title = {remind2: The REMIND R package (2nd generation)},
   author = {Renato Rodrigues},
   year = {2021},
-  note = {R package version 1.42.4},
+  note = {R package version 1.42.5},
   url = {https://github.com/pik-piam/remind2},
 }
 ```
