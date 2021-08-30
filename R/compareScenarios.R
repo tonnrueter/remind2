@@ -29,16 +29,6 @@
 #' @importFrom utils installed.packages
 #' @importFrom rmndt magpie2dt
 
-# library(magclass)
-# library(lusweave)
-# library(mip)
-# library(luplot)
-# library(ggplot2)
-# library(quitte)
-# library(data.table)
-# library(utils)
-# library(rmndt)
-
 
 compareScenarios <- function(mif, hist,
                              y=c(seq(2005,2060,5),seq(2070,2100,10)),
