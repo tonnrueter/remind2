@@ -720,9 +720,9 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
      
       out <- mbind(out,
                    setNames(mselect(vm_cesIO, all_in = "feel_steel_primary"),
-                            "FE|Industry|Steel|Electricity|+|Primary Steel (EJ/yr)"),
+                            "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
                    setNames(mselect(vm_cesIO, all_in = "feel_steel_secondary"),
-                            "FE|Industry|Steel|Electricity|+|Secondary Steel (EJ/yr)"))
+                            "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
       
       # mapping of industrial output to energy production factors in CES tree  
       ces_eff_target_dyn37 <- readGDX(gdx, "ces_eff_target_dyn37")
