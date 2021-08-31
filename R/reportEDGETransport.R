@@ -378,7 +378,7 @@ reportEDGETransport <- function(output_folder=".",
     return(venum)
   }
 
-  reportStockAndSales <- function(){
+  reportStockAndSales <- function(annual_mileage){
     vintages_file <- file.path(output_folder, "vintcomp.csv")
     if(!file.exists(vintages_file)){
       print("EDGE-T Reporting: No vintages file found.")
@@ -408,21 +408,24 @@ reportEDGETransport <- function(output_folder=".",
 
     vintgs <- data.table::melt(vintgs, measure.vars = c("Stock", "Sales"))
     ## vkm -> v-num
-    vintgs[, value := value / 15000]
+    vintgs = merge(vintgs, annual_mileage, by = c("year", "region", "vehicle_type"))
+    vintgs[, value := value / annual_mileage]
     vintgs[, variable := sprintf("%s|Transport|LDV|%s|%s", variable, vehicle_type, technology)]
 
-    vintgs[, c("vehicle_type", "technology") := NULL]
+    vintgs[, c("vehicle_type", "technology", "annual_mileage") := NULL]
     vintgs <- vintgs[!is.na(value)]
 
     setnames(vintgs, "year", "period")
-    vintgs <- vintgs[CJ(period=c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
-                        region=vintgs$region, variable=vintgs$variable, unique=TRUE),
-                     on=c("period", "region", "variable")]
 
+    vintgs = approx_dt(vintgs, c(2005, 2010, unique(vintgs$period), 2110, 2130, 2150),
+                       xcol = "period", ycol = "value", idxcols = c("region", "variable"), extrapolate = T)
+    vintgs[period <= 2010|period > 2100, value := 0]
+
+    ## remove the variable (e.g. vehicle_types) that are not present for this specific region
     vintgs[, `:=`(model=cfg$model_name, scenario=cfg$title, unit="Million vehicles")]
 
     return(vintgs)
-    
+
   }
 
   repFE <- reportingESandFE(
@@ -509,7 +512,7 @@ reportEDGETransport <- function(output_folder=".",
             unit="EJ/yr", value=sum(value)),
           by=c("model", "scenario", "region", "period")]), use.names = TRUE)
 
-  toMIF <- rbindlist(list(toMIF, reportStockAndSales()), use.names=TRUE)
+  toMIF <- rbindlist(list(toMIF, reportStockAndSales(annual_mileage)), use.names=TRUE)
 
 
   if (!is.null(regionSubsetList)){
