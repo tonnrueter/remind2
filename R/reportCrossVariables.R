@@ -38,9 +38,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   ####### read in needed data #########
   ## sets
   pe2se    <- readGDX(gdx,"pe2se")
-  ppfen_stat   <- readGDX(gdx,c("ppfen_stationary_dyn38","ppfen_stationary_dyn28","ppfen_stationary"),format="first_found", react = "silent")
   sety           <- readGDX(gdx,c("entySe","sety"),types="sets",format="first_found", react = "silent")
-  if (length(ppfen_stat) == 0) ppfen_stat = NULL
   ## parameter
   pm_ts          <- readGDX(gdx,name='pm_ts',format="first_found",restore_zeros=FALSE)
   pm_ttot_val    <- readGDX(gdx,name='pm_ttot_val',format="first_found",restore_zeros=FALSE)
