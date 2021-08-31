@@ -166,32 +166,32 @@ compareScenarios <- function(mif, hist,
   # get scenarios in all mif files
   mifScenarios <- c()
   for(i in 1:length(mifData0)){ 
-      mifScenarios <-c(mifScenarios, magclass::getNames(mifData0[[i]],fulldim = TRUE)[["scenario"]])
+      mifScenarios <-c(mifScenarios, getNames(mifData0[[i]],fulldim = TRUE)[["scenario"]])
   }
   
   # print a warning message on repeated names
   uniqueScenarioName = unique(unlist(mifScenarios, use.names = FALSE))
+  
   if (length(uniqueScenarioName) < length(mifScenarios)){
     warning(paste0("There are repeated scenario names in comparison! Appending numerical value to repeated names"))
-  }
-  
-  # append numerical value to repeated names
-  mifScenarios_new <- c()
-  for(i in 1:length(uniqueScenarioName)){
-    unique_element = uniqueScenarioName[[i]]
-    k = 1
-    for(j in 1:length(mifScenarios)){
-      if (mifScenarios[[j]] == unique_element){
-        mifScenarios_new <-c(mifScenarios_new, paste0(unique_element, "_", k))
-        k = k + 1
-      }
+ 
+    #get duplicated names
+    dup_names = mifScenarios[duplicated(mifScenarios)]
+    
+    #append a numerical value to the repeated names
+    for (i in 1:length(dup_names)){
+      dup_name = dup_names[[i]]
+      #number of duplicates
+      dupnum <- seq(1,length(mifScenarios[mifScenarios == dup_name]))
+      mifScenarios[mifScenarios == dup_name] <- paste0(mifScenarios[mifScenarios == dup_name], "_", dupnum)  
+    }
+    
+    mifScenarios_new <- mifScenarios
+    #rename scenario names
+    for(i in 1:length(mifScenarios)){
+      getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
     }
   }
-  
-  for(i in 1:length(mifScenarios)){
-    magclass::getNames(mifData[[i]],dim=1) <- mifScenarios_new[[i]]
-  }
-  
   
   # get regions present all mif files
   for(i in 1:length(mifData)){ 
@@ -262,6 +262,10 @@ compareScenarios <- function(mif, hist,
       stop("historical data do not contain the choosen region")
     }
   }
+  
+  # copy of historic data replacing 0 with NA
+  histData_NA <- histData
+  histData_NA[histData_NA == 0] <- NA
 
   ## ---- Open output-pdf ----
 
@@ -1600,32 +1604,26 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   # emission markets
-  if(mainReg=="EUR"){
+  if(mainReg %in% c("EUR","EU27")){
     swlatex(sw,"\\subsection{GHG - Market}")
     
     swlatex(sw,"\\subsubsection{ETS}")
 
-    targets = c("Emi|GHG|ETS|target|40% (Mt CO2-equiv/yr)"="-43% by 2030 (vs. 2005)" #,
-                #"Emi|GHG|ETS|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
-                #"Emi|GHG|ETS|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)"
-                )
+    targets = c("Emi|GHG|ETS|target|61% (Mt CO2-equiv/yr)"="-61% by 2030 (vs. 2005)")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
         
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ETS (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|ETS [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
-                           hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[mainReg,2030,names(targets)]))) histData[mainReg,2030,names(targets)] else NULL,
+                           hlines=if(all(names(targets) %in% getNames(histData, dim=3))) histData[mainReg,2030,names(targets)] else NULL,
                            hlines.labels=targets)
     swfigure(sw,print,p,sw_option="height=8,width=8")  
 
 
     swlatex(sw,"\\subsubsection{ESR}")
     
-    targets = c("Emi|GHG|ES|target|40% (Mt CO2-equiv/yr)"="-30% by 2030 (vs. 2005)"#,
-                #"Emi|GHG|ES|target|55% (Mt CO2-equiv/yr)"="-55% vs. 2005 (EEA)",
-                #"Emi|GHG|ES|target|65% (Mt CO2-equiv/yr)"="-65% vs. 2005 (EEA)"
-                )
+    targets = c("Emi|GHG|ES|target|40% (Mt CO2-equiv/yr)"="-40% by 2030 (vs. 2005)")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ESR (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|ES (Mt CO2-equiv/yr)"],
                            ylab='Emi|GHG|ESR [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
@@ -1979,7 +1977,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
   
-  if(mainReg=="EUR"){
+  if(mainReg %in% c("EUR","EU27")){
     
     ## Market Emissions ----
     
@@ -3144,6 +3142,62 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=9,width=8")
 
   }
+  
+  # Industry subsectors
+  
+  items <- c("FE|Industry|Steel (EJ/yr)",
+             "FE|Industry|Steel|Primary (EJ/yr)",
+             "FE|Industry|Steel|Secondary (EJ/yr)",
+             "FE|Industry|Cement (EJ/yr)",
+             "FE|Industry|Chemicals (EJ/yr)",
+             "FE|Industry|other (EJ/yr)"
+  )
+  
+  if(all(c(items) %in% magclass::getNames(data,dim=3))){
+    swlatex(sw, "\\subsubsection{per sector}")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Steel (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|Steel (EJ/yr)"],
+                           ylab='FE|Industry|Steel [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Steel (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|Steel (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|Steel [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Steel|Primary (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|Steel|Primary (EJ/yr)"],
+                           ylab='FE|Industry|Steel|Primary [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Steel|Primary (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|Steel|Primary (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|Steel|Primary [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Steel|Secondary (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|Steel|Secondary (EJ/yr)"],
+                           ylab='FE|Industry|Steel|Secondary [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Steel|Secondary (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|Steel|Secondary (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|Steel|Secondary [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Cement (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|Cement (EJ/yr)"],
+                           ylab='FE|Industry|Cement [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Cement (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|Cement (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|Cement [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Chemicals (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|Chemicals (EJ/yr)"],
+                           ylab='FE|Industry|Chemicals [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|Chemicals (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|Chemicals (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|Chemicals [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|other (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|other (EJ/yr)"],
+                           ylab='FE|Industry|other [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"FE|Industry|other (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|other (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|other [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
 
   ## ---- FE Line Transport ----
 
@@ -3534,6 +3588,56 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=8,width=16")
     swlatex(sw,"\\twocolumn")    
     
+  }
+  
+  ## Industry Production
+  
+  items <- c(
+    "Production|Industry|Steel (Mt/yr)",
+    "Production|Industry|Steel|Primary (Mt/yr)",
+    "Production|Industry|Steel|Secondary (Mt/yr)",
+    "Production|Industry|Cement (Mt/yr)",
+    "Value Added|Industry|Chemicals (billion US$2005/yr)"
+  )
+  
+  if(all(c(items) %in% magclass::getNames(data,dim=3))){
+    swlatex(sw, "\\subsection{Industry Production}")
+    swlatex(sw, "\\subsubsection{per sector}")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel (Mt/yr)"],
+                           ylab='Production|Industry|Steel [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Steel (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Steel (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Steel [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel|Primary (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel|Primary (Mt/yr)"],
+                           ylab='Production|Industry|Steel|Primary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Steel|Primary (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Steel|Primary (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Steel|Primary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel|Secondary (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel|Secondary (Mt/yr)"],
+                           ylab='Production|Industry|Steel|Secondary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Steel|Secondary (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Steel|Secondary (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Steel|Secondary [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Production|Industry|Cement (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Cement (Mt/yr)"],
+                           ylab='Production|Industry|Cement [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Production|Industry|Cement (Mt/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Production|Industry|Cement (Mt/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='Production|Industry|Cement [Mt/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    p <- mipLineHistorical(data[mainReg,,"Value Added|Industry|Chemicals (billion US$2005/yr)"],x_hist=histData_NA[mainReg,,"Value Added|Industry|Chemicals (billion US$2005/yr)"],
+                           ylab="Value Added|Industry|Chemicals (billion US$2005/yr)",scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab="Value Added|Industry|Chemicals (billion US$2005/yr)",scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
   }
   
   

@@ -1582,6 +1582,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
       "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
       "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
       "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)",
+      "Emi|GHG|Industry (Mt CO2eq/yr)",
       
       # Gross GHG Emissions
       "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
