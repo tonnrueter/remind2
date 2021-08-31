@@ -29,7 +29,7 @@
 #' 
 
 reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
-  fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <- all_enty <- all_enty1 <- all_te <- NULL
+  fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <- all_enty <- all_enty1 <- all_te <- all_in <- NULL
   
   ####### conversion factors ##########
   TWa_2_EJ     <- 31.536
