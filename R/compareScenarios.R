@@ -281,6 +281,8 @@ compareScenarios <- function(mif, hist,
                  "\\setlength\\textheight{0.95\\paperheight}",
                  "\\setlength\\textwidth{0.95\\paperwidth}",
                  "\\setlength{\\parindent}{0in}",
+                 "\\setcounter{tocdepth}{4}",
+                 "\\setcounter{secnumdepth}{4}",
                  "\\usepackage{float}",
                  "\\usepackage[bookmarksopenlevel=section,colorlinks=true,linkbordercolor={0.9882353 0.8352941 0.7098039}]{hyperref}",
                  "\\hypersetup{bookmarks=true,pdfauthor={GES group, PIK}}",
@@ -2273,7 +2275,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
  
   ## ---- ++++ E N E R G Y ++++ ----
 
-  swlatex(sw,"\\section{Energy}")
+  swlatex(sw,"\\section{Energy Supply}")
 
   ## ---- Investments Electricity ----
 
@@ -2956,6 +2958,9 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   p <- mipLineHistorical(data[,,"SE|Solids|Traditional Biomass (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"SE|Solids|Traditional Biomass (EJ/yr)"][mainReg,,,invert=TRUE],
                          ylab='SE|Solids|Traditional Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  
+  swlatex(sw,"\\section{Energy Demand}")
 
   ## ----  FE Line ----
 
