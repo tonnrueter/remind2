@@ -18,7 +18,7 @@
 #' 
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind getYears getNames setNames dimSums getItems<-
+#' @importFrom magclass mbind getYears getNames setNames dimSums setItems
 
 reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   # old tax reporting was deleted, stop if old tax reporting would be needed
@@ -66,13 +66,6 @@ reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,21
       Electricity       = "feelt"
     )
   )
-
-  # TODO rewrite without for loop
-  for (sector in names(entyFe_map)) {
-    entyFe_map[[sector]] <- entyFe_map[[sector]] %>%
-      Filter(f = function(finalEnergy)
-        finalEnergy %in% getNames(mselect(vm_demFeSector, emi_sectors = sector_map[sector]), dim = 2))
-  }
 
   out <- mbind(
     out,
@@ -245,8 +238,7 @@ reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,21
   out <- mbind(out, setNames(p21_taxrevBioImport0,"Net Taxes|bioenergy import (billion US$2005/yr)"))
 
   # add global values
-  out <- mbind(out,dimSums(out, dim = 1))
-  getItems(out, dim = 1) <- sub("dummy", "GLO", getRegions(out))
+  out <- mbind(out, setItems(dimSums(out, dim = 1), dim = 1, "GLO"))
   # add other region aggregations
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))

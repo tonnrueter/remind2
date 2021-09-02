@@ -11,8 +11,8 @@
 #' @param na.rm logical. Should missing values (including NaN) be omitted from
 #' the calculations?
 #' @return A MAgPIE object with values summed over the specified dimensions
+#' @importFrom magclass getItems<- getItems new.magpie
 #' @author Jan Philipp Dietrich
-
 dimSums <- function(x, dim = 3, na.rm = FALSE) { # nolint
   if (is.null(x)) return(x)
   if (length(x) == 0) {

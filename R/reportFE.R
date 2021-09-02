@@ -140,6 +140,8 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
     setNames((dimSums(mselect(vm_demFeSector, all_emiMkt="other")  ,dim=3,na.rm=T)),                                      "FE|Outside ETS and ESR (EJ/yr)")
   )
   
+  getSets(out, fulldim=FALSE)[3] <- "data"
+  
   # ---- FE sector demand ------
   
 

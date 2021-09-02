@@ -1,9 +1,8 @@
-ValidationKey: '27079885'
+ValidationKey: '27119064'
 AcceptedWarnings:
 - 'Warning: package ''.*'' was built under R version'
 - 'Warning: namespace ''.*'' is not available and has been replaced'
 - .*qpdf.* is needed for checks on size reduction of PDFs
-- getRegions<-
 AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
