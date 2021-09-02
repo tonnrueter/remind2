@@ -567,7 +567,7 @@ compareScenarios <- function(mif, hist,
     , variable := gsub("Transportation", "Transport", variable)][
 #  , variable := gsub("Transportation", "Transport|w/o Bunkers", variable)][															  
     , variable := gsub("Residential and Commercial", "Buildings", variable)][
-    , scenario := gsub("Baseline", "Base", scenario)][, unit := NULL]
+    , scenario := gsub("Baseline", "Base", scenario)][, "unit" := NULL]
 
     markers_wide <- data.table::dcast(markers, ... ~ variable)
 

@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass collapseNames dimSums getNames<- mbind setNames new.magpie getRegions getYears mbind dimSums setYears getRegions<-
+#' @importFrom magclass collapseNames dimSums getNames<- mbind setNames new.magpie getRegions getYears mbind dimSums setYears
 reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
   # Get realisation name 
