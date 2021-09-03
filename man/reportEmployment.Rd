@@ -18,8 +18,6 @@ reportEmployment(gdx, improvements, multiplier, subtype, share_manf, decline)
 \item{share_manf}{Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.}
 
 \item{decline}{How should the employment factors change over time? "capcosts" means according to capital costs. "static" means it doesn't change}
-
-\item{type}{either "created" or "per_year". The former outputs jobs created in that year whereas the latter outputs total jobs in that year}
 }
 \value{
 A magpie object

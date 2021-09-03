@@ -1,5 +1,5 @@
 ## uncomment to skip test
-# skip("Skip GDX test")
+skip("Skip GDX test")
 
 ## Check REMIND output. dt is a data.table in *wide* format,
 ## i.e., variables are columns. `eqs` is a list of equations of the form
