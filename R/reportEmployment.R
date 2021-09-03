@@ -1,6 +1,5 @@
 #' Computes the employment values (jobs) across different sectors
 #' @param gdx A gdx file output from a REMIND run
-#' @param type either "created" or "per_year". The former outputs jobs created in that year whereas the latter outputs total jobs in that year
 #' @param improvements Either "None", "CEEW", "Dias", "Rutovitz_aus","Solar_found" or "All". Use "All" for all improvements.
 #' @param subtype Subtype for how shares of solar rooftop, wind offshore, and small hydro are assumed in the future. Options "current", "irena", and "expert". See calcDspvShare for more information.
 #' @param share_manf Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.
@@ -11,6 +10,7 @@
 #' @author Aman Malik
 #' @examples
 #' \dontrun{
+
 #' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
