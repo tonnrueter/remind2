@@ -3643,7 +3643,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   
   ## ---- ++++ C L I M A T E ++++ ----
 
-  if(all(c("Forcing (W/m2)","Temperature|Global Mean [K]") %in% getNames(data,dim=3))){
+  if(all(c("Forcing (W/m2)","Temperature|Global Mean (K)") %in% getNames(data,dim=3))){
     
     swlatex(sw,"\\section{Climate}")
   
