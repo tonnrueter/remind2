@@ -11,14 +11,15 @@
 #' @author Aman Malik
 #' @examples
 #' \dontrun{
-#' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts",type="per_year")
+#' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems
 #' @export
 
-reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf, decline, type) {
+reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf, decline) {
 
+  # use setConfig(forcecache=T) to make the code run faster
   # employment factors
   x <- madrat::calcOutput("Employmentfactors", improvements = improvements, multiplier = multiplier)
   x <- x[, , "HP", pmatch = T, invert = T] # excluding (at the moment) jobs in combined heat and power plants
@@ -288,39 +289,7 @@ rem_filter[, , "Cap|Electricity|Wind onshore (GW)"] <-   rem_filter[, , "Cap|Ele
 
   # 1a) Total manf jobs (per region) for these techs are equal to total world addition X share of
   # world exports (for that region)
-  if (type == "created") {
-    jobs_manf <- new.magpie(regions, getYears(x), techs, fill = 0)
-    for (i in techs_exp) {
-      # manf <- paste0(i,".","Manf")
-      jobs_manf[, , i] <- added_cap_sum[, getYears(x), i, pmatch = T] * 1000
-      jobs_manf[, getYears(x), i] <-  jobs_manf[, getYears(x), i] * setNames(x[, , i][, , "Manf"], NULL) * prod_share[, , i]
-    }
 
-    for (i in setdiff(techs, techs_exp)) {
-      # manf <- paste0(i,".","Manf")
-      jobs_manf[, , i] <- added_cap[, getYears(x), i, pmatch = T] * 1000
-      jobs_manf[, getYears(x), i] <- jobs_manf[, getYears(x), i] *  setNames(x[, , i, pmatch = T][, , "Manf"], NULL)
-    }
-
-    jobs_manf <- add_dimension(jobs_manf, dim = 3.2, add = "type", nm = "Manf")
-    getSets(jobs_manf) <- c("region", "year", "variable", "type")
-
-    # 2. Construction and Installation jobs
-    jobs_ci <- new.magpie(regions, getYears(x), techs)
-
-
-    for (i in techs) {
-      # inst <- paste0(i,".","CI")
-      jobs_ci[, , i] <- added_cap[, getYears(x), i, pmatch = T] * 1000
-      jobs_ci[, , i] <-  jobs_ci[, getYears(x), i] *  setNames(x[, , i, pmatch = T][, , "CI"], NULL)
-    }
-
-    jobs_ci <- add_dimension(jobs_ci, dim = 3.2, add = "type", nm = "CI")
-    getSets(jobs_ci) <- c("region", "year", "variable", "type")
-
-  }
-
-  if (type == "per_year") {
     jobs_manf <- new.magpie(regions, getYears(x), techs, fill = 0)
     for (i in techs_exp) {
       # manf <- paste0(i,".","Manf")
@@ -351,8 +320,6 @@ rem_filter[, , "Cap|Electricity|Wind onshore (GW)"] <-   rem_filter[, , "Cap|Ele
 
     jobs_ci <- add_dimension(jobs_ci, dim = 3.2, add = "type", nm = "CI")
     getSets(jobs_ci) <- c("region", "year", "variable", "type")
-
-  }
 
 
   ## 3. Jobs in O & M

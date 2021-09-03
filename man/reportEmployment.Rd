@@ -4,15 +4,7 @@
 \alias{reportEmployment}
 \title{Computes the employment values (jobs) across different sectors}
 \usage{
-reportEmployment(
-  gdx,
-  improvements,
-  multiplier,
-  subtype,
-  share_manf,
-  decline,
-  type
-)
+reportEmployment(gdx, improvements, multiplier, subtype, share_manf, decline)
 }
 \arguments{
 \item{gdx}{A gdx file output from a REMIND run}
@@ -36,10 +28,9 @@ A magpie object
 This function returns a magpie object containing the reporting the jobs for different technologies
 }
 \examples{
-
-  \dontrun{
-    reportEmployment(gdx,improvements="All",multiplier="own",subtype="expert",share_manf="local",decline="capcosts")
-  }
+\dontrun{
+reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
+}
 }
 \author{
 Aman Malik
