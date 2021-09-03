@@ -11,7 +11,8 @@
 #' @author Aman Malik
 #' @examples
 #' \dontrun{
-#' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts",type="per_year")
+#' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", 
+#' share_manf = "local", decline = "capcosts",type="per_year")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems

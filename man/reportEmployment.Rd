@@ -36,10 +36,10 @@ A magpie object
 This function returns a magpie object containing the reporting the jobs for different technologies
 }
 \examples{
-
-  \dontrun{
-    reportEmployment(gdx,improvements="All",multiplier="own",subtype="expert",share_manf="local",decline="capcosts")
-  }
+\dontrun{
+reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", 
+share_manf = "local", decline = "capcosts",type="per_year")
+}
 }
 \author{
 Aman Malik
