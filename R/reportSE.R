@@ -78,8 +78,8 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
       replace_non_finite(prodSe[, c("y2005", "y2010", "y2015", "y2020"), tmp_d3])
   }
 
-  #  storloss only exist for versions previous to the power module creation and for the IntC power module realisation
-  if ((is.null(power_realisation)) || (power_realisation == "IntC")) {
+  #  storloss only exist for versions previous to the power module creation and for the IntC and DTcoup power module realisation
+  if ((is.null(power_realisation)) || (power_realisation %in% c("IntC", "DTcoup"))) {
     storLoss <- readGDX(gdx, name = c("v32_storloss", "v_storloss"), field = "l", restore_zeros = TRUE, format = "first_found") * pm_conv_TWa_EJ
     # TODO: declare storLoss declared over all_te in the GAMS code (old coment?).
     getSets(storLoss)[3] <- "all_te"

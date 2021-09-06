@@ -15,7 +15,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 # Learning objectives
 
-* Add code for a new plot to the validationSummary function in the remind package
+* Add code for a new plot to the validationSummary function in the remind2 package
 * Rebuild the package
 * Generate a pdf containing the new plot
 * Commit your changes to the repository
@@ -25,10 +25,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 The `REMIND_summary_*.pdf` compiles plots of REMIND's most relevant output variables contained in the REMIND_generic.mif. To have it generated automatically after a REMIND finished it needs to be listed in the default.cfg:
 
 ```{r, eval=FALSE}
-cfg$output <- c("reporting","validation","validationSummary")
+cfg$output <- c("reporting", "validation", "validationSummary")
 ```
 
-This will cause the script `scripts/output/single/validationSummary.R` to be executed at the end of a REMIND run, which in turn calls the function `validationSummary()` from the remind library that finally produces the `REMIND_summary_*.pdf`.
+This will cause the script `scripts/output/single/validationSummary.R` to be executed at the end of a REMIND run, which in turn calls the function `validationSummary()` from the remind2 library that finally produces the `REMIND_summary_*.pdf`.
 
 You can also call the script by executing in your command line
 
@@ -40,15 +40,15 @@ in the main directory of your REMIND run. Then follow the instructions.
 
 # Call the (untouched) function
 
-Before changing the code of the function let's see how it works and what it does. Install the latest version of the remind library.
+Before changing the code of the function let's see how it works and what it does. Install the latest version of the remind2 library.
 
 ```{r, eval=FALSE}
-install.packages("remind")
+install.packages("remind2")
 ```
 
 Initialize some variables and download test data.
 ```{r, eval=FALSE}
-# validationSummary() is part of remind library
+# validationSummary() is part of remind2 library
 library(remind2)
 
 # Specifying path to .mif and .gdx files.
@@ -63,7 +63,7 @@ download.file("http://rse.pik-potsdam.de/data/example/REMIND_generic_RCP26.mif",
 
 ```
 
-Call the function with these inputs to produce entire PDF (as it would be called after REMIND run):
+Call the function with these inputs to produce entire PDF (as it would be called after a REMIND run):
 
 ```{r, eval=FALSE}
 validationSummary(gdx = gdx, reportfile = reportfile, outfile = outfile, hist = hist)
@@ -71,9 +71,9 @@ validationSummary(gdx = gdx, reportfile = reportfile, outfile = outfile, hist = 
 
 # Get the code
 
-Please note: installing a R package like `remind` on your computer **_is a different thing than_** downloading the R code of this package from the SVN repository. To make changes to the `validationSummary()` function you need to checkout the remind library from SVN. Eeither use http://subversion/svn/magpie/libraries/remind if you only want the code of the remind library, or use http://subversion/svn/magpie/libraries if you want it together with the code of all other R libraries.
+To make changes to the `validationSummary()` function you need to get the source code of remind2 from https://github.com/pik-piam/remind2
 
-Open your RStudio, click **File -> Open Project** and browse to the location where you downloaded the source code of the remind package and double click on `remind.Rproj`. If not automatically openend, please open the file `validationSummary.R` in the R subdirectory. 
+Open your RStudio, click **File -> Open Project** and browse to the location where you downloaded the source code of the remind2 package and double click on `remind.Rproj`. If not automatically opened, please open the file `validationSummary.R` in the R subdirectory.
 
 # Code chunk of a single plot
 
@@ -167,7 +167,7 @@ Look at the beautiful coal phase out!
 
 # Add a new plot
 
-Insert the code chunk of the plot at an appropriate place insde the `validationSummary.R`. Don't forget to add a comment and a LaTeX title.
+Insert the code chunk of the plot at an appropriate place inside the `validationSummary.R`. Don't forget to add a comment and a LaTeX title.
 
 ```{r, eval=FALSE}
 # ---- PE Fossil ----
@@ -193,7 +193,7 @@ swfigure(sw,print,p,fig.width=1)
 Now that you have added new code to the function you must rebuild the package for the new code to take effect by
 
 * **either** choosing the **BUILD** tab in RStudio and clicking on **Install and Restart**
-* **or** going to the menue and clicking **Build -> Install and Restart**
+* **or** going to the menu and clicking **Build -> Install and Restart**
 * **or** pressing **CTRL + SHIFT + B**
 
 For details please refer to this Wiki explaining the universe of our packages and how to build them https://redmine.pik-potsdam.de/projects/mo/wiki/R_-_Libraries_-_Installation_Updating_and_Commiting
@@ -208,12 +208,12 @@ validationSummary(gdx = gdx, reportfile = reportfile, outfile = outfile, hist = 
 
 # Commit your changes to the repository
 
-So far the new code is only available on your local machine. To make it accessible for everyone and to install the updated remind package on the cluster please do the following. Make sure your are in the main folder of the source code of the remind package. Make sure to delte all files that might have been generated from the steps above (pdfs, tex files, figures folder, ...). Make sure your packages are up-to-date. Then rebuild the package
+So far the new code is only available on your local machine. To make it accessible for everyone and to install the updated remind2 package on the cluster please do the following. Make sure your are in the main folder of the source code of the remind2 package. Make sure to delete all files that might have been generated from the steps above (pdfs, tex files, figures folder, ...). Make sure your packages are up-to-date. Then rebuild the package with
 
 ```{r, eval=FALSE}
 lucode2::buildLibrary()
 ```
 
-If this runs through without errors follow the instructions. Then commit the changes to the SVN using the command line "SVN Commit" or any other SVN tool (e.g. Tortoise SVN). Along with your changes you will see the DESCRIPTION and NAMESPACE file, which have also been updated reflecting the new dependencies, reversion number etc.
+If this runs through without errors follow the instructions. Then commit the changes to the git repository on GitHub. Along with your changes you will see the DESCRIPTION and NAMESPACE file, which have also been updated reflecting the new dependencies, reversion number etc.
 
-After committing the package will be built and installed automatically on the cluster, no further actions needed.
+After pushing your changes to GitHub the package will be built and installed automatically on the cluster, no further actions needed.

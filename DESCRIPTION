@@ -1,19 +1,24 @@
 Package: remind2
 Type: Package
 Title: The REMIND R package (2nd generation)
+<<<<<<< HEAD
 Version: 1.42.5
 Date: 2021-08-30
+=======
+Version: 1.43.8
+Date: 2021-09-03
+>>>>>>> 6f5a1e72c3503b9378e1d809840e5c4479982704
 Authors@R: as.person(c(
     "Renato Rodrigues <renato.rodrigues@pik-potsdam.de> [aut,cre]"))
 Description: Contains the REMIND-specific routines for data and model output manipulation.
 Depends:
-    gdx(>= 1.29),
     magclass(>= 3.37)
 Imports:
     abind,
     data.table,
     dplyr,
     flexdashboard,
+    gdx(>= 1.29),
     gdxdt,
     gdxrrw,
     ggplot2,
