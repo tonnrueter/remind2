@@ -128,7 +128,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  # amount of curtailed electricity
  if (module2realisation["power",2] == "RLDC") {
    v32_curt <- readGDX(gdx,name=c("v32_curt"),field="l",restore_zeros=FALSE,format="first_found")
-   } else if (module2realisation["power",2] == "IntC") {
+   } else if (module2realisation["power",2] %in% c("IntC","DTcoup")) {
    v32_curt <- v32_storloss[,ttot_from2005,getNames(vm_prodSe, dim=3)] 
    } else{
    v32_curt <- 0  
@@ -1195,7 +1195,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     
     if (module2realisation["power",2] == "RLDC") {
       v32_curt <- readGDX(gdx,name=c("v32_curt"),field="l",restore_zeros=FALSE,format="first_found")
-    } else if (module2realisation["power",2] == "IntC") {
+    } else if (module2realisation["power",2] %in% c("IntC","DTcoup")) {
       v32_curt <- v32_storloss[,ttot_from2005,getNames(vm_prodSe, dim=3)] 
     } else{
       v32_curt <- 0  

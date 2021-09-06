@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass collapseNames dimSums getNames<- mbind setNames new.magpie getRegions getYears mbind dimSums setYears getRegions<-
+#' @importFrom magclass collapseNames dimSums getNames<- mbind setNames new.magpie getRegions getYears mbind dimSums setYears getItems<-
 reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
   # Get realisation name 
@@ -173,7 +173,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
                                  lapply(setdiff(magclass::getNames(pm_limits_wp4_rcp,dim = 1),"WORLD"),
                                         function(reg){
                                           mreg <- collapseNames(pm_limits_wp4_rcp[,,reg])
-                                          getRegions(mreg) <- reg
+                                          getItems(mreg, dim = 1) <- reg
                                           return(mreg)
                                         }))
 
@@ -210,7 +210,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
     p_emi_nh3 = mbind(p11_emi_nh3_agwaste, p11_emi_nh3_ag, p11_emi_nh3_forest, p11_emi_nh3_savannah, p_emi_nh3_others)
   }
   ####### calculate minimal temporal and spatial resolutions #####
-  getRegions(pm_limits_wp4_rcp) <- toupper(getRegions(pm_limits_wp4_rcp))
+  getItems(pm_limits_wp4_rcp, dim = 1) <- toupper(getRegions(pm_limits_wp4_rcp))
   y <- Reduce(intersect,list(getYears(p11_emi_postrun),  getYears(pm_limits_wp4_rcp),   getYears(pm_emiAP)))
   r <- Reduce(intersect,list(getRegions(p11_emi_postrun),getRegions(pm_limits_wp4_rcp), getRegions(pm_emiAP)))
   p11_emi_postrun    <- p11_emi_postrun[r,y,]
@@ -432,7 +432,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
                                  lapply(setdiff(magclass::getNames(pm_limits_wp4_rcp,dim = 1),"WORLD"),
                                         function(reg){
                                           mreg <- collapseNames(pm_limits_wp4_rcp[,,reg])
-                                          getRegions(mreg) <- reg
+                                          getItems(mreg, dim = 1) <- reg
                                           return(mreg)
                                         }))
 
@@ -451,7 +451,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
   p_emi_nh3 = mbind(p11_emi_nh3_agwaste, p11_emi_nh3_ag, p11_emi_nh3_forest, p11_emi_nh3_savannah, p_emi_nh3_others)
   
   ####### calculate minimal temporal and spatial resolutions #####
-  getRegions(pm_limits_wp4_rcp) <- toupper(getRegions(pm_limits_wp4_rcp))
+  getItems(pm_limits_wp4_rcp, dim = 1) <- toupper(getRegions(pm_limits_wp4_rcp))
   y <- Reduce(intersect,list(getYears(p11_emi_postrun),  getYears(pm_limits_wp4_rcp),   getYears(pm_emiAP), getYears(p11_emiAP_endu)))
   r <- Reduce(intersect,list(getRegions(p11_emi_postrun),getRegions(pm_limits_wp4_rcp), getRegions(pm_emiAP), getRegions(p11_emiAP_endu)))
   p11_emi_postrun          <- p11_emi_postrun[r,y,]

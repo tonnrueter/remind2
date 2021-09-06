@@ -18,27 +18,26 @@
 #' 
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind getYears getNames getRegions setNames dimSums
+#' @importFrom magclass mbind getYears getNames setNames dimSums setItems
 
 reportTax <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
+  # old tax reporting was deleted, stop if old tax reporting would be needed
+  stopifnot(is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", react = "silent")))
 
-# temporary conditional to keep old backwards compatibility until new calibrations are made. After that, the old tax reporting code should be deleted. 
-if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", react = "silent"))) {
-  
   ### conversion factors
   TWa_2_EJ     <- 31.536
   tdptwyr2dpgj <- 31.71 #"multipl. factor to convert (TerraDollar per TWyear) to (Dollar per GJoule)"
-  
+
   ### initialize output
   out <- NULL
- 
+
   ### FE taxes/subsidies per sector
   fe_tax  <- readGDX(gdx, name=c("pm_tau_fe_tax"), format="first_found", react = "silent")[,t,] * tdptwyr2dpgj
   fe_sub  <- readGDX(gdx, name=c("pm_tau_fe_sub"), format="first_found", react = "silent")[,t,] * tdptwyr2dpgj
-  
+
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
-  
+
   commonFinalEnergyVariables <- c(
     Solids      = "fesos",
     Liquids     = "fehos",
@@ -46,6 +45,13 @@ if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", 
     Hydrogen    = "feh2s",
     Heat        = "fehes",
     Electricity = "feels"
+  )
+
+  sector_map <- c(
+    Transportation = "trans",
+    Buildings      = "build",
+    Industry       = "indst",
+    CDR            = "CDR"
   )
 
   entyFe_map <- list(
@@ -61,67 +67,86 @@ if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", 
     )
   )
 
-  sector_map <- c(
-    Transportation = "trans",
-    Buildings      = "build",
-    Industry       = "indst",
-    CDR            = "CDR"
-  )
-  
   out <- mbind(
     out,
-    do.call("mbind",
-      lapply(names(sector_map), function(sector){
-        do.call("mbind",
-          lapply(names(entyFe_map[[sector]]), function(FinalEnergy){
-            mbind(
-              setNames(dimSums(mselect(fe_tax,emi_sectors=sector_map[sector],all_enty=entyFe_map[[sector]][[FinalEnergy]]) ,dim=3,na.rm=T), paste0("Tax rate|Final Energy|", sector, "|" , FinalEnergy , " (US$2005/GJ)")),
-              setNames(dimSums(mselect(fe_sub,emi_sectors=sector_map[sector],all_enty=entyFe_map[[sector]][[FinalEnergy]]) ,dim=3,na.rm=T), paste0("Subisidy rate|Final Energy|", sector, "|" , FinalEnergy , " (US$2005/GJ)")),
-              setNames(dimSums(mselect(fe_tax,emi_sectors=sector_map[sector],all_enty=entyFe_map[[sector]][[FinalEnergy]]) ,dim=3,na.rm=T) *
-                         dimSums(mselect(vm_demFeSector,all_enty1=entyFe_map[[sector]][FinalEnergy],emi_sectors=sector_map[sector]) ,dim=3,na.rm=T) , paste0("Taxes|Final Energy|", sector, "|" , FinalEnergy , " (billion US$2005/yr)")),
-              setNames(dimSums(mselect(fe_sub,emi_sectors=sector_map[sector],all_enty=entyFe_map[[sector]][[FinalEnergy]]) ,dim=3,na.rm=T) *
-                         dimSums(mselect(vm_demFeSector,all_enty1=entyFe_map[[sector]][FinalEnergy],emi_sectors=sector_map[sector]) ,dim=3,na.rm=T) , paste0("Subsidies|Final Energy|", sector, "|" , FinalEnergy , " (billion US$2005/yr)"))
-              )
-            })
+    do.call(
+      "mbind",
+      lapply(
+        names(sector_map),
+        function(sector){
+          do.call(
+            "mbind",
+            lapply(
+              names(entyFe_map[[sector]]),
+              function(FinalEnergy){
+                mbind(
+                  setNames(dimSums(mselect(fe_tax,emi_sectors = sector_map[sector],
+                                           all_enty = entyFe_map[[sector]][[FinalEnergy]]),
+                                   dim = 3, na.rm = TRUE),
+                           paste0("Tax rate|Final Energy|", sector, "|", FinalEnergy, " (US$2005/GJ)")),
+                  setNames(dimSums(mselect(fe_sub,emi_sectors = sector_map[sector],
+                                           all_enty = entyFe_map[[sector]][[FinalEnergy]]),
+                                   dim = 3, na.rm = TRUE),
+                           paste0("Subisidy rate|Final Energy|", sector, "|", FinalEnergy, " (US$2005/GJ)")),
+                  setNames(dimSums(mselect(fe_tax,emi_sectors = sector_map[sector],
+                                           all_enty = entyFe_map[[sector]][[FinalEnergy]]),
+                                   dim = 3, na.rm = TRUE) *
+                             dimSums(mselect(vm_demFeSector, all_enty1 = entyFe_map[[sector]][FinalEnergy],
+                                             emi_sectors = sector_map[sector]),
+                                     dim = 3, na.rm = TRUE),
+                           paste0("Taxes|Final Energy|", sector, "|", FinalEnergy, " (billion US$2005/yr)")),
+                  setNames(dimSums(mselect(fe_sub, emi_sectors = sector_map[sector],
+                                           all_enty = entyFe_map[[sector]][[FinalEnergy]]),
+                                   dim = 3, na.rm = TRUE) *
+                             dimSums(mselect(vm_demFeSector, all_enty1 = entyFe_map[[sector]][FinalEnergy],
+                                             emi_sectors = sector_map[sector]),
+                                     dim = 3, na.rm = TRUE),
+                           paste0("Subsidies|Final Energy|", sector, "|", FinalEnergy, " (billion US$2005/yr)"))
+                )
+              })
           )
         })
-      )
     )
-  
+  )
+
   #sector totals
   out <- mbind(
     out,
     do.call("mbind",
-      lapply(names(sector_map), function(sector){
-        mbind(
-          setNames(dimSums(out[,,paste0("Taxes|Final Energy|", sector, "|", names(entyFe_map[[sector]]), " (billion US$2005/yr)")],dim=3,na.rm=T),     paste0("Taxes|Final Energy|", sector, " (billion US$2005/yr)")),
-          setNames(dimSums(out[,,paste0("Subsidies|Final Energy|", sector, "|", names(entyFe_map[[sector]]), " (billion US$2005/yr)")],dim=3,na.rm=T), paste0("Subsidies|Final Energy|", sector, " (billion US$2005/yr)"))
-        )
-      })
+            lapply(names(sector_map), function(sector){
+              mbind(
+                setNames(dimSums(out[,,paste0("Taxes|Final Energy|", sector, "|", names(entyFe_map[[sector]]),
+                                              " (billion US$2005/yr)")],dim=3,na.rm=T),
+                         paste0("Taxes|Final Energy|", sector, " (billion US$2005/yr)")),
+                setNames(dimSums(out[,,paste0("Subsidies|Final Energy|", sector, "|", names(entyFe_map[[sector]]),
+                                              " (billion US$2005/yr)")],dim=3,na.rm=T),
+                         paste0("Subsidies|Final Energy|", sector, " (billion US$2005/yr)"))
+              )
+            })
     )
   )   
-  
+
   # transportation liquids aggregations
   out <- mbind(
     out,
     setNames(out[,,"Taxes|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"]     + out[,,"Taxes|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"]    , "Taxes|Final Energy|Transportation|Liquids (billion US$2005/yr)"),
     setNames(out[,,"Subsidies|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"] + out[,,"Subsidies|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"], "Subsidies|Final Energy|Transportation|Liquids (billion US$2005/yr)"),
     setNames((out[,,"Tax rate|Final Energy|Transportation|Liquids|LDV (US$2005/GJ)"]*out[,,"Taxes|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"] + out[,,"Tax rate|Final Energy|Transportation|Liquids|non-LDV (US$2005/GJ)"]*out[,,"Taxes|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"])/
-              (out[,,"Taxes|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"]     + out[,,"Taxes|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"]) , "Tax rate|Final Energy|Transportation|Liquids (US$2005/GJ)"),
+               (out[,,"Taxes|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"]     + out[,,"Taxes|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"]) , "Tax rate|Final Energy|Transportation|Liquids (US$2005/GJ)"),
     setNames((out[,,"Subisidy rate|Final Energy|Transportation|Liquids|LDV (US$2005/GJ)"]*out[,,"Subsidies|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"] + out[,,"Subisidy rate|Final Energy|Transportation|Liquids|non-LDV (US$2005/GJ)"]*out[,,"Subsidies|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"])/
                (out[,,"Subsidies|Final Energy|Transportation|Liquids|LDV (billion US$2005/yr)"]     + out[,,"Subsidies|Final Energy|Transportation|Liquids|non-LDV (billion US$2005/yr)"]) , "Subisidy rate|Final Energy|Transportation|Liquids (US$2005/GJ)")
   )
-  
+
   # total taxes/subsidies final energy
   out <- mbind(
     out,
     setNames(dimSums(out[,,paste0("Taxes|Final Energy|", names(sector_map), " (billion US$2005/yr)")],dim=3,na.rm=T),     "Taxes|Final Energy (billion US$2005/yr)"),
     setNames(dimSums(out[,,paste0("Subsidies|Final Energy|", names(sector_map), " (billion US$2005/yr)")],dim=3,na.rm=T), "Subsidies|Final Energy (billion US$2005/yr)")
   )
-  
+
 
   ### Primary energy resources subsidies
-  
+
   fuEx_sub <- readGDX(gdx, name='p21_tau_fuEx_sub', format="first_found",react="silent")[,t,c("pecoal","peoil","pegas")] * tdptwyr2dpgj
   fuEx_sub[is.na(fuEx_sub)] <- 0
   fuExtr <- readGDX(gdx, c("vm_fuExtr"),field="l", format="first_found",restore_zeros=FALSE,react="silent")[,t,]*TWa_2_EJ
@@ -134,96 +159,94 @@ if (is.null(readGDX(gdx, name = "pm_tau_fe_tax_bit_st", format = "first_found", 
     setNames(fuEx_sub[,,"pecoal"]* dimSums(fuExtr[,,"pecoal"],dim=3, na.rm=T),"Subsidies|Fuel Extraction|Coal (billion US$2005/yr)"),
     setNames(fuEx_sub[,,"peoil"]*  dimSums(fuExtr[,,"peoil"] ,dim=3, na.rm=T),"Subsidies|Fuel Extraction|Oil (billion US$2005/yr)"),
     setNames(fuEx_sub[,,"pegas"]*  dimSums(fuExtr[,,"pegas"] ,dim=3, na.rm=T),"Subsidies|Fuel Extraction|Natural Gas (billion US$2005/yr)")
-    )
-  
+  )
+
   out <- mbind(out,setNames(out[,,"Subsidies|Fuel Extraction|Coal (billion US$2005/yr)"] + out[,,"Subsidies|Fuel Extraction|Oil (billion US$2005/yr)"]  + out[,,"Subsidies|Fuel Extraction|Natural Gas (billion US$2005/yr)"] ,"Subsidies|Fuel Extraction (billion US$2005/yr)"))
-  
+
   # total subsidies - it only includes final energy and fuel extraction subsidies, it misses other subsidies like technology specific ones (BEV and FCEV for example).
   out <- mbind(out,setNames(out[,,"Subsidies|Final Energy (billion US$2005/yr)"] + (out[,,"Subsidies|Fuel Extraction|Coal (billion US$2005/yr)"] + out[,,"Subsidies|Fuel Extraction|Oil (billion US$2005/yr)"]  + out[,,"Subsidies|Fuel Extraction|Natural Gas (billion US$2005/yr)"]),"Subsidies (billion US$2005/yr)"))
-  
+
   ### Other Taxes (net taxes = tax - subsidies)
-  
+
   # GHG emission tax
   p21_taxrevGHG0 <- readGDX(gdx, name=c("p21_taxrevGHG0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevGHG0, "Net Taxes|GHG emissions|w/o CO2 LUC (billion US$2005/yr)"))
-  
+
   # co2luc emission tax
   p21_taxrevCO2luc0 <- readGDX(gdx, name=c("p21_taxrevCO2luc0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevCO2luc0, "Net Taxes|GHG emissions|CO2 LUC (billion US$2005/yr)"))
-  
+
   out <- mbind(out, setNames((p21_taxrevGHG0+p21_taxrevCO2luc0),"Net Taxes|GHG emissions (billion US$2005/yr)"))
-  
+
   # CCS tax
   p21_taxrevCCS0 <- readGDX(gdx, name=c("p21_taxrevCCS0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevCCS0,"Net Taxes|CCS (billion US$2005/yr)"))
-  
+
   # net-negative emissions tax
   p21_taxrevNetNegEmi0 <- readGDX(gdx, name=c("p21_taxrevNetNegEmi0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevNetNegEmi0,"Net Taxes|Net-negative emissions (billion US$2005/yr)"))
-  
+
   # negative CO2 emissions for taxes
   p21_emiALLco2neg0 <- readGDX(gdx, name=c("p21_emiALLco2neg0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_emiALLco2neg0,"Net Taxes|Negative emissions (billion US$2005/yr)"))
-  
+
   # final energy tax
   p21_taxrevFE0 <- readGDX(gdx, name=c("p21_taxrevFE0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevFE0,"Net Taxes|Final Energy (billion US$2005/yr)"))
-  
+
   # resource extraction tax 
   p21_taxrevResEx0 <- readGDX(gdx, name=c("p21_taxrevResEx0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevResEx0,"Net Taxes|Fuel Extraction|Fossils (billion US$2005/yr)"))
-  
+
   # pe2se technologies tax
   p21_taxrevPE2SE0 <- readGDX(gdx, name=c("p21_taxrevPE2SE0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevPE2SE0,"Net Taxes|PE2SE Technologies (billion US$2005/yr)"))
-  
+
   #technology specific new capacity subsidies or taxes revenue
   p21_taxrevTech0 <- readGDX(gdx, name=c("p21_taxrevTech0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevTech0,"Net Taxes|Technologies delta cap (billion US$2005/yr)"))
-  
+
   # exports tax
   p21_taxrevXport0 <- readGDX(gdx, name=c("p21_taxrevXport0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevXport0,"Net Taxes|Exports (billion US$2005/yr)"))
-  
+
   # SO2 tax
   p21_taxrevSO20 <- readGDX(gdx, name=c("p21_taxrevSO20"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevSO20,"Net Taxes|SO2 (billion US$2005/yr)"))
-  
+
   # bioenergy tax
   p21_taxrevBio0 <- readGDX(gdx, name=c("p21_taxrevBio0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevBio0,"Net Taxes|Bioenergy (billion US$2005/yr)"))
-  
+
   # implicit tax on energy efficient capital
   p21_implicitDiscRate0 <- readGDX(gdx, name=c("p21_implicitDiscRate0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_implicitDiscRate0,"Net Taxes|Implicit efficiency target (billion US$2005/yr)"))
-  
+
   # co2 emission taxes per emission market
   p21_taxemiMkt0 <- readGDX(gdx, name=c("p21_taxemiMkt0"), format= "first_found")[,t,]*1000
   out <- mbind(out, 
-      setNames(p21_taxemiMkt0[,,"ES"]   ,"Net Taxes|CO2 market|ESR (billion US$2005/yr)"),
-      setNames(p21_taxemiMkt0[,,"ETS"]  ,"Net Taxes|CO2 market|ETS (billion US$2005/yr)"),
-      setNames(p21_taxemiMkt0[,,"other"],"Net Taxes|CO2 market|other (billion US$2005/yr)"))
+               setNames(p21_taxemiMkt0[,,"ES"]   ,"Net Taxes|CO2 market|ESR (billion US$2005/yr)"),
+               setNames(p21_taxemiMkt0[,,"ETS"]  ,"Net Taxes|CO2 market|ETS (billion US$2005/yr)"),
+               setNames(p21_taxemiMkt0[,,"other"],"Net Taxes|CO2 market|other (billion US$2005/yr)"))
   
   # flexibility tax
   p21_taxrevFlex0 <- readGDX(gdx, name=c("p21_taxrevFlex0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevFlex0,"Net Taxes|electricity flexibility (billion US$2005/yr)"))
-  
+
   # bioenergy import tax
   p21_taxrevBioImport0 <- readGDX(gdx, name=c("p21_taxrevBioImport0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevBioImport0,"Net Taxes|bioenergy import (billion US$2005/yr)"))
-  
+
   # add global values
-  out <- mbind(out,dimSums(out,dim=1))
+  out <- mbind(out, setItems(dimSums(out, dim = 1), dim = 1, "GLO"))
   # add other region aggregations
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
-  
+
   # select variables that cannot be aggregated by simply sums and set their values to NA
   vars <- getNames(out)[grepl("rate", getNames(out))]
   out["GLO",,vars] <- NA
   out[names(regionSubsetList),,vars] <- NA
-  
-  return(out)
 
-}
+  return(out)
 }

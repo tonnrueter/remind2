@@ -22,7 +22,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass getYears getSets collapseNames new.magpie getRegions getSets<- mbind setNames getNames
+#' @importFrom magclass getYears getSets collapseNames new.magpie getRegions getSets<- mbind setNames getNames getItems<-
 #' @importFrom luscale speed_aggregate
 #'
 
@@ -368,7 +368,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
       tmp_RegAgg_ie2 <- do.call("mbind", lapply(names(int2ext), function(i2e) {
         map <- data.frame(region = regionSubsetList[[region]], parentRegion = region, stringsAsFactors = FALSE)
         result <- speed_aggregate(tmp[regionSubsetList[[region]], , i2e], map, weight = output[regionSubsetList[[region]], , as.character(int2ext[i2e])])
-        getRegions(result) <- region
+        getItems(result, dim = 1) <- region
         for (t in getYears(tmp)) {
           if (all(output[regionSubsetList[[region]], t, as.character(int2ext[i2e])] == 0)) {
             result[region, t, i2e] <- NA

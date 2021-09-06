@@ -1,5 +1,5 @@
 ## uncomment to skip test
-## skip("Skip GDX test")
+skip("Skip GDX test")
 
 ## Check REMIND output. dt is a data.table in *wide* format,
 ## i.e., variables are columns. `eqs` is a list of equations of the form
@@ -63,19 +63,6 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     check_eqs(dt_wide, mylist)
   }
 
-  ## test compareScenarios
-  check_compscen <- function() {
-    ## save mif with random filename
-
-    my_mifs <- list.files("test-convGDX2mif-data", "*.mif", full.names = TRUE)
-    histmif <- file.path("test-convGDX2mif-data", "historical.mif")
-    my_mifs <- my_mifs[my_mifs != histmif]
-    if (!file.exists(histmif)) {
-      utils::download.file("https://rse.pik-potsdam.de/data/example/historical.mif", histmif)
-    }
-    compareScenarios(my_mifs, histmif, fileName = file.path("test-convGDX2mif-data", "scenarioComparison.pdf"))
-  }
-
   n <- 0
   for (i in my_gdxs) {
     n <- n + 1
@@ -101,5 +88,11 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   }
 
   print("Check compareScenarios.")
-  check_compscen()
+  my_mifs <- list.files("test-convGDX2mif-data", "*.mif", full.names = TRUE)
+  histmif <- file.path("test-convGDX2mif-data", "historical.mif")
+  my_mifs <- my_mifs[my_mifs != histmif]
+  if (!file.exists(histmif)) {
+    utils::download.file("https://rse.pik-potsdam.de/data/example/historical.mif", histmif)
+  }
+  compareScenarios(my_mifs, histmif, fileName = file.path("test-convGDX2mif-data", "scenarioComparison.pdf"))
 })

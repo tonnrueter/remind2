@@ -41,6 +41,7 @@ reportEDGETransport <- function(output_folder=".",
   Region <- Variable <- co2 <- co2val <- elh2 <- fe  <- NULL
   int <- se <- sec  <- sharesec <- te  <- tech <-  val <- share <- NULL
   eff <- sharebio <- sharesyn <- totseliq <- type <- ven <- NULL
+  unit <- NULL
 
   load(file.path(output_folder, "config.Rdata"))
 
