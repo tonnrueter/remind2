@@ -847,6 +847,14 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                           "Internal|Activity|Industry (arbitrary unit/yr)"))
     
     
+    # total steel production
+    out <- mbind(out,
+                 setNames(out[,,"Production|Industry|Steel|Primary (Mt/yr)"]
+                          +out[,,"Production|Industry|Steel|Primary (Mt/yr)"],
+                          "Production|Industry|Steel (Mt/yr)"))
+                                                                                                    
+    
+    
     # specific energy use (FE per product/value added)
     
     out <- mbind(out,
