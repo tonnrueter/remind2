@@ -282,6 +282,8 @@ compareScenarios <- function(mif, hist,
                  "\\setlength\\textheight{0.95\\paperheight}",
                  "\\setlength\\textwidth{0.95\\paperwidth}",
                  "\\setlength{\\parindent}{0in}",
+                 "\\setcounter{tocdepth}{4}",
+                 "\\setcounter{secnumdepth}{4}",
                  "\\usepackage{float}",
                  "\\usepackage[bookmarksopenlevel=section,colorlinks=true,linkbordercolor={0.9882353 0.8352941 0.7098039}]{hyperref}",
                  "\\hypersetup{bookmarks=true,pdfauthor={GES group, PIK}}",
@@ -2271,10 +2273,62 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                          scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                          facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  
+  
+  ## ---- Industry Subsector Emissions ----
+  
+  ## ---- FE Industry Subsectors ----
+  
+  items <- c ("Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)",
+              "Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)",
+              "Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)",
+              "Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)")
+  
+  if(all(c(items) %in% magclass::getNames(data,dim=3))){
+    
+  swlatex(sw,"\\subsection{Industry Subsector Emissions}")
+  
+  # Emissions per subsector
+  tot <- "Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"
+  
+  items <- c ("Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)",
+              "Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)",
+              "Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)",
+              "Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)")
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  p <- mipArea(var[mainReg,,],scales="free_y")
+  p <- p + theme(legend.position="none") + 
+    scale_y_continuous("Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  
+  
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
+  }
+  
+  
+  
  
   ## ---- ++++ E N E R G Y ++++ ----
 
-  swlatex(sw,"\\section{Energy}")
+  swlatex(sw,"\\section{Energy Supply}")
 
   ## ---- Investments Electricity ----
 
@@ -2957,6 +3011,9 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   p <- mipLineHistorical(data[,,"SE|Solids|Traditional Biomass (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"SE|Solids|Traditional Biomass (EJ/yr)"][mainReg,,,invert=TRUE],
                          ylab='SE|Solids|Traditional Biomass [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  
+  swlatex(sw,"\\section{Energy Demand}")
 
   ## ----  FE Line ----
 
@@ -3144,6 +3201,7 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
 
   }
   
+  
   # Biomass and Fossil (add historical data when available)
   
   items <- c("FE|Industry|Liquids|Biomass (EJ/yr)",
@@ -3202,6 +3260,8 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   }
 
   
+## ---- FE Industry Subsectors ----
+
   # Industry subsectors
   
   items <- c("FE|Industry|Steel (EJ/yr)",
@@ -3209,11 +3269,161 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
              "FE|Industry|Steel|Secondary (EJ/yr)",
              "FE|Industry|Cement (EJ/yr)",
              "FE|Industry|Chemicals (EJ/yr)",
-             "FE|Industry|other (EJ/yr)"
+             "FE|Industry|Other Industry (EJ/yr)"
   )
   
   if(all(c(items) %in% magclass::getNames(data,dim=3))){
-    swlatex(sw, "\\subsubsection{per sector}")
+    
+    swlatex(sw, "\\subsubsection{subsectors}")
+    
+    swlatex(sw, "\\paragraph{FE mix}")
+    
+    # FE mix steel
+    tot <- "FE|Industry|Steel (EJ/yr)"
+    
+    items <- c ("FE|Industry|Steel|Heat (EJ/yr)",
+               "FE|Industry|Steel|Hydrogen (EJ/yr)",
+               "FE|Industry|Steel|Solids (EJ/yr)",
+               "FE|Industry|Steel|Liquids (EJ/yr)",
+               "FE|Industry|Steel|Gases (EJ/yr)",
+               "FE|Industry|Steel|Primary|Electricity (EJ/yr)",
+               "FE|Industry|Steel|Secondary|Electricity (EJ/yr)")
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y")
+    p <- p + theme(legend.position="none") + 
+      scale_y_continuous("FE|Industry|Steel (EJ/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    
+    
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    
+    # FE mix cement
+    tot <- "FE|Industry|Cement (EJ/yr)"
+    
+    items <- c ("FE|Industry|Cement|Heat (EJ/yr)",
+                "FE|Industry|Cement|Hydrogen (EJ/yr)",
+                "FE|Industry|Cement|Solids (EJ/yr)",
+                "FE|Industry|Cement|Liquids (EJ/yr)",
+                "FE|Industry|Cement|Gases (EJ/yr)",
+                "FE|Industry|Cement|Electricity (EJ/yr)")
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y")
+    p <- p + theme(legend.position="none") + 
+      scale_y_continuous("FE|Industry|Cement (EJ/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    
+    
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    
+    # FE mix chemicals
+    tot <- "FE|Industry|Chemicals (EJ/yr)"
+    
+    items <- c ("FE|Industry|Chemicals|Heat (EJ/yr)",
+                "FE|Industry|Chemicals|Hydrogen (EJ/yr)",
+                "FE|Industry|Chemicals|Solids (EJ/yr)",
+                "FE|Industry|Chemicals|Liquids (EJ/yr)",
+                "FE|Industry|Chemicals|Gases (EJ/yr)",
+                "FE|Industry|Chemicals|Electricity|Mechanical work and low-temperature heat (EJ/yr)",
+                "FE|Industry|Chemicals|Electricity|High-temperature heat (EJ/yr)")
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y")
+    p <- p + theme(legend.position="none") + 
+      scale_y_continuous("FE|Industry|Chemicals (EJ/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    
+    
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    
+    # FE mix other industry
+    tot <- "FE|Industry|Other Industry (EJ/yr)"
+    
+    items <- c ("FE|Industry|Other Industry|Heat (EJ/yr)",
+                "FE|Industry|Other Industry|Hydrogen (EJ/yr)",
+                "FE|Industry|Other Industry|Solids (EJ/yr)",
+                "FE|Industry|Other Industry|Liquids (EJ/yr)",
+                "FE|Industry|Other Industry|Gases (EJ/yr)",
+                "FE|Industry|Other Industry|Electricity|Mechanical work and low-temperature heat (EJ/yr)",
+                "FE|Industry|Other Industry|Electricity|High-temperature heat (EJ/yr)")
+    
+    var <- data[,,intersect(items,getNames(data,dim=3))]
+    
+    p <- mipArea(var[mainReg,,],scales="free_y")
+    p <- p + theme(legend.position="none") + 
+      scale_y_continuous("FE|Industry|Other Industry (EJ/yr)") +
+      geom_line(data=as.quitte(data[mainReg,,tot]), 
+                mapping=aes(period, value),
+                size=1.3)
+    
+    
+    swfigure(sw,print,p,sw_option="height=3.5,width=7")
+    
+    p <- mipBarYearData(var[mainReg,y_bar,])
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=4.5,width=7")
+    
+    p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\onecolumn")
+    p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=16")
+    swlatex(sw,"\\twocolumn")
+    
+    
+    
+    
+    swlatex(sw, "\\paragraph{FE line plots}") 
     
     p <- mipLineHistorical(data[mainReg,,"FE|Industry|Steel (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|Steel (EJ/yr)"],
                            ylab='FE|Industry|Steel [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -3250,12 +3460,17 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                            ylab='FE|Industry|Chemicals [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
     
-    p <- mipLineHistorical(data[mainReg,,"FE|Industry|other (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|other (EJ/yr)"],
-                           ylab='FE|Industry|other [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    p <- mipLineHistorical(data[mainReg,,"FE|Industry|Other Industry (EJ/yr)"],x_hist=histData_NA[mainReg,,"FE|Industry|other (EJ/yr)"],
+                           ylab='FE|Industry|Other Industry [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,"FE|Industry|other (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|other (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
-                           ylab='FE|Industry|other [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    p <- mipLineHistorical(data[,,"FE|Industry|Other Industry (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"FE|Industry|other (EJ/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab='FE|Industry|Other Industry [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    
+    
+    
+    
   }
 
   ## ---- FE Line Transport ----
@@ -3726,6 +3941,8 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
   
   ## Industry Production
   
+  ## ---- Industry Production ----
+  
   items <- c(
     "Production|Industry|Steel (Mt/yr)",
     "Production|Industry|Steel|Primary (Mt/yr)",
@@ -3734,8 +3951,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     "Value Added|Industry|Chemicals (billion US$2005/yr)"
   )
   
+  swlatex(sw, "\\subsection{Industry Production}")
+  
   if(all(c(items) %in% magclass::getNames(data,dim=3))){
-    swlatex(sw, "\\subsection{Industry Production}")
+    
     swlatex(sw, "\\subsubsection{per sector}")
     
     p <- mipLineHistorical(data[mainReg,,"Production|Industry|Steel (Mt/yr)"],x_hist=histData_NA[mainReg,,"Production|Industry|Steel (Mt/yr)"],
@@ -3771,6 +3990,14 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Value Added|Industry|Chemicals (billion US$2005/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
                            ylab="Value Added|Industry|Chemicals [billion US$2005/yr]",scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    
+    p <- mipLineHistorical(data[mainReg,,"Value Added|Industry|Other Industry (billion US$2005/yr)"],x_hist=histData_NA[mainReg,,"Value Added|Industry|other (billion US$2005/yr)"],
+                           ylab="Value Added|Industry|Other Industry [billion US$2005/yr]",scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Value Added|Industry|Other Industry (billion US$2005/yr)"][mainReg,,,invert=TRUE],x_hist=histData_NA[,,"Value Added|Industry|other (billion US$2005/yr)"][c(mainReg, "GLO"),,,invert=TRUE],
+                           ylab="Value Added|Industry|Other Industry [billion US$2005/yr]",scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
   
