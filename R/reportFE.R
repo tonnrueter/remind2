@@ -812,7 +812,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                           "FE|Industry|Other Industry|+|Gases (EJ/yr)"))
   
     
-  }  
+    
   
   # more detailed reporting of electricity uses available in subsectors realization
   if (indu_mod == 'subsectors') {
@@ -894,7 +894,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   }
                      
     
-   
+  } 
   
   #--- Transport reporting ---  
 

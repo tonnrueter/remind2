@@ -72,6 +72,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
   entyFe2Sector <- readGDX(gdx, "entyFe2Sector") %>% 
     rename(all_enty1 = all_enty) # mapping of combination of FE to sectors which are actually used
   sector2emiMkt <- readGDX(gdx, "sector2emiMkt") # mapping from sectors to markets
+  secInd37_2_emiInd37 <- readGDX(gdx, "secInd37_2_emiInd37") # mapping from industry subsectors to industry CCS sectors
   
   # technology sets
   teCCS <- readGDX(gdx, "teCCS")
@@ -508,7 +509,7 @@ reportEmi <- function(gdx, output=NULL, regionSubsetList=NULL,t=c(seq(2005,2060,
         # fixed share of FE demand of industry subsector
         p37_shIndFE <- readGDX(gdx, "p37_shIndFE", restore_zeros = F)
         # mapping of industry subsectors to industry CCS sectors
-        secInd37_2_emiInd37 <- readGDX(gdx, "secInd37_2_emiInd37")
+
         
         
         # map from pffen to entyFE
