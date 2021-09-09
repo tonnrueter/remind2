@@ -3483,10 +3483,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                          ylab='FE|Transport [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"FE|Transport|w/o Bunkers (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transport (EJ/yr)"],
+  p <- mipLineHistorical(data[mainReg,,"FE|Transport|w/o Bunkers (EJ/yr)"],x_hist=histData[mainReg,,"Eurostat.FE|Transport (EJ/yr)"],
                          ylab='FE|Transport|w/o Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"FE|Transport|w/o Bunkers (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Transport (EJ/yr)"][mainReg,,,invert=TRUE],
+  p <- mipLineHistorical(data[,,"FE|Transport|w/o Bunkers (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Eurostat.FE|Transport (EJ/yr)"][mainReg,,,invert=TRUE],
                          ylab='FE|Transport|w/o Bunkers [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
@@ -3560,10 +3560,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                          ylab='FE|Transport|Gases [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"FE|Transport|Electricity (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transportation|Electricity (EJ/yr)"],
+  p <- mipLineHistorical(data[mainReg,,"FE|Transport|Electricity (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transport|Electricity (EJ/yr)"],
                          ylab='FE|Transport|Electricity [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"FE|Transport|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Transportation|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],
+  p <- mipLineHistorical(data[,,"FE|Transport|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Transport|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],
                          ylab='FE|Transport|Electricity [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
@@ -3590,10 +3590,10 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
                          ylab='FE|Transport|Gases [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
-  p <- mipLineHistorical(data[mainReg,,"FE|Transport|w/o Bunkers|Electricity (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transportation|Electricity (EJ/yr)"],
+  p <- mipLineHistorical(data[mainReg,,"FE|Transport|w/o Bunkers|Electricity (EJ/yr)"],x_hist=histData[mainReg,,"FE|Transport|Electricity (EJ/yr)"],
                          ylab='FE|Transport|Electricity [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"FE|Transport|w/o Bunkers|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Transportation|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],
+  p <- mipLineHistorical(data[,,"FE|Transport|w/o Bunkers|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"FE|Transport|Electricity (EJ/yr)"][mainReg,,,invert=TRUE],
                          ylab='FE|Transport|Electricity [EJ/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
@@ -3938,8 +3938,6 @@ hlines=if(all(names(targets) %in% getNames(histData, dim=3) & !is.na(histData[ma
     swlatex(sw,"\\twocolumn")    
     
   }
-  
-  ## Industry Production
   
   ## ---- Industry Production ----
   
