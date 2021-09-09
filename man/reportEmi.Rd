@@ -29,8 +29,9 @@ Read in GDX and calculate emissions, used in convGDX2MIF.R for the
 reporting
 }
 \examples{
-
-  \dontrun{reportEmi(gdx)}
+\dontrun{
+reportEmi(gdx)
+}
 }
 \author{
 Felix Schreyer

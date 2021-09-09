@@ -22,8 +22,9 @@ MAgPIE object - contains the output from a MOFEX standalone run
 Calculate and report relevant fossil fuel cost and quantity variables from MOFEX standalone model.
 }
 \examples{
-
-\dontrun{reportMOFEX(gdx)}
+\dontrun{
+reportMOFEX(gdx)
+}
 
 }
 \seealso{
