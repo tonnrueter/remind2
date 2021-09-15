@@ -411,12 +411,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
     # relabel industry energy CC from CCS sectors to industry sectors
     emiInd37 <- NULL
-    vm_emiIndCCS_Sub <- toolAggregate(vm_emiIndCCS[, , emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
+    vm_emiIndCCS_Mapped <- toolAggregate(vm_emiIndCCS[, , emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
                                       from = "emiInd37", to = "secInd37", dim = 3)
 
 
     # calculate captured CO2 per subsector and FE carrier by multiplying subsectoral share of fesos, fehos, fegas in total FE from fesos, fehos and fegas with the captured CO2 by subsector
-    vm_emiIndCCS_Sub <- vm_emiIndCCS_Sub * dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.4)) / dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.4))
+    vm_emiIndCCS_Sub <- vm_emiIndCCS_Mapped * dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.4)) / dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.4))
     vm_emiIndCCS_Sub[is.na(vm_emiIndCCS_Sub)] <- 0
     getSets(vm_emiIndCCS_Sub)[c(3, 4)] <- c("secInd37", "all_enty1")
 
@@ -528,12 +528,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
       # relabel industry energy CC from CCS sectors to industry sectors
       emiInd37 <- NULL
-      vm_emiIndCCS_Sub <- toolAggregate(vm_emiIndCCS[, , emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
+      vm_emiIndCCS_Mapped <- toolAggregate(vm_emiIndCCS[, , emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
                                         from = "emiInd37", to = "secInd37", dim = 3)
 
 
       # calculate captured CO2 per subsector and FE carrier by multiplying subsectoral share of fesos, fehos, fegas in total FE from fesos, fehos and fegas with the captured CO2 by subsector
-      vm_emiIndCCS_Sub <- vm_emiIndCCS_Sub * dimSums(mselect(vm_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3, 3.4)) / dimSums(mselect(vm_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.3, 3.4))
+      vm_emiIndCCS_Sub <- vm_emiIndCCS_Mapped * dimSums(mselect(vm_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3, 3.4)) / dimSums(mselect(vm_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.3, 3.4))
 
 
 
@@ -844,11 +844,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   if (!is.null(o37_demFeIndSub)) {
 
     # calculate bioenergy shares in industry solids, liquids and gases per subsector
-    BioShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.3)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.3)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
+    BioShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
     # calculate synfuel shares in industry liquids and gases per subsector, only liquids and gases synfuels exist
-    SynShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.3)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.3)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
+    SynShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
     # calculate fossil shares in industry solids, liquids and gases per subsector
-    FosShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.3)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.3)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
+    FosShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
 
 
     # if no solids/liquids/gases in subsector -> NaN, set share to zero
@@ -864,6 +864,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
                  setNames(dimSums(FosShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
+    
+    
+    dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3) * GtC_2_MtCO2
 
   } else {
 
