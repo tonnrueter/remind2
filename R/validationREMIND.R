@@ -19,7 +19,6 @@
 #' @importFrom magclass getYears getRegions
 #' @importFrom luplot plotcountrymap
 #' @importFrom utils capture.output
-#' @importFrom magclass write.report2
 #' @importFrom mip plotstyle
 #' @importFrom iamc iamCheck
 
