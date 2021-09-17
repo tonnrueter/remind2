@@ -27,10 +27,9 @@ A magpie object
 This function returns a magpie object containing the reporting values of the extraction sector. Values include quantities extracted, average and supply costs for coal, oil, gas and uranium.
 }
 \examples{
-
-  \dontrun{
-    reportExtraction(gdx)
-  }
+\dontrun{
+reportExtraction(gdx)
+}
 }
 \author{
 Jerome Hilaire, Lavinia Baumstark
