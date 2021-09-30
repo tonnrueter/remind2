@@ -136,7 +136,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 # CO2 captured per industry subsector
   # note: this has to be read in with restore_zeros=T because sometimes it contains only non-zero values for "ETS" emiMkt 
-  # and magclass will then interpret "ETS" as a region and not a third dimensions
+  # and magclass will wrongly interpret this as a region
   pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = T)[,t,]
   # if all zero, set to NULL
   if (length(pm_IndstCO2Captured) == 0) {
@@ -862,10 +862,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                  # industry captured carbon from biomass fuels
                  setNames(dimSums(mselect(pm_IndstCO2Captured[,,c("sesobio","seliqbio","segabio")]), dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
-                 # industry captured carbon from biomass fuels
+                 # industry captured carbon from synthetic fuels
                  setNames(dimSums(mselect(pm_IndstCO2Captured[,,c("seliqsyn","segasyn")]), dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
-                 # industry captured carbon from biomass fuels
+                 # industry captured carbon from fossil fuels
                  setNames(dimSums(mselect(pm_IndstCO2Captured[,,c("sesofos","seliqfos","segafos")]), dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)")
 
