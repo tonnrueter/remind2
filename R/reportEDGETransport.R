@@ -29,6 +29,13 @@ reportEDGETransport <- function(output_folder=".",
 
   ## check the regional aggregation
   regionSubsetList <- toolRegionSubsets(gdx)
+  
+  # ADD EU-27 region aggregation if possible
+  if("EUR" %in% names(regionSubsetList)){
+    regionSubsetList <- c(regionSubsetList,list(
+      "EU27"=c("ENC","EWN","ECS","ESC","ECE","FRA","DEU","ESW")
+    ))
+  }
 
   sub_folder = "EDGE-T/"
 
@@ -520,7 +527,8 @@ reportEDGETransport <- function(output_folder=".",
     toMIF <- rbindlist(list(
       toMIF,
       toMIF[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)],
-      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)]
+      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)],
+      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "EU27"), by = .(model, scenario, variable, unit, period)]
     ), use.names=TRUE)
   }
 
