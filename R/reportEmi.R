@@ -134,7 +134,19 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   if (!is.null(o37_demFeIndSub)) {
     o37_demFeIndSub[is.na(o37_demFeIndSub)] <- 0
   }
-
+# CO2 captured per industry subsector
+  # note: this has to be read in with restore_zeros=T because sometimes it contains only non-zero values for "ETS" emiMkt 
+  # and magclass will wrongly interpret this as a region
+  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = T)[,t,]
+  # if all zero, set to NULL
+  if (length(pm_IndstCO2Captured) == 0) {
+    pm_IndstCO2Captured <- NULL
+  }
+  # subset parameter to decrease size as restore_zeros=F was not possible
+  if (!is.null(pm_IndstCO2Captured)) {
+    pm_IndstCO2Captured <- pm_IndstCO2Captured[se2fe[,c(1,2)]]
+  }
+ 
 
 
   # secondary energy production
@@ -841,49 +853,43 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   # report industry captured CO2
-  if (!is.null(o37_demFeIndSub)) {
-
-    # calculate bioenergy shares in industry solids, liquids and gases per subsector
-    BioShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
-    # calculate synfuel shares in industry liquids and gases per subsector, only liquids and gases synfuels exist
-    SynShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
-    # calculate fossil shares in industry solids, liquids and gases per subsector
-    FosShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
-
-
-    # if no solids/liquids/gases in subsector -> NaN, set share to zero
-    BioShare.FE.Indst[is.nan(BioShare.FE.Indst)] <- 0
-    SynShare.FE.Indst[is.nan(SynShare.FE.Indst)] <- 0
-    FosShare.FE.Indst[is.nan(FosShare.FE.Indst)] <- 0
-
+  
+  if (!is.null(pm_IndstCO2Captured)) {
+    
+    
     out <- mbind(out,
-                 setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
+                 
+                 # industry captured carbon from biomass fuels
+                 setNames(dimSums(mselect(pm_IndstCO2Captured[,,c("sesobio","seliqbio","segabio")]), dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
-                 # only liquids and gases synfuels exist, so exclude solids here
-                 setNames(dimSums(SynShare.FE.Indst * mselect(vm_emiIndCCS_Sub, all_enty1 = c("fehos", "fegas")), dim = 3) * GtC_2_MtCO2,
+                 # industry captured carbon from synthetic fuels
+                 setNames(dimSums(mselect(pm_IndstCO2Captured[,,c("seliqsyn","segasyn")]), dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
-                 setNames(dimSums(FosShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
-    
-    
-    dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3) * GtC_2_MtCO2
+                 # industry captured carbon from fossil fuels
+                 setNames(dimSums(mselect(pm_IndstCO2Captured[,,c("sesofos","seliqfos","segafos")]), dim = 3) * GtC_2_MtCO2,
+                          "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)")
 
+    )
+    
+    
   } else {
-
-    if (module2realisation["industry", 2] == "fixed_shares") {
+    
+    if (!is.null(o37_demFeIndSub)) {
+      
+      
       # calculate bioenergy shares in industry solids, liquids and gases per subsector
-      BioShare.FE.Indst <- dimSums(mselect(dimSums(vm_demFeIndSub, dim = c(3.4)) / dimSums(vm_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3))
+      BioShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
       # calculate synfuel shares in industry liquids and gases per subsector, only liquids and gases synfuels exist
-      SynShare.FE.Indst <- dimSums(mselect(dimSums(vm_demFeIndSub, dim = c(3.4)) / dimSums(vm_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3))
+      SynShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
       # calculate fossil shares in industry solids, liquids and gases per subsector
-      FosShare.FE.Indst <- dimSums(mselect(dimSums(vm_demFeIndSub, dim = c(3.4)) / dimSums(vm_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3))
-
-
+      FosShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
+      
+      
       # if no solids/liquids/gases in subsector -> NaN, set share to zero
       BioShare.FE.Indst[is.nan(BioShare.FE.Indst)] <- 0
       SynShare.FE.Indst[is.nan(SynShare.FE.Indst)] <- 0
       FosShare.FE.Indst[is.nan(FosShare.FE.Indst)] <- 0
-
+      
       out <- mbind(out,
                    setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
                             "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
@@ -892,27 +898,61 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                             "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
                    setNames(dimSums(FosShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
                             "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
-
-
+      
+      
+      dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3) * GtC_2_MtCO2
+      
     } else {
-
-      # Note: for now just set biomass and synfuel industry carbon capture to zero in order to not break the reporting for industry subsectors,
-      # needs to be done with real values later once used with subsectors!
-      out <- mbind(out,
-                   setNames(dimSums(vm_emiIndCCS, dim = 3) * GtC_2_MtCO2 * 0,
-                            "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
-                   # only liquids and gases synfuels exist, so exclude solids here
-                   setNames(dimSums(vm_emiIndCCS, dim = 3) * GtC_2_MtCO2 * 0,
-                            "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
-                   setNames(dimSums(vm_emiIndCCS, dim = 3) * GtC_2_MtCO2,
-                            "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
-
-
+      
+      if (module2realisation["industry", 2] == "fixed_shares") {
+        # calculate bioenergy shares in industry solids, liquids and gases per subsector
+        BioShare.FE.Indst <- dimSums(mselect(dimSums(vm_demFeIndSub, dim = c(3.4)) / dimSums(vm_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3))
+        # calculate synfuel shares in industry liquids and gases per subsector, only liquids and gases synfuels exist
+        SynShare.FE.Indst <- dimSums(mselect(dimSums(vm_demFeIndSub, dim = c(3.4)) / dimSums(vm_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3))
+        # calculate fossil shares in industry solids, liquids and gases per subsector
+        FosShare.FE.Indst <- dimSums(mselect(dimSums(vm_demFeIndSub, dim = c(3.4)) / dimSums(vm_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.3))
+        
+        
+        # if no solids/liquids/gases in subsector -> NaN, set share to zero
+        BioShare.FE.Indst[is.nan(BioShare.FE.Indst)] <- 0
+        SynShare.FE.Indst[is.nan(SynShare.FE.Indst)] <- 0
+        FosShare.FE.Indst[is.nan(FosShare.FE.Indst)] <- 0
+        
+        out <- mbind(out,
+                     setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
+                              "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
+                     # only liquids and gases synfuels exist, so exclude solids here
+                     setNames(dimSums(SynShare.FE.Indst * mselect(vm_emiIndCCS_Sub, all_enty1 = c("fehos", "fegas")), dim = 3) * GtC_2_MtCO2,
+                              "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
+                     setNames(dimSums(FosShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
+                              "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
+        
+        
+      } else {
+        
+        # Note: for now just set biomass and synfuel industry carbon capture to zero in order to not break the reporting for industry subsectors,
+        # needs to be done with real values later once used with subsectors!
+        out <- mbind(out,
+                     setNames(dimSums(vm_emiIndCCS, dim = 3) * GtC_2_MtCO2 * 0,
+                              "Carbon Management|Carbon Sources|Industry Energy|+|Biomass (Mt CO2/yr)"),
+                     # only liquids and gases synfuels exist, so exclude solids here
+                     setNames(dimSums(vm_emiIndCCS, dim = 3) * GtC_2_MtCO2 * 0,
+                              "Carbon Management|Carbon Sources|Industry Energy|+|Synfuel (Mt CO2/yr)"),
+                     setNames(dimSums(vm_emiIndCCS, dim = 3) * GtC_2_MtCO2,
+                              "Carbon Management|Carbon Sources|Industry Energy|+|Fossil (Mt CO2/yr)"))
+        
+        
+      }
+      
+      
+      
     }
-
-
-
+    
+    
   }
+  
+  
+  
 
 
 
