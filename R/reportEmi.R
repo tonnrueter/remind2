@@ -137,7 +137,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 # CO2 captured per industry subsector
   # note: this has to be read in with restore_zeros=T because sometimes it contains only non-zero values for "ETS" emiMkt 
   # and magclass will wrongly interpret this as a region
-  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = T)[,t,]
+  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = T,
+                                 react = 'silent')[,t,]
   # if all zero, set to NULL
   if (length(pm_IndstCO2Captured) == 0) {
     pm_IndstCO2Captured <- NULL

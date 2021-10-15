@@ -18,9 +18,12 @@
 #' \dontrun{reportCrossVariables(gdx)}
 #' 
 #' @export
+#' @importFrom assertr assert not_na
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears getRegions mbind setNames dimSums mselect new.magpie setYears
 #' @importFrom luscale speed_aggregate
+#' @importFrom tibble as_tibble
+#' @importFrom tidyselect everything
 #'
  
 reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
@@ -302,6 +305,52 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   
   
   out <- mbind(tmp, int_gr)
+  
+  # add per-capita industry activity ----
+  if ('subsectors' == module2realisation['industry',2]) {
+    # find all activity variables
+    foo <- grep('^(Production|Value Added)\\|Industry', getNames(output), 
+                value = TRUE)
+    
+    out <- mbind(
+      out,
+    
+      # get activity data  
+      output[,,foo] %>% 
+        as.data.frame() %>% 
+        as_tibble() %>%
+        select(-'Cell') %>% 
+        # join with population numbers
+        left_join(
+          output[,,'Population (million)'] %>% 
+            as.data.frame() %>% 
+            as_tibble() %>% 
+            select('Region', 'Year', population = 'Value'),
+          
+          c('Region', 'Year')
+        ) %>% 
+        # join unit conversion
+        extract(.data$Data1, c('variable', 'unit'), '^(.*) \\((.*)\\)$') %>% 
+        full_join(
+          tribble(
+            ~unit,                  ~new.unit,    ~factor,
+            'Mt/yr',                't/yr',       1,
+            'billion US$2005/yr',   'US$2005/yr', 1e-3),
+          
+          'unit'
+        ) %>% 
+        assert(not_na, everything()) %>% 
+        # calculate
+        mutate(Value = .data$Value / .data$population * .data$factor,
+               !!sym(getSets(out, fulldim = FALSE)[3]) := 
+                 paste0(.data$variable, '|per-capita (', .data$new.unit, ')')
+        ) %>% 
+        # build magpie
+        select('Region', 'Year', getSets(out, fulldim = FALSE)[3], 'Value') %>% 
+        `colnames<-`(c(getSets(out, fulldim = FALSE), 'Value')) %>% 
+        as.magpie(spatial = 1, temporal = 2, data = 4)
+    )
+  }
 
   return(out)
 }
