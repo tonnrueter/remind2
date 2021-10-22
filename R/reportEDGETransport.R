@@ -84,7 +84,6 @@ reportEDGETransport <- function(output_folder=".",
               aggr_mode := "Pass|Road|LDV"]
     datatable[subsector_L2 != "trn_pass_road_LDV" & sector == "Pass",
               aggr_mode := "Pass|non-LDV"]
-    datatable[is.na(aggr_mode), aggr_mode := "Freight"]
 
     ## A little more detail: Vehicle Aggregates
     datatable[grepl("^Truck", vehicle_type), aggr_veh := "Freight|Road"]
