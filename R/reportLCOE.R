@@ -938,9 +938,15 @@ reportLCOE <- function(gdx, output.type = "both"){
   vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
   vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = F)
   
+  if(getSets(vm_co2capture)[[3]] == "emiAll"){
+      sel_vm_co2capture_cco2 <- mselect(vm_co2capture, emiAll = "cco2")
+  } else {
+      sel_vm_co2capture_cco2 <- mselect(vm_co2capture, all_enty = "cco2")
+  }
+
   p_share_carbonCapture_stor <- (
     vm_co2CCS[,,"cco2.ico2.ccsinje.1"]
-    / dimSums(mselect(vm_co2capture, all_enty = "cco2"), dim = 3)
+    / dimSums(sel_vm_co2capture_cco2, dim = 3)
   )
   p_share_carbonCapture_stor[is.na(p_share_carbonCapture_stor)] <- 1
   
