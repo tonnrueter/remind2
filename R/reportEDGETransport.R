@@ -84,7 +84,6 @@ reportEDGETransport <- function(output_folder=".",
               aggr_mode := "Pass|Road|LDV"]
     datatable[subsector_L2 != "trn_pass_road_LDV" & sector == "Pass",
               aggr_mode := "Pass|non-LDV"]
-    datatable[is.na(aggr_mode), aggr_mode := "Freight"]
 
     ## A little more detail: Vehicle Aggregates
     datatable[grepl("^Truck", vehicle_type), aggr_veh := "Freight|Road"]
@@ -526,9 +525,9 @@ reportEDGETransport <- function(output_folder=".",
   if (!is.null(regionSubsetList)){
     toMIF <- rbindlist(list(
       toMIF,
-      toMIF[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)],
-      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)],
-      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "EU27"), by = .(model, scenario, variable, unit, period)]
+      toMIF[region %in% regionSubsetList[["EUR"]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)],
+      toMIF[region %in% regionSubsetList[["NEU"]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)],
+      toMIF[region %in% regionSubsetList[["EU27"]],.(value = sum(value), region = "EU27"), by = .(model, scenario, variable, unit, period)]
     ), use.names=TRUE)
   }
 
