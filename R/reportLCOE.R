@@ -512,6 +512,7 @@ reportLCOE <- function(gdx, output.type = "both"){
    `Additional H2 t&d Cost` <- NULL
    emi_sectors <- NULL
    fe2es.buildings <- pm_tau_fe_tax_ES_st <- pm_tau_fe_sub_ES_st <- NULL
+   model <- scenario <- variable <- unit <- NULL
   
   ##############################################
   
@@ -1387,6 +1388,8 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   ### data preparation before LCOE calculation
   df.LCOE <- df.LCOE %>% 
+    # remove some unnecessary columns 
+    select(-model, -scenario, -variable, -unit) %>% 
     # unit conversions for CAPEX and OMV cost
     # conversion from tr USD 2005/TW to USD2015/kW
     mutate(CAPEX = CAPEX *1.2 * 1e3) %>% 
