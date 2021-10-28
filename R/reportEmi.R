@@ -222,10 +222,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   p_share_CCS <- dimSums(vm_co2CCS, dim = 3, na.rm = T) / dimSums(vm_co2capture, dim = 3)
   p_share_CCS[is.infinite(p_share_CCS)] <- 0
   p_share_CCS[is.na(p_share_CCS)] <- 0
-
-  # calculate share of captured CO2 by energy system from total captured carbon (incl. the carbon from CDR module),
+  
+  sel_v_emiTeDetailMkt_cco2 <- if(getSets(v_emiTeDetailMkt)[[6]] == "emiAll"){
+    mselect(v_emiTeDetailMkt, emiAll = "cco2")
+  } else {
+    mselect(v_emiTeDetailMkt, all_enty2 = "cco2")
+  }
+  # calculate share of captured CO2 by energy system from total captured carbon (incl. the carbon from CDR module), 
   # to only reattribute energy system captured CO2 to synfuel production, not e.g. DAC CO2
-  p_share_en_cco2 <- (dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "cco2"), dim = 3) + dimSums(vm_emiIndCCS, dim = 3)) / dimSums(vm_co2capture, dim = 3)
+  p_share_en_cco2 <- (dimSums(sel_v_emiTeDetailMkt_cco2, dim = 3) + dimSums(vm_emiIndCCS, dim = 3)) / dimSums(vm_co2capture, dim = 3)
   p_share_en_cco2[is.na(p_share_en_cco2)] <- 0
 
 
@@ -234,10 +239,20 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     filter(all_enty2 == "co2") %>%
     filter(all_te %in% pe2se$all_te)
 
+  sel_pm_emifac_pe2se <- if(getSets(pm_emifac)[[6]] == "emiAll"){
+                        mselect(pm_emifac, all_te = pe2se$all_te, emiAll = "co2")
+                      } else {
+                        mselect(pm_emifac, all_te = pe2se$all_te, all_enty2 = "co2")
+                      }
+  sel_pm_emifac_se2fe <- if(getSets(pm_emifac)[[6]] == "emiAll"){
+                        mselect(pm_emifac, all_te = se2fe$all_te, emiAll = "co2")
+                      } else {
+                        mselect(pm_emifac, all_te = se2fe$all_te, all_enty2 = "co2")
+                      }
   # co2 emissions factor of pe2se technologies
-  pm_emifac.co2.pe <- dimSums(mselect(pm_emifac, all_te = pe2se$all_te, all_enty2 = "co2"), dim = c(3.4))
+  pm_emifac.co2.pe <- dimSums(sel_pm_emifac_pe2se, dim = c(3.4))
   # co2 emissions factor of fe carriers
-  pm_emifac.co2.fe <- dimSums(mselect(pm_emifac, all_te = se2fe$all_te, all_enty2 = "co2"), dim = c(3.3, 3.4))
+  pm_emifac.co2.fe <- dimSums(sel_pm_emifac_se2fe, dim = c(3.3,3.4))
 
 
 
@@ -437,7 +452,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
     # calculate industry emissions by subsector (before industry CO2 Capture)
-    pm_emifac.fe.indst <- dimSums(mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub, dim = 2), all_enty2 = "co2"), dim = c(3.3, 3.4))
+    sel_pm_emifac_co2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
+                            mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub, dim = 2), emiAll = "co2")
+                          } else {
+                            mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub, dim = 2), all_enty2 = "co2")
+                          }
+    pm_emifac.fe.indst <- dimSums(sel_pm_emifac_co2, dim = c(3.3, 3.4))
     EmiIndSubSec <- pm_emifac.fe.indst * o37_demFeIndSub[, , getNames(pm_emifac.fe.indst)]
 
 
@@ -553,7 +573,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
       # calculate industry emissions by subsector (before industry CO2 Capture)
-      pm_emifac.fe.indst <- dimSums(mselect(pm_emifac, all_enty1 = getNames(vm_demFeIndSub, dim = 2), all_enty2 = "co2"), dim = c(3.3, 3.4))
+      sel_pm_emifac_feIndst_co2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
+                                      mselect(pm_emifac, all_enty1 = getNames(vm_demFeIndSub, dim = 2), emiAll = "co2")
+                                    } else {
+                                      mselect(pm_emifac, all_enty1 = getNames(vm_demFeIndSub, dim = 2), all_enty2 = "co2")
+                                    }
+      pm_emifac.fe.indst <- dimSums(sel_pm_emifac_feIndst_co2, dim = c(3.3, 3.4))
       EmiIndSubSec <- pm_emifac.fe.indst * vm_demFeIndSub[, , getNames(pm_emifac.fe.indst)]
 
 
@@ -637,7 +662,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # following e.g. "Emi|CO2|Energy|Demand|Transport|Passenger|+|Liquids" etc.
 
   #### Total energy CO2 emissions
-  sel_vm_emiTeMkt <- if (getSets(vm_emiTeMkt)[[3]] == "emiTe") {
+  sel_vm_emiTeMkt_co2 <- if (getSets(vm_emiTeMkt)[[3]] == "emiTe") {
     mselect(vm_emiTeMkt, emiTe = "co2")
   } else {
     mselect(vm_emiTeMkt, all_enty = "co2")
@@ -645,7 +670,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   out <- mbind(out,
                setNames(
                  # vm_emiTeMkt is variable in REMIND closest to energy co2 emissions
-                 (dimSums(sel_vm_emiTeMkt, dim = 3)
+                 (dimSums(sel_vm_emiTeMkt_co2, dim = 3)
                   # deduce vm_emiTeMkt by CCU CO2 from vm_emiCdr
                   # (which is only deduced from vm_emiAll, the total CO2 emissions, in REMIND)
                   - (1 - p_share_CCS) * mselect(-vm_emiCdr, all_enty = "co2")) * GtC_2_MtCO2,
@@ -679,13 +704,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"))
 
   #### total CO2 emissions
-  sel_vm_emiAllMkt <- if (getSets(vm_emiAllMkt)[[3]] == "emiTe") {
+  sel_vm_emiAllMkt_co2 <- if (getSets(vm_emiAllMkt)[[3]] == "emiTe") {
     mselect(vm_emiAllMkt, emiTe = "co2")
   } else {
     mselect(vm_emiAllMkt, all_enty = "co2")
   }
   out <- mbind(out,
-               setNames(dimSums(sel_vm_emiAllMkt, dim = 3) * GtC_2_MtCO2,
+               setNames(dimSums(sel_vm_emiAllMkt_co2, dim = 3) * GtC_2_MtCO2,
                         "Emi|CO2 (Mt CO2/yr)"))
 
   ## 3. Carbon Management ----
@@ -697,8 +722,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   # calculate captured CO2 per pe2se technology
-  pm_emifac.cco2.pe <- dimSums(mselect(pm_emifac, all_te = pe2se$all_te, all_enty2 = "cco2"), dim = c(3.4))
-  CCO2Pe2Se <- pm_emifac.cco2.pe * vm_demPE[, , getNames(pm_emifac.cco2.pe)]
+  sel_pm_emifac_pe2seCCO2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
+                              mselect(pm_emifac, all_te = pe2se$all_te, emiAll = "cco2")
+                            } else {
+                              mselect(pm_emifac, all_te = pe2se$all_te, all_enty2 = "cco2")
+                            }
+  pm_emifac.cco2.pe <- dimSums(sel_pm_emifac_pe2seCCO2, dim = c(3.4))
+  CCO2Pe2Se <- pm_emifac.cco2.pe * vm_demPE[,,getNames(pm_emifac.cco2.pe)]
 
   # calculate weights of emissions distribution for coupled production
   # weights follow shares of coupled product/total output
@@ -1145,13 +1175,24 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   ### 5.1 non-CO2 GHG by sector ----
 
+  sel_v_emiTeDetailMkt_ch4 <- if (getSets(v_emiTeDetailMkt)[[6]] == "emiAll") {
+    mselect(v_emiTeDetailMkt, emiAll = "ch4")
+  } else {
+    mselect(v_emiTeDetailMkt, all_enty2 = "ch4")
+  }
+
+  sel_v_emiTeDetailMkt_n2o <- if (getSets(v_emiTeDetailMkt)[[6]] == "emiAll") {
+    mselect(v_emiTeDetailMkt, emiAll = "n2o")
+  } else {
+    mselect(v_emiTeDetailMkt, all_enty2 = "n2o")
+  }
   # CH4 and N2O Emissions by sector in native MtCH4 and kt N2O units
   out <- mbind(out,
 
                # CH4 Emissions
                # total CH4 emissions
                setNames(dimSums(mselect(EmiMAC, gas = "ch4"), dim = 3)
-                          + dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "ch4"), dim = 3),
+                          + dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3),
                           "Emi|CH4 (Mt CH4/yr)"),
                # extraction CH4 emissions in MtCH4
                setNames(dimSums(mselect(EmiMAC, sector = "extraction", gas = "ch4"), dim = 3),
@@ -1166,14 +1207,14 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMAC, sector = "lulucf", gas = "ch4"), dim = 3),
                           "Emi|CH4|+|Land-Use Change (Mt CH4/yr)"),
                # CH4 emissions from energy system transformations in MtCH4
-               setNames(dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "ch4"), dim = 3),
+               setNames(dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3),
                           "Emi|CH4|+|Energy Supply (Mt CH4/yr)"),
 
 
                # N2O Emissions
                # total N2O emissions
                setNames((dimSums(mselect(EmiMAC, gas = "n2o"), dim = 3)
-                           +  dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim = 3)) * MtN2_to_ktN2O,
+                           +  dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3)) * MtN2_to_ktN2O,
                           "Emi|N2O (kt N2O/yr)"),
                # agriculture N2O emissions in kt N2O
                setNames(dimSums(mselect(EmiMAC, sector = "Agriculture", gas = "n2o"), dim = 3) * MtN2_to_ktN2O,
@@ -1191,7 +1232,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMAC, sector = "indst", gas = "n2o"), dim = 3) * MtN2_to_ktN2O,
                           "Emi|N2O|+|Industry (kt N2O/yr)"),
                # N2O emissions from energy system transformations in kt N2O
-               setNames(dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim = 3) * MtN2_to_ktN2O,
+               setNames(dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3) * MtN2_to_ktN2O,
                           "Emi|N2O|+|Energy Supply (kt N2O/yr)")
   )
 
@@ -1220,7 +1261,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMACEq, sector = "lulucf", gas = "ch4"), dim = 3),
                           "Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"),
                # CH4 emissions from energy system transformations in Mt CO2eq
-               setNames(dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "ch4"), dim = 3) * sm_tgch4_2_pgc * GtC_2_MtCO2,
+               setNames(dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3) * sm_tgch4_2_pgc * GtC_2_MtCO2,
                           "Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"),
 
 
@@ -1241,7 +1282,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMACEq, sector = "indst", gas = "n2o"), dim = 3),
                           "Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"),
                # N2O emissions from energy system transformations in Mt CO2eq/yr
-               setNames(dimSums(mselect(v_emiTeDetailMkt, all_enty2 = "n2o"), dim = 3) * sm_tgn_2_pgc * GtC_2_MtCO2,
+               setNames(dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3) * sm_tgn_2_pgc * GtC_2_MtCO2,
                           "Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)")
   )
 
