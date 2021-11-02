@@ -27,6 +27,7 @@
 #'
 
 reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
+
   if (is.null(output)) {
     output <- mbind(
       reportSE(gdx, regionSubsetList = regionSubsetList, t = t),
@@ -104,43 +105,43 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   ############ build reporting #####################
 
   techmap <- c(
-    "bioigccc" = "Electricity|Biomass|IGCCC|w/ CCS",
-    "bioigcc" = "Electricity|Biomass|IGCC|w/o CCS",
-    "biochp" = "Electricity|Biomass|CHP|w/o CCS",
-    "igccc" = "Electricity|Coal|IGCCC|w/ CCS",
-    "igcc" = "Electricity|Coal|IGCC|w/o CCS",
-    "pcc" = "Electricity|Coal|PCC|w/ CCS",
-    "pc" = "Electricity|Coal|PC|w/o CCS",
-    "coalchp" = "Electricity|Coal|CHP|w/o CCS",
-    "ngccc" = "Electricity|Gas|CCC|w/ CCS",
-    "ngcc" = "Electricity|Gas|CC|w/o CCS",
-    "gaschp" = "Electricity|Gas|CHP|w/o CCS",
-    "ngt" = "Electricity|Gas|GT",
+    "bioigccc" = "Electricity|Biomass|++|Gasification Combined Cycle w/ CC",
+    "bioigcc" = "Electricity|Biomass|++|Gasification Combined Cycle w/o CC",
+    "biochp" = "Electricity|Biomass|++|Combined Heat and Power w/o CC",
+    "igccc" = "Electricity|Coal|++|Gasification Combined Cycle w/ CC",
+    "igcc" = "Electricity|Coal|++|Gasification Combined Cycle w/o CC",
+    "pcc" = "Electricity|Coal|++|Pulverised Coal w/ CC",
+    "pc" = "Electricity|Coal|++|Pulverised Coal w/o CC",
+    "coalchp" = "Electricity|Coal|++|Combined Heat and Power w/o CC",
+    "ngccc" = "Electricity|Gas|++|Combined Cycle w/ CC",
+    "ngcc" = "Electricity|Gas|++|Combined Cycle w/o CC",
+    "gaschp" = "Electricity|Gas|++|Combined Heat and Power w/o CC",
+    "ngt" = "Electricity|Gas|++|Gas Turbine",
     "dot" = "Electricity|Oil|DOT",
-    "geohdr" = "Electricity|Geothermal",
-    "hydro" = "Electricity|Hydro",
-    "tnrs" = "Electricity|Nuclear",
-    "spv" = "Electricity|Solar|PV",
-    "csp" = "Electricity|Solar|CSP",
-	"h2turb" = "Electricity|Hydrogen",
+    "geohdr" = "Electricity|+|Geothermal",
+    "hydro" = "Electricity|+|Hydro",
+    "tnrs" = "Electricity|+|Nuclear",
+    "spv" = "Electricity|Solar|+|PV",
+    "csp" = "Electricity|Solar|+|CSP",
+	  "h2turb" = "Electricity|+|Hydrogen",
     "storspv" = "Electricity|Storage|Battery|For PV",
     "storcsp" = "Electricity|Storage|Battery|For CSP",
-    "biogas" = "Gases|Biomass|w/o CCS",
-    "coalgas" = "Gases|Coal|w/o CCS",
-    "bioh2c" = "Hydrogen|Biomass|w/ CCS",
-    "bioh2" = "Hydrogen|Biomass|w/o CCS",
-    "coalh2c" = "Hydrogen|Coal|w/ CCS",
-    "coalh2" = "Hydrogen|Coal|w/o CCS",
-    "elh2" = "Hydrogen|Electricity",
-    "gash2c" = "Hydrogen|Gas|w/ CCS",
-    "gash2" = "Hydrogen|Gas|w/o CCS",
-    "bioftcrec" = "Liquids|Biomass|Biofuel|BioFTRC|w/ CCS",
-    "bioftrec" = "Liquids|Biomass|Biofuel|BioFTR|w/o CCS",
-    "bioethl" = "Liquids|Biomass|Biofuel|Ethanol|Cellulosic|w/o CCS",
-    "bioeths" = "Liquids|Biomass|Biofuel|Ethanol|Conventional|w/o CCS",
-    "biodiesel" = "Liquids|Biomass|Biofuel|Biodiesel|w/o CCS",
-    "coalftcrec" = "Liquids|Coal|w/ CCS",
-    "coalftrec" = "Liquids|Coal|w/o CCS")
+    "biogas" = "Gases|Biomass|+|w/o CC",
+    "coalgas" = "Gases|Coal|+|w/o CC",
+    "bioh2c" = "Hydrogen|Biomass|+|w/ CC",
+    "bioh2" = "Hydrogen|Biomass|+|w/o CC",
+    "coalh2c" = "Hydrogen|Coal|+|w/ CC",
+    "coalh2" = "Hydrogen|Coal|+|w/o CC",
+    "elh2" = "Hydrogen|+|Electricity",
+    "gash2c" = "Hydrogen|Gas|+|w/ CC",
+    "gash2" = "Hydrogen|Gas|+|w/o CC",
+    "bioftcrec" = "Liquids|Biomass|Biofuel|BioFTR|w/ CC",
+    "bioftrec" = "Liquids|Biomass|Biofuel|BioFTR|w/o CC",
+    "bioethl" = "Liquids|Biomass|Biofuel|Ethanol|Cellulosic|w/o CC",
+    "bioeths" = "Liquids|Biomass|Biofuel|Ethanol|Conventional|w/o CC",
+    "biodiesel" = "Liquids|Biomass|Biofuel|Biodiesel|w/o CC",
+    "coalftcrec" = "Liquids|Coal|+|w/ CC",
+    "coalftrec" = "Liquids|Coal|+|w/o CC")
   
   if (tran_mod == "complex") {
     carmap <- c(
@@ -152,8 +153,8 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   }
 
   if (CCU_mod == "on") {
-    techmap <- append(techmap, c("MeOH" = "Liquids|Hydrogen",
-      "h22ch4" = "Gases|Hydrogen"))
+    techmap <- append(techmap, c("MeOH" = "Liquids|+|Hydrogen",
+      "h22ch4" = "Gases|+|Hydrogen"))
   }
 
   if (CDR_mod != "off") {
@@ -164,15 +165,15 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   }
 
   if (("seliq" %in% sety) || ("seliqbio" %in% sety)) {
-    techmap[["refliq"]] <- "Liquids|Oil"
+    techmap[["refliq"]] <- "Liquids|+|Oil"
   } else {
-    techmap[["refdip"]] <- "Liquids|Oil"
+    techmap[["refdip"]] <- "Liquids|+|Oil"
   }
 
   if ("windoff" %in% all_te) {
-    techmap <- append(techmap, c("wind" = "Electricity|Wind|Onshore",
+    techmap <- append(techmap, c("wind" = "Electricity|Wind|+|Onshore",
                                  "storwind" = "Electricity|Storage|Battery|For Wind Onshore",
-                                 "windoff" = "Electricity|Wind|Offshore",
+                                 "windoff" = "Electricity|Wind|+|Offshore",
                                  "storwindoff" = "Electricity|Storage|Battery|For Wind Offshore"))
   }  else {
     techmap <- append(techmap, c("wind" = "Electricity|Wind",
@@ -182,6 +183,10 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   bar_and <- function(str) {
     ## prepend pipe if not empty
     ifelse(str == "", str, paste0("|", str))
+  }
+  
+  remove_plus <- function(str) {
+    gsub("\\|\\++", "", str)
   }
 
   report_str <- function(tech, category = "", unit = "", predicate = "Tech") {
@@ -194,7 +199,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   bind_element <- function(data, parameters, key, category, unit, factor = 1., map = techmap) {
     ## Add an element, described by *key*, from a *parameters* (magpie) dataset to *data*
     ## The new key in *data* is given by the report string.
-    rep_str <- report_str(map[[key]], category, unit)
+    rep_str <- remove_plus(report_str(map[[key]], category, unit))
     return(mbind(data, setNames(parameters[, , key] * factor, rep_str)))
   }
 
@@ -213,17 +218,17 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     int2ext <- c()
     if (all(map %in% techmap)) {
       for (label in techmap) {
-        int2ext[[report_str(label, category, unit)]] <- report_str(label, unit = "EJ/yr", predicate = "SE")
+        int2ext[[remove_plus(report_str(label, category, unit))]] <- report_str(label, unit = "EJ/yr", predicate = "SE")
       }
       ## storage needs a special mapping
-      int2ext[[report_str("Electricity|Storage|Battery|For PV", category, unit)]] <- report_str("Electricity|Solar|PV", unit = "EJ/yr", predicate = "SE")
-      int2ext[[report_str("Electricity|Storage|Battery|For CSP", category, unit)]] <- report_str("Electricity|Solar|CSP", unit = "EJ/yr", predicate = "SE")
+      int2ext[[report_str("Electricity|Storage|Battery|For PV", category, unit)]] <- report_str("Electricity|Solar|+|PV", unit = "EJ/yr", predicate = "SE")
+      int2ext[[report_str("Electricity|Storage|Battery|For CSP", category, unit)]] <- report_str("Electricity|Solar|+|CSP", unit = "EJ/yr", predicate = "SE")
       
       if ("windoff" %in% all_te) {
-      int2ext[[report_str("Electricity|Storage|Battery|For Wind Onshore", category, unit)]] <- report_str("Electricity|Wind|Onshore", unit = "EJ/yr", predicate = "SE")
-      int2ext[[report_str("Electricity|Storage|Battery|For Wind Offshore", category, unit)]] <- report_str("Electricity|Wind|Offshore", unit = "EJ/yr", predicate = "SE")
+        int2ext[[report_str("Electricity|Storage|Battery|For Wind Onshore", category, unit)]] <- report_str("Electricity|Wind|+|Onshore", unit = "EJ/yr", predicate = "SE")
+        int2ext[[report_str("Electricity|Storage|Battery|For Wind Offshore", category, unit)]] <- report_str("Electricity|Wind|+|Offshore", unit = "EJ/yr", predicate = "SE")
       } else {
-      int2ext[[report_str("Electricity|Storage|Battery|For Wind", category, unit)]] <- report_str("Electricity|Wind", unit = "EJ/yr", predicate = "SE")
+        int2ext[[report_str("Electricity|Storage|Battery|For Wind", category, unit)]] <- report_str("Electricity|+|Wind", unit = "EJ/yr", predicate = "SE")
       }
       
     } else if (all(map %in% carmap)) {
@@ -252,16 +257,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   tmp <- bind_category(tmp, v_investcost, category, unit, factor, techmap)
   int2ext <- get_global_mapping(category, unit, techmap)
 
-  
   ### Capital cost including adjustment cost ###
   if (!is.null(v_adjustteinv_avg)) {
-  category <- "Capital Costs|w/ Adj Costs"
-  unit <- "US$2005/kW"
-  factor <- 1000.
-  
-  
-  tmp <- bind_category(tmp, v_investcost+v_adjustteinv_avg, category, unit, factor, techmap)
-  int2ext <- get_global_mapping(category, unit, techmap)
+    category <- "Capital Costs|w/ Adj Costs"
+    unit <- "US$2005/kW"
+    factor <- 1000.
+    
+    tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, techmap)
+    int2ext <- get_global_mapping(category, unit, techmap)
   }
   
   if (tran_mod == "complex") {
@@ -349,6 +352,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   ### write to output ###
   output[is.na(output)] <- 0  # substitute na by 0
+  
 
   # add global values
   map <- data.frame(region = getRegions(tmp), world = "GLO", stringsAsFactors = FALSE)
