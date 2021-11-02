@@ -392,7 +392,7 @@ reportEDGETransport <- function(output_folder=".",
       return(NULL)
     }
 
-    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- NULL
+    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- category <- NULL
     vintgs <- fread(vintages_file)
 
     ## backward compat. fix
