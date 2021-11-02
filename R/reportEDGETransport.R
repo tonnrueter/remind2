@@ -392,7 +392,7 @@ reportEDGETransport <- function(output_folder=".",
       return(NULL)
     }
 
-    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- NULL
+    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- category <- NULL
     vintgs <- fread(vintages_file)
 
     ## backward compat. fix
@@ -413,14 +413,26 @@ reportEDGETransport <- function(output_folder=".",
     vintgs[, c("construction_year", "vintage_demand_vkm", "year_c") := NULL]
     vintgs <- unique(vintgs)
 
-    vintgs <- data.table::melt(vintgs, measure.vars = c("Stock", "Sales"))
+    vintgs <- data.table::melt(vintgs, measure.vars = c("Stock", "Sales"), variable.name = "category")
     ## vkm -> v-num
     vintgs = merge(vintgs, annual_mileage, by = c("year", "region", "vehicle_type"))
     vintgs[, value := value / annual_mileage]
-    vintgs[, variable := sprintf("%s|Transport|LDV|%s|%s", variable, vehicle_type, technology)]
+    vintgs[, variable := ifelse(
+               vehicle_type == "Bus_tmp_vehicletype",
+               sprintf("%s|Transport|Bus|%s", category, technology),
+               sprintf("%s|Transport|LDV|%s|%s", category, vehicle_type, technology))]
 
-    vintgs[, c("vehicle_type", "technology", "annual_mileage") := NULL]
-    vintgs <- vintgs[!is.na(value)]
+    ## totals
+    vintgs <- rbindlist(list(
+      vintgs,
+      vintgs[, .(value=sum(value), variable=gsub("(.+)\\|.+$", "\\1", variable)),
+             by=c("category", "year", "region", "vehicle_type")],
+      vintgs[grepl("|LDV|", variable, fixed=TRUE),
+             .(value=sum(value), variable=sprintf("%s|Transport|LDV", category)),
+             by=c("category", "year", "region")]), fill=TRUE)
+
+    vintgs[, c("vehicle_type", "technology", "annual_mileage", "category") := NULL]
+    vintgs <- unique(vintgs[!is.na(value)])
 
     setnames(vintgs, "year", "period")
 
