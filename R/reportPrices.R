@@ -324,10 +324,10 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   # ---- mapping of weights for the variables for global aggregation ----
   int2ext <- c(
     "Price|Primary Energy|Biomass|Modern (US$2005/GJ)"                 = "PE|Biomass|Modern (EJ/yr)",
-    "Price|Primary Energy|Oil (US$2005/GJ)"                            = "PE|+|Oil (EJ/yr)",
-    "Price|Primary Energy|Gas (US$2005/GJ)"                            = "PE|+|Gas (EJ/yr)",
-    "Price|Primary Energy|Coal (US$2005/GJ)"                           = "PE|+|Coal (EJ/yr)",
-    "Price|Primary Energy|Nuclear (US$2005/GJ)"                        = "PE|+|Nuclear (EJ/yr)",
+    "Price|Primary Energy|Oil (US$2005/GJ)"                            = "PE|Oil (EJ/yr)",
+    "Price|Primary Energy|Gas (US$2005/GJ)"                            = "PE|Gas (EJ/yr)",
+    "Price|Primary Energy|Coal (US$2005/GJ)"                           = "PE|Coal (EJ/yr)",
+    "Price|Primary Energy|Nuclear (US$2005/GJ)"                        = "PE|Nuclear (EJ/yr)",
     "Price|Primary Energy|Biomass|1st Generation|Sugar and Starch (US$2005/GJ)" = "PE|Biomass|1st Generation (EJ/yr)",
     "Price|Primary Energy|Biomass|1st Generation|Oil-based (US$2005/GJ)" = "PE|Biomass|1st Generation (EJ/yr)",
 
@@ -341,19 +341,19 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Secondary Energy|Electricity (US$2005/GJ)"                  = "SE|Electricity (EJ/yr)",
     "Price|Secondary Energy|Hydrogen (US$2005/GJ)"                     = "SE|Hydrogen (EJ/yr)",
     "Price|Secondary Energy|Heat (US$2005/GJ)"                         = "SE|Heat (EJ/yr)",
-    "Price|Secondary Energy|Solids|Biomass (US$2005/GJ)"               = "SE|Solids|+|Biomass (EJ/yr)",
-    "Price|Secondary Energy|Liquids|Biomass (US$2005/GJ)"              = "SE|Liquids|+|Biomass (EJ/yr)",
-    "Price|Secondary Energy|Gases|Biomass (US$2005/GJ)"                = "SE|Gases|+|Biomass (EJ/yr)",
-    "Price|Secondary Energy|Solids|Fossil (US$2005/GJ)"                = "SE|Solids|+|Coal (EJ/yr)",
-    "Price|Secondary Energy|Liquids|Fossil (US$2005/GJ)"               = "SE|Liquids|+|Oil (EJ/yr)",
+    "Price|Secondary Energy|Solids|Biomass (US$2005/GJ)"               = "SE|Solids|Biomass (EJ/yr)",
+    "Price|Secondary Energy|Liquids|Biomass (US$2005/GJ)"              = "SE|Liquids|Biomass (EJ/yr)",
+    "Price|Secondary Energy|Gases|Biomass (US$2005/GJ)"                = "SE|Gases|Biomass (EJ/yr)",
+    "Price|Secondary Energy|Solids|Fossil (US$2005/GJ)"                = "SE|Solids|Coal (EJ/yr)",
+    "Price|Secondary Energy|Liquids|Fossil (US$2005/GJ)"               = "SE|Liquids|Oil (EJ/yr)",
     "Price|Secondary Energy|Gases|Fossil (US$2005/GJ)"                 = "SE|Gases|Fossil (EJ/yr)",
-    "Price|Secondary Energy|Liquids|Hydrogen (US$2005/GJ)"             = "SE|Liquids|+|Hydrogen (EJ/yr)",
-    "Price|Secondary Energy|Gases|Hydrogen (US$2005/GJ)"               = "SE|Gases|+|Hydrogen (EJ/yr)",
+    "Price|Secondary Energy|Liquids|Hydrogen (US$2005/GJ)"             = "SE|Liquids|Hydrogen (EJ/yr)",
+    "Price|Secondary Energy|Gases|Hydrogen (US$2005/GJ)"               = "SE|Gases|Hydrogen (EJ/yr)",
     "Price|Secondary Energy|Solids (US$2005/GJ)"                       = "SE|Solids (EJ/yr)",
     "Price|Secondary Energy|Liquids (US$2005/GJ)"                      = "SE|Liquids (EJ/yr)",
     "Price|Secondary Energy|Gases (US$2005/GJ)"                        = "SE|Gases (EJ/yr)",
-    "Price|Carbon|ETS (US$2005/t CO2)"                                 = "Emi|GHG|++|ETS (Mt CO2eq/yr)",
-    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|++|ESR (Mt CO2eq/yr)"
+    "Price|Carbon|ETS (US$2005/t CO2)"                                 = "Emi|GHG|ETS (Mt CO2eq/yr)",
+    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|ESR (Mt CO2eq/yr)"
     )
 
   if (!is.null(esm2macro.m)) {
@@ -370,25 +370,25 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   int2ext <- c(int2ext,
 
                ## transport prices
-               "Price|Final Energy|Transport|Electricity (US$2005/GJ)"       = "FE|Transport|+|Electricity (EJ/yr)",
-               "Price|Final Energy|Transport|Liquids (US$2005/GJ)"       = "FE|Transport|+|Liquids (EJ/yr)",
-               "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|+|Hydrogen (EJ/yr)",
+               "Price|Final Energy|Transport|Electricity (US$2005/GJ)"       = "FE|Transport|Electricity (EJ/yr)",
+               "Price|Final Energy|Transport|Liquids (US$2005/GJ)"       = "FE|Transport|Liquids (EJ/yr)",
+               "Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"       = "FE|Transport|Hydrogen (EJ/yr)",
 
                ## buildings prices
-               "Price|Final Energy|Buildings|Electricity (US$2005/GJ)"       = "FE|Buildings|+|Electricity (EJ/yr)",
-               "Price|Final Energy|Buildings|Liquids (US$2005/GJ)"       = "FE|Buildings|+|Liquids (EJ/yr)",
-               "Price|Final Energy|Buildings|Gases (US$2005/GJ)"       = "FE|Buildings|+|Gases (EJ/yr)",
-               "Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"       = "FE|Buildings|+|Hydrogen (EJ/yr)",
-               "Price|Final Energy|Buildings|Heat (US$2005/GJ)"       = "FE|Buildings|+|Heat (EJ/yr)",
-               "Price|Final Energy|Buildings|Solids (US$2005/GJ)"       = "FE|Buildings|+|Solids (EJ/yr)",
+               "Price|Final Energy|Buildings|Electricity (US$2005/GJ)"       = "FE|Buildings|Electricity (EJ/yr)",
+               "Price|Final Energy|Buildings|Liquids (US$2005/GJ)"       = "FE|Buildings|Liquids (EJ/yr)",
+               "Price|Final Energy|Buildings|Gases (US$2005/GJ)"       = "FE|Buildings|Gases (EJ/yr)",
+               "Price|Final Energy|Buildings|Hydrogen (US$2005/GJ)"       = "FE|Buildings|Hydrogen (EJ/yr)",
+               "Price|Final Energy|Buildings|Heat (US$2005/GJ)"       = "FE|Buildings|Heat (EJ/yr)",
+               "Price|Final Energy|Buildings|Solids (US$2005/GJ)"       = "FE|Buildings|Solids (EJ/yr)",
 
                ## industry prices
-               "Price|Final Energy|Industry|Electricity (US$2005/GJ)"       = "FE|Industry|+|Electricity (EJ/yr)",
-               "Price|Final Energy|Industry|Liquids (US$2005/GJ)"       = "FE|Industry|+|Liquids (EJ/yr)",
-               "Price|Final Energy|Industry|Gases (US$2005/GJ)"       = "FE|Industry|+|Gases (EJ/yr)",
-               "Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"       = "FE|Industry|+|Hydrogen (EJ/yr)",
-               "Price|Final Energy|Industry|Heat (US$2005/GJ)"       = "FE|Industry|+|Heat (EJ/yr)",
-               "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|+|Solids (EJ/yr)"
+               "Price|Final Energy|Industry|Electricity (US$2005/GJ)"       = "FE|Industry|Electricity (EJ/yr)",
+               "Price|Final Energy|Industry|Liquids (US$2005/GJ)"       = "FE|Industry|Liquids (EJ/yr)",
+               "Price|Final Energy|Industry|Gases (US$2005/GJ)"       = "FE|Industry|Gases (EJ/yr)",
+               "Price|Final Energy|Industry|Hydrogen (US$2005/GJ)"       = "FE|Industry|Hydrogen (EJ/yr)",
+               "Price|Final Energy|Industry|Heat (US$2005/GJ)"       = "FE|Industry|Heat (EJ/yr)",
+               "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|Solids (EJ/yr)"
                )
   
   
@@ -397,13 +397,13 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   
   if (module2realisation["transport",2] == "complex") {
     int2ext <- c(int2ext,
-                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|+|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|+|Liquids (EJ/yr)")
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|Liquids (EJ/yr)")
   } else if (module2realisation["transport",2] == "edge_esm") {
     int2ext <- c(int2ext,
                  "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|Diesel Liquids (EJ/yr)",
                  "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|Pass|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|+|Gases (EJ/yr)")          
+                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|Gases (EJ/yr)")          
   }
   
  
@@ -423,7 +423,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   output[is.na(output)] <- 0  # substitute na by 0
-
+  ## delete "+" and "++" from variable names
+  output <- deletePlus(output)
+  
   # add global prices
   map <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
   tmp_GLO <- new.magpie("GLO",getYears(out),getNames(out),fill=0)
