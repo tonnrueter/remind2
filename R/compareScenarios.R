@@ -766,16 +766,16 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsection{SE Electricity by carrier}")
 
-  items<- c ("SE|Electricity|Coal|w/ CCS (EJ/yr)",
-             "SE|Electricity|Coal|w/o CCS (EJ/yr)",
+  items <- c("SE|Electricity|Coal|w/ CC (EJ/yr)",
+             "SE|Electricity|Coal|w/o CC (EJ/yr)",
              "SE|Electricity|Oil (EJ/yr)",
-             "SE|Electricity|Gas|w/ CCS (EJ/yr)",
-             "SE|Electricity|Gas|w/o CCS (EJ/yr)",
+             "SE|Electricity|Gas|w/ CC (EJ/yr)",
+             "SE|Electricity|Gas|w/o CC (EJ/yr)",
              "SE|Electricity|Geothermal (EJ/yr)",
              "SE|Electricity|Hydro (EJ/yr)",
              "SE|Electricity|Nuclear (EJ/yr)",
-             "SE|Electricity|Biomass|w/ CCS (EJ/yr)",
-             "SE|Electricity|Biomass|w/o CCS (EJ/yr)",
+             "SE|Electricity|Biomass|w/ CC (EJ/yr)",
+             "SE|Electricity|Biomass|w/o CC (EJ/yr)",
              "SE|Electricity|Solar|CSP (EJ/yr)",
              "SE|Electricity|Solar|PV (EJ/yr)",
              "SE|Electricity|Hydrogen (EJ/yr)",
@@ -1277,7 +1277,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
 
-## ---- Prices FE Gases ----
+  ## ---- Prices FE Gases ----
 
   if("Price|Final Energy|Transport|Gases (US$2005/GJ)" %in% getNames(data,dim=3)){
     p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Gases (US$2005/GJ)"],x_hist=NULL,
@@ -1303,7 +1303,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
 
-## ---- Prices FE Solids ----
+  ## ---- Prices FE Solids ----
 
 
   p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Solids (US$2005/GJ)"],x_hist=NULL,
@@ -1321,7 +1321,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
 
-## ---- Prices FE Electricity ----
+  ## ---- Prices FE Electricity ----
 
   p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"],x_hist=NULL,
                          ylab='Price|Final Energy|Transport|Electricity [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -1345,7 +1345,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
 
-## ---- Prices FE Hydrogen ----
+  ## ---- Prices FE Hydrogen ----
 
   p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"],x_hist=NULL,
                          ylab='Price|Final Energy|Transport|Hydrogen [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -1369,7 +1369,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
 
-## ---- Prices FE Heat ----
+  ## ---- Prices FE Heat ----
 
   p <- mipLineHistorical(data[mainReg,,"Price|Final Energy|Buildings|Heat (US$2005/GJ)"],x_hist=NULL,
                          ylab='Price|Final Energy|Buildings|Heat [US$2005/GJ]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
@@ -2422,7 +2422,7 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\twocolumn")
   
   
-  # ---- Capacities electricity line plots ----
+  ## ---- Capacities electricity line plots ----
   swlatex(sw,"\\subsection{Capacities electricity line plots}")
   
   swlatex(sw,"\\subsubsection{Nuclear}")
@@ -2457,11 +2457,13 @@ compareScenarios <- function(mif, hist,
     swlatex(sw,"\\subsubsection{Wind Onshore}")
     
     var <- "Cap|Electricity|Wind|Onshore (GW)"
-    
-    p <-mipLineHistorical(data[mainReg,,var],x_hist=histData[mainReg,,var],
-                          ylab=var,scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+
+    p <- mipLineHistorical(data[mainReg,,var],
+                           ylab = var,scales = "free_y", plot.priority = c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,var][mainReg,,,invert=TRUE],x_hist=histData[,,var][mainReg,,,invert=TRUE],
+      
+
+    p <- mipLineHistorical(data[,,var][mainReg,,,invert=TRUE],
                            ylab=var,scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
 
@@ -2699,13 +2701,13 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsubsection{SE|Liquids}")
 
-  items<- c ("SE|Liquids|Oil (EJ/yr)",
-             "SE|Liquids|Biomass|w/ CCS (EJ/yr)",
-             "SE|Liquids|Biomass|w/o CCS (EJ/yr)",
-             "SE|Liquids|Coal|w/ CCS (EJ/yr)",
-             "SE|Liquids|Coal|w/o CCS (EJ/yr)",
-             "SE|Liquids|Gas|w/ CCS (EJ/yr)",
-             "SE|Liquids|Gas|w/o CCS (EJ/yr)",
+  items <- c("SE|Liquids|Oil (EJ/yr)",
+             "SE|Liquids|Biomass|w/ CC (EJ/yr)",
+             "SE|Liquids|Biomass|w/o CC (EJ/yr)",
+             "SE|Liquids|Coal|w/ CC (EJ/yr)",
+             "SE|Liquids|Coal|w/o CC (EJ/yr)",
+             "SE|Liquids|Gas|w/ CC (EJ/yr)",
+             "SE|Liquids|Gas|w/o CC (EJ/yr)",
              "SE|Liquids|Hydrogen (EJ/yr)",
              "SE|Liquids|Hydrogen|Net Imports (EJ/yr)")
   
@@ -2731,11 +2733,11 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsubsection{SE|Gases}")
 
-  items<- c ("SE|Gases|Natural Gas (EJ/yr)",
-             "SE|Gases|Biomass|w/ CCS (EJ/yr)",
-             "SE|Gases|Biomass|w/o CCS (EJ/yr)",
-             "SE|Gases|Coal|w/ CCS (EJ/yr)",
-             "SE|Gases|Coal|w/o CCS (EJ/yr)",
+  items <- c("SE|Gases|Natural Gas (EJ/yr)",
+             "SE|Gases|Biomass|w/ CC (EJ/yr)",
+             "SE|Gases|Biomass|w/o CC (EJ/yr)",
+             "SE|Gases|Coal|w/ CC (EJ/yr)",
+             "SE|Gases|Coal|w/o CC (EJ/yr)",
              "SE|Gases|Hydrogen (EJ/yr)")
   var <- data[,,intersect(items,getNames(data,dim=3))]
 
@@ -2759,12 +2761,12 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsubsection{SE|Hydrogen}")
 
-  items<- c ("SE|Hydrogen|Biomass|w/ CCS (EJ/yr)",
-             "SE|Hydrogen|Biomass|w/o CCS (EJ/yr)",
-             "SE|Hydrogen|Coal|w/ CCS (EJ/yr)",
-             "SE|Hydrogen|Coal|w/o CCS (EJ/yr)",
-             "SE|Hydrogen|Gas|w/ CCS (EJ/yr)",
-             "SE|Hydrogen|Gas|w/o CCS (EJ/yr)",
+  items <- c("SE|Hydrogen|Biomass|w/ CC (EJ/yr)",
+             "SE|Hydrogen|Biomass|w/o CC (EJ/yr)",
+             "SE|Hydrogen|Coal|w/ CC (EJ/yr)",
+             "SE|Hydrogen|Coal|w/o CC (EJ/yr)",
+             "SE|Hydrogen|Gas|w/ CC (EJ/yr)",
+             "SE|Hydrogen|Gas|w/o CC (EJ/yr)",
              "SE|Hydrogen|Electricity|VRE Storage Electrolysis (EJ/yr)",
              "SE|Hydrogen|Electricity|Standard Electrolysis (EJ/yr)",
              "SE|Hydrogen|Net Imports (EJ/yr)")
@@ -2791,17 +2793,15 @@ compareScenarios <- function(mif, hist,
   
   swlatex(sw,"\\subsubsection{SE|Hydrogen - Usage}")
   
-  items<- c ("FE|Industry|Hydrogen (EJ/yr)",
+  items <- c("FE|Industry|Hydrogen (EJ/yr)",
              "FE|Buildings|Hydrogen (EJ/yr)",
              "FE|Transport|Hydrogen (EJ/yr)",
              "FE|CDR|Hydrogen (EJ/yr)",
-             "SE|Hydrogen|used for electricity|normal turbines (EJ/yr)",
-             "SE|Hydrogen|used for electricity|forced VRE turbines (EJ/yr)",
-             "SE|Hydrogen|used for synthetic fuels|liquids (EJ/yr)",
-             "SE|Hydrogen|used for synthetic fuels|gases (EJ/yr)")
-
-
-
+             "SE|Input|Hydrogen|Electricity|Normal Turbines (EJ/yr)",
+             "SE|Input|Hydrogen|Electricity|Forced VRE Turbines (EJ/yr)",
+             "SE|Input|Electricity|Hydrogen|Synthetic Fuels|Liquids (EJ/yr)",
+             "SE|Input|Electricity|Hydrogen|Synthetic Fuels|Gases (EJ/yr)")
+  
   var <- data[,,intersect(items,getNames(data,dim=3))]
   
   p <- mipArea(var[mainReg,,],scales="free_y")
@@ -2812,7 +2812,7 @@ compareScenarios <- function(mif, hist,
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=4.5,width=7")
   
-  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) + guides(fill = guide_legend(ncol = 2))
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\onecolumn")
@@ -2820,22 +2820,20 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
   
+  ## ---- SE Electricity Usage ----
   swlatex(sw,"\\subsubsection{SE|Electricity - Usage}")
   
-  items<- c ("SE|Electricity|used for H2|for synthetic fuels|gases (EJ/yr)",
-             "SE|Electricity|used for H2|for synthetic fuels|liquids (EJ/yr)",
-             "SE|Electricity|used for H2|direct FE H2 (EJ/yr)",
-             "SE|Electricity|used for H2|VRE Storage (EJ/yr)",
-             "SE|Electricity|used in Buildings (EJ/yr)",
-             "SE|Electricity|used in Industry (EJ/yr)",
-             "SE|Electricity|used in Transport (EJ/yr)",
-             "SE|Electricity|used for CDR (EJ/yr)",
-             "SE|Electricity|used for own consumption of energy system (EJ/yr)")
+  items <- c("SE|Input|Electricity|Hydrogen|Synthetic Fuels|Gases (EJ/yr)",
+             "SE|Input|Electricity|Hydrogen|Synthetic Fuels|Liquids (EJ/yr)",
+             "SE|Input|Electricity|Hydrogen|direct FE H2 (EJ/yr)",
+             "SE|Input|Electricity|Hydrogen|VRE Storage (EJ/yr)",
+             "SE|Input|Electricity|Buildings (EJ/yr)",
+             "SE|Input|Electricity|Industry (EJ/yr)",
+             "SE|Input|Electricity|Transport (EJ/yr)",
+             "SE|Input|Electricity|CDR (EJ/yr)",
+             "SE|Input|Electricity|Energy System (EJ/yr)")
   
-  
-  
-  
-  var <- data[,,intersect(items,getNames(data,dim=3))]
+  var <- data[,,intersect(items,getNames(data,dim = 3))]
   
   p <- mipArea(var[mainReg,,],scales="free_y")
   p <- p + theme(legend.position="none")
@@ -2845,7 +2843,7 @@ compareScenarios <- function(mif, hist,
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=4.5,width=7")
   
-  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])  + guides(fill = guide_legend(ncol = 4))
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
   swlatex(sw,"\\onecolumn")
@@ -2860,9 +2858,10 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsubsection{SE|Solids}")
 
-  items<- c ("SE|Solids|Biomass (EJ/yr)",
+  items <- c("SE|Solids|Biomass (EJ/yr)",
              "SE|Solids|Traditional Biomass (EJ/yr)",
              "SE|Solids|Coal (EJ/yr)")
+
   var <- data[,,intersect(items,getNames(data,dim=3))]
 
   p <- mipArea(var[mainReg,,],scales="free_y")
@@ -2887,7 +2886,7 @@ compareScenarios <- function(mif, hist,
   
   swlatex(sw,"\\subsubsection{SE|Heat}")
   
-  items<- c ("SE|Heat|Biomass (EJ/yr)",
+  items <- c("SE|Heat|Biomass (EJ/yr)",
              "SE|Heat|Coal (EJ/yr)",
              "SE|Heat|Gas (EJ/yr)",
              "SE|Heat|Geothermal (EJ/yr)")
