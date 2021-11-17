@@ -1610,9 +1610,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
 
-  ## 7. Internal/Diagnostic Variables ----
+  ## 7. Further Variables used for comparisons or in other scripts ----
 
-  # (for diagnostics/other reporting scripts)
 
   # required for aggregation of carbon price in reportPrices.R
   out <- mbind(out,
@@ -1628,6 +1627,19 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   out <- mbind(out,
                setNames(out[, , "Emi|CO2 (Mt CO2/yr)"] - out[, , "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
                         "Emi|CO2|w/o Land-Use Change (Mt CO2/yr)"))
+  
+
+  # electricity and heat (IPCC 1A1a)
+  out <- mbind(out,
+               setNames(  out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"] 
+                        + out[, , "Emi|CO2|Energy|Supply|+|Heat w/ couple prod (Mt CO2/yr)"],
+                        "Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"))
+  
+  # total co2 emissions industry: energy emissions + process emissions (IPCC 1A2 + 2)
+  out <- mbind(out,
+               setNames(out[, , "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
+                        + out[, , "Emi|CO2|+|Industrial Processes (Mt CO2/yr)"],
+                        "Emi|CO2|Industry (Mt CO2/yr)"))
 
 
   ## 8. Emissions w/o non-energy use ----
