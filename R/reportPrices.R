@@ -100,8 +100,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   pm_FEPrice <- readGDX(gdx, "pm_FEPrice")
   pm_SEPrice <- readGDX(gdx, "pm_SEPrice")
-  p_PEPrice <- readGDX(gdx, "p_PEPrice")
+  p_PEPrice <- readGDX(gdx, c("p_PEPrice", "pm_PEPrice"))
   
+
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = FALSE)[,t,]
   prodSe         <- readGDX(gdx, "vm_prodSe", field = "l", restore_zeros = FALSE)[,t,]
   try(seAgg <- readGDX(gdx, name="seAgg", type="set"))
@@ -252,20 +253,20 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   ## PE Prices
   out <- mbind(out,
-               setNames(mselect(p_PEPrice, all_enty="peoil")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="peoil")*tdptwyr2dpgj,
                         "Price|Primary Energy|Oil (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pegas")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pegas")*tdptwyr2dpgj,
                         "Price|Primary Energy|Gas (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pecoal")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pecoal")*tdptwyr2dpgj,
                         "Price|Primary Energy|Coal (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="peur")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="peur")*tdptwyr2dpgj,
                         "Price|Primary Energy|Nuclear (US$2005/GJ)"),
                ## only modern (ligno-cellulosic) biomass reported
-               setNames(mselect(p_PEPrice, all_enty="pebiolc")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pebiolc")*tdptwyr2dpgj,
                         "Price|Primary Energy|Biomass|Modern (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
                         "Price|Primary Energy|Biomass|1st Generation|Sugar and Starch (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
                         "Price|Primary Energy|Biomass|1st Generation|Oil-based (US$2005/GJ)")
                )
 
