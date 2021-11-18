@@ -100,7 +100,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   pm_FEPrice <- readGDX(gdx, "pm_FEPrice")
   pm_SEPrice <- readGDX(gdx, "pm_SEPrice")
-  p_PEPrice <- readGDX(gdx, c("p_PEPrice", "pm_PEPrice"))
+  pm_PEPrice <- readGDX(gdx, c("p_PEPrice", "pm_PEPrice"), format = "first_found")
   
 
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = FALSE)[,t,]
@@ -130,7 +130,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   ttot <- readGDX(gdx, "ttot")
   YearsFrom2005 <- paste0("y",ttot[ttot >= 2005])
   
-  p_PEPrice <- p_PEPrice[,YearsFrom2005,unique(pe2se$all_enty)]
+  pm_PEPrice <- pm_PEPrice[,YearsFrom2005,unique(pe2se$all_enty)]
   pm_SEPrice <- pm_SEPrice[,YearsFrom2005,unique(se2fe$all_enty)]
   pm_FEPrice <- pm_FEPrice[,YearsFrom2005,fe.entries.dot]
 
