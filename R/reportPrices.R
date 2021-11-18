@@ -20,7 +20,7 @@
 #' \dontrun{reportPrices(gdx)}
 #'
 #' @importFrom luscale speed_aggregate
-#' @importFrom dplyr %>% case_when distinct filter inner_join tibble
+#' @importFrom dplyr %>% case_when distinct filter inner_join tibble left_join rename
 #' @importFrom gdx readGDX
 #' @importFrom luscale speed_aggregate
 #' @importFrom magclass mbind getYears getRegions setNames dimSums new.magpie lowpass complete_magpie getItems<- getNames
@@ -98,13 +98,40 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   rownames(module2realisation) <- module2realisation$modules
 
 
-  pm_FEPrice <- readGDX(gdx, "pm_FEPrice", restore_zeros = FALSE)
-  pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = FALSE)
-  p_PEPrice <- readGDX(gdx, "p_PEPrice", restore_zeros = FALSE)
+  pm_FEPrice <- readGDX(gdx, "pm_FEPrice")
+  pm_SEPrice <- readGDX(gdx, "pm_SEPrice")
+  p_PEPrice <- readGDX(gdx, "p_PEPrice")
+  
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = FALSE)[,t,]
   prodSe         <- readGDX(gdx, "vm_prodSe", field = "l", restore_zeros = FALSE)[,t,]
   try(seAgg <- readGDX(gdx, name="seAgg", type="set"))
   try(seAgg2se <- readGDX(gdx, name="seAgg2se", type="set"))
+  
+  
+  
+  
+  # subset price parameters to those entries used in the model
+  pe2se <- readGDX(gdx, "pe2se")
+  se2fe <- readGDX(gdx, "se2fe")
+  sector2emiMkt <- readGDX(gdx, "sector2emimkt")
+  entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
+  
+
+  sector <- emi_sectors <- emiMkt <- all_emiMkt <- NULL
+  fe.entries <- entyFe2Sector %>% 
+                  left_join(sector2emiMkt) %>% 
+                  rename( sector = emi_sectors, emiMkt = all_emiMkt) %>% 
+                  filter( sector != "CDR")
+  
+  
+  fe.entries.dot <- paste(fe.entries[,1],fe.entries[,2], fe.entries[,3], sep = ".")
+  
+  ttot <- readGDX(gdx, "ttot")
+  YearsFrom2005 <- paste0("y",ttot[ttot >= 2005])
+  
+  p_PEPrice <- p_PEPrice[,YearsFrom2005,unique(pe2se$all_enty)]
+  pm_SEPrice <- pm_SEPrice[,YearsFrom2005,unique(se2fe$all_enty)]
+  pm_FEPrice <- pm_FEPrice[,YearsFrom2005,fe.entries.dot]
 
 
   ## weights for market aggregation of prices: FE share of market
