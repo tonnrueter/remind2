@@ -237,6 +237,13 @@ compareScenarios <- function(mif, hist,
   ## read historical data
   histData <- read.report(hist,as.list=FALSE)
   y_hist <- intersect(y_hist, getYears(histData, as.integer=TRUE))
+  
+  # remove regional data from historical.mif for IEA WEO 2021 due to lack of accuracy
+  if (any(grepl("IEA WEO 2021", getNames(histData)))) {
+    histData[setdiff(getRegions(histData), "GLO"),,"IEA WEO 2021", pmatch = T] <- NA
+  }
+  
+  
   if(all(getRegions(data) %in% getRegions(histData))) {
     histData = histData[getRegions(data),,]
     if ( any(grepl("EDGE_SSP2",getNames(histData)))){
@@ -264,6 +271,7 @@ compareScenarios <- function(mif, hist,
     }
   }
   
+
   # copy of historic data replacing 0 with NA
   histData_NA <- histData
   histData_NA[histData_NA == 0] <- NA
