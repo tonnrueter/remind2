@@ -1580,27 +1580,49 @@ compareScenarios <- function(mif, hist,
   ## ---- Kaya decomposition ----
 
   swlatex(sw,"\\subsection{Kaya-Decomposition}")
+  
   ## calculate Kaya-Decomposition
   kaya <- new.magpie(getRegions(data),getYears(data),magclass::getNames(data,dim=1))
-  kaya <- add_dimension(kaya,dim=3.2,add="kaya",nm=c("CO2 FF&I/FE","FE/GDP","GDP/Population","Population"))
+  names(dimnames(kaya))[3] <- "scenario"
+  kaya <- add_dimension(kaya,dim=3.2,add="model",nm=magclass::getNames(data,dim=2))
+  kaya_vars <- c("CO2 FF&I/FE","FE/GDP","GDP/Population","Population")
+  kaya <- add_dimension(kaya,dim=3.3,add="variable",nm=kaya_vars)
+  
   for (i in magclass::getNames(data,dim=1)) {
     kaya[,,i] <- calcKayaDecomp(mif=data[,,i])
   }
-  p <- magpie2ggplot2(kaya,facet_y="Data2",facet_x="Data1",color="Region",group=NULL,
+  p <- magpie2ggplot2(kaya,facet_y="Data3",facet_x="Data1",color="Region",group=NULL,
                       scales="free_y",show_grid=TRUE,ylab='Kaya Decomposition [%]',
                       color_pal=plotstyle(getRegions(kaya)))
   swfigure(sw,print,p,sw_option="height=10,width=9")
-
-  kaya <- new.magpie(getRegions(data),getYears(data),magclass::getNames(data,dim=1))
-  kaya <- add_dimension(kaya,dim=3.2,add="kaya",nm=c("CO2 FF&I [Mt CO2/yr]/FE [EJ/yr]","FE [EJ/yr]/GDP [billion US$2005/yr]",
+  
+  
+  kaya2 <- new.magpie(getRegions(data),getYears(data),magclass::getNames(data,dim=1))
+  kaya2 <- add_dimension(kaya2,dim=3.2,add="kaya",nm=c("CO2 FF&I [Mt CO2/yr]/FE [EJ/yr]","FE [EJ/yr]/GDP [billion US$2005/yr]",
                                                      "GDP [billion US$2005/yr]/Population [million]","Population [million]"))
   for (i in magclass::getNames(data,dim=1)) {
-    kaya[,,i] <- calcKayaDecomp(mif=data[,,i],ref_year=NULL)
+    kaya2[,,i] <- calcKayaDecomp(mif=data[,,i],ref_year=NULL)
   }
-  p <- magpie2ggplot2(kaya,facet_y="Data2",facet_x="Data1",color="Region",group=NULL,
+  p <- magpie2ggplot2(kaya2,facet_y="Data2",facet_x="Data1",color="Region",group=NULL,
                       scales="free_y",show_grid=TRUE,ylab='Kaya Decomposition',
-                      color_pal=plotstyle(getRegions(kaya)))
+                      color_pal=plotstyle(getRegions(kaya2)))
   swfigure(sw,print,p,sw_option="height=10,width=9")
+  
+  
+  for (kv in kaya_vars) {
+    swlatex(sw,paste0("\\subsubsection{Kaya-Decomposition -- ",kv,"}"))
+    p <- mipLineHistorical(kaya[mainReg,,kv],
+                           ylab=paste0(kv, ' - Kaya Decomposition [%]'),
+                           scales="free_y")
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(kaya[,,kv][mainReg,,,invert=TRUE],
+                           ylab=paste0(kv, ' - Kaya Decomposition [%]'),scales="free_y",
+                           plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
+  
+
+  
 
   ## ---- ++++ E M I S S I O N S ++++ ----
 
