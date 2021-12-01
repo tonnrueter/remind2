@@ -331,14 +331,14 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\subsection{GHG Emissions}")
   
   tot <-"Emi|GHG (Mt CO2eq/yr)"
-  items <- c("Emi|CO2|Energy (Mt CO2/yr)",
-             "Emi|CO2|Industrial Processes (Mt CO2/yr)",
-             "Emi|CO2|Land-Use Change (Mt CO2/yr)",
-             "Emi|GHG|CH4 (Mt CO2eq/yr)",
-             "Emi|GHG|N2O (Mt CO2eq/yr)",
-             "Emi|GHG|F-Gases (Mt CO2eq/yr)",
-             "Emi|CO2|non-BECCS CDR (Mt CO2/yr)")
-  
+  items <- items <- c(
+    rev(c("Emi|CO2|Energy (Mt CO2/yr)",
+          "Emi|CO2|Industrial Processes (Mt CO2/yr)",
+          "Emi|CO2|Land-Use Change (Mt CO2/yr)",
+          "Emi|GHG|CH4 (Mt CO2eq/yr)",
+          "Emi|GHG|N2O (Mt CO2eq/yr)",
+          "Emi|GHG|F-Gases (Mt CO2eq/yr)")),
+    "Emi|CO2|non-BECCS CDR (Mt CO2/yr)")
   
   var <- data[,,intersect(items,getNames(data,dim=3))]
   p <- mipArea(var[mainReg,,],scales="free_y", total = F)
@@ -361,7 +361,7 @@ compareScenarios <- function(mif, hist,
   p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y", total = F)
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
-
+  
 
   ## ---- GHG by sector ----
   
