@@ -40,6 +40,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   pe2se    <- readGDX(gdx, "pe2se")
   se2se    <- readGDX(gdx, "se2se")
   all_te    <- readGDX(gdx, "all_te")
+  te <- readGDX(gdx, "te")
   tefosccs <- readGDX(gdx, c("teFosCCS", "tefosccs"), format = "first_found")
   teccs    <- readGDX(gdx, c("teCCS", "teccs"), format = "first_found")
   tenoccs  <- readGDX(gdx, c("teNoCCS", "tenoccs"), format = "first_found")
@@ -64,7 +65,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   ## parameter
   dataoc_tmp    <- readGDX(gdx, c("pm_prodCouple", "p_prodCouple", "p_dataoc"), restore_zeros = FALSE, format = "first_found")
   dataoc_tmp[is.na(dataoc_tmp)] <- 0
-  p_macBase <- readGDX(gdx, c("p_macBaseMagpie", "p_macBase"), format = "first_found")
+  p_macBase <- readGDX(gdx, c("p_macBaseMagpie", "pm_macBaseMagpie","p_macBase"), format = "first_found")
   #  p_macEmi  <- readGDX(gdx,"p_macEmi")
   ## variables
   prodSe <- readGDX(gdx, name = c("vm_prodSe", "v_seprod"), field = "l", restore_zeros = FALSE, format = "first_found") * pm_conv_TWa_EJ
@@ -310,7 +311,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   }
 
 # adding compatibility for windoffshore
-  if ("windoff" %in% all_te) {
+  if ("windoff" %in% te) {
     tmp1 <- mbind(tmp1,
       se.prod(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind",     name = "SE|Electricity|Wind|Onshore (EJ/yr)"),
       se.prodLoss(prodSe, dataoc, oc2te, sety, "pewin", "seel", te = "wind", name = "SE|Electricity|Curtailment|Wind|Onshore (EJ/yr)"),
