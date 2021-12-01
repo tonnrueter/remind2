@@ -351,7 +351,7 @@ compareScenarios <- function(mif, hist,
 
   p <- mipBarYearData(var[mainReg,y_bar,])
   p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  swfigure(sw,print,p,sw_option="height=4.0,width=7")
 
   p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
         guides(fill=guide_legend(ncol=3))
@@ -361,7 +361,7 @@ compareScenarios <- function(mif, hist,
   p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y", total = F)
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
-  
+
 
   ## ---- GHG by sector ----
   
@@ -4042,7 +4042,7 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,mipLineHistorical,data[,,"Temperature|Global Mean (K)"],x_hist=NULL,
              ylab='Temperature|Global Mean [K]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),sw_option="height=10,width=9")
   }
-  
+
   ## Close output-pdf
   swclose(sw)
 }
