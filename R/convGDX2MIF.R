@@ -104,14 +104,13 @@ convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(20
   } else {
     message("function reportSDPVariables does not work and is skipped")
   }
-  
 
   # Add dimension names "scenario.model.variable"
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
   
-  
+
   
   # either write the *.mif or return the magpie object
   if(!is.null(file)) {
