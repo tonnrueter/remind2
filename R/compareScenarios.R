@@ -920,26 +920,38 @@ compareScenarios <- function(mif, hist,
     theme(legend.position="right")
   swfigure(sw,print,p,sw_option="height=9,width=16")
   
-  swlatex(sw,"\\twocolumn")
-  p <- mipLineHistorical(data[mainReg,,"Price|Carbon|ETS (US$2005/t CO2)"],x_hist=NULL,
-                         ylab='Price|Carbon|ETS [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Carbon|ETS (US$2005/t CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Carbon|ETS [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+  d <- data[mainReg,,"Price|Carbon|ETS (US$2005/t CO2)"]
+  if (isTRUE(any(d!=0))) {
+    swlatex(sw,"\\twocolumn")
+    p <- mipLineHistorical(d,x_hist=NULL,
+                           ylab='Price|Carbon|ETS [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+  }
+  d <- data[,,"Price|Carbon|ETS (US$2005/t CO2)"][mainReg,,,invert=TRUE]
+  if (isTRUE(any(d!=0))) {
+    p <- mipLineHistorical(d,x_hist=NULL,
+                           ylab='Price|Carbon|ETS [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
   
+  d <- data[mainReg,,"Price|Carbon|ESR (US$2005/t CO2)"]
+  if (isTRUE(any(d!=0))) {
+    swlatex(sw,"\\twocolumn")
+    p <- mipLineHistorical(,x_hist=NULL,
+                           ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    p <- p + theme(legend.position="none")
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+  }
+  d <- data[,,"Price|Carbon|ESR (US$2005/t CO2)"][mainReg,,,invert=TRUE]
+  if (isTRUE(any(d!=0))) {
+    p <- mipLineHistorical(d,x_hist=NULL,
+                           ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
   swlatex(sw,"\\twocolumn")
-  p <- mipLineHistorical(data[mainReg,,"Price|Carbon|ESR (US$2005/t CO2)"],x_hist=NULL,
-                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Price|Carbon|ESR (US$2005/t CO2)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  swlatex(sw,"\\twocolumn")
-
+  
   if("Policy Cost|Consumption Loss (billion US$2005/yr)" %in% magclass::getNames(data,dim=3)) {
     ## ---- Policy Cost|Consumption Loss ----
     swlatex(sw,"\\subsection{Policy Costs}")
