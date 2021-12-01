@@ -319,10 +319,8 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\tableofcontents\\newpage")
   
   ## empty page
-  swlatex(sw,"\\newpage")
-  swlatex(sw,"\\thispagestyle{empty}")
-  swlatex(sw,"\\mbox{}")
-  swlatex(sw,"\\newpage")
+  swlatex(sw,"\\onecolumn\\newpage\\twocolumn")
+  
   
   ## ---- ++++ S U M M A R Y ++++ ----
   
@@ -364,7 +362,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=8,width=16")
   swlatex(sw,"\\twocolumn")
   
-  
+
   ## ---- GHG by sector ----
   
   swlatex(sw,"\\subsection{GHG by sector (w/ gross emissions, excl. BECCS)}")
