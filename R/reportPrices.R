@@ -451,6 +451,55 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   output[is.na(output)] <- 0  # substitute na by 0
+  
+  
+  # # ---- internal price variables used for modelg diagnostics -----
+  
+  # # CES prices and CES markup cost
+  
+  
+  
+  
+  
+  o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = T)
+  
+  if (!is.null(o01_CESderivatives)) {
+  
+  
+  o01_CESderivatives <- o01_CESderivatives[,YearsFrom2005,]
+  
+  
+  # CES price is derivative of GDP with respect to production factor (CES node)
+  # temporay: only report CES prices of primary production factors (bottom-most CES nodes) for buildings and industry for now to not oversize the reporting
+  # TODO: generate MIF without internal variables as standard such that more internal variables can be added here
+  
+  ppfen_industry_dyn37 <- readGDX(gdx, "ppfen_industry_dyn37")
+  ppfen_buildings_dyn36 <- readGDX(gdx, "ppfen_buildings_dyn36")
+  ppfen <- c(ppfen_industry_dyn37, ppfen_buildings_dyn36)
+  
+  
+  # CES Prices
+  
+  # choose derivative of GDP (inco) with respect to input
+  ces_price <- collapseDim(mselect(o01_CESderivatives, all_in = "inco", all_in1 = ppfEn))
+  # variable names
+  ces_price <- setNames(ces_price, paste0("Internal|Price|CES|",getNames(ces_price)," (tr US$2005/input unit)"))
+  
+  # CES Markup Cost
+  p37_CESMkup <- readGDX(gdx, "p37_CESMkup") # markup in industry
+  p36_CESMkup <- readGDX(gdx, "p36_CESMkup") # markup in buildings
+  
+  
+  CESMkup <- mbind(
+    mselect(p36_CESMkup[,YearsFrom2005,], all_in = ppfen_buildings_dyn36),
+    mselect(p37_CESMkup[,YearsFrom2005,], all_in = ppfen_industry_dyn37))
+  
+  CESMkup <- setNames( CESMkup, paste0("Internal|CES Markup Cost|",getNames(CESMkup)," (tr US$2005/input unit)"))
+  
+  
+  out <- mbind(out, ces_price, CESMkup)
+  
+  }
 
   # add global prices
   map <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
@@ -547,7 +596,10 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       out[region,,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
     }
   }
+  
+  
 
+  
   # comment out this section for now as errors, debug this section if needed
   # # ---- debug information for industry/subsectors ----
   # if ('subsectors' == indu_mod & !is.null(q37_limit_secondary_steel_share.m)) {
