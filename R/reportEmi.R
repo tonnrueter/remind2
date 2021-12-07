@@ -1629,11 +1629,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         "Emi|CO2|w/o Land-Use Change (Mt CO2/yr)"))
   
 
-  # electricity and heat (IPCC 1A1a)
-  out <- mbind(out,
-               setNames(  out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"] 
-                        + out[, , "Emi|CO2|Energy|Supply|+|Heat w/ couple prod (Mt CO2/yr)"],
-                        "Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"))
+
   
   # total co2 emissions industry: energy emissions + process emissions (IPCC 1A2 + 2)
   out <- mbind(out,
@@ -1641,7 +1637,32 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         + out[, , "Emi|CO2|+|Industrial Processes (Mt CO2/yr)"],
                         "Emi|CO2|Industry (Mt CO2/yr)"))
 
+  
+  # energy supply emissions disaggregated into IPCC sectors (electricity and heat, fuels, fugitive emissions)
+  
+  
+  # # CO2 emissions
+  # electricity and heat (IPCC 1A1a)
+  out <- mbind(out,
+               setNames(  out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"] 
+                          + out[, , "Emi|CO2|Energy|Supply|+|Heat w/ couple prod (Mt CO2/yr)"],
+                          "Emi|CO2|Energy|Supply|++|Electricity and Heat (Mt CO2/yr)"))
+  
+  
+  # fuels (IPCC 1A1b+c) (refineries and other fuel transformations)
+  out <- mbind(out,
+               setNames(  out[, , "Emi|CO2|Energy|Supply|+|Solids w/ couple prod (Mt CO2/yr)"] 
+                          + out[, , "Emi|CO2|Energy|Supply|+|Liquids w/ couple prod (Mt CO2/yr)"]
+                          + out[, , "Emi|CO2|Energy|Supply|+|Gases w/ couple prod (Mt CO2/yr)"] 
+                          + out[, , "Emi|CO2|Energy|Supply|+|Hydrogen w/ couple prod (Mt CO2/yr)"],
+                          "Emi|CO2|Energy|Supply|++|Fuels (Mt CO2/yr)"))
+  
+  
+  
 
+  
+  
+  
   ## 8. Emissions w/o non-energy use ----
   # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
