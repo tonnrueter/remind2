@@ -24,6 +24,7 @@
 #' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
+#' @importFrom utils tail
 #' 
 #' 
 #' 
@@ -573,8 +574,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
         setNames(dimSums(out[,, gsub("^FE", "UE", carrierBuildHeating)],
                          dim = 3, na.rm = TRUE),
                  "UE|Buildings|Heating (EJ/yr)"))
-  
-    
+    }
   } else if (buil_mod %in% c("services_putty", "services_with_capital")){
     
     # sets
