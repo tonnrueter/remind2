@@ -533,6 +533,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   }
 
   if (buil_mod == "simple") {
+    # PPF in REMIND and the respective reporting variables
     carrierBuild <- c(
       feelcb  = "FE|Buildings|non-Heating|Electricity|Conventional (EJ/yr)",
       feelrhb = "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)",
@@ -542,20 +543,25 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       fehob   = "FE|Buildings|Heating|Liquids (EJ/yr)",
       fegab   = "FE|Buildings|Heating|Gases (EJ/yr)",
       feh2b   = "FE|Buildings|Heating|Hydrogen (EJ/yr)")
+    # all final energy (FE) demand in buildings without coventional electricity
+    # is summed as heating
     carrierBuildHeating <- tail(carrierBuild, -1)
 
-    # FE reporting
+    # FE demand in buildings for each carrier
+    # (electricity split: heat pumps, resistive heating, rest)
     for (c in names(carrierBuild)) {
       out <- mbind(out, setNames(dimSums(vm_cesIO[,, c], dim = 3, na.rm = TRUE),
                                  carrierBuild[c]))
     }
 
-    # sum of FE heating
+    # sum of heating FE demand
     out <- mbind(out,
       setNames(dimSums(vm_cesIO[,, names(carrierBuildHeating)], dim = 3, na.rm = TRUE),
                "FE|Buildings|Heating (EJ/yr)"))
 
-    # UE reporting assumes fixed FE-UE efficiencies from EDGE-B
+    # UE demand in buildings for each carrier
+    # this buildings realisation only works on a FE level but the UE demand is
+    # estimated here assuming the FE-UE efficiency of the basline (from EDGE-B)  
     p36_uedemand_build <- readGDX(gdx, "p36_uedemand_build", react = "silent")[, t, ]
     if (!is.null(p36_uedemand_build)) {
       pm_fedemand <- readGDX(gdx, "pm_fedemand")[, t, ]
@@ -564,12 +570,11 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       feUeEff_build <- mbind(feUeEff_build,
         setNames(feUeEff_build[,, "fegab"], "feh2b")) 
       uedemand_build <- vm_cesIO[,, names(carrierBuild)] * feUeEff_build
-        
       getItems(uedemand_build, 3) <-
         gsub("^FE", "UE", carrierBuild)[getItems(uedemand_build, 3)]
       out <- mbind(out, uedemand_build)
       
-      # sum of UE heating
+      # sum of heating UE demand
       out <- mbind(out,
         setNames(dimSums(out[,, gsub("^FE", "UE", carrierBuildHeating)],
                          dim = 3, na.rm = TRUE),
