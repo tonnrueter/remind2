@@ -24,6 +24,7 @@
 #' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
+#' @importFrom utils tail
 #' 
 #' 
 #' 
@@ -526,39 +527,59 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   
   # ---- Buildings Module ----
   
-  p36_floorspace <- readGDX(gdx, "p36_floorspace")[, t, ]
+  p36_floorspace <- readGDX(gdx, "p36_floorspace", react = "silent")[, t, ]
   if (!is.null(p36_floorspace)) {
     out <- mbind(out, setNames(p36_floorspace, "Energy Service|Buildings|Floor Space (bn m2/yr)"))
   }
 
-  if (buil_mod %in% c("simple")){
-    
-    if("feelhpb" %in% getNames(vm_cesIO)){
-      out <- mbind(out,
-                   setNames(dimSums(vm_cesIO[,,"feelcb"],dim=3,na.rm=T),  "FE|Buildings|non-Heating|Electricity|Conventional (EJ/yr)"),
-                   
-                   setNames(dimSums(vm_cesIO[,,"feelrhb"],dim=3,na.rm=T), "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"feelhpb"],dim=3,na.rm=T), "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"feheb"],dim=3,na.rm=T),   "FE|Buildings|Heating|District Heating (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"fesob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Solids (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"fehob"],dim=3,na.rm=T),   "FE|Buildings|Heating|Liquids (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"fegab"],dim=3,na.rm=T),   "FE|Buildings|Heating|Gases (EJ/yr)"),
-                   setNames(dimSums(vm_cesIO[,,"feh2b"],dim=3,na.rm=T),   "FE|Buildings|Heating|Hydrogen (EJ/yr)")
-      )
-      out <- mbind(out,
-                   setNames(
-                     out[, , "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|District Heating (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|Solids (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|Liquids (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|Gases (EJ/yr)"] +
-                       out[, , "FE|Buildings|Heating|Hydrogen (EJ/yr)"],
-                     "FE|Buildings|Heating (EJ/yr)"
-                   )
-      )
+  if (buil_mod == "simple") {
+    # PPF in REMIND and the respective reporting variables
+    carrierBuild <- c(
+      feelcb  = "FE|Buildings|non-Heating|Electricity|Conventional (EJ/yr)",
+      feelrhb = "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)",
+      feelhpb = "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)",
+      feheb   = "FE|Buildings|Heating|District Heating (EJ/yr)",
+      fesob   = "FE|Buildings|Heating|Solids (EJ/yr)",
+      fehob   = "FE|Buildings|Heating|Liquids (EJ/yr)",
+      fegab   = "FE|Buildings|Heating|Gases (EJ/yr)",
+      feh2b   = "FE|Buildings|Heating|Hydrogen (EJ/yr)")
+    # all final energy (FE) demand in buildings without coventional electricity
+    # is summed as heating
+    carrierBuildHeating <- tail(carrierBuild, -1)
+
+    # FE demand in buildings for each carrier
+    # (electricity split: heat pumps, resistive heating, rest)
+    for (c in names(carrierBuild)) {
+      out <- mbind(out, setNames(dimSums(vm_cesIO[,, c], dim = 3, na.rm = TRUE),
+                                 carrierBuild[c]))
     }
-    
+
+    # sum of heating FE demand
+    out <- mbind(out,
+      setNames(dimSums(vm_cesIO[,, names(carrierBuildHeating)], dim = 3, na.rm = TRUE),
+               "FE|Buildings|Heating (EJ/yr)"))
+
+    # UE demand in buildings for each carrier
+    # this buildings realisation only works on a FE level but the UE demand is
+    # estimated here assuming the FE-UE efficiency of the basline (from EDGE-B)  
+    p36_uedemand_build <- readGDX(gdx, "p36_uedemand_build", react = "silent")[, t, ]
+    if (!is.null(p36_uedemand_build)) {
+      pm_fedemand <- readGDX(gdx, "pm_fedemand")[, t, ]
+      feUeEff_build <- p36_uedemand_build[,, names(carrierBuild)] /
+        pm_fedemand[,, names(carrierBuild)]
+      feUeEff_build <- mbind(feUeEff_build,
+        setNames(feUeEff_build[,, "fegab"], "feh2b")) 
+      uedemand_build <- vm_cesIO[,, names(carrierBuild)] * feUeEff_build
+      getItems(uedemand_build, 3) <-
+        gsub("^FE", "UE", carrierBuild)[getItems(uedemand_build, 3)]
+      out <- mbind(out, uedemand_build)
+      
+      # sum of heating UE demand
+      out <- mbind(out,
+        setNames(dimSums(out[,, gsub("^FE", "UE", carrierBuildHeating)],
+                         dim = 3, na.rm = TRUE),
+                 "UE|Buildings|Heating (EJ/yr)"))
+    }
   } else if (buil_mod %in% c("services_putty", "services_with_capital")){
     
     # sets
