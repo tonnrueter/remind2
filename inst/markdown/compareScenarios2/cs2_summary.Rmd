@@ -1,0 +1,107 @@
+# Summary
+
+## GHG Emissions
+
+```{r, fig.width=10, fig.height=6}
+tot <- "Emi|GHG"
+items <- c(
+  rev(c("Emi|CO2|Energy",
+    "Emi|CO2|Industrial Processes",
+    "Emi|CO2|Land-Use Change",
+    "Emi|GHG|CH4",
+    "Emi|GHG|N2O",
+    "Emi|GHG|F-Gases")),
+  "Emi|CO2|non-BECCS CDR")
+
+data %>% 
+  filter(variable %in% items) ->
+  d
+
+d %>% 
+  filter(region != mainReg) %>% 
+  mipArea(scales="free_y", total = F) + 
+  theme(legend.position="none") + 
+  scale_y_continuous("Emi|GHG (Mt CO2eq/yr)") +
+  geom_line(data = data %>% filter(region != mainReg, variable == tot), 
+    mapping = aes(period, value),
+    size=1.3) ->
+  p1
+
+d %>% 
+  filter(region == mainReg, period %in% y_bar) %>% 
+  mipBarYearData() +
+  theme(legend.position="none") ->
+  p2
+
+d %>% 
+  filter(region != mainReg, period %in% y_bar) %>% 
+  mipBarYearData() +
+  guides(fill=guide_legend(ncol=3)) ->
+  p3
+
+grid.arrange(
+  p1, p2, p3,
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
+```
+
+```{r}
+d %>% 
+  filter(region != mainReg) %>% 
+  mipArea(scales="free_y", total = F)
+```
+
+## GHG by sector (w/ gross emissions, excl. BECCS)
+
+```{r}
+tot <-"Emi|GHG"
+items <- c("Emi|GHG|Gross|Energy|Supply|Electricity",
+  "Emi|GHG|Gross|Energy|Supply|Non-electric",
+  "Emi|GHG|Energy|Demand|Transport",
+  "Emi|GHG|Energy|Demand|Buildings",
+  "Emi|GHG|Gross|Energy|Demand|Industry",
+  "Emi|GHG|Industrial Processes",
+  "Emi|GHG|Agriculture",
+  "Emi|GHG|Land-Use Change",
+  "Emi|GHG|Waste",
+  "Emi|GHG|F-Gas",
+  "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|DACCS",
+  "Emi|CO2|CDR|EW")
+
+data %>% 
+  filter(variable %in% items) ->
+  d
+
+d %>% 
+  filter(region != mainReg) %>% 
+  mipArea(scales="free_y", total = F) + 
+  theme(legend.position="none") + 
+  scale_y_continuous("Emi|GHG (Mt CO2eq/yr)") +
+  geom_line(data = data %>% filter(region != mainReg, variable == tot), 
+    mapping = aes(period, value),
+    size=1.3) ->
+  p1
+
+d %>% 
+  filter(region == mainReg, period %in% y_bar) %>% 
+  mipBarYearData() +
+  theme(legend.position="none") ->
+  p2
+
+d %>% 
+  filter(region != mainReg, period %in% y_bar) %>% 
+  mipBarYearData() +
+  guides(fill=guide_legend(ncol=3)) ->
+  p3
+
+grid.arrange(
+  p1, p2, p3,
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
+
+d %>% 
+  filter(region != mainReg) %>% 
+  mipArea(scales="free_y", total = F)
+```
+

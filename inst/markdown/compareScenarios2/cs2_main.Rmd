@@ -1,0 +1,58 @@
+---
+title: "Compare Scenarios 2"
+output:
+  html_document:
+    toc: yes
+    number_sections: yes
+  pdf_document:
+    toc: yes
+    number_sections: yes
+params:
+  mif: !r c("C:/Users/cschoetz/Documents/compareScenarios/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif", "C:/Users/cschoetz/Documents/compareScenarios/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif")
+  hist: "C:/Users/cschoetz/Documents/compareScenarios/mif/REMIND/historical.mif"
+  y: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
+  y_hist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
+  y_bar: !r c(2010, 2030, 2050, 2100)
+  reg: !r NULL
+  mainReg: "GLO"
+---
+
+```{r includes, include=FALSE}
+INCLUDE_SUMMARY <- TRUE
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  fig.width=10, 
+  fig.height=6
+)
+```
+
+```{r, include=FALSE}
+library(mip)
+library(tidyverse)
+library(quitte)
+library(remind2)
+library(gridExtra)
+```
+
+```{r read mifs, include=FALSE}
+# TODO: factors vs character; read.quitte vs as.quitte(read.report())
+data <- 
+  read.quitte(params$mif, factors=FALSE) %>% 
+  mutate(variable = str_remove(variable, "\\+{1,2}\\|")) # In the variable names, remove all occurrences of one or two consecutive "+" followed by "|".
+histData <- 
+  read.quitte(params$hist, factors=FALSE) %>% 
+  mutate(variable = str_remove(variable, "\\+{1,2}\\|"))
+mainReg <- params$mainReg
+mainReg <- "World" # TODO: World vs GLO
+y_bar <- params$y_bar
+```
+
+
+
+```{r summary, child=if (INCLUDE_SUMMARY) 'cs2_summary.Rmd'}
+```
+
