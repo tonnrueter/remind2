@@ -8,8 +8,7 @@
 #' @param y numerical(n). Years for which scenario data will be shown.
 #' @param y_hist numerical(n). Years for which historical data will be shown.
 #' @param y_bar numerical(n). Years to be shown in bar plots.
-#' @param reg character(n). Region(s) in focus, reg="all_reg" shows all regions if the mifs contain different regions. TODO NULL
-#' @param mainReg character(1). Region to be underlined.
+#' @param reg character(n) or NULL. Regions to be shown. NULL for all.
 #' @param outputFile character(1). File name of the output document to be created (without extension).
 #' @param outputDir character(1). The directory where the output document and intermediary files are created.
 #' @param outputFormat character(1). "html_document" or "pdf_document".
@@ -23,7 +22,6 @@ compareScenarios2 <- function(mif,
   y_hist = c(seq(1960, 2020, 1), seq(2025, 2100, 5)),
   y_bar = c(2010, 2030, 2050, 2100),
   reg = NULL,
-  mainReg = "GLO",
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
   outputFormat = "html_document",
@@ -34,10 +32,8 @@ compareScenarios2 <- function(mif,
     y = y,
     y_hist = y_hist,
     y_bar = y_bar,
-    reg = reg,
-    mainReg = mainReg
-  )
-  # should be called once for each output format. There is a problem with the associated output dirs when output format has length greater than 1 
+    reg = reg)
+  # TODO: should be called once for each output format. There is a problem with the associated output dirs when output format has length greater than 1 
   rmarkdown::render(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"),
     intermediates_dir = outputDir,
@@ -46,6 +42,5 @@ compareScenarios2 <- function(mif,
     output_format = outputFormat,
     params = yaml_params,
     envir = new.env(),
-    ...
-  )
+    ...)
 }

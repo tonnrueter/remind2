@@ -14,19 +14,20 @@ params:
   y_hist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   y_bar: !r c(2010, 2030, 2050, 2100)
   reg: !r NULL
-  mainReg: "GLO"
 ---
+
 
 ```{r includes, include=FALSE}
 INCLUDE_SUMMARY <- TRUE
+INCLUDE_MACRO <- FALSE
 ```
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = FALSE,
-  fig.width=10, 
-  fig.height=6
+  error = TRUE,
+  fig.width = 14, 
+  fig.height = 8
 )
 ```
 
@@ -38,21 +39,43 @@ library(remind2)
 library(gridExtra)
 ```
 
-```{r read mifs, include=FALSE}
-# TODO: factors vs character; read.quitte vs as.quitte(read.report())
-data <- 
-  read.quitte(params$mif, factors=FALSE) %>% 
-  mutate(variable = str_remove(variable, "\\+{1,2}\\|")) # In the variable names, remove all occurrences of one or two consecutive "+" followed by "|".
-histData <- 
-  read.quitte(params$hist, factors=FALSE) %>% 
-  mutate(variable = str_remove(variable, "\\+{1,2}\\|"))
-mainReg <- params$mainReg
-mainReg <- "World" # TODO: World vs GLO
+```{r read mifs}
+read.quitte(params$mif, factors=FALSE) %>% 
+  # In the variable names, remove all occurrences of one or two consecutive "+" followed by "|".
+  mutate(variable = str_remove(variable, "\\+{1,2}\\|")) -> 
+  data
+read.quitte(params$hist, factors=FALSE) %>% 
+  mutate(variable = str_remove(variable, "\\+{1,2}\\|")) ->
+  histData
+
+# filter regions
+if (!is.null(params$reg)) {
+  data %>% 
+    filter(region %in% params$reg) ->
+    data
+  histData %>% 
+    filter(region %in% params$reg) ->
+    histData
+}
+
+# filter years
+data %>% 
+  filter(period %in% params$y) ->
+  data
+histData %>% 
+  filter(period %in% params$y_hist) ->
+  histData
+
+# Define parameters for use in plotting.
+mainReg <- "World"
 y_bar <- params$y_bar
 ```
 
 
 
 ```{r summary, child=if (INCLUDE_SUMMARY) 'cs2_summary.Rmd'}
+```
+
+```{r summary, child=if (INCLUDE_MACRO) 'cs2_macro.Rmd'}
 ```
 
