@@ -4,17 +4,17 @@
 # NOTE: regex to remove units: "([^(]+) \([^)]+\)+" replace by "\1"
 # NOTE: filtering and ordering scheme
 data %>% 
-    filter(variable %in% items) %>% 
-    #mutate(variable = fct_relevel(variable, items)) %>% # order as in items
-    #mutate(variable = fct_reorder2(variable, period, value, first2, .desc=FALSE)) %>% # order by value in first year
-    #mutate(variable = fct_reorder(variable, value, sum)) %>% # order by area
-    mutate(variable = fct_reorder(variable, value, sum)) ->
-    d
+  filter(variable %in% items) %>% 
+  #mutate(variable = fct_relevel(variable, items)) %>% # order as in items
+  #mutate(variable = fct_reorder2(variable, period, value, first2, .desc=FALSE)) %>% # order by value in first year
+  #mutate(variable = fct_reorder(variable, value, sum)) %>% # order by area
+  mutate(variable = fct_reorder(variable, value, sum)) ->
+  d
 ```
 
 
 ```{r}
-summary_default_plot <- function(tot, items) {
+summary_default_plot <- function(items, tot=NULL) {
   data %>% 
     filter(variable %in% items) %>% 
     mutate(variable = fct_reorder(variable, value, sum)) ->
@@ -22,13 +22,16 @@ summary_default_plot <- function(tot, items) {
   
   d %>% 
     filter(region == mainReg) %>% 
-    mipArea(scales="free_y", total = F) + 
-    theme(legend.position="none") + 
-    geom_line(
-      data = data %>% filter(region == mainReg, variable == tot), 
-      mapping = aes(period, value),
-      size=1.3) ->
+    mipArea(scales="free_y", total = is.null(tot)) + 
+    theme(legend.position="none") ->
     p1
+  if (!is.null(tot)) {
+    p1 <- p1 +
+      geom_line(
+        data = data %>% filter(region == mainReg, variable == tot), 
+        mapping = aes(period, value),
+        size=1.3)
+  }
   
   d %>% 
     filter(region == mainReg, period %in% y_bar) %>% 
@@ -44,7 +47,7 @@ summary_default_plot <- function(tot, items) {
   
   d %>% 
     filter(region != mainReg) %>% 
-    mipArea(scales="free_y", total = F) ->
+    mipArea(scales="free_y", total = is.null(tot)) ->
     p4
   
   return(list(p1, p2, p3, p4))
@@ -58,6 +61,36 @@ data %>%
   mutate(population = value * 1e6) %>% # unit originally is million, now is 1
   select(!value) -> 
   dataPop
+data %>% 
+  filter(variable == "GDP|PPP") %>% 
+  select(model, scenario, region, period, value) %>% 
+  rename(gdp = value) -> 
+  dataGDP
+
+variables <- unique(data$variable)
+
+# models for historical data
+hist_filter <- tribble(
+  ~variable, ~model,
+  "Population", "WDI",
+  "GDP|PPP", "James_IMF",
+  "FE", "IEA",
+  "FE|Transport", "IEA",
+  "FE|Buildings", "IEA",
+  "FE|Industry", "IEA")
+
+histData %>% 
+  filter(variable == "Population", model == "WDI") %>% 
+  select(model, scenario, region, period, value) %>% 
+  mutate(population = value * 1e6) %>% # unit originally is million, now is 1
+  select(!value) -> 
+  histPop
+
+histData %>% 
+  filter(variable == "GDP|PPP", model == "James_IMF") %>% 
+  select(model, scenario, region, period, value) %>% 
+  rename(gdp = value) -> 
+  histGDP
 ```
 
 
@@ -75,7 +108,7 @@ items <- c(
   "Emi|GHG|F-Gases",
   "Emi|CO2|non-BECCS CDR")
 
-p <- summary_default_plot(tot, items)
+p <- summary_default_plot(items, tot)
 
 grid.arrange(
   p[[1]], p[[2]], p[[3]],
@@ -103,7 +136,7 @@ items <- c("Emi|GHG|Gross|Energy|Supply|Electricity",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW")
 
-p <- summary_default_plot(tot, items)
+p <- summary_default_plot(items, tot)
 
 grid.arrange(
   p[[1]], p[[2]], p[[3]],
@@ -128,7 +161,7 @@ items <- c("Emi|CO2|Land-Use Change",
            "Emi|CO2|CDR|DACCS",
            "Emi|CO2|CDR|EW")
            
-p <- summary_default_plot(tot, items)
+p <- summary_default_plot(items, tot)
 
 grid.arrange(
   p[[1]], p[[2]], p[[3]],
@@ -152,7 +185,7 @@ items <- c(
   "Emi|CO2|Cumulated|CDR|DACCS",
   "Emi|CO2|Cumulated|CDR|EW")
 
-p <- summary_default_plot(tot, items)
+p <- summary_default_plot(items, tot)
 
 grid.arrange(
   p[[1]], p[[2]], p[[3]],
@@ -171,40 +204,14 @@ items <- c("FE|CDR",
            "FE|Buildings",
            "FE|Industry")
 
-data %>% 
-  filter(variable %in% items) %>% 
-  mutate(variable = fct_reorder(variable, value, sum)) ->
-  d
-
-d %>% 
-  filter(region == mainReg) %>% 
-  mipArea(scales="free_y", total = T) + 
-  theme(legend.position="none") ->
-  p1
-
-d %>% 
-  filter(region == mainReg, period %in% y_bar) %>% 
-  mipBarYearData() +
-  theme(legend.position="none") ->
-  p2
-
-d %>% 
-  filter(region != mainReg, period %in% y_bar) %>% 
-  mipBarYearData() +
-  guides(fill=guide_legend(ncol=3)) ->
-  p3
-
-d %>% 
-  filter(region != mainReg) %>% 
-  mipArea(scales="free_y", total = T) ->
-  p4
+p <- summary_default_plot(items)
 
 grid.arrange(
-  p1, p2, p3,
+  p[[1]], p[[2]], p[[3]],
   layout_matrix = rbind(c(1, 3),
                         c(2, 3)))
 
-p4
+p[[4]]
 ```
 
 ## FE per capita (by sector, time domain, area plot)
@@ -220,7 +227,7 @@ data %>%
   left_join(dataPop) %>% 
   mutate(
     value = value / population * 1e9,
-    variable = paste0(variable, "p. Cap."),
+    variable = paste0(variable, " pCap"),
     unit = "GJ/yr" # from EJ to GJ
     ) %>%
   mutate(variable = fct_reorder(variable, value, sum)) ->
@@ -259,258 +266,199 @@ p4
 
 ## FE per capita (by sector, time domain, line graph)
 
-```{r FE per capita (by sector, time domain, line graph), eval=FALSE}
+```{r FE per capita (by sector, time domain, line graph)}
 items <- c(
   "FE",
   "FE|Transport",
   "FE|Buildings",
   "FE|Industry")
 
-p <- lineplots_perCap(
-  data=data,
-  vars=items,
-  percap_factor=1e3,
-  ylabstr="FE per Cap. (GJ/yr)",
-  global=T, histdata_plot=histData)
+data %>% 
+  filter(variable %in% items) %>% 
+  left_join(dataPop) %>% 
+  mutate(
+    value = value / population * 1e9,
+    variable = paste0(variable, " pCap"),
+    unit = "GJ/yr") ->
+  d
+histData %>% 
+  filter(variable %in% items) %>% 
+  semi_join(hist_filter) %>% 
+  left_join(histPop %>% select(region, period, population), by=c("region", "period")) %>% 
+  mutate(
+    value = value / population * 1e9,
+    variable = paste0(variable, " pCap"),
+    unit = "GJ/yr") %>% 
+  filter(!is.na(value)) ->
+  h
 
-if("sr15data" %in% rownames(installed.packages()) & is.character(sr15marker_RCP)){
+d %>% 
+  filter(region == mainReg) %>% 
+  ggplot(aes(period, value)) + 
+  facet_wrap(vars(variable), scales="free_y") +
+  geom_line(aes(linetype=scenario)) +
+  geom_point(data = h %>% filter(region == mainReg), aes(shape = model)) +
+  ylab("FE pCap (GJ/yr)")
 
-  variable <- Population <- `FE|Transport` <- `FE|Buildings` <- `FE|Industry` <- NULL
-  region <- period <- `GDP|PPP` <- model <- value <- scenario <- FE <- NULL
-
-  ## get marker scenario data
-  marker_items <- c(
-    "Final Energy",
-    paste0("Final Energy|", c("Industry", "Residential and Commercial", "Transportation")),
-    "Population")
-  sr15dt <- as.data.table(sr15data::sr15data)[
-    region == "World"][
-  , region := mainReg][
-    data.table(period=y), on="period"]
-  sr15scens <- data.table(scenario=paste0("SSP", 1:5, "-", sr15marker_RCP),
-                          model=c("IMAGE 3.0.1",
-                                  "MESSAGE-GLOBIOM 1.0",
-                                  "AIM/CGE 2.0",
-                                  "GCAM 4.2",
-                                  "REMIND-MAgPIE 1.5"))
-  markers <- sr15dt[sr15scens, on=c("model", "scenario")][
-    variable %in% marker_items][
-  , variable := gsub("Final Energy", "FE", variable)][
-  , variable := gsub("Transportation", "Transport", variable)][
-  , variable := gsub("Residential and Commercial", "Buildings", variable)][
-  , scenario := gsub("Baseline", "Base", scenario)][, "unit" := NULL]
-
-  markers_wide <- data.table::dcast(markers, ... ~ variable)
-
-  markers_wide[, `:=`("FE|Transport" = `FE|Transport`/Population*1e3,
-                      "FE|Buildings" = `FE|Buildings`/Population*1e3,
-                      "FE|Industry" = `FE|Industry`/Population*1e3,
-                      "FE" = `FE`/Population*1e3), by=c("model")]
-
-  markers <- data.table::melt(markers_wide, id.vars=c("model", "scenario", "region", "period"))[
-                           variable != "Population"]
-
-  p <- p + geom_line(data=markers, aes(x=period, y=value, group=scenario, color=scenario),
-                     size=2, alpha=1/4)
-
-}
-
-swfigure(sw,print,p,sw_option="height=9,width=16")
-
-## Second page, with color coded regions
-
-p <- lineplots_perCap(data, items, 1e3, "FE per Cap. (GJ/yr)", global = F, histdata_plot = histData)
-swfigure(sw,print,p,sw_option="height=9,width=16")
-
-swlatex(sw,"\\twocolumn")
-
-
-## ---- FE per capita by sector (GDP domain)----
+d %>% 
+  filter(region != mainReg) %>% 
+  ggplot(aes(period, value, color=region)) + 
+  facet_wrap(vars(variable), scales="free_y") +
+  geom_line(aes(linetype=scenario)) +
+  geom_point(data = h %>% filter(region != mainReg), aes(shape = model)) +
+  ylab("FE pCap (GJ/yr)")
 ```
 
+## FE per capita (by sector, GDP)
 
-```{r eval=FALSE}
-swlatex(sw,"\\onecolumn")
-swlatex(sw,"\\subsection{FE per capita (by sector, GDP)}")
+```{r FE per capita by sector (GDP domain)}
+items <- c(
+  "FE|Transport",
+	"FE|Buildings",
+  "FE|Industry")
 
-items<- c(#"FE|CDR" ,
-		"FE|Transport",
-		#"FE|Transport|w/o Bunkers"
-          "FE|Buildings",
-          "FE|Industry")
+data %>% 
+  filter(variable %in% items) %>% 
+  left_join(dataPop) %>% 
+  mutate(
+    value = value / population * 1e9,
+    variable = paste0(variable, " pCap"),
+    unit = "GJ/yr") %>% 
+  left_join(dataGDP) %>% 
+  mutate(gdp = gdp / population * 1e6) -> # *1e6 converts from billion US$2005 to kUS$2005
+  d
 
-p <- lineplots_perCap(data, items, 1e3, "FE per Cap. (GJ/yr)", global = T,
-                      per_gdp = T, histdata_plot = histData)
-swfigure(sw,print,p,sw_option="height=9,width=16")
+histData %>% 
+  filter(variable %in% items) %>% 
+  semi_join(hist_filter) %>% 
+  left_join(histPop %>% select(region, period, population), by=c("region", "period")) %>% 
+  mutate(
+    value = value / population * 1e9,
+    variable = paste0(variable, " pCap"),
+    unit = "GJ/yr") %>% 
+  filter(!is.na(value)) %>% 
+  left_join(histGDP %>% select(region, period, gdp)) %>% 
+  mutate(gdp = gdp / population * 1e6) -> # *1e6 converts from billion US$2005 to kUS$2005
+  h
 
-p <- lineplots_perCap(data, items, 1e3, "FE per Cap. (GJ/yr)", per_gdp = T,
-                      histdata_plot = histData)
-swfigure(sw,print,p,sw_option="height=9,width=16")
+d %>% 
+  filter(region == mainReg) %>% 
+  ggplot(aes(gdp, value)) + 
+  facet_wrap(vars(variable), scales="free_y") +
+  geom_line(aes(linetype=scenario)) +
+  geom_point(data = h %>% filter(region == mainReg), aes(shape = model)) +
+  ylab("FE pCap (GJ/yr)") + xlab("GDP PPP pCap (kUS$2005)")
 
-swlatex(sw,"\\twocolumn")
+d %>% 
+  filter(region != mainReg) %>% 
+  ggplot(aes(gdp, value, color=region)) + 
+  facet_wrap(vars(variable), scales="free_y") +
+  geom_line(aes(linetype=scenario)) +
+  geom_point(data = h %>% filter(region != mainReg), aes(shape = model)) +
+  ylab("FE pCap (GJ/yr)") + xlab("GDP PPP pCap (kUS$2005)")
 ```
 
+## FE by carrier
 
-```{r eval=FALSE}
-## ---- FE by carrier ----
+```{r FE by carrier}
+items <- c("FE|Solids",
+           "FE|Liquids",
+           "FE|Gases",
+           "FE|Heat",
+           "FE|Hydrogen",
+           "FE|Electricity")
 
-swlatex(sw,"\\subsection{FE by carrier}")
+p <- summary_default_plot(items)
 
-items<- c("FE|Solids",
-          "FE|Liquids",
-          "FE|Gases",
-          "FE|Heat",
-          "FE|Hydrogen",
-          "FE|Electricity")
-var <- data[,,intersect(items,getNames(data,dim=3))]
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
-
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
-
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+p[[4]]
 ```
 
+## FE Industry by carrier
 
-```{r eval=FALSE}
-## ---- FE Industry by carrier ----
+```{r FE Industry by carrier}
+items <- c("FE|Industry|Solids",
+           "FE|Industry|Liquids",
+           "FE|Industry|Gases",
+           "FE|Industry|Heat",
+           "FE|Industry|Hydrogen",
+           "FE|Industry|Electricity")
 
-swlatex(sw,"\\subsection{FE Industry by carrier}")
+p <- summary_default_plot(items)
 
-items<- c("FE|Industry|Solids",
-          "FE|Industry|Liquids",
-          "FE|Industry|Gases",
-          "FE|Industry|Heat",
-          "FE|Industry|Hydrogen",
-          "FE|Industry|Electricity")
-var <- data[,,intersect(items,getNames(data,dim=3))]
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
-
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
-
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+p[[4]]
 ```
 
+## FE Buildings by carrier
 
-```{r eval=FALSE}
-## ---- FE Buildings by carrier ----
-
-swlatex(sw,"\\subsection{FE Buildings by carrier}")
-
+```{r FE Buildings by carrier}
 items<- c("FE|Buildings|Solids",
           "FE|Buildings|Liquids",
           "FE|Buildings|Gases",
           "FE|Buildings|Heat",
           "FE|Buildings|Hydrogen",
           "FE|Buildings|Electricity")
-var <- data[,,intersect(items,getNames(data,dim=3))]
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
+p <- summary_default_plot(items)
 
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+p[[4]]
 ```
 
+## FE Transport by carrier
 
-```{r eval=FALSE}
-## ---- FE Transport by carrier ----
-
-swlatex(sw,"\\subsection{FE Transport by carrier}")
-items<- c (
+```{r FE Transport by carrier}
+items <- c(
   "FE|Transport|Electricity",
   "FE|Transport|Hydrogen",
   "FE|Transport|Liquids",
-#"FE|Transport|Liquids|w/o Bunkers",
-#"FE|Transport|Liquids|Bunkers",
-  "FE|Transport|Gases"
-)
+  "FE|Transport|Gases")
 
-var <- data[,,intersect(items,getNames(data,dim=3))]
+p <- summary_default_plot(items)
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
-
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+p[[4]]
 ```
 
+## FE CDR by carrier
 
-```{r eval=FALSE}
-## ---- FE CDR by carrier ----
 
-swlatex(sw,"\\subsection{FE CDR by carrier}")
-
+```{r FE CDR by carrier}
 items<- c("FE|CDR|Liquids",
           "FE|CDR|Gases",
           "FE|CDR|Hydrogen",
           "FE|CDR|Electricity")
-var <- data[,,intersect(items,getNames(data,dim=3))]
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
+p <- summary_default_plot(items)
 
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+p[[4]]
 ```
 
+## SE Electricity by carrier
 
-```{r eval=FALSE}
-## ---- SE Electricity by carrier ----
-
-swlatex(sw,"\\subsection{SE Electricity by carrier}")
-
+```{r SE Electricity by carrier, eval=FALSE}
 items<- c ("SE|Electricity|Coal|w/ CCS",
            "SE|Electricity|Coal|w/o CCS",
            "SE|Electricity|Oil",
@@ -531,7 +479,6 @@ if ("SE|Electricity|Wind|Offshore" %in% magclass::getNames(data, dim = 3)) {
                             "SE|Electricity|Wind|Offshore"))
  } else {
    items <- append(items, c( "SE|Electricity|Wind"))
-   # var[,, "SE|Electricity|Wind|Onshore"] <- var[,,"SE|Electricity|Wind"]
  }
 
 var <- data[,,intersect(items,getNames(data,dim=3))]
@@ -541,20 +488,17 @@ var[,,"SE|Electricity|Hydrogen"] <- var[,,"SE|Electricity|Hydrogen"] / 0.4
 
 p <- mipArea(var[mainReg,,],scales="free_y")
 p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
 
 p <- mipBarYearData(var[mainReg,y_bar,])
 p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
 
 p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
 
-swlatex(sw,"\\onecolumn")
 p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+```
 
+
+```{r SE Wind Onshore, eval=FALSE}
 if ("SE|Electricity|Wind|Offshore" %in% magclass::getNames(data, dim = 3)) {
   
   swlatex(sw,"\\subsubsection{SE Wind Onshore}")
@@ -579,74 +523,51 @@ if ("SE|Electricity|Wind|Offshore" %in% magclass::getNames(data, dim = 3)) {
 ```
 
 
-```{r eval=FALSE}
-## ---- SE non-electric by carrier ----
+## SE non-electric by carrier
 
-swlatex(sw,"\\subsection{SE non-electric by carrier}")
+```{r SE non-electric by carrier, eval=FALSE}
 ## XXX
 ```
 
+## PE by sector
 
-```{r eval=FALSE}
-## ---- PE by sector ----
-
-swlatex(sw,"\\subsection{PE by sector}")
+```{r PE by sector, eval=FALSE}
 ## XXX
 ```
 
+## PE by carrier
 
-```{r eval=FALSE}
-## ---- PE by carrier ----
+```{r PE by carrier}
+items <- c("PE|Coal",
+           "PE|Oil",
+           "PE|Gas",
+           "PE|Biomass",
+           "PE|Nuclear",
+           "PE|Solar",
+           "PE|Wind",
+           "PE|Hydro",
+           "PE|Geothermal")
 
-swlatex(sw,"\\subsection{PE by carrier}")
+p <- summary_default_plot(items)
 
-items <-c("PE|Coal",
-          "PE|Oil",
-          "PE|Gas",
-          "PE|Biomass",
-          "PE|Nuclear",
-          "PE|Solar",
-          "PE|Wind",
-          "PE|Hydro",
-          "PE|Geothermal")
-var <- data[,,intersect(items,getNames(data,dim=3))]
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=3.5,width=7")
-
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=4.5,width=7")
-
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
-swfigure(sw,print,p,sw_option="height=8,width=16")
-swlatex(sw,"\\twocolumn")
+p[[4]]
 ```
 
 
-```{r eval=FALSE}
-## ---- CO2 Prices ----
+## CO2 Prices
 
-swlatex(sw,"\\subsection{CO2 Prices}")
-
+```{r CO2 Prices, eval=FALSE}
 p <- mipLineHistorical(data[mainReg,,"Price|Carbon"],x_hist=NULL,
                        ylab='Price|Carbon [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
 p <- p + theme(legend.position="none")
-swfigure(sw,print,p,sw_option="height=8,width=8")
-#p <- mipLineHistorical(data[mainReg,,"Price|Carbon"],x_hist=NULL,
-#                       ylab='Price|Carbon_log [US$2005/t CO2]',ybreaks=c(20,30,40,50,60,75,100,200,500,1000,2000,3000),
-#                       ylim=c(0,3000),ylog=TRUE)
-#swfigure(sw,print,p,sw_option="height=4.5,width=7")
+
 p <- mipLineHistorical(data[,,"Price|Carbon"][mainReg,,,invert=TRUE],x_hist=NULL,
                        ylab='Price|Carbon [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-swfigure(sw,print,p,sw_option="height=9,width=8")
-
-swlatex(sw,"\\onecolumn")
 
 p <- mipLineHistorical(
   data[,,"Price|Carbon"][
@@ -658,7 +579,6 @@ p <- mipLineHistorical(
   facet.dim="scenario",
   facet.ncol=2) +
   theme(legend.position="right")
-swfigure(sw,print,p,sw_option="height=9,width=16")
 
 d <- data[mainReg,,"Price|Carbon|ETS"]
 if (isTRUE(any(d!=0))) {

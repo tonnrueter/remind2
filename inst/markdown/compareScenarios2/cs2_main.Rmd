@@ -26,6 +26,7 @@ INCLUDE_MACRO <- FALSE
 knitr::opts_chunk$set(
   echo = FALSE,
   error = TRUE,
+  message = FALSE,
   fig.width = 14, 
   fig.height = 8
 )
