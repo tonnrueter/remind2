@@ -1,99 +1,5 @@
 # Summary
 
-```{r eval=FALSE}
-# NOTE: regex to remove units: "([^(]+) \([^)]+\)+" replace by "\1"
-# NOTE: filtering and ordering scheme
-data %>% 
-  filter(variable %in% items) %>% 
-  #mutate(variable = fct_relevel(variable, items)) %>% # order as in items
-  #mutate(variable = fct_reorder2(variable, period, value, first2, .desc=FALSE)) %>% # order by value in first year
-  #mutate(variable = fct_reorder(variable, value, sum)) %>% # order by area
-  mutate(variable = fct_reorder(variable, value, sum)) ->
-  d
-```
-
-
-```{r}
-summary_default_plot <- function(items, tot=NULL) {
-  data %>% 
-    filter(variable %in% items) %>% 
-    mutate(variable = fct_reorder(variable, value, sum)) ->
-    d
-  
-  d %>% 
-    filter(region == mainReg) %>% 
-    mipArea(scales="free_y", total = is.null(tot)) + 
-    theme(legend.position="none") ->
-    p1
-  if (!is.null(tot)) {
-    p1 <- p1 +
-      geom_line(
-        data = data %>% filter(region == mainReg, variable == tot), 
-        mapping = aes(period, value),
-        size=1.3)
-  }
-  
-  d %>% 
-    filter(region == mainReg, period %in% y_bar) %>% 
-    mipBarYearData() +
-    theme(legend.position="none") ->
-    p2
-  
-  d %>% 
-    filter(region != mainReg, period %in% y_bar) %>% 
-    mipBarYearData() +
-    guides(fill=guide_legend(ncol=3)) ->
-    p3
-  
-  d %>% 
-    filter(region != mainReg) %>% 
-    mipArea(scales="free_y", total = is.null(tot)) ->
-    p4
-  
-  return(list(p1, p2, p3, p4))
-}
-```
-
-```{r}
-data %>% 
-  filter(variable == "Population") %>% 
-  select(model, scenario, region, period, value) %>% 
-  mutate(population = value * 1e6) %>% # unit originally is million, now is 1
-  select(!value) -> 
-  dataPop
-data %>% 
-  filter(variable == "GDP|PPP") %>% 
-  select(model, scenario, region, period, value) %>% 
-  rename(gdp = value) -> 
-  dataGDP
-
-variables <- unique(data$variable)
-
-# models for historical data
-hist_filter <- tribble(
-  ~variable, ~model,
-  "Population", "WDI",
-  "GDP|PPP", "James_IMF",
-  "FE", "IEA",
-  "FE|Transport", "IEA",
-  "FE|Buildings", "IEA",
-  "FE|Industry", "IEA")
-
-histData %>% 
-  filter(variable == "Population", model == "WDI") %>% 
-  select(model, scenario, region, period, value) %>% 
-  mutate(population = value * 1e6) %>% # unit originally is million, now is 1
-  select(!value) -> 
-  histPop
-
-histData %>% 
-  filter(variable == "GDP|PPP", model == "James_IMF") %>% 
-  select(model, scenario, region, period, value) %>% 
-  rename(gdp = value) -> 
-  histGDP
-```
-
-
 
 ## GHG Emissions
 
@@ -218,94 +124,47 @@ p[[4]]
 
 ```{r FE per capita (by sector, time domain, area plot)}
 items <- c(
-  "FE|Transport",
-	"FE|Buildings",
-  "FE|Industry")
+  "FE|Transport pCap",
+	"FE|Buildings pCap",
+  "FE|Industry pCap")
 
-data %>% 
-  filter(variable %in% items) %>% 
-  left_join(dataPop) %>% 
-  mutate(
-    value = value / population * 1e9,
-    variable = paste0(variable, " pCap"),
-    unit = "GJ/yr" # from EJ to GJ
-    ) %>%
-  mutate(variable = fct_reorder(variable, value, sum)) ->
-  d
-
-d %>% 
-  filter(region == mainReg) %>% 
-  mipArea(scales="free_y", total = T) + 
-  theme(legend.position="none") ->
-  p1
-
-d %>% 
-  filter(region == mainReg, period %in% y_bar) %>% 
-  mipBarYearData() +
-  theme(legend.position="none") ->
-  p2
-
-d %>% 
-  filter(region != mainReg, period %in% y_bar) %>% 
-  mipBarYearData() +
-  guides(fill=guide_legend(ncol=3)) ->
-  p3
-
-d %>% 
-  filter(region != mainReg) %>% 
-  mipArea(scales="free_y", total = T) ->
-  p4
+p <- summary_default_plot(items)
 
 grid.arrange(
-  p1, p2, p3,
+  p[[1]], p[[2]], p[[3]],
   layout_matrix = rbind(c(1, 3),
                         c(2, 3)))
 
-p4
+p[[4]]
 ```
 
 ## FE per capita (by sector, time domain, line graph)
 
 ```{r FE per capita (by sector, time domain, line graph)}
 items <- c(
-  "FE",
-  "FE|Transport",
-  "FE|Buildings",
-  "FE|Industry")
+  "FE pCap",
+  "FE|Transport pCap",
+  "FE|Buildings pCap",
+  "FE|Industry pCap")
 
 data %>% 
-  filter(variable %in% items) %>% 
-  left_join(dataPop) %>% 
-  mutate(
-    value = value / population * 1e9,
-    variable = paste0(variable, " pCap"),
-    unit = "GJ/yr") ->
+  filter(variable %in% items) ->
   d
-histData %>% 
-  filter(variable %in% items) %>% 
-  semi_join(hist_filter) %>% 
-  left_join(histPop %>% select(region, period, population), by=c("region", "period")) %>% 
-  mutate(
-    value = value / population * 1e9,
-    variable = paste0(variable, " pCap"),
-    unit = "GJ/yr") %>% 
-  filter(!is.na(value)) ->
-  h
 
 d %>% 
-  filter(region == mainReg) %>% 
+  filter(region == mainReg, scenario != "historical") %>% 
   ggplot(aes(period, value)) + 
   facet_wrap(vars(variable), scales="free_y") +
   geom_line(aes(linetype=scenario)) +
-  geom_point(data = h %>% filter(region == mainReg), aes(shape = model)) +
-  ylab("FE pCap (GJ/yr)")
+  geom_point(data = d %>% filter(region == mainReg, scenario == "historical"), aes(shape = model)) +
+  ylab("FE pCap (GJ/yr)") # TODO: remove explicit naming
 
 d %>% 
-  filter(region != mainReg) %>% 
+  filter(region != mainReg, scenario != "historical") %>% 
   ggplot(aes(period, value, color=region)) + 
   facet_wrap(vars(variable), scales="free_y") +
   geom_line(aes(linetype=scenario)) +
-  geom_point(data = h %>% filter(region != mainReg), aes(shape = model)) +
+  geom_point(data = d %>% filter(region != mainReg, scenario == "historical"), aes(shape = model)) +
   ylab("FE pCap (GJ/yr)")
 ```
 
@@ -313,48 +172,28 @@ d %>%
 
 ```{r FE per capita by sector (GDP domain)}
 items <- c(
-  "FE|Transport",
-	"FE|Buildings",
-  "FE|Industry")
+  "FE|Transport pCap",
+	"FE|Buildings pCap",
+  "FE|Industry pCap")
 
 data %>% 
-  filter(variable %in% items) %>% 
-  left_join(dataPop) %>% 
-  mutate(
-    value = value / population * 1e9,
-    variable = paste0(variable, " pCap"),
-    unit = "GJ/yr") %>% 
-  left_join(dataGDP) %>% 
-  mutate(gdp = gdp / population * 1e6) -> # *1e6 converts from billion US$2005 to kUS$2005
+  filter(variable %in% items) ->
   d
 
-histData %>% 
-  filter(variable %in% items) %>% 
-  semi_join(hist_filter) %>% 
-  left_join(histPop %>% select(region, period, population), by=c("region", "period")) %>% 
-  mutate(
-    value = value / population * 1e9,
-    variable = paste0(variable, " pCap"),
-    unit = "GJ/yr") %>% 
-  filter(!is.na(value)) %>% 
-  left_join(histGDP %>% select(region, period, gdp)) %>% 
-  mutate(gdp = gdp / population * 1e6) -> # *1e6 converts from billion US$2005 to kUS$2005
-  h
-
 d %>% 
-  filter(region == mainReg) %>% 
+  filter(region == mainReg, scenario != "historical") %>% 
   ggplot(aes(gdp, value)) + 
   facet_wrap(vars(variable), scales="free_y") +
   geom_line(aes(linetype=scenario)) +
-  geom_point(data = h %>% filter(region == mainReg), aes(shape = model)) +
+  geom_point(data = d %>% filter(region == mainReg, scenario == "historical"), aes(shape = model)) +
   ylab("FE pCap (GJ/yr)") + xlab("GDP PPP pCap (kUS$2005)")
 
 d %>% 
-  filter(region != mainReg) %>% 
+  filter(region != mainReg, scenario != "historical") %>% 
   ggplot(aes(gdp, value, color=region)) + 
   facet_wrap(vars(variable), scales="free_y") +
   geom_line(aes(linetype=scenario)) +
-  geom_point(data = h %>% filter(region != mainReg), aes(shape = model)) +
+  geom_point(data = d %>% filter(region != mainReg, scenario == "historical"), aes(shape = model)) +
   ylab("FE pCap (GJ/yr)") + xlab("GDP PPP pCap (kUS$2005)")
 ```
 
@@ -458,8 +297,8 @@ p[[4]]
 
 ## SE Electricity by carrier
 
-```{r SE Electricity by carrier, eval=FALSE}
-items<- c ("SE|Electricity|Coal|w/ CCS",
+```{r SE Electricity by carrier}
+items <- c("SE|Electricity|Coal|w/ CCS",
            "SE|Electricity|Coal|w/o CCS",
            "SE|Electricity|Oil",
            "SE|Electricity|Gas|w/ CCS",
@@ -474,64 +313,97 @@ items<- c ("SE|Electricity|Coal|w/ CCS",
            "SE|Electricity|Hydrogen",
            "SE|Electricity|Net Imports")
 
-if ("SE|Electricity|Wind|Offshore" %in% magclass::getNames(data, dim = 3)) {
-  items <- append(items, c( "SE|Electricity|Wind|Onshore",
-                            "SE|Electricity|Wind|Offshore"))
- } else {
-   items <- append(items, c( "SE|Electricity|Wind"))
- }
+if ("SE|Electricity|Wind|Offshore" %in% variables) {
+  items <- c(
+    items, 
+    "SE|Electricity|Wind|Onshore",
+    "SE|Electricity|Wind|Offshore")
+} else {
+  items <- c(
+    items, 
+    "SE|Electricity|Wind")
+}
 
-var <- data[,,intersect(items,getNames(data,dim=3))]
+p <- summary_default_plot(items)
 
-# correct SE|Electricity|Hydrogen, current value is FE, SE can be calculated by estimating turbine efficiency
-var[,,"SE|Electricity|Hydrogen"] <- var[,,"SE|Electricity|Hydrogen"] / 0.4
+grid.arrange(
+  p[[1]], p[[2]], p[[3]],
+  layout_matrix = rbind(c(1, 3),
+                        c(2, 3)))
 
-p <- mipArea(var[mainReg,,],scales="free_y")
-p <- p + theme(legend.position="none")
-
-p <- mipBarYearData(var[mainReg,y_bar,])
-p <- p + theme(legend.position="none")
-
-p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE])
-
-p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y")
+p[[4]]
 ```
 
 
-```{r SE Wind Onshore, eval=FALSE}
-if ("SE|Electricity|Wind|Offshore" %in% magclass::getNames(data, dim = 3)) {
-  
-  swlatex(sw,"\\subsubsection{SE Wind Onshore}")
-  var0 <- "SE|Electricity|Wind|Onshore"
-  
-  p <-mipLineHistorical(var[mainReg,,var0],
-                        ylab=var0,scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(var[,,var0][mainReg,,,invert=TRUE],
-                         ylab=var0,scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-  
-  swlatex(sw,"\\subsubsection{SE Wind Offshore}")
-  var0 <- "SE|Electricity|Wind|Offshore"
-  p <-mipLineHistorical(var[mainReg,,var0],
-                        ylab=var0,scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(var[,,var0][mainReg,,,invert=TRUE],
-                         ylab=var0,scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+
+
+### SE Wind Onshore
+
+```{r SE Wind Onshore}
+var0 <- "SE|Electricity|Wind|Onshore"
+
+if (var0 %in% variables) {
+  data %>% 
+    filter(variable == var0) ->
+    d
+  d %>% 
+    filter(region == mainReg) %>% 
+    mipLineHistorical(
+      ylab=var0,
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) ->
+    p1
+  d %>% 
+    filter(region != mainReg) %>% 
+    mipLineHistorical(
+      ylab=var0,
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
+  grid.arrange(p1, p2, ncol=2)
+}
+```
+
+
+### SE Wind Offshore
+
+```{r SE Wind Offshore}
+var0 <- "SE|Electricity|Wind|Offshore"
+
+if (var0 %in% variables) {
+  data %>% 
+    filter(variable == var0) ->
+    d
+  d %>% 
+    filter(region == mainReg) %>% 
+    mipLineHistorical(
+      ylab=var0,
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) ->
+    p1
+  d %>% 
+    filter(region != mainReg) %>% 
+    mipLineHistorical(
+      ylab=var0,
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
+  grid.arrange(p1, p2, ncol=2)
 }
 ```
 
 
 ## SE non-electric by carrier
 
-```{r SE non-electric by carrier, eval=FALSE}
+```{r SE non-electric by carrier}
 ## XXX
 ```
 
 ## PE by sector
 
-```{r PE by sector, eval=FALSE}
+```{r PE by sector}
 ## XXX
 ```
 
@@ -561,119 +433,183 @@ p[[4]]
 
 ## CO2 Prices
 
-```{r CO2 Prices, eval=FALSE}
-p <- mipLineHistorical(data[mainReg,,"Price|Carbon"],x_hist=NULL,
-                       ylab='Price|Carbon [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-p <- p + theme(legend.position="none")
-
-p <- mipLineHistorical(data[,,"Price|Carbon"][mainReg,,,invert=TRUE],x_hist=NULL,
-                       ylab='Price|Carbon [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-
-p <- mipLineHistorical(
-  data[,,"Price|Carbon"][
-    mainReg,,,invert=TRUE],
-  ylab='Price|Carbon [US$2005/t CO2]',
-  scales="free_y",
-  plot.priority=c("x_hist","x","x_proj"),
-  color.dim="region",
-  facet.dim="scenario",
-  facet.ncol=2) +
+```{r CO2 Prices}
+data %>% 
+  filter(variable == "Price|Carbon", scenario != "historical") ->
+  d
+d %>% 
+  filter(region == mainReg) %>% 
+  mipLineHistorical(
+    ylab="Price|Carbon (US$2005/t CO2)",
+    scales="free_y",
+    plot.priority=c("x_hist","x","x_proj")) ->
+  p1
+d %>% 
+  filter(region != mainReg) %>% 
+  mipLineHistorical(
+    ylab="Price|Carbon (US$2005/t CO2)",
+    scales="free_y",
+    plot.priority=c("x_hist","x","x_proj"),
+    facet.ncol=3) ->
+  p2
+grid.arrange(p1, p2, ncol=2)
+d %>% 
+  filter(region != mainReg) %>% 
+  mipLineHistorical(
+    ylab='Price|Carbon [US$2005/t CO2]',
+    scales="free_y",
+    plot.priority=c("x_hist","x","x_proj"),
+    color.dim="region",
+    facet.dim="scenario",
+    facet.ncol=2) +
   theme(legend.position="right")
+```
 
-d <- data[mainReg,,"Price|Carbon|ETS"]
-if (isTRUE(any(d!=0))) {
-  swlatex(sw,"\\twocolumn")
-  p <- mipLineHistorical(d,x_hist=NULL,
-                         ylab='Price|Carbon|ETS [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=8,width=8")
+
+```{r CO2 Prices ETS}
+data %>% 
+  filter(variable == "Price|Carbon|ETS", scenario != "historical") ->
+  d
+if (isTRUE(any(d$value!=0))) {
+  d %>% 
+    filter(region==mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Price|Carbon|ETS [US$2005/t CO2]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) +
+    theme(legend.position="none") ->
+    p1
+  d %>% 
+    filter(region!=mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Price|Carbon|ETS [US$2005/t CO2]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
+  grid.arrange(p1, p2, ncol=2)
 }
-d <- data[,,"Price|Carbon|ETS"][mainReg,,,invert=TRUE]
-if (isTRUE(any(d!=0))) {
-  p <- mipLineHistorical(d,x_hist=NULL,
-                         ylab='Price|Carbon|ETS [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+```
+
+
+```{r CO2 Prices ESR}
+data %>% 
+  filter(variable == "Price|Carbon|ESR", scenario != "historical") ->
+  d
+if (isTRUE(any(d$value!=0))) {
+  d %>% 
+    filter(region==mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Price|Carbon|ESR [US$2005/t CO2]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) +
+    theme(legend.position="none") ->
+    p1
+  d %>% 
+    filter(region!=mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Price|Carbon|ESR [US$2005/t CO2]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
+  grid.arrange(p1, p2, ncol=2)
 }
-
-d <- data[mainReg,,"Price|Carbon|ESR"]
-if (isTRUE(any(d!=0))) {
-  swlatex(sw,"\\twocolumn")
-  p <- mipLineHistorical(,x_hist=NULL,
-                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  p <- p + theme(legend.position="none")
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-}
-d <- data[,,"Price|Carbon|ESR"][mainReg,,,invert=TRUE]
-if (isTRUE(any(d!=0))) {
-  p <- mipLineHistorical(d,x_hist=NULL,
-                         ylab='Price|Carbon|ESR [US$2005/t CO2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-}
-swlatex(sw,"\\twocolumn")
+```
 
 
-if("Policy Cost|Consumption Loss" %in% magclass::getNames(data,dim=3)) {
-  ## ---- Policy Cost|Consumption Loss ----
-  swlatex(sw,"\\subsection{Policy Costs}")
+## Policy Costs
 
-  p <- mipLineHistorical(
-    data[mainReg,,"Policy Cost|Consumption Loss"],
-    x_hist=NULL,
-    ylab='Policy Cost|Consumption Loss [billion US$2005/yr]',
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-
-  p <- mipLineHistorical(
-    data[,,"Policy Cost|Consumption Loss"][
-      mainReg,,,invert=TRUE],
-    x_hist=NULL,
-    ylab='Policy Cost|Consumption Loss [billion US$2005/yr]',
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"),
-    facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(
-    data[mainReg,,"Policy Cost|Consumption Loss|Relative to Reference Consumption"],
-    x_hist=NULL,
-    ylab='Policy Cost|Consumption Loss|Relative to Reference Consumption [%]',
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-  p <- mipLineHistorical(
-    data[,,"Policy Cost|Consumption Loss|Relative to Reference Consumption"][
-      mainReg,,,invert=TRUE],
-    x_hist=NULL,
-    ylab='Policy Cost|Consumption Loss|Relative to Reference Consumption [%]',
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"),
-    facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-}
-
-if("Policy Cost|GDP Loss" %in% magclass::getNames(data,dim=3)) {
-  ## ---- Policy Cost|GDP Loss ----
-  swlatex(sw,"\\subsection{Policy Costs}")
+```{r Policy Costs-Consumption Loss}
+if ("Policy Cost|Consumption Loss" %in% variables) {
+  data %>% 
+    filter(variable == "Policy Cost|Consumption Loss") ->
+    d
   
-  p <- mipLineHistorical(
-    data[mainReg,,"Policy Cost|GDP Loss"],
-    x_hist=NULL,
-    ylab='Policy Cost|GDP Loss [billion US$2005/yr]',
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
+  d %>% 
+    filter(region==mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Policy Cost|Consumption Loss [billion US$2005/yr]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) ->
+    p1
+
+  d %>% 
+    filter(region!=mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Policy Cost|Consumption Loss [billion US$2005/yr]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
   
-  p <- mipLineHistorical(
-    data[,,"Policy Cost|GDP Loss"][
-      mainReg,,,invert=TRUE],
-    x_hist=NULL,
-    ylab='Policy Cost|GDP Loss [billion US$2005/yr]',
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"),
-    facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
+  grid.arrange(p1, p2, ncol=2)
+}
+```
+
+
+```{r Policy Cost-Consumption Loss-Relative to Reference Consumption}
+if ("Policy Cost|Consumption Loss|Relative to Reference Consumption" %in% variables) {
+  data %>% 
+    filter(variable == "Policy Cost|Consumption Loss|Relative to Reference Consumption") ->
+    d
+  
+  d %>% 
+    filter(region==mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Policy Cost|Consumption Loss|Relative to Reference Consumption [%]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) ->
+    p1
+
+  d %>% 
+    filter(region!=mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Policy Cost|Consumption Loss|Relative to Reference Consumption [%]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
+  
+  grid.arrange(p1, p2, ncol=2)
+}
+```
+
+
+```{r Policy Cost-GDP Loss}
+if ("Policy Cost|GDP Loss" %in% variables) {
+  data %>% 
+    filter(variable == "Policy Cost|GDP Loss") ->
+    d
+  
+  d %>% 
+    filter(region==mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Policy Cost|GDP Loss [billion US$2005/yr]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj")) ->
+    p1
+
+  d %>% 
+    filter(region!=mainReg) %>% 
+    mipLineHistorical(
+      x_hist=NULL,
+      ylab='Policy Cost|GDP Loss [billion US$2005/yr]',
+      scales="free_y",
+      plot.priority=c("x_hist","x","x_proj"),
+      facet.ncol=3) ->
+    p2
+  
+  grid.arrange(p1, p2, ncol=2)
 }
 ```
 

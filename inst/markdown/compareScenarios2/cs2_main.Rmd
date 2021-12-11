@@ -41,42 +41,183 @@ library(gridExtra)
 ```
 
 ```{r read mifs}
+# Read *.mif-files.
 read.quitte(params$mif, factors=FALSE) %>% 
-  # In the variable names, remove all occurrences of one or two consecutive "+" followed by "|".
-  mutate(variable = str_remove(variable, "\\+{1,2}\\|")) -> 
-  data
+  # In the variable names, remove all occurrences of one or more consecutive "+" followed by "|".
+  mutate(variable = str_remove(variable, "\\+{1,}\\|")) -> 
+  dataScenarios
 read.quitte(params$hist, factors=FALSE) %>% 
-  mutate(variable = str_remove(variable, "\\+{1,2}\\|")) ->
-  histData
+  mutate(variable = str_remove(variable, "\\+{1,}\\|")) ->
+  dataHistorical
 
-# filter regions
+# Filter years.
+dataScenarios %>% 
+  filter(period %in% params$y) ->
+  dataScenarios
+dataHistorical %>% 
+  filter(period %in% params$y_hist) ->
+  dataHistorical
+
+# Use only following models from historical data.
+hist_filter <- tribble(
+  ~variable, ~model,
+  "Population", "WDI",
+  "GDP|PPP", "James_IMF",
+  "FE", "IEA",
+  "FE|Transport", "IEA",
+  "FE|Buildings", "IEA",
+  "FE|Industry", "IEA")
+dataHistorical %>% 
+  filter(!is.na(value), !variable %in% hist_filter$variable) %>% 
+  bind_rows(histData %>% semi_join(hist_filter)) ->
+  dataHistorical
+
+# Combine into one data frame.
+data <- bind_rows(dataScenarios, dataHistorical)
+
+# Filter regions.
 if (!is.null(params$reg)) {
   data %>% 
     filter(region %in% params$reg) ->
     data
-  histData %>% 
-    filter(region %in% params$reg) ->
-    histData
 }
+```
 
-# filter years
+```{r calcuate pCap variables}
+# TODO: breaks down if input units change
+pCapVariables <- tribble(
+  ~variable, ~newUnit, ~conversionFactor,
+  "FE", "GJ/yr", 1e9,
+  "FE|CDR", "GJ/yr", 1e9,
+  "FE|Transport", "GJ/yr", 1e9,
+  "FE|Buildings", "GJ/yr", 1e9,
+  "FE|Industry", "GJ/yr", 1e9,
+  "GDP|PPP", "kUS$2005", 1e6)
+
 data %>% 
-  filter(period %in% params$y) ->
-  data
-histData %>% 
-  filter(period %in% params$y_hist) ->
-  histData
+  filter(variable == "Population") %>% 
+  select(scenario, region, period, value) %>% 
+  mutate(population = value * 1e6) %>% # unit originally is million, now is 1
+  select(!value) -> 
+  dataPop
 
-# Define parameters for use in plotting.
+data %>% 
+  filter(variable %in% pCapVariables$variable) %>% 
+  left_join(dataPop) %>% 
+  left_join(pCapVariables) %>% 
+  mutate(
+    value = value / population * conversionFactor,
+    variable = paste0(variable, " pCap"),
+    unit = newUnit,
+    newUnit = NULL,
+    conversionFactor = NULL,
+    population = NULL) ->
+  dataPCap
+
+data %>% 
+  bind_rows(dataPCap) ->
+  data
+```
+```{r add gdp column}
+# GDP|PPP pCap (kUS$2005)
+# TODO: looses unit info (place as varaible name?)
+data %>% 
+  filter(variable == "GDP|PPP pCap") %>% 
+  select(scenario, region, period, value) %>% 
+  rename(gdp = value) -> 
+  dataGDP
+data %>% 
+  left_join(dataGDP) ->
+  data
+```
+
+```{r corrections}
+# TODO: This should definitely not be done here!!
+
+# correct SE|Electricity|Hydrogen, current value is FE, SE can be calculated by estimating turbine efficiency
+data %>% 
+  mutate(value = value / ifelse(variable == "SE|Electricity|Hydrogen", 0.4, 1)) ->
+  data
+```
+
+
+
+```{r set params}
+# Define parameters for use in plotting. 
+# TODO: not particulatly nice style...
+variables <- unique(data$variable)
 mainReg <- "World"
 y_bar <- params$y_bar
 ```
 
-
-
-```{r summary, child=if (INCLUDE_SUMMARY) 'cs2_summary.Rmd'}
+```{r}
+# TODO: remove variables that are not used anymore
 ```
 
-```{r summary, child=if (INCLUDE_MACRO) 'cs2_macro.Rmd'}
+
+```{r eval=FALSE}
+# TODO: remove
+# NOTE: regex to remove units: "([^(]+) \([^)]+\)+" replace by "\1"
+# NOTE: filtering and ordering scheme
+data %>% 
+  filter(variable %in% items) %>% 
+  #mutate(variable = fct_relevel(variable, items)) %>% # order as in items
+  #mutate(variable = fct_reorder2(variable, period, value, first2, .desc=FALSE)) %>% # order by value in first year
+  #mutate(variable = fct_reorder(variable, value, sum)) %>% # order by area
+  mutate(variable = fct_reorder(variable, value, sum)) ->
+  d
+```
+
+
+```{r}
+# TODO: should data, mainReg be arguments?
+# TODO: find better name of function
+# TODO: should function print/arrange plots?
+summary_default_plot <- function(items, tot=NULL) {
+  data %>% 
+    filter(variable %in% items, scenario != "historical") %>% 
+    mutate(variable = fct_reorder(variable, value, sum)) ->
+    d
+  
+  d %>% 
+    filter(region == mainReg) %>% 
+    mipArea(scales="free_y", total = is.null(tot)) + 
+    theme(legend.position="none") ->
+    p1
+  if (!is.null(tot)) {
+    p1 <- p1 +
+      geom_line(
+        data = data %>% filter(region == mainReg, variable == tot), 
+        mapping = aes(period, value),
+        size=1.3)
+  }
+  
+  d %>% 
+    filter(region == mainReg, period %in% y_bar) %>% 
+    mipBarYearData() +
+    theme(legend.position="none") ->
+    p2
+  
+  d %>% 
+    filter(region != mainReg, period %in% y_bar) %>% 
+    mipBarYearData() +
+    guides(fill=guide_legend(ncol=3)) ->
+    p3
+  
+  d %>% 
+    filter(region != mainReg) %>% 
+    mipArea(scales="free_y", total = is.null(tot)) ->
+    p4
+  
+  return(list(p1, p2, p3, p4))
+}
+```
+
+
+
+```{r summary, child = if (INCLUDE_SUMMARY) 'cs2_summary.Rmd'}
+```
+
+```{r summary, child = if (INCLUDE_MACRO) 'cs2_macro.Rmd'}
 ```
 
