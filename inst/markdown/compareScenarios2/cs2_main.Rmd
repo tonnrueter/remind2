@@ -179,9 +179,6 @@ show_default_area_and_bar_plots <- function(
     filter(variable %in% items, scenario != "historical") %>% 
     mutate(variable = fct_reorder(variable, value, mean, na.rm=TRUE)) ->
     d
-
-  ord_lvls <- levels(fct_reorder(ds$variable, ds$value, order_by))
-  d <- mutate(d, variable = fct_relevel(variable, ord_lvls))
   
   # Create plots.
   d %>% 
