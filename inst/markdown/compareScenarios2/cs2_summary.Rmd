@@ -168,12 +168,13 @@ show_default_area_and_bar_plots(data, items)
 ## FE Industry by carrier
 
 ```{r FE Industry by carrier}
-items <- c("FE|Industry|Solids",
-           "FE|Industry|Liquids",
-           "FE|Industry|Gases",
-           "FE|Industry|Heat",
-           "FE|Industry|Hydrogen",
-           "FE|Industry|Electricity")
+items <- c(
+  "FE|Industry|Solids",
+  "FE|Industry|Liquids",
+  "FE|Industry|Gases",
+  "FE|Industry|Heat",
+  "FE|Industry|Hydrogen",
+  "FE|Industry|Electricity")
 show_default_area_and_bar_plots(data, items)
 ```
 
@@ -252,58 +253,14 @@ show_default_area_and_bar_plots(data, items)
 ### SE Wind Onshore
 
 ```{r SE Wind Onshore}
-var0 <- "SE|Electricity|Wind|Onshore"
-
-if (var0 %in% variables) {
-  data %>% 
-    filter(variable == var0) ->
-    d
-  d %>% 
-    filter(region == mainReg) %>% 
-    mipLineHistorical(
-      ylab=var0,
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) ->
-    p1
-  d %>% 
-    filter(region != mainReg) %>% 
-    mipLineHistorical(
-      ylab=var0,
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  grid.arrange(p1, p2, ncol=2)
-}
+show_default_line_plots(data, "SE|Electricity|Wind|Onshore")
 ```
 
 
 ### SE Wind Offshore
 
 ```{r SE Wind Offshore}
-var0 <- "SE|Electricity|Wind|Offshore"
-
-if (var0 %in% variables) {
-  data %>% 
-    filter(variable == var0) ->
-    d
-  d %>% 
-    filter(region == mainReg) %>% 
-    mipLineHistorical(
-      ylab=var0,
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) ->
-    p1
-  d %>% 
-    filter(region != mainReg) %>% 
-    mipLineHistorical(
-      ylab=var0,
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  grid.arrange(p1, p2, ncol=2)
-}
+show_default_line_plots(data, "SE|Electricity|Wind|Offshore")
 ```
 
 
@@ -342,22 +299,7 @@ show_default_area_and_bar_plots(data, items)
 data %>% 
   filter(variable == "Price|Carbon", scenario != "historical") ->
   d
-d %>% 
-  filter(region == mainReg) %>% 
-  mipLineHistorical(
-    ylab="Price|Carbon (US$2005/t CO2)",
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj")) ->
-  p1
-d %>% 
-  filter(region != mainReg) %>% 
-  mipLineHistorical(
-    ylab="Price|Carbon (US$2005/t CO2)",
-    scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"),
-    facet.ncol=3) ->
-  p2
-grid.arrange(p1, p2, ncol=2)
+show_default_line_plots(d)
 d %>% 
   filter(region != mainReg) %>% 
   mipLineHistorical(
@@ -376,25 +318,7 @@ data %>%
   filter(variable == "Price|Carbon|ETS", scenario != "historical") ->
   d
 if (isTRUE(any(d$value!=0))) {
-  d %>% 
-    filter(region==mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Price|Carbon|ETS [US$2005/t CO2]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) +
-    theme(legend.position="none") ->
-    p1
-  d %>% 
-    filter(region!=mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Price|Carbon|ETS [US$2005/t CO2]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  grid.arrange(p1, p2, ncol=2)
+  show_default_line_plots(d)
 }
 ```
 
@@ -404,25 +328,7 @@ data %>%
   filter(variable == "Price|Carbon|ESR", scenario != "historical") ->
   d
 if (isTRUE(any(d$value!=0))) {
-  d %>% 
-    filter(region==mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Price|Carbon|ESR [US$2005/t CO2]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) +
-    theme(legend.position="none") ->
-    p1
-  d %>% 
-    filter(region!=mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Price|Carbon|ESR [US$2005/t CO2]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  grid.arrange(p1, p2, ncol=2)
+  show_default_line_plots(d)
 }
 ```
 
@@ -430,91 +336,16 @@ if (isTRUE(any(d$value!=0))) {
 ## Policy Costs
 
 ```{r Policy Costs-Consumption Loss}
-if ("Policy Cost|Consumption Loss" %in% variables) {
-  data %>% 
-    filter(variable == "Policy Cost|Consumption Loss") ->
-    d
-  
-  d %>% 
-    filter(region==mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Policy Cost|Consumption Loss [billion US$2005/yr]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) ->
-    p1
-
-  d %>% 
-    filter(region!=mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Policy Cost|Consumption Loss [billion US$2005/yr]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  
-  grid.arrange(p1, p2, ncol=2)
-}
+show_default_line_plots(data, "Policy Cost|Consumption Loss")
 ```
 
 
 ```{r Policy Cost-Consumption Loss-Relative to Reference Consumption}
-if ("Policy Cost|Consumption Loss|Relative to Reference Consumption" %in% variables) {
-  data %>% 
-    filter(variable == "Policy Cost|Consumption Loss|Relative to Reference Consumption") ->
-    d
-  
-  d %>% 
-    filter(region==mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Policy Cost|Consumption Loss|Relative to Reference Consumption [%]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) ->
-    p1
-
-  d %>% 
-    filter(region!=mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Policy Cost|Consumption Loss|Relative to Reference Consumption [%]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  
-  grid.arrange(p1, p2, ncol=2)
-}
+show_default_line_plots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumption")
 ```
 
 
 ```{r Policy Cost-GDP Loss}
-if ("Policy Cost|GDP Loss" %in% variables) {
-  data %>% 
-    filter(variable == "Policy Cost|GDP Loss") ->
-    d
-  
-  d %>% 
-    filter(region==mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Policy Cost|GDP Loss [billion US$2005/yr]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj")) ->
-    p1
-
-  d %>% 
-    filter(region!=mainReg) %>% 
-    mipLineHistorical(
-      x_hist=NULL,
-      ylab='Policy Cost|GDP Loss [billion US$2005/yr]',
-      scales="free_y",
-      plot.priority=c("x_hist","x","x_proj"),
-      facet.ncol=3) ->
-    p2
-  
-  grid.arrange(p1, p2, ncol=2)
-}
+show_default_line_plots(data, "Policy Cost|GDP Loss")
 ```
 

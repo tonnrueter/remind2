@@ -101,9 +101,8 @@ data %>%
   dataPop
 
 data %>% 
-  filter(variable %in% pCapVariables$variable) %>% 
+  inner_join(pCapVariables) %>% 
   left_join(dataPop) %>% 
-  left_join(pCapVariables) %>% 
   mutate(
     value = value / population * conversionFactor,
     variable = paste0(variable, " pCap"),
@@ -119,16 +118,39 @@ data %>%
 ```
 ```{r add gdp column}
 # GDP|PPP pCap (kUS$2005)
-# TODO: looses unit info (place as varaible name?)
+# TODO: looses unit info and pCap (place as variable name?)
 data %>% 
   filter(variable == "GDP|PPP pCap") %>% 
   select(scenario, region, period, value) %>% 
-  rename(gdp = value) -> 
+  rename(gdp = value) ->   
   dataGDP
 data %>% 
   left_join(dataGDP) ->
   data
 ```
+
+```{r calcuate pGDP variables}
+pGdpVariables <- tribble(
+  ~variable, ~newUnit, ~conversionFactor,
+  "FE", "MJ/US$2005", 1e3,
+  "FE|CDR", "MJ/US$2005", 1e3,
+  "FE|Transport", "MJ/US$2005", 1e3,
+  "FE|Buildings", "MJ/US$2005", 1e3,
+  "FE|Industry", "MJ/US$2005", 1e3)
+data %>% 
+  inner_join(pGdpVariables) %>% 
+  mutate(
+    value = value / gdp * conversionFactor,
+    variable = paste0(variable, " pGDP"),
+    unit = newUnit,
+    newUnit = NULL,
+    conversionFactor = NULL) ->
+  dataPGdp
+data %>% 
+  bind_rows(dataPGdp) ->
+  data
+```
+
 
 ```{r corrections}
 # TODO: This should definitely not be done here!!
@@ -149,7 +171,7 @@ mainReg <- "World"
 y_bar <- params$y_bar
 ```
 
-```{r}
+```{r clean environment}
 # TODO: remove variables that are not used anymore
 ```
 
@@ -168,7 +190,7 @@ data %>%
 ```
 
 
-```{r}
+```{r show_default_area_and_bar_plots}
 # TODO: avoid data masking by using .env??
 show_default_area_and_bar_plots <- function(
   data, items, tot = NULL, 
@@ -212,20 +234,24 @@ show_default_area_and_bar_plots <- function(
     p4
   
   grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
-  p4
+  plot(p4)
   
   return(invisible(NULL))
 }
 ```
 
-```{r}
+```{r show_default_line_plots}
 show_default_line_plots <- function(
-  data, filter_variable,
+  data, 
+  filter_variable=NULL,
   mainReg = "World") {
   
-  data %>% 
-    filter(variable == filter_variable) ->
-    d
+  if (!is.null(filter_variable)) {
+    d <- filter(data, variable == filter_variable)
+  }
+  
+  if (NROW(d) == 0) return(invisible(NULL))
+  
   label <- paste0(filter_variable, " (", paste0(unique(d$unit), collapse="|"), ")")
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
@@ -242,8 +268,7 @@ show_default_line_plots <- function(
       ylab = NULL,
       scales = "free_y",
       plot.priority = c("x_hist","x","x_proj"),
-      facet.ncol = 3) +
-    theme(legend.position="none") ->
+      facet.ncol = 3) -> # + theme(legend.position="none") ->
     p2
   
   grid.arrange(p1, p2, nrow=1)
@@ -257,6 +282,6 @@ show_default_line_plots <- function(
 ```{r summary, child = if (INCLUDE_SUMMARY) 'cs2_summary.Rmd'}
 ```
 
-```{r summary, child = if (INCLUDE_MACRO) 'cs2_macro.Rmd'}
+```{r macro, child = if (INCLUDE_MACRO) 'cs2_macro.Rmd'}
 ```
 
