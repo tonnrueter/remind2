@@ -170,40 +170,17 @@ data %>%
 
 
 ```{r}
-# TODO: should data, mainReg be arguments?
-# TODO: find better name of function
-# TODO: should function print/arrange plots?
 show_default_area_and_bar_plots <- function(
-  data, items, tot=NULL, 
-  excluded_scenarios="historical",
-  order_by=sum,
-  mainReg="World",
+  data, items, tot = NULL, 
+  mainReg = "World",
   y_bar = c(2010, 2030, 2050, 2100)) {
   
-  d <- filter(data, variable %in% items, !scenario %in% excluded_scenarios)
+  data %>% 
+    filter(variable %in% items, scenario != "historical") %>% 
+    mutate(variable = fct_reorder(variable, value, mean, na.rm=TRUE)) ->
+    d
 
-  # Order the names in the variables column.
-  if (is.character(order_by) && order_by == "items") {
-    ord_lvls <- items
-  } else {
-    # Find order automatically based on average values for main region.
-    d %>% 
-      filter(region == mainReg) %>% 
-      group_by(variable, period) %>% 
-      summarize(value = mean(value, na.rm=TRUE), .groups="drop") ->
-      ds
-    if (is.character(order_by)) {
-      if (order_by == "frist2") {
-        ord_lvls <- levels(fct_reorder2(ds$variable, ds$period, ds$value, first2, .desc=FALSE))
-      }  else if (order_by == "last2") {
-        ord_lvls <- levels(fct_reorder2(ds$variable, ds$period, ds$value, last2, .desc=FALSE))
-      } else {
-        stop(paste0("Unknown order_by parameter ", order_by))
-      }
-    } else {
-      ord_lvls <- levels(fct_reorder(ds$variable, ds$value, order_by))
-    }
-  }
+  ord_lvls <- levels(fct_reorder(ds$variable, ds$value, order_by))
   d <- mutate(d, variable = fct_relevel(variable, ord_lvls))
   
   # Create plots.
