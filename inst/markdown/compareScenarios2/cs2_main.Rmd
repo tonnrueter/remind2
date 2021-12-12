@@ -69,7 +69,7 @@ hist_filter <- tribble(
   "FE|Industry", "IEA")
 dataHistorical %>% 
   filter(!is.na(value), !variable %in% hist_filter$variable) %>% 
-  bind_rows(histData %>% semi_join(hist_filter)) ->
+  bind_rows(dataHistorical %>% semi_join(hist_filter)) ->
   dataHistorical
 
 # Combine into one data frame.
@@ -144,7 +144,7 @@ data %>%
 
 ```{r set params}
 # Define parameters for use in plotting. 
-# TODO: not particulatly nice style...
+# TODO: not particularly nice style...
 variables <- unique(data$variable)
 mainReg <- "World"
 y_bar <- params$y_bar
@@ -156,7 +156,7 @@ y_bar <- params$y_bar
 
 
 ```{r eval=FALSE}
-# TODO: remove
+# TODO: remove, make compareScanarios2HelpVignette
 # NOTE: regex to remove units: "([^(]+) \([^)]+\)+" replace by "\1"
 # NOTE: filtering and ordering scheme
 data %>% 
@@ -173,12 +173,40 @@ data %>%
 # TODO: should data, mainReg be arguments?
 # TODO: find better name of function
 # TODO: should function print/arrange plots?
-summary_default_plot <- function(items, tot=NULL) {
-  data %>% 
-    filter(variable %in% items, scenario != "historical") %>% 
-    mutate(variable = fct_reorder(variable, value, sum)) ->
-    d
+show_default_area_and_bar_plots <- function(
+  data, items, tot=NULL, 
+  excluded_scenarios="historical",
+  order_by=sum,
+  mainReg="World",
+  y_bar = c(2010, 2030, 2050, 2100)) {
   
+  d <- filter(data, variable %in% items, !scenario %in% excluded_scenarios)
+
+  # Order the names in the variables column.
+  if (is.character(order_by) && order_by == "items") {
+    ord_lvls <- items
+  } else {
+    # Find order automatically based on average values for main region.
+    d %>% 
+      filter(region == mainReg) %>% 
+      group_by(variable, period) %>% 
+      summarize(value = mean(value, na.rm=TRUE), .groups="drop") ->
+      ds
+    if (is.character(order_by)) {
+      if (order_by == "frist2") {
+        ord_lvls <- levels(fct_reorder2(ds$variable, ds$period, ds$value, first2, .desc=FALSE))
+      }  else if (order_by == "last2") {
+        ord_lvls <- levels(fct_reorder2(ds$variable, ds$period, ds$value, last2, .desc=FALSE))
+      } else {
+        stop(paste0("Unknown order_by parameter ", order_by))
+      }
+    } else {
+      ord_lvls <- levels(fct_reorder(ds$variable, ds$value, order_by))
+    }
+  }
+  d <- mutate(d, variable = fct_relevel(variable, ord_lvls))
+  
+  # Create plots.
   d %>% 
     filter(region == mainReg) %>% 
     mipArea(scales="free_y", total = is.null(tot)) + 
@@ -187,7 +215,7 @@ summary_default_plot <- function(items, tot=NULL) {
   if (!is.null(tot)) {
     p1 <- p1 +
       geom_line(
-        data = data %>% filter(region == mainReg, variable == tot), 
+        d = d %>% filter(region == mainReg, variable == tot), 
         mapping = aes(period, value),
         size=1.3)
   }
@@ -209,7 +237,11 @@ summary_default_plot <- function(items, tot=NULL) {
     mipArea(scales="free_y", total = is.null(tot)) ->
     p4
   
-  return(list(p1, p2, p3, p4))
+  # Show plots.
+  grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
+  print(p4)
+  
+  return(invisible(NULL))
 }
 ```
 

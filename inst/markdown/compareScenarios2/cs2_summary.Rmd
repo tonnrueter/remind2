@@ -13,22 +13,15 @@ items <- c(
   "Emi|GHG|N2O",
   "Emi|GHG|F-Gases",
   "Emi|CO2|non-BECCS CDR")
-
-p <- summary_default_plot(items, tot)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items, tot)
 ```
 
 ## GHG by sector (w/ gross emissions, excl. BECCS)
 
 ```{r}
-tot <-"Emi|GHG"
-items <- c("Emi|GHG|Gross|Energy|Supply|Electricity",
+tot <- "Emi|GHG"
+items <- c(
+  "Emi|GHG|Gross|Energy|Supply|Electricity",
   "Emi|GHG|Gross|Energy|Supply|Non-electric",
   "Emi|GHG|Energy|Demand|Transport",
   "Emi|GHG|Energy|Demand|Buildings",
@@ -41,40 +34,25 @@ items <- c("Emi|GHG|Gross|Energy|Supply|Electricity",
   "Emi|CO2|CDR|BECCS",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW")
-
-p <- summary_default_plot(items, tot)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items, tot)
 ```
 
 ## CO2 by sector (w/ gross emissions, excl. BECCS)
 
 ```{r CO2 by sector}
 tot <- "Emi|CO2"
-items <- c("Emi|CO2|Land-Use Change",
-           "Emi|CO2|Industrial Processes",
-           "Emi|CO2|Energy|Demand|Transport",
-           "Emi|CO2|Gross|Energy|Demand|Industry",
-           "Emi|CO2|Energy|Demand|Buildings",
-           "Emi|CO2|Gross|Energy|Supply|Non-electric",
-           "Emi|CO2|Gross|Energy|Supply|Electricity",
-           "Emi|CO2|CDR|BECCS",
-           "Emi|CO2|CDR|DACCS",
-           "Emi|CO2|CDR|EW")
-           
-p <- summary_default_plot(items, tot)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+items <- c(
+  "Emi|CO2|Land-Use Change",
+  "Emi|CO2|Industrial Processes",
+  "Emi|CO2|Energy|Demand|Transport",
+  "Emi|CO2|Gross|Energy|Demand|Industry",
+  "Emi|CO2|Energy|Demand|Buildings",
+  "Emi|CO2|Gross|Energy|Supply|Non-electric",
+  "Emi|CO2|Gross|Energy|Supply|Electricity",
+  "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|DACCS",
+  "Emi|CO2|CDR|EW")
+show_default_area_and_bar_plots(data, items, tot)
 ```
 
 ```{r CO2 by sector cumulated}
@@ -90,34 +68,19 @@ items <- c(
   "Emi|CO2|Cumulated|CDR|BECCS",
   "Emi|CO2|Cumulated|CDR|DACCS",
   "Emi|CO2|Cumulated|CDR|EW")
-
-p <- summary_default_plot(items, tot)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items, tot)
 ```
 
 
 ## FE by sector
 
 ```{r FE by sector}
-items <- c("FE|CDR",
-           "FE|Transport",
-           "FE|Buildings",
-           "FE|Industry")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+items <- c(
+  "FE|CDR",
+  "FE|Transport",
+  "FE|Buildings",
+  "FE|Industry")
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## FE per capita (by sector, time domain, area plot)
@@ -127,15 +90,7 @@ items <- c(
   "FE|Transport pCap",
 	"FE|Buildings pCap",
   "FE|Industry pCap")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## FE per capita (by sector, time domain, line graph)
@@ -200,21 +155,14 @@ d %>%
 ## FE by carrier
 
 ```{r FE by carrier}
-items <- c("FE|Solids",
-           "FE|Liquids",
-           "FE|Gases",
-           "FE|Heat",
-           "FE|Hydrogen",
-           "FE|Electricity")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+items <- c(
+  "FE|Solids",
+  "FE|Liquids",
+  "FE|Gases",
+  "FE|Heat",
+  "FE|Hydrogen",
+  "FE|Electricity")
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## FE Industry by carrier
@@ -226,35 +174,20 @@ items <- c("FE|Industry|Solids",
            "FE|Industry|Heat",
            "FE|Industry|Hydrogen",
            "FE|Industry|Electricity")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## FE Buildings by carrier
 
 ```{r FE Buildings by carrier}
-items<- c("FE|Buildings|Solids",
-          "FE|Buildings|Liquids",
-          "FE|Buildings|Gases",
-          "FE|Buildings|Heat",
-          "FE|Buildings|Hydrogen",
-          "FE|Buildings|Electricity")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+items <- c(
+  "FE|Buildings|Solids",
+  "FE|Buildings|Liquids",
+  "FE|Buildings|Gases",
+  "FE|Buildings|Heat",
+  "FE|Buildings|Hydrogen",
+  "FE|Buildings|Electricity")
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## FE Transport by carrier
@@ -265,53 +198,39 @@ items <- c(
   "FE|Transport|Hydrogen",
   "FE|Transport|Liquids",
   "FE|Transport|Gases")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## FE CDR by carrier
 
 
 ```{r FE CDR by carrier}
-items<- c("FE|CDR|Liquids",
-          "FE|CDR|Gases",
-          "FE|CDR|Hydrogen",
-          "FE|CDR|Electricity")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+items <- c(
+  "FE|CDR|Liquids",
+  "FE|CDR|Gases",
+  "FE|CDR|Hydrogen",
+  "FE|CDR|Electricity")
+show_default_area_and_bar_plots(data, items)
 ```
 
 ## SE Electricity by carrier
 
 ```{r SE Electricity by carrier}
-items <- c("SE|Electricity|Coal|w/ CCS",
-           "SE|Electricity|Coal|w/o CCS",
-           "SE|Electricity|Oil",
-           "SE|Electricity|Gas|w/ CCS",
-           "SE|Electricity|Gas|w/o CCS",
-           "SE|Electricity|Geothermal",
-           "SE|Electricity|Hydro",
-           "SE|Electricity|Nuclear",
-           "SE|Electricity|Biomass|w/ CCS",
-           "SE|Electricity|Biomass|w/o CCS",
-           "SE|Electricity|Solar|CSP",
-           "SE|Electricity|Solar|PV",
-           "SE|Electricity|Hydrogen",
-           "SE|Electricity|Net Imports")
+items <- c(
+  "SE|Electricity|Coal|w/ CCS",
+  "SE|Electricity|Coal|w/o CCS",
+  "SE|Electricity|Oil",
+  "SE|Electricity|Gas|w/ CCS",
+  "SE|Electricity|Gas|w/o CCS",
+  "SE|Electricity|Geothermal",
+  "SE|Electricity|Hydro",
+  "SE|Electricity|Nuclear",
+  "SE|Electricity|Biomass|w/ CCS",
+  "SE|Electricity|Biomass|w/o CCS",
+  "SE|Electricity|Solar|CSP",
+  "SE|Electricity|Solar|PV",
+  "SE|Electricity|Hydrogen",
+  "SE|Electricity|Net Imports")
 
 if ("SE|Electricity|Wind|Offshore" %in% variables) {
   items <- c(
@@ -324,14 +243,7 @@ if ("SE|Electricity|Wind|Offshore" %in% variables) {
     "SE|Electricity|Wind")
 }
 
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+show_default_area_and_bar_plots(data, items)
 ```
 
 
@@ -410,24 +322,17 @@ if (var0 %in% variables) {
 ## PE by carrier
 
 ```{r PE by carrier}
-items <- c("PE|Coal",
-           "PE|Oil",
-           "PE|Gas",
-           "PE|Biomass",
-           "PE|Nuclear",
-           "PE|Solar",
-           "PE|Wind",
-           "PE|Hydro",
-           "PE|Geothermal")
-
-p <- summary_default_plot(items)
-
-grid.arrange(
-  p[[1]], p[[2]], p[[3]],
-  layout_matrix = rbind(c(1, 3),
-                        c(2, 3)))
-
-p[[4]]
+items <- c(
+  "PE|Coal",
+  "PE|Oil",
+  "PE|Gas",
+  "PE|Biomass",
+  "PE|Nuclear",
+  "PE|Solar",
+  "PE|Wind",
+  "PE|Hydro",
+  "PE|Geothermal")
+show_default_area_and_bar_plots(data, items)
 ```
 
 
