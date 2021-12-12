@@ -32,12 +32,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r, include=FALSE}
-library(mip)
+```{r libraries, include=FALSE}
+library(gridExtra)
 library(tidyverse)
 library(quitte)
-library(remind2)
-library(gridExtra)
+library(mip)
 ```
 
 ```{r read mifs}
@@ -212,13 +211,10 @@ show_default_area_and_bar_plots <- function(
     mipArea(scales="free_y", total = is.null(tot)) ->
     p4
   
-  page1 <- arrangeGrob(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
-  page2 <- p4
+  grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
+  p4
   
-  # Return a list of class arrangelist holding the plot pages.
-  # The first 3 plots form the first page, p4 the second page.
-  arrangelist <- marrangeGrob(list(page1, page2), ncol=1, nrow=1, top=NULL)
-  return(arrangelist)
+  return(invisible(NULL))
 }
 ```
 
@@ -250,9 +246,9 @@ show_default_line_plots <- function(
     theme(legend.position="none") ->
     p2
   
-  gtable <- arrangeGrob(p1, p2, nrow=1)
+  grid.arrange(p1, p2, nrow=1)
   
-  return(gtable)
+  return(invisible(NULL))
 }
 ```
 
