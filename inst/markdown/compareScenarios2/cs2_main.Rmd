@@ -19,7 +19,7 @@ params:
 
 ```{r includes, include=FALSE}
 INCLUDE_SUMMARY <- TRUE
-INCLUDE_MACRO <- FALSE
+INCLUDE_MACRO <- TRUE
 ```
 
 ```{r setup, include=FALSE}
@@ -170,6 +170,7 @@ data %>%
 
 
 ```{r}
+# TODO: avoid data masking by using .env??
 show_default_area_and_bar_plots <- function(
   data, items, tot = NULL, 
   mainReg = "World",
@@ -211,11 +212,47 @@ show_default_area_and_bar_plots <- function(
     mipArea(scales="free_y", total = is.null(tot)) ->
     p4
   
-  # Show plots.
-  grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
-  print(p4)
+  page1 <- arrangeGrob(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
+  page2 <- p4
   
-  return(invisible(NULL))
+  # Return a list of class arrangelist holding the plot pages.
+  # The first 3 plots form the first page, p4 the second page.
+  arrangelist <- marrangeGrob(list(page1, page2), ncol=1, nrow=1, top=NULL)
+  return(arrangelist)
+}
+```
+
+```{r}
+show_default_line_plots <- function(
+  data, filter_variable,
+  mainReg = "World") {
+  
+  data %>% 
+    filter(variable == filter_variable) ->
+    d
+  label <- paste0(filter_variable, " (", paste0(unique(d$unit), collapse="|"), ")")
+  d %>% 
+    filter(region == mainReg, scenario != "historical") %>% 
+    mipLineHistorical(
+      x_hist = d %>% filter(region == mainReg, scenario == "historical"),
+      ylab = label,
+      scales = "free_y",
+      plot.priority = c("x_hist","x","x_proj")) ->
+    p1
+  d %>% 
+    filter(region != mainReg, scenario != "historical") %>% 
+    mipLineHistorical(
+      x_hist = d %>% filter(region != mainReg, scenario == "historical"),
+      ylab = NULL,
+      scales = "free_y",
+      plot.priority = c("x_hist","x","x_proj"),
+      facet.ncol = 3) +
+    theme(legend.position="none") ->
+    p2
+  
+  gtable <- arrangeGrob(p1, p2, nrow=1)
+  
+  return(gtable)
 }
 ```
 
