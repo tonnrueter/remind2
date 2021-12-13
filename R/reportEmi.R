@@ -272,9 +272,26 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
 
-
+  # calculate captured CO2 per pe2se technology
+  sel_pm_emifac_pe2seCCO2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
+    mselect(pm_emifac, all_te = pe2se$all_te, emiAll = "cco2")
+  } else {
+    mselect(pm_emifac, all_te = pe2se$all_te, all_enty2 = "cco2")
+  }
+  pm_emifac.cco2.pe <- dimSums(sel_pm_emifac_pe2seCCO2, dim = c(3.4))
+  CCO2Pe2Se <- pm_emifac.cco2.pe * vm_demPE[,,getNames(pm_emifac.cco2.pe)]
+  
+  
+  
   # calculate emissions from pe2se conversions and fe carriers
+  
+  # emissions from pe2se conversions (supply-side emissions) 
   EmiPe2Se <- pm_emifac.co2.pe * vm_demPE[, , getNames(pm_emifac.co2.pe)]
+  # reduce supply-side emissions by captured carbon which is not stored (goes into CCU) 
+  # as synfuel carbon should be accounted on the side of the CO2-Provider
+  EmiPe2Se[,,getNames(CCO2Pe2Se, dim=3)] <- EmiPe2Se[,,getNames(CCO2Pe2Se, dim=3)] + CCO2Pe2Se * (1 - p_share_CCS)
+  
+  # emissions from fe carriers (demand-side emissions)
   EmiFeCarrier <- pm_emifac.co2.fe * vm_demFeSector[, , emi.map.fe$name]
 
 
@@ -285,8 +302,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                # supply-side energy CO2 emissions
                # pe2se emissions
                setNames((dimSums(EmiPe2Se, dim = 3)
-                         # add CCU and CO2 which is directly vented after capture from energy-related carbon sources (outside of CDR module)
-                         + (dimSums(vm_co2CCUshort, dim = 3) + v_co2capturevalve) * p_share_en_cco2
                          # add extraction energy-related CO2 emissions
                          + dimSums(v_emiEnFuelEx[, , "co2"], dim = 3))
                         * GtC_2_MtCO2,
@@ -391,11 +406,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                            + dimSums(mselect((1 - p_weights_cp) * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty1 = se_liq), dim = 3)
                            # emissions from coupled production technologies where liquids are coupled/second product
                            + dimSums(mselect(p_weights_cp * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty2 = se_liq), dim = 3)
-                           # add CO2 going into liquid synfuels,
-                           # add v_co2capturevalve (small!) such that it adds up with above levels, has to be added somehwhere
-                           + dimReduce(vm_co2CCUshort[, , "MeOH"] + v_co2capturevalve) * p_share_en_cco2 +
-                             # add energy-related extraction CO2 emissions (small!), has to be added somehwhere such that it adds up with above levels
-                             dimSums(v_emiEnFuelEx[, , "co2"], dim = 3)
+                           # add energy-related extraction CO2 emissions (small!), has to be added somehwhere such that it adds up with above levels
+                           + dimSums(v_emiEnFuelEx[, , "co2"], dim = 3)
                ) * GtC_2_MtCO2,
                "Emi|CO2|Energy|Supply|+|Liquids w/ couple prod (Mt CO2/yr)"),
                # supply-side gases emissions (w/ coupled production)
@@ -404,9 +416,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                            # emissions from coupled production technologies where gases are first product
                            + dimSums(mselect((1 - p_weights_cp) * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty1 = se_gas), dim = 3)
                            # emissions from coupled production technologies where gases are coupled/second product
-                           + dimSums(mselect(p_weights_cp * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty2 = se_gas), dim = 3)
-                           # add CO2 going into synthetic gas
-                           + dimReduce(vm_co2CCUshort[, , "h22ch4"] * p_share_en_cco2)) * GtC_2_MtCO2,
+                           + dimSums(mselect(p_weights_cp * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty2 = se_gas), dim = 3)) * GtC_2_MtCO2,
                           "Emi|CO2|Energy|Supply|+|Gases w/ couple prod (Mt CO2/yr)")
   )
 
