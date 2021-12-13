@@ -381,6 +381,7 @@ compareScenarios <- function(mif, hist,
              "Emi|GHG|Waste (Mt CO2eq/yr)",
              "Emi|GHG|F-Gas (Mt CO2eq/yr)",
              "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
              "Emi|CO2|CDR|EW (Mt CO2/yr)")
   
@@ -421,6 +422,7 @@ compareScenarios <- function(mif, hist,
              "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
              "Emi|CO2|Gross|Energy|Supply|Electricity (Mt CO2/yr)",
              "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
              "Emi|CO2|CDR|EW (Mt CO2/yr)")
              
@@ -1840,6 +1842,7 @@ compareScenarios <- function(mif, hist,
   items <- c("Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
              "Emi|CO2|Land-Use Change (Mt CO2/yr)",
              "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
              "Emi|CO2|CDR|EW (Mt CO2/yr)")
   
@@ -1870,7 +1873,9 @@ compareScenarios <- function(mif, hist,
   tot <-"Emi|CO2|CDR (Mt CO2/yr)"
   items <- c(
              "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)",
-             "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)",
+             "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)",
+             "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
              "Emi|CO2|CDR|EW (Mt CO2/yr)")
   
@@ -1925,6 +1930,15 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                          ylab='Emi|CO2|CDR|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],x_hist=NULL,
+                         ylab='Emi|CO2|CDR|Industry CCS|Synthetic Fuels [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                         ylab='Emi|CO2|CDR|Industry CCS|Synthetic Fuels [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
 
@@ -1985,7 +1999,9 @@ compareScenarios <- function(mif, hist,
   tot <-"Emi|CO2|Cumulated (Mt CO2)"
   items <- c("Emi|CO2|Cumulated|Gross|Energy and Industrial Processes (Mt CO2)",
              "Emi|CO2|Cumulated|Land-Use Change (Mt CO2)",
-             "Emi|CO2|Cumulated|CDR|BECCS (Mt CO2)",
+             "Emi|CO2|Cumulated|CDR|BECCS|Pe2Se (Mt CO2)",
+             "Emi|CO2|Cumulated|CDR|BECCS|Industry (Mt CO2)",
+             "Emi|CO2|Cumulated|CDR|Industry CCS|Synthetic Fuels (Mt CO2)",
              "Emi|CO2|Cumulated|CDR|DACCS (Mt CO2)",
              "Emi|CO2|Cumulated|CDR|EW (Mt CO2)")
   
