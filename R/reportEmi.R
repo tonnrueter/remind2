@@ -228,17 +228,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   } else {
     mselect(v_emiTeDetailMkt, all_enty2 = "cco2")
   }
-  # calculate share of captured CO2 by energy system from total captured carbon (incl. the carbon from CDR module), 
-  # to only reattribute energy system captured CO2 to synfuel production, not DAC CO2 and industry CO2
-  # p_share_en_cco2 <- (dimSums(sel_v_emiTeDetailMkt_cco2, dim = 3) + dimSums(vm_emiIndCCS, dim = 3)) / dimSums(vm_co2capture, dim = 3)
-  # p_share_en_cco2[is.na(p_share_en_cco2)] <- 0
-  
-  p_share_en_cco2 <- (dimSums(sel_v_emiTeDetailMkt_cco2, dim = 3)) / dimSums(vm_co2capture, dim = 3)
-  p_share_en_cco2[is.na(p_share_en_cco2)] <- 0
-  
-  
-
-  
 
 
   # supply and demand emissions of conversion technologies
