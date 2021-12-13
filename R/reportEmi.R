@@ -1948,12 +1948,16 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                      "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)",
                      "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
                      "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)",
+                     "Emi|CO2|CDR (Mt CO2/yr)",
                      "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+                     "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)",
+                     "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)",
+                     "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
                      "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
                      "Emi|CO2|CDR|EW (Mt CO2/yr)",
                      "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)")
 
-
+  
   # variable names for cumulated emissions variables
   names.cumul <- vars.cumulate
   names.cumul <- gsub("Emi\\|CO2", "Emi|CO2|Cumulated", names.cumul)
