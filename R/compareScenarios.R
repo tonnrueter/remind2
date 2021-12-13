@@ -1602,20 +1602,16 @@ compareScenarios <- function(mif, hist,
               "Emi|GHGtot|target|55% (Mt CO2-equiv/yr)"="-55% by 2030 (vs. 1990)",
               "Emi|GHGtot|target|65% (Mt CO2-equiv/yr)"="-65% by 2030 (vs. 1990)")
   
-  # remove as soon as renaming is done
-  if ("Emi|GHGtot (Mt CO2-equiv/yr)" %in% getNames(histData, dim=3)) {
-    ghg_var <- "Emi|GHGtot (Mt CO2-equiv/yr)"  # old name
-  } else {
-    ghg_var <- "Emi|GHG (Mt CO2eq/yr)"  # new name
-  }
-
-  p <- mipLineHistorical(data[mainReg,,"Emi|GHG (Mt CO2eq/yr)"],x_hist=histData[mainReg,,ghg_var],
+  # combine historical data with old and new name for total GHG variables
+  var_ghg <- histData[,,intersect(c("Emi|GHG (Mt CO2eq/yr)", "Emi|GHGtot (Mt CO2-equiv/yr)"), getNames(histData,dim=3))]
+  
+  p <- mipLineHistorical(data[mainReg,,"Emi|GHG (Mt CO2eq/yr)"],x_hist=var_ghg[mainReg,,],
                          ylab='Total GHG Emisions w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                          hlines=if(all(names(targets) %in% getNames(histData, dim=3)) && (!(any(is.na(histData[mainReg,2030,names(targets)]))))) histData[mainReg,2030,names(targets)] else NULL,
                          hlines.labels=targets)
   swfigure(sw,print,p,sw_option="height=8,width=8")  
 
-  p <- mipLineHistorical(data[,,"Emi|GHG (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=mbind(histData[,,ghg_var][mainReg,,,invert=TRUE],histData[,,ghg_var][mainReg,,,invert=TRUE]),
+  p <- mipLineHistorical(data[,,"Emi|GHG (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=var_ghg[mainReg,,,invert=TRUE],
                          ylab='Total GHG Emisions w/o Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),
                          hlines=if(all(names(targets) %in% getNames(histData, dim=3)) && (!(any(is.na(histData[,2030,names(targets)][mainReg,,,invert=TRUE]))))) histData[,2030,names(targets)][mainReg,,,invert=TRUE] else NULL,
                          hlines.labels=targets)
@@ -1639,7 +1635,7 @@ compareScenarios <- function(mif, hist,
   
   if (all(c(items) %in% getNames(histData, dim=3))) {
     swlatex(sw,"\\subsubsection{GHG Energy}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Energy (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Energy (Mt CO2eq/yr)"][,,"historical.UNFCCC.Emi|GHG|Energy (Mt CO2eq/yr)",invert=TRUE],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Energy (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Energy (Mt CO2eq/yr)"],
                            ylab='Emi|GHG|Energy [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|GHG|Energy (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|Energy (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
@@ -1647,7 +1643,7 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{GHG Industrial Processes}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Industrial Processes (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Industrial Processes (Mt CO2eq/yr)"][,,"historical.UNFCCC.Emi|GHG|Industrial Processes (Mt CO2eq/yr)",invert=TRUE],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Industrial Processes (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Industrial Processes (Mt CO2eq/yr)"],
                            ylab='Emi|GHG|Industrial Processes [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|GHG|Industrial Processes (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|Industrial Processes (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
@@ -1655,7 +1651,7 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{GHG Agriculture}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Agriculture (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Agriculture (Mt CO2eq/yr)"][,,"historical.UNFCCC.Emi|GHG|Agriculture (Mt CO2eq/yr)",invert=TRUE],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Agriculture (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Agriculture (Mt CO2eq/yr)"],
                            ylab='Emi|GHG|Agriculture [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|GHG|Agriculture (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|Agriculture (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
@@ -1663,11 +1659,19 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{GHG Waste}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Waste (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Waste (Mt CO2eq/yr)"][,,"historical.UNFCCC.Emi|GHG|Waste (Mt CO2eq/yr)",invert=TRUE],
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Waste (Mt CO2eq/yr)"],x_hist=histData[mainReg,,"Emi|GHG|Waste (Mt CO2eq/yr)"],
                            ylab='Emi|GHG|Waste [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|GHG|Waste (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|GHG|Waste (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|Waste [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+    
+    swlatex(sw,"\\subsubsection{GHG Land-Use Change}")
+    p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Land-Use Change (Mt CO2eq/yr)"],
+                           ylab='Emi|GHG|Waste [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Emi|GHG|Land-Use Change (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
+                           ylab='Emi|GHG|Land-Use Change [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   }
   # emission markets
@@ -1768,7 +1772,7 @@ compareScenarios <- function(mif, hist,
 
 
   swlatex(sw,"\\subsubsection{Total CO2}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2 (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2 (Mt CO2/yr)"][,,"historical.UNFCCC.Emi|CO2 (Mt CO2/yr)", invert=TRUE],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2 (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2 (Mt CO2/yr)"],
                          ylab='Emi|CO2 [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2 (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2 (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -1809,7 +1813,7 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{Energy}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy (Mt CO2/yr)"][,,"historical.UNFCCC.Emi|CO2|Energy (Mt CO2/yr)", invert=TRUE],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy  [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|CO2|Energy (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -1819,7 +1823,7 @@ compareScenarios <- function(mif, hist,
     ## ---- Emissions CO2 Energy Supply ----
   
     swlatex(sw,"\\subsubsection{Energy Supply}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"][,,"historical.CEDS.Emi|CO2|Energy|Supply (Mt CO2/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"],histData[mainReg,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Supply [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Supply (Mt CO2/yr)"][mainReg,,"historical.UBA.Emi|CO2|Energy|Supply (Mt CO2/yr)",invert=TRUE],
@@ -1844,7 +1848,7 @@ compareScenarios <- function(mif, hist,
       histData[,,"historical.CEDS.Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"] +
       histData[,,"historical.CEDS.Emi|CO2|Energy|Supply|Heat (Mt CO2/yr)"]
   
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"], x_hist=histData[mainReg,,"Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"][,,"historical.CEDS.Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"], x_hist=histData[mainReg,,"Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Supply|Electricity and Heat [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Supply|Electricity and Heat (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -1877,7 +1881,7 @@ compareScenarios <- function(mif, hist,
   
   if (all(c(items) %in% getNames(data, dim=3)) & all(c(items_h) %in% getNames(histData, dim=3))) {
     swlatex(sw,"\\subsubsection{Buildings}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"][,,"historical.CEDS.Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Demand|Buildings [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -1885,7 +1889,7 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{Industry}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"][,,"historical.CEDS.Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Demand|Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -1912,15 +1916,15 @@ compareScenarios <- function(mif, hist,
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{Transport}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"][,,"historical.CEDS.Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Demand|Transport [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
-    p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"][mainReg,,"historical.UBA.Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)",invert=TRUE],
+    p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Demand|Transport [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
     swfigure(sw,print,p,sw_option="height=9,width=8")
   
     swlatex(sw,"\\subsubsection{International Bunkers}")
-    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"][,,"historical.CEDS.Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"],
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"],
                            ylab='Emi|CO2|Energy|Demand|Transport|International Bunkers [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -2456,7 +2460,7 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\twocolumn")
   
   swlatex(sw,"\\subsubsection{Steel}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)"][,,"historical.UNFCCC.Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)",invert=TRUE],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)"],
                          ylab='Emi|CO2|Energy|Demand|Industry|Steel [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Industry|Steel (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -2464,7 +2468,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\subsubsection{Cement}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)"][,,"historical.UNFCCC.Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)",invert=TRUE],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)"],
                          ylab='Emi|CO2|Energy|Demand|Industry|Cement [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Industry|Cement (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -2472,7 +2476,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\subsubsection{Chemicals}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)"][,,"historical.UNFCCC.Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)",invert=TRUE],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)"],
                          ylab='Emi|CO2|Energy|Demand|Industry|Chemicals [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Industry|Chemicals (Mt CO2/yr)"][mainReg,,,invert=TRUE],
@@ -2480,7 +2484,7 @@ compareScenarios <- function(mif, hist,
   swfigure(sw,print,p,sw_option="height=9,width=8")
 
   swlatex(sw,"\\subsubsection{Other Industry}")
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)"][,,"historical.UNFCCC.Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)",invert=TRUE],
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)"],
                          ylab='Emi|CO2|Energy|Demand|Industry|Other Industry [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
   swfigure(sw,print,p,sw_option="height=8,width=8")
   p <- mipLineHistorical(data[,,"Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Energy|Demand|Industry|Other Industry (Mt CO2/yr)"][mainReg,,,invert=TRUE],
