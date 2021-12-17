@@ -567,8 +567,9 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
       pm_fedemand <- readGDX(gdx, "pm_fedemand")[, t, ]
       feUeEff_build <- p36_uedemand_build[,, names(carrierBuild)] /
         pm_fedemand[,, names(carrierBuild)]
-      feUeEff_build <- mbind(feUeEff_build,
-        setNames(feUeEff_build[,, "fegab"], "feh2b")) 
+      # assume efficiency for all gases also for H2
+      feUeEff_build[,, "feh2b"] <- setNames(feUeEff_build[,, "fegab"], "feh2b")
+      # apply efficiency to get UE levels
       uedemand_build <- vm_cesIO[,, names(carrierBuild)] * feUeEff_build
       getItems(uedemand_build, 3) <-
         gsub("^FE", "UE", carrierBuild)[getItems(uedemand_build, 3)]
@@ -579,6 +580,12 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
         setNames(dimSums(out[,, gsub("^FE", "UE", carrierBuildHeating)],
                          dim = 3, na.rm = TRUE),
                  "UE|Buildings|Heating (EJ/yr)"))
+      
+      # sum of buildings UE demand
+      out <- mbind(out,
+                   setNames(dimSums(out[,, gsub("^FE", "UE", carrierBuild)],
+                                    dim = 3, na.rm = TRUE),
+                            "UE|Buildings (EJ/yr)"))
     }
   } else if (buil_mod %in% c("services_putty", "services_with_capital")){
     
