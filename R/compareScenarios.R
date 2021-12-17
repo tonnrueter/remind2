@@ -2054,16 +2054,14 @@ compareScenarios <- function(mif, hist,
                          ylab='Emi|CO2|CDR|Land-Use Change [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  
-  
-  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Industry CCS|Synthetic Fuels [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
-  swfigure(sw,print,p,sw_option="height=8,width=8")
-  p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
-                         ylab='Emi|CO2|CDR|Industry CCS|Synthetic Fuels [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
-  swfigure(sw,print,p,sw_option="height=9,width=8")
-
-
+  if("Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)" %in% magclass::getNames(data, dim = 3)){
+    p <- mipLineHistorical(data[mainReg,,"Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],x_hist=NULL,
+                           ylab='Emi|CO2|CDR|Industry CCS|Synthetic Fuels [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+    swfigure(sw,print,p,sw_option="height=8,width=8")
+    p <- mipLineHistorical(data[,,"Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
+                           ylab='Emi|CO2|CDR|Industry CCS|Synthetic Fuels [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+    swfigure(sw,print,p,sw_option="height=9,width=8")
+  }
 
   ## ---- Cumulated Emissions ----
 
