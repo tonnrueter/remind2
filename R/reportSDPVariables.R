@@ -29,7 +29,9 @@ reportSDPVariables <- function(output=NULL) {
     tmp <- NULL
     
 
-    tmp <- mbind(if("UE|per capita|Transport|Pass (GJ/cap/yr)" %!in% getNames(output)){
+
+    tmp <- mbind(
+      if("UE|per capita|Transport|Pass (GJ/cap/yr)" %!in% getNames(output)){
       setNames(
         1e3 * (output[,,"FE|Transport|Pass|+|Liquids (EJ/yr)"] * 0.23
                + output[,,"FE|Transport|Pass|+|Electricity (EJ/yr)"] * 0.64
@@ -73,7 +75,7 @@ reportSDPVariables <- function(output=NULL) {
            + output[,,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"] * 0.36),
         "UE|Electricity and Hydrogen|Share|Transport|Pass (%)")},
       
-      if("Intensity|GDP|Final Energy|Transport (MJ/US$2005)" %!in% c){
+      if("Intensity|GDP|Final Energy|Transport (MJ/US$2005)" %!in% getNames(output)){
       setNames(
         1e3*(output[,,"FE|Transport|+|Electricity (EJ/yr)"]
              + output[,,"FE|Transport|+|Liquids (EJ/yr)"]
@@ -127,7 +129,8 @@ reportSDPVariables <- function(output=NULL) {
       if("UE|Industry|Electricity (EJ/yr)" %!in% getNames(output)){
       setNames(
         output[, , "FE|Industry|+|Electricity (EJ/yr)"] / 1.824715164,
-        "UE|Industry|Electricity (EJ/yr)")})
+        "UE|Industry|Electricity (EJ/yr)")}
+      )
     
     
     tmp <- mbind(
@@ -154,28 +157,36 @@ reportSDPVariables <- function(output=NULL) {
   }
   output <- mbind(output,addIndustry_UE_from_FE(output))
   
-  #Robin currently adds UE and the Energy services is reported already, just calculate:
-  #UE Buildings per capita & "FE|per capita|Buildings|Solids|Biomass|Traditional"
-  
-  #from "calcSDPBuildings.R"
-  #output <- addBuildings(output)
-  
-  
-  # UE buildings in still missing, see above
-  
-  
+  addUEperCapForBuildings <- function(output){
+    
+    tmp <- NULL
+    
+    
+    tmp <- mbind(
+      if("UE|per capita|Buildings (GJ/cap/yr)" %!in% getNames(output)){
+        setNames(
+          output[,,"UE|Buildings (EJ/yr)"] 
+          / output[,,"Population (million)"] * 1e3,
+          "UE|per capita|Buildings (GJ/cap/yr)")})
+    
+    
+    return(tmp) 
+    
+    
+  }
+  output <- mbind(output,addUEperCapForBuildings(output))
   
   #SDG|SDG07|Intensity|GDP|UE
-  #addIntensityUE <- function(output){
-  #  tmp <- mbind(
-  #if("Intensity|GDP|UE (MJ/US$2005's (EJ/yr))" %!in% getNames(output)){
-  #    setNames(
-  #      ((( output[,,"UE|per capita|Transport (GJ/cap/yr)"] + output[,,"UE|per capita|Industry (GJ/cap/yr)"]) / 1e3 *output[,,"Population (million)"]) +output[,,"UE|Buildings (EJ/yr)"] * 1e12) / (output[,,"GDP|MER (billion US$2005/yr)"] * 1e9),
-  #      "Intensity|GDP|UE (MJ/US$2005's (EJ/yr))")})
+  addIntensityUE <- function(output){
+    tmp <- mbind(
+  if("Intensity|GDP|UE (MJ/US$2005's (EJ/yr))" %!in% getNames(output)){
+      setNames(
+        ((output[,,"UE|per capita|Transport (GJ/cap/yr)"] + output[,,"UE|per capita|Industry (GJ/cap/yr)"]+ output[,,"UE|per capita|Buildings (GJ/cap/yr)"]) / 1e3 *output[,,"Population (million)"]) / (output[,,"GDP|MER (billion US$2005/yr)"] * 1e9),
+        "Intensity|GDP|UE (MJ/US$2005's (EJ/yr))")})
     
-  #  return(tmp)  
-  #}
-  #output <- mbind(output,addIntensityUE(output))
+    return(tmp)  
+  }
+  output <- mbind(output,addIntensityUE(output))
   
   
   return(output)
