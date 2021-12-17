@@ -22,6 +22,7 @@ compareScenarios2 <- function(mif,
   y_hist = c(seq(1960, 2020, 1), seq(2025, 2100, 5)),
   y_bar = c(2010, 2030, 2050, 2100),
   reg = NULL,
+  mainReg = "World",
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
   outputFormat = "html_document",
@@ -32,8 +33,8 @@ compareScenarios2 <- function(mif,
     y = y,
     y_hist = y_hist,
     y_bar = y_bar,
-    reg = reg)
-  # TODO: should be called once for each output format. There is a problem with the associated output dirs when output format has length greater than 1 
+    reg = reg,
+    mainReg = mainReg)
   rmarkdown::render(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"),
     intermediates_dir = outputDir,

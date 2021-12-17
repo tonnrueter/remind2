@@ -1,0 +1,17 @@
+# Climate
+
+```{r eval=FALSE}
+## ---- ++++ C L I M A T E ++++ ----
+
+  if(all(c("Forcing (W/m2)","Temperature|Global Mean (K)") %in% getNames(data,dim=3))){
+    
+    swlatex(sw,"\\section{Climate}")
+  
+    swfigure(sw,mipLineHistorical,data[,,"Forcing (W/m2)"],x_hist=NULL,
+             ylab='Forcing [W/m2]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),sw_option="height=10,width=9")
+  
+    swfigure(sw,mipLineHistorical,data[,,"Temperature|Global Mean (K)"],x_hist=NULL,
+             ylab='Temperature|Global Mean [K]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),sw_option="height=10,width=9")
+  }
+```
+

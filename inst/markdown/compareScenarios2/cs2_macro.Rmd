@@ -4,53 +4,53 @@
 ## Consumption
 
 ```{r Consumption}
-show_default_line_plots(data, "Consumption")
+showLinePlots(data, "Consumption")
 ```
 
 
 ## Population
 
 ```{r Population}
-show_default_line_plots(data, "Population")
+showLinePlots(data, "Population")
 ```
 
 ## GDP - MER
 
 ```{r GDP-MER}
-show_default_line_plots(data, "GDP|MER")
+showLinePlots(data, "GDP|MER")
 ```
 
 
 ## GDP - PPP
 
 ```{r GDP-PPP}
-show_default_line_plots(data, "GDP|PPP")
+showLinePlots(data, "GDP|PPP")
 ```
 
 ## GDP - PPP per Capita
 
 ```{r GDP-PPP pCap}
-show_default_line_plots(data, "GDP|PPP pCap")
+showLinePlots(data, "GDP|PPP pCap")
 ```
 
 ## Capital Stock
 
 
 ```{r Capital Stock}
-show_default_line_plots(data, "Capital Stock|Non-ESM")
+showLinePlots(data, "Capital Stock|Non-ESM")
 ```
 
 ## Investments
 
 ```{r Investments-Non-ESM}
-show_default_line_plots(data, "Investments|Non-ESM")
+showLinePlots(data, "Investments|Non-ESM")
 ```
 
 
 ## Interest Rate
 
 ```{r Interest Rate}
-show_default_line_plots(data, "Interest Rate (t+1)/(t-1)|Real")
+showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 ```
 
 ## Prices
@@ -69,7 +69,7 @@ variables %>%
   str_subset("^Price\\|Primary Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
-walk(vars, show_default_line_plots, data=d)
+walk(vars, showLinePlots, data=d)
 ```
 
 ### SE Prices
@@ -80,7 +80,7 @@ variables %>%
   str_subset("^Price\\|Secondary Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
-walk(vars, show_default_line_plots, data=d)
+walk(vars, showLinePlots, data=d)
 ```
 
 ### FE Prices
@@ -93,22 +93,22 @@ variables %>%
 
 vars %>% 
   str_subset("Liquids") %>% 
-  walk(show_default_line_plots, data=d)
+  walk(showLinePlots, data=d)
 vars %>% 
   str_subset("Gases") %>% 
-  walk(show_default_line_plots, data=d)
+  walk(showLinePlots, data=d)
 vars %>% 
   str_subset("Solids") %>% 
-  walk(show_default_line_plots, data=d)
+  walk(showLinePlots, data=d)
 vars %>% 
   str_subset("Electricity") %>% 
-  walk(show_default_line_plots, data=d)
+  walk(showLinePlots, data=d)
 vars %>% 
   str_subset("Hydrogen") %>% 
-  walk(show_default_line_plots, data=d)
+  walk(showLinePlots, data=d)
 vars %>% 
   str_subset("Heat") %>% 
-  walk(show_default_line_plots, data=d)
+  walk(showLinePlots, data=d)
 ``` 
 
 ## Trade
@@ -118,7 +118,7 @@ variables %>%
   str_subset("^Trade\\|") %>% 
   str_subset("Exports|Imports|Volume|Value|Uranium", negate=TRUE) ->
   vars
-walk(vars, show_default_line_plots, data=data)
+walk(vars, showLinePlots, data=data)
 ```
 
 ## FE intensity of GDP
@@ -128,7 +128,7 @@ items <- c(
   "FE|Transport pGDP",
 	"FE|Buildings pGDP",
   "FE|Industry pGDP")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE intensity of GDP, linegraph (by GDP)
@@ -222,5 +222,5 @@ kaya_rel %>%
 
 ```{r kaya_vars plot}
 kaya_vars <- kaya_units$variable
-walk(kaya_vars, show_default_line_plots, data=kaya_rel)
+walk(kaya_vars, showLinePlots, data=kaya_rel)
 ```

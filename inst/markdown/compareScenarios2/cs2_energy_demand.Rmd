@@ -1,0 +1,1197 @@
+# Energy Demand
+## Final Energy line plot
+### Total
+```{r eval=FALSE}
+swlatex(sw, "\\subsubsection{Total}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE (EJ/yr)"],
+    ylab = 'FE [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = histData[, , "FE (EJ/yr)"][mainReg, , , invert = TRUE],
+    ylab = 'FE [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+## ---- FE Line by Carrier ----
+
+swlatex(sw, "\\subsubsection{FE|Electricity}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Electricity (EJ/yr)"],
+    x_hist = hist_edge[mainReg, , "FE|Electricity (EJ/yr)"],
+    ylab = 'FE|Electricity [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Electricity (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = hist_edge[, , "FE|Electricity (EJ/yr)"][mainReg, , , invert = TRUE],
+    ylab = 'FE|Electricity [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+swlatex(sw, "\\subsubsection{FE|Gases}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Gases (EJ/yr)"],
+    x_hist = hist_edge[mainReg, , "FE|Gases (EJ/yr)"],
+    ylab = 'FE|Gases [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Gases (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = hist_edge[, , "FE|Gases (EJ/yr)"][mainReg, , , invert = TRUE],
+    ylab = 'FE|Gases [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+swlatex(sw, "\\subsubsection{FE|Heat}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Heat (EJ/yr)"],
+    x_hist = NULL,
+    ylab = 'FE|Heat [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Heat (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = NULL,
+    ylab = 'FE|Heat [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+swlatex(sw, "\\subsubsection{FE|Solids}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Solids (EJ/yr)"],
+    x_hist = hist_edge[mainReg, , "FE|Solids (EJ/yr)"],
+    ylab = 'FE|Solids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Solids (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = hist_edge[, , "FE|Solids (EJ/yr)"][mainReg, , , invert = TRUE],
+    ylab = 'FE|Solids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+swlatex(sw, "\\subsubsection{FE|Liquids}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Liquids (EJ/yr)"],
+    x_hist = hist_edge[mainReg, , "FE|Liquids (EJ/yr)"],
+    ylab = 'FE|Liquids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Liquids (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = hist_edge[, , "FE|Liquids (EJ/yr)"][mainReg, , , invert = TRUE],
+    ylab = 'FE|Liquids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+swlatex(sw, "\\subsubsection{FE|Hydrogen}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Hydrogen (EJ/yr)"],
+    x_hist = NULL,
+    ylab = 'FE|Hydrogen [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Hydrogen (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = NULL,
+    ylab = 'FE|Hydrogen [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+## ---- FE Line Buildings ----
+
+if ("FE|Buildings (EJ/yr)" %in% magclass::getNames(data, dim = 3)) {
+  swlatex(sw, "\\subsection{Buildings Final Energy}")
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings (EJ/yr)"],
+      x_hist = histData[mainReg, , "FE|Buildings (EJ/yr)"],
+      ylab = 'FE|Buildings [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData[, , "FE|Buildings (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Buildings [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\subsubsection{per carrier}")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings|Electricity (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Buildings|Electricity (EJ/yr)"],
+      ylab = 'FE|Buildings|Electricity [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings|Electricity (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Buildings|Electricity (EJ/yr)"][mainReg, , , invert =
+                                                                   TRUE],
+      ylab = 'FE|Buildings|Electricity [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings|Gases (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Buildings|Gases (EJ/yr)"],
+      ylab = 'FE|Buildings|Gases [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings|Gases (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Buildings|Gases (EJ/yr)"][mainReg, , , invert =
+                                                             TRUE],
+      ylab = 'FE|Buildings|Gases [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings|Heat (EJ/yr)"],
+      x_hist = histData[mainReg, , "FE|Buildings|Heat (EJ/yr)"],
+      ylab = 'FE|Buildings|Heat [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings|Heat (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData[, , "FE|Buildings|Heat (EJ/yr)"][mainReg, , , invert =
+                                                           TRUE],
+      ylab = 'FE|Buildings|Heat [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings|Solids (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Buildings|Solids (EJ/yr)"],
+      ylab = 'FE|Buildings|Solids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings|Solids (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Buildings|Solids (EJ/yr)"][mainReg, , , invert =
+                                                              TRUE],
+      ylab = 'FE|Buildings|Solids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings|Liquids (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Buildings|Liquids (EJ/yr)"],
+      ylab = 'FE|Buildings|Liquids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings|Liquids (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Buildings|Liquids (EJ/yr)"][mainReg, , , invert =
+                                                               TRUE],
+      ylab = 'FE|Buildings|Liquids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Buildings|Hydrogen (EJ/yr)"],
+      ,
+      ylab = 'FE|Buildings|Hydrogen [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Buildings|Hydrogen (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Buildings|Hydrogen [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+}
+
+## ---- FE Line Industry ----
+
+if ("FE|Industry (EJ/yr)" %in% magclass::getNames(data, dim = 3)) {
+  swlatex(sw, "\\subsection{Industry Final Energy}")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry (EJ/yr)"],
+      x_hist = histData[mainReg, , "FE|Industry (EJ/yr)"],
+      ylab = 'FE|Industry [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData[, , "FE|Industry (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\subsubsection{per carrier}")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Electricity (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Industry|Electricity (EJ/yr)"],
+      ylab = 'FE|Industry|Electricity [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Electricity (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Industry|Electricity (EJ/yr)"][mainReg, , , invert =
+                                                                  TRUE],
+      ylab = 'FE|Industry|Electricity [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Gases (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Industry|Gases (EJ/yr)"],
+      ylab = 'FE|Industry|Gases [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Gases (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Industry|Gases (EJ/yr)"][mainReg, , , invert =
+                                                            TRUE],
+      ylab = 'FE|Industry|Gases [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Heat (EJ/yr)"],
+      x_hist = histData[mainReg, , "FE|Industry|Heat (EJ/yr)"],
+      ylab = 'FE|Industry|Heat [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Heat (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData[, , "FE|Industry|Heat (EJ/yr)"][mainReg, , , invert =
+                                                          TRUE],
+      ylab = 'FE|Industry|Heat [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Solids (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Industry|Solids (EJ/yr)"],
+      ylab = 'FE|Industry|Solids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Solids (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Industry|Solids (EJ/yr)"][mainReg, , , invert =
+                                                             TRUE],
+      ylab = 'FE|Industry|Solids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Liquids (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Industry|Liquids (EJ/yr)"],
+      ylab = 'FE|Industry|Liquids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Liquids (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Industry|Liquids (EJ/yr)"][mainReg, , , invert =
+                                                              TRUE],
+      ylab = 'FE|Industry|Liquids [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Hydrogen (EJ/yr)"],
+      x_hist = hist_edge[mainReg, , "FE|Industry|Hydrogen (EJ/yr)"],
+      ylab = 'FE|Industry|Hydrogen [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Hydrogen (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = hist_edge[, , "FE|Industry|Hydrogen (EJ/yr)"][mainReg, , , invert =
+                                                               TRUE],
+      ylab = 'FE|Industry|Hydrogen [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+}
+
+
+# Biomass and Fossil (add historical data when available)
+
+items <- c(
+  "FE|Industry|Liquids|Biomass (EJ/yr)",
+  "FE|Industry|Solids|Biomass (EJ/yr)",
+  "FE|Industry|Gases|Biomass (EJ/yr)",
+  "FE|Industry|Liquids|Fossil (EJ/yr)",
+  "FE|Industry|Solids|Fossil (EJ/yr)",
+  "FE|Industry|Gases|Fossil (EJ/yr)"
+)
+
+if (all(c(items) %in% magclass::getNames(data, dim = 3))) {
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Liquids|Biomass (EJ/yr)"],
+      ylab = 'FE|Industry|Liquids|Biomass [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Liquids|Biomass (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry|Liquids|Biomass [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Gases|Biomass (EJ/yr)"],
+      ylab = 'FE|Industry|Gases|Biomass [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Gases|Biomass (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry|Gases|Biomass [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Solids|Biomass (EJ/yr)"],
+      ylab = 'FE|Industry|Solids|Biomass [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Solids|Biomass (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry|Solids|Biomass [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Liquids|Fossil (EJ/yr)"],
+      ylab = 'FE|Industry|Liquids|Fossil [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Liquids|Fossil (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry|Liquids|Fossil [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Gases|Fossil (EJ/yr)"],
+      ylab = 'FE|Industry|Gases|Fossil [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Gases|Fossil (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry|Gases|Fossil [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Solids|Fossil (EJ/yr)"],
+      ylab = 'FE|Industry|Solids|Fossil [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Solids|Fossil (EJ/yr)"][mainReg, , , invert = TRUE],
+      ylab = 'FE|Industry|Solids|Fossil [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+}
+
+
+## ---- FE Industry Subsectors ----
+
+# Industry subsectors
+
+items <- c(
+  "FE|Industry|Steel (EJ/yr)",
+  "FE|Industry|Steel|Primary (EJ/yr)",
+  "FE|Industry|Steel|Secondary (EJ/yr)",
+  "FE|Industry|Cement (EJ/yr)",
+  "FE|Industry|Chemicals (EJ/yr)",
+  "FE|Industry|Other Industry (EJ/yr)"
+)
+
+if (all(c(items) %in% magclass::getNames(data, dim = 3))) {
+  swlatex(sw, "\\subsubsection{subsectors}")
+  
+  swlatex(sw, "\\paragraph{FE mix}")
+  
+  # FE mix steel
+  tot <- "FE|Industry|Steel (EJ/yr)"
+  
+  items <- c (
+    "FE|Industry|Steel|Heat (EJ/yr)",
+    "FE|Industry|Steel|Hydrogen (EJ/yr)",
+    "FE|Industry|Steel|Solids (EJ/yr)",
+    "FE|Industry|Steel|Liquids (EJ/yr)",
+    "FE|Industry|Steel|Gases (EJ/yr)",
+    "FE|Industry|Steel|Primary|Electricity (EJ/yr)",
+    "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"
+  )
+  
+  var <- data[, , intersect(items, getNames(data, dim = 3))]
+  
+  p <- mipArea(var[mainReg, , ], scales = "free_y")
+  p <- p + theme(legend.position = "none") +
+    scale_y_continuous("FE|Industry|Steel (EJ/yr)") +
+    geom_line(
+      data = as.quitte(data[mainReg, , tot]),
+      mapping = aes(period, value),
+      size = 1.3
+    )
+  
+  
+  swfigure(sw, print, p, sw_option = "height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg, y_bar, ])
+  p <- p + theme(legend.position = "none")
+  swfigure(sw, print, p, sw_option = "height=4.5,width=7")
+  
+  p <- mipBarYearData(var[, y_bar, ][mainReg, , , invert = TRUE])
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\onecolumn")
+  p <- mipArea(var[mainReg, , , invert = TRUE], scales = "free_y")
+  swfigure(sw, print, p, sw_option = "height=8,width=16")
+  swlatex(sw, "\\twocolumn")
+  
+  
+  # FE mix cement
+  tot <- "FE|Industry|Cement (EJ/yr)"
+  
+  items <- c (
+    "FE|Industry|Cement|Heat (EJ/yr)",
+    "FE|Industry|Cement|Hydrogen (EJ/yr)",
+    "FE|Industry|Cement|Solids (EJ/yr)",
+    "FE|Industry|Cement|Liquids (EJ/yr)",
+    "FE|Industry|Cement|Gases (EJ/yr)",
+    "FE|Industry|Cement|Electricity (EJ/yr)"
+  )
+  
+  var <- data[, , intersect(items, getNames(data, dim = 3))]
+  
+  p <- mipArea(var[mainReg, , ], scales = "free_y")
+  p <- p + theme(legend.position = "none") +
+    scale_y_continuous("FE|Industry|Cement (EJ/yr)") +
+    geom_line(
+      data = as.quitte(data[mainReg, , tot]),
+      mapping = aes(period, value),
+      size = 1.3
+    )
+  
+  
+  swfigure(sw, print, p, sw_option = "height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg, y_bar, ])
+  p <- p + theme(legend.position = "none")
+  swfigure(sw, print, p, sw_option = "height=4.5,width=7")
+  
+  p <- mipBarYearData(var[, y_bar, ][mainReg, , , invert = TRUE])
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\onecolumn")
+  p <- mipArea(var[mainReg, , , invert = TRUE], scales = "free_y")
+  swfigure(sw, print, p, sw_option = "height=8,width=16")
+  swlatex(sw, "\\twocolumn")
+  
+  
+  # FE mix chemicals
+  tot <- "FE|Industry|Chemicals (EJ/yr)"
+  
+  items <- c (
+    "FE|Industry|Chemicals|Heat (EJ/yr)",
+    "FE|Industry|Chemicals|Hydrogen (EJ/yr)",
+    "FE|Industry|Chemicals|Solids (EJ/yr)",
+    "FE|Industry|Chemicals|Liquids (EJ/yr)",
+    "FE|Industry|Chemicals|Gases (EJ/yr)",
+    "FE|Industry|Chemicals|Electricity|Mechanical work and low-temperature heat (EJ/yr)",
+    "FE|Industry|Chemicals|Electricity|High-temperature heat (EJ/yr)"
+  )
+  
+  var <- data[, , intersect(items, getNames(data, dim = 3))]
+  
+  p <- mipArea(var[mainReg, , ], scales = "free_y")
+  p <- p + theme(legend.position = "none") +
+    scale_y_continuous("FE|Industry|Chemicals (EJ/yr)") +
+    geom_line(
+      data = as.quitte(data[mainReg, , tot]),
+      mapping = aes(period, value),
+      size = 1.3
+    )
+  
+  
+  swfigure(sw, print, p, sw_option = "height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg, y_bar, ])
+  p <- p + theme(legend.position = "none")
+  swfigure(sw, print, p, sw_option = "height=4.5,width=7")
+  
+  p <- mipBarYearData(var[, y_bar, ][mainReg, , , invert = TRUE])
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\onecolumn")
+  p <- mipArea(var[mainReg, , , invert = TRUE], scales = "free_y")
+  swfigure(sw, print, p, sw_option = "height=8,width=16")
+  swlatex(sw, "\\twocolumn")
+  
+  
+  # FE mix other industry
+  tot <- "FE|Industry|Other Industry (EJ/yr)"
+  
+  items <- c (
+    "FE|Industry|Other Industry|Heat (EJ/yr)",
+    "FE|Industry|Other Industry|Hydrogen (EJ/yr)",
+    "FE|Industry|Other Industry|Solids (EJ/yr)",
+    "FE|Industry|Other Industry|Liquids (EJ/yr)",
+    "FE|Industry|Other Industry|Gases (EJ/yr)",
+    "FE|Industry|Other Industry|Electricity|Mechanical work and low-temperature heat (EJ/yr)",
+    "FE|Industry|Other Industry|Electricity|High-temperature heat (EJ/yr)"
+  )
+  
+  var <- data[, , intersect(items, getNames(data, dim = 3))]
+  
+  p <- mipArea(var[mainReg, , ], scales = "free_y")
+  p <- p + theme(legend.position = "none") +
+    scale_y_continuous("FE|Industry|Other Industry (EJ/yr)") +
+    geom_line(
+      data = as.quitte(data[mainReg, , tot]),
+      mapping = aes(period, value),
+      size = 1.3
+    )
+  
+  
+  swfigure(sw, print, p, sw_option = "height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg, y_bar, ])
+  p <- p + theme(legend.position = "none")
+  swfigure(sw, print, p, sw_option = "height=4.5,width=7")
+  
+  p <- mipBarYearData(var[, y_bar, ][mainReg, , , invert = TRUE])
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\onecolumn")
+  p <- mipArea(var[mainReg, , , invert = TRUE], scales = "free_y")
+  swfigure(sw, print, p, sw_option = "height=8,width=16")
+  swlatex(sw, "\\twocolumn")
+  
+  
+  
+  
+  swlatex(sw, "\\paragraph{FE line plots}")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Steel (EJ/yr)"],
+      x_hist = histData_NA[mainReg, , "FE|Industry|Steel (EJ/yr)"],
+      ylab = 'FE|Industry|Steel [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Steel (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData_NA[, , "FE|Industry|Steel (EJ/yr)"][c(mainReg, "GLO"), , , invert =
+                                                              TRUE],
+      ylab = 'FE|Industry|Steel [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Steel|Primary (EJ/yr)"],
+      x_hist = histData_NA[mainReg, , "FE|Industry|Steel|Primary (EJ/yr)"],
+      ylab = 'FE|Industry|Steel|Primary [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Steel|Primary (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData_NA[, , "FE|Industry|Steel|Primary (EJ/yr)"][c(mainReg, "GLO"), , , invert =
+                                                                      TRUE],
+      ylab = 'FE|Industry|Steel|Primary [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Steel|Secondary (EJ/yr)"],
+      x_hist = histData_NA[mainReg, , "FE|Industry|Steel|Secondary (EJ/yr)"],
+      ylab = 'FE|Industry|Steel|Secondary [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Steel|Secondary (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData_NA[, , "FE|Industry|Steel|Secondary (EJ/yr)"][c(mainReg, "GLO"), , , invert =
+                                                                        TRUE],
+      ylab = 'FE|Industry|Steel|Secondary [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Cement (EJ/yr)"],
+      x_hist = histData_NA[mainReg, , "FE|Industry|Cement (EJ/yr)"],
+      ylab = 'FE|Industry|Cement [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Cement (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData_NA[, , "FE|Industry|Cement (EJ/yr)"][c(mainReg, "GLO"), , , invert =
+                                                               TRUE],
+      ylab = 'FE|Industry|Cement [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Chemicals (EJ/yr)"],
+      x_hist = histData_NA[mainReg, , "FE|Industry|Chemicals (EJ/yr)"],
+      ylab = 'FE|Industry|Chemicals [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Chemicals (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData_NA[, , "FE|Industry|Chemicals (EJ/yr)"][c(mainReg, "GLO"), , , invert =
+                                                                  TRUE],
+      ylab = 'FE|Industry|Chemicals [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  p <-
+    mipLineHistorical(
+      data[mainReg, , "FE|Industry|Other Industry (EJ/yr)"],
+      x_hist = histData_NA[mainReg, , "FE|Industry|other (EJ/yr)"],
+      ylab = 'FE|Industry|Other Industry [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj")
+    )
+  swfigure(sw, print, p, sw_option = "height=8,width=8")
+  p <-
+    mipLineHistorical(
+      data[, , "FE|Industry|Other Industry (EJ/yr)"][mainReg, , , invert = TRUE],
+      x_hist = histData_NA[, , "FE|Industry|other (EJ/yr)"][c(mainReg, "GLO"), , , invert =
+                                                              TRUE],
+      ylab = 'FE|Industry|Other Industry [EJ/yr]',
+      scales = "free_y",
+      plot.priority = c("x_hist", "x", "x_proj"),
+      facet.ncol = 3
+    )
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  
+  
+  
+  
+}
+
+## ---- FE Line Transport ----
+
+swlatex(sw, "\\subsection{Transport Final Energy}")
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport w/ Bunkers (EJ/yr)"],
+    ylab = 'FE|Transport [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = histData[, , "FE|Transport w/ Bunkers (EJ/yr)"][mainReg, , , invert =
+                                                               TRUE],
+    ylab = 'FE|Transport [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|w/o Bunkers (EJ/yr)"],
+    x_hist = histData[mainReg, , "Eurostat.FE|Transport (EJ/yr)"],
+    ylab = 'FE|Transport|w/o Bunkers [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|w/o Bunkers (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = histData[, , "Eurostat.FE|Transport (EJ/yr)"][mainReg, , , invert =
+                                                             TRUE],
+    ylab = 'FE|Transport|w/o Bunkers [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+# Transport per type
+
+items <- c(
+  "FE|Transport|LDV|Liquids (EJ/yr)",
+  "FE|Transport|LDV|Gases (EJ/yr)",
+  "FE|Transport|LDV|Electricity (EJ/yr)",
+  "FE|Transport|LDV|Hydrogen (EJ/yr)",
+  "FE|Transport|non-LDV|w/o Bunkers|Liquids (EJ/yr)",
+  "FE|Transport|non-LDV|w/o Bunkers|Gases (EJ/yr)",
+  "FE|Transport|non-LDV|w/o Bunkers|Electricity (EJ/yr)",
+  "FE|Transport|non-LDV|w/o Bunkers|Hydrogen (EJ/yr)",
+  "FE|Transport|non-LDV|Bunkers|Liquids (EJ/yr)",
+  "FE|Transport|non-LDV|Bunkers|Gases (EJ/yr)",
+  "FE|Transport|non-LDV|Bunkers|Electricity (EJ/yr)",
+  "FE|Transport|non-LDV|Bunkers|Hydrogen (EJ/yr)"
+)
+
+if (all(c(items) %in% getNames(data, dim = 3))) {
+  swlatex(sw, "\\subsubsection{Transport per type}")
+  
+  tot <- "FE|Transport (EJ/yr)"
+  
+  var <- data[, , intersect(items, getNames(data, dim = 3))]
+  
+  p <-
+    mipArea(var[mainReg, , ], total = data[mainReg, , tot], scales = "free_y")
+  p <- p + theme(legend.position = "none")
+  swfigure(sw, print, p, sw_option = "height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg, y_bar, ])
+  p <- p + theme(legend.position = "none")
+  swfigure(sw, print, p, sw_option = "height=4.5,width=7")
+  
+  p <- mipBarYearData(var[, y_bar, ][mainReg, , , invert = TRUE]) +
+    guides(fill = guide_legend(ncol = 3))
+  swfigure(sw, print, p, sw_option = "height=9,width=8")
+  
+  swlatex(sw, "\\onecolumn")
+  p <-
+    mipArea(var[mainReg, , , invert = TRUE], total = data[, , tot][mainReg, , , invert =
+                                                                     TRUE], scales = "free_y")
+  swfigure(sw, print, p, sw_option = "height=8,width=16")
+  swlatex(sw, "\\twocolumn")
+  
+}
+
+swlatex(sw, "\\subsubsection{per carrier with Bunkers}")
+
+hist_bunkers <-
+  setNames(histData[, , "Eurostat.FE|Transport w/ Bunkers (EJ/yr)"] - histData[, , "Eurostat.FE|Transport (EJ/yr)"],
+           "historical.Eurostat.FE|Transport|Bunkers (EJ/yr)")
+hist_bunkers <- mbind(histData, hist_bunkers)
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|Bunkers (EJ/yr)"],
+    x_hist = hist_bunkers[mainReg, , "FE|Transport|Bunkers (EJ/yr)"],
+    ylab = 'FE|Transport|Bunkers [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|Bunkers (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = hist_bunkers[, , "FE|Transport|Bunkers (EJ/yr)"][mainReg, , , invert =
+                                                                TRUE],
+    ylab = 'FE|Transport|Bunkers [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|Liquids (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport|Liquids w/ Bunkers (EJ/yr)"],
+    ylab = 'FE|Transport|Liquids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|Liquids (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = histData[, , "FE|Transport|Liquids w/ Bunkers (EJ/yr)"][mainReg, , , invert =
+                                                                       TRUE],
+    ylab = 'FE|Transport|Liquids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|Gases (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport|Gases (EJ/yr)"],
+    ylab = 'FE|Transport|Gases [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|Gases (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = histData[, , "FE|Transport|Gases (EJ/yr)"][mainReg, , , invert =
+                                                          TRUE],
+    ylab = 'FE|Transport|Gases [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|Electricity (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport|Electricity (EJ/yr)"],
+    ylab = 'FE|Transport|Electricity [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|Electricity (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = histData[, , "FE|Transport|Electricity (EJ/yr)"][mainReg, , , invert =
+                                                                TRUE],
+    ylab = 'FE|Transport|Electricity [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|Hydrogen (EJ/yr)"],
+    x_hist = NULL,
+    ylab = 'FE|Transport|Hydrogen [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|Hydrogen (EJ/yr)"][mainReg, , , invert = TRUE],
+    x_hist = NULL,
+    ylab = 'FE|Transport|Hydrogen [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+swlatex(sw, "\\subsubsection{per carrier Without Bunkers}")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|w/o Bunkers|Liquids (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport|Liquids (EJ/yr)"],
+    ylab = 'FE|Transport|Liquids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|w/o Bunkers|Liquids (EJ/yr)"][mainReg, , , invert =
+                                                           TRUE],
+    x_hist = histData[, , "FE|Transport|Liquids (EJ/yr)"][mainReg, , , invert =
+                                                            TRUE],
+    ylab = 'FE|Transport|Liquids [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|w/o Bunkers|Gases (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport|Gases (EJ/yr)"],
+    ylab = 'FE|Transport|Gases [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|w/o Bunkers|Gases (EJ/yr)"][mainReg, , , invert =
+                                                         TRUE],
+    x_hist = histData[, , "FE|Transport|Gases (EJ/yr)"][mainReg, , , invert =
+                                                          TRUE],
+    ylab = 'FE|Transport|Gases [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|w/o Bunkers|Electricity (EJ/yr)"],
+    x_hist = histData[mainReg, , "FE|Transport|Electricity (EJ/yr)"],
+    ylab = 'FE|Transport|Electricity [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|w/o Bunkers|Electricity (EJ/yr)"][mainReg, , , invert =
+                                                               TRUE],
+    x_hist = histData[, , "FE|Transport|Electricity (EJ/yr)"][mainReg, , , invert =
+                                                                TRUE],
+    ylab = 'FE|Transport|Electricity [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+
+p <-
+  mipLineHistorical(
+    data[mainReg, , "FE|Transport|w/o Bunkers|Hydrogen (EJ/yr)"],
+    x_hist = NULL,
+    ylab = 'FE|Transport|Hydrogen [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj")
+  )
+swfigure(sw, print, p, sw_option = "height=8,width=8")
+p <-
+  mipLineHistorical(
+    data[, , "FE|Transport|w/o Bunkers|Hydrogen (EJ/yr)"][mainReg, , , invert =
+                                                            TRUE],
+    x_hist = NULL,
+    ylab = 'FE|Transport|Hydrogen [EJ/yr]',
+    scales = "free_y",
+    plot.priority = c("x_hist", "x", "x_proj"),
+    facet.ncol = 3
+  )
+swfigure(sw, print, p, sw_option = "height=9,width=8")
+```
+

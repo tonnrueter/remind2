@@ -13,7 +13,7 @@ items <- c(
   "Emi|GHG|N2O",
   "Emi|GHG|F-Gases",
   "Emi|CO2|non-BECCS CDR")
-show_default_area_and_bar_plots(data, items, tot)
+showAreaAndBarPlots(data, items, tot)
 ```
 
 ## GHG by sector (w/ gross emissions, excl. BECCS)
@@ -34,7 +34,7 @@ items <- c(
   "Emi|CO2|CDR|BECCS",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW")
-show_default_area_and_bar_plots(data, items, tot)
+showAreaAndBarPlots(data, items, tot)
 ```
 
 ## CO2 by sector (w/ gross emissions, excl. BECCS)
@@ -52,7 +52,7 @@ items <- c(
   "Emi|CO2|CDR|BECCS",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW")
-show_default_area_and_bar_plots(data, items, tot)
+showAreaAndBarPlots(data, items, tot)
 ```
 
 ```{r CO2 by sector cumulated}
@@ -68,7 +68,7 @@ items <- c(
   "Emi|CO2|Cumulated|CDR|BECCS",
   "Emi|CO2|Cumulated|CDR|DACCS",
   "Emi|CO2|Cumulated|CDR|EW")
-show_default_area_and_bar_plots(data, items, tot)
+showAreaAndBarPlots(data, items, tot)
 ```
 
 
@@ -80,7 +80,7 @@ items <- c(
   "FE|Transport",
   "FE|Buildings",
   "FE|Industry")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE per capita (by sector, time domain, area plot)
@@ -90,7 +90,7 @@ items <- c(
   "FE|Transport pCap",
 	"FE|Buildings pCap",
   "FE|Industry pCap")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE per capita (by sector, time domain, line graph)
@@ -162,7 +162,7 @@ items <- c(
   "FE|Heat",
   "FE|Hydrogen",
   "FE|Electricity")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE Industry by carrier
@@ -175,7 +175,7 @@ items <- c(
   "FE|Industry|Heat",
   "FE|Industry|Hydrogen",
   "FE|Industry|Electricity")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE Buildings by carrier
@@ -188,7 +188,7 @@ items <- c(
   "FE|Buildings|Heat",
   "FE|Buildings|Hydrogen",
   "FE|Buildings|Electricity")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE Transport by carrier
@@ -199,7 +199,7 @@ items <- c(
   "FE|Transport|Hydrogen",
   "FE|Transport|Liquids",
   "FE|Transport|Gases")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## FE CDR by carrier
@@ -211,7 +211,7 @@ items <- c(
   "FE|CDR|Gases",
   "FE|CDR|Hydrogen",
   "FE|CDR|Electricity")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 ## SE Electricity by carrier
@@ -244,7 +244,7 @@ if ("SE|Electricity|Wind|Offshore" %in% variables) {
     "SE|Electricity|Wind")
 }
 
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 
@@ -253,14 +253,14 @@ show_default_area_and_bar_plots(data, items)
 ### SE Wind Onshore
 
 ```{r SE Wind Onshore}
-show_default_line_plots(data, "SE|Electricity|Wind|Onshore")
+showLinePlots(data, "SE|Electricity|Wind|Onshore")
 ```
 
 
 ### SE Wind Offshore
 
 ```{r SE Wind Offshore}
-show_default_line_plots(data, "SE|Electricity|Wind|Offshore")
+showLinePlots(data, "SE|Electricity|Wind|Offshore")
 ```
 
 
@@ -289,7 +289,7 @@ items <- c(
   "PE|Wind",
   "PE|Hydro",
   "PE|Geothermal")
-show_default_area_and_bar_plots(data, items)
+showAreaAndBarPlots(data, items)
 ```
 
 
@@ -299,7 +299,7 @@ show_default_area_and_bar_plots(data, items)
 data %>% 
   filter(variable == "Price|Carbon", scenario != "historical") ->
   d
-show_default_line_plots(d)
+showLinePlots(d)
 d %>% 
   filter(region != mainReg) %>% 
   mipLineHistorical(
@@ -318,7 +318,7 @@ data %>%
   filter(variable == "Price|Carbon|ETS", scenario != "historical") ->
   d
 if (isTRUE(any(d$value!=0))) {
-  show_default_line_plots(d)
+  showLinePlots(d)
 }
 ```
 
@@ -328,7 +328,7 @@ data %>%
   filter(variable == "Price|Carbon|ESR", scenario != "historical") ->
   d
 if (isTRUE(any(d$value!=0))) {
-  show_default_line_plots(d)
+  showLinePlots(d)
 }
 ```
 
@@ -336,16 +336,16 @@ if (isTRUE(any(d$value!=0))) {
 ## Policy Costs
 
 ```{r Policy Costs-Consumption Loss}
-show_default_line_plots(data, "Policy Cost|Consumption Loss")
+showLinePlots(data, "Policy Cost|Consumption Loss")
 ```
 
 
 ```{r Policy Cost-Consumption Loss-Relative to Reference Consumption}
-show_default_line_plots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumption")
+showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumption")
 ```
 
 
 ```{r Policy Cost-GDP Loss}
-show_default_line_plots(data, "Policy Cost|GDP Loss")
+showLinePlots(data, "Policy Cost|GDP Loss")
 ```
 

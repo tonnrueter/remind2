@@ -1,0 +1,275 @@
+# Energy Supply
+
+## Investments Electricity
+
+```{r}
+variables %>% # TODO remove in favor of explicit
+  str_subset("^Energy Investments\\|Elec\\|") %>% 
+  keepFinalVariables() ->
+  items
+showAreaAndBarPlots(data, items)
+```
+
+## Capacities Electricity
+
+```{r}
+items <- paste0("Cap|Electricity|", c(
+  "Coal|w/ CCS",
+  "Coal|w/o CCS",
+  "Gas|w/ CCS",
+  "Gas|w/o CCS",
+  "Oil|w/o CCS",
+  "Biomass",
+  "Nuclear",
+  "Hydro",
+  "Geothermal",
+  "Hydrogen",
+  "Storage|Battery",
+  "Solar",
+  if ("Cap|Electricity|Wind|Offshore" %in% variables)
+    c("Wind|Onshore", "Wind|Offshore")
+  else
+    "Wind"
+  ))
+showAreaAndBarPlots(data, items)
+```
+
+## Capacities electricity line plots
+
+### Nuclear
+```{r}
+showLinePlots(data, "Cap|Electricity|Nuclear")
+```
+
+### Hydro
+```{r}
+showLinePlots(data, "Cap|Electricity|Hydro")
+```
+
+### Wind
+```{r}
+showLinePlots(data, "Cap|Electricity|Wind")
+showLinePlots(data, "Cap|Electricity|Wind|Onshore")
+showLinePlots(data, "Cap|Electricity|Wind|Offshore")
+```
+
+### Solar
+```{r}
+showLinePlots(data, "Cap|Electricity|Solar")
+```
+
+### Coal
+```{r}
+showLinePlots(data, "Cap|Electricity|Coal")
+```
+
+### Coal
+```{r}
+showLinePlots(data, "Cap|Electricity|Gas")
+```
+
+### Oil
+```{r}
+showLinePlots(data, "Cap|Electricity|Oil")
+```
+
+### Biomass
+```{r}
+showLinePlots(data, "Cap|Electricity|Biomass")
+```
+
+### Hydrogen
+```{r}
+showLinePlots(data, "Cap|Electricity|Hydrogen")
+```
+
+## PE Mix
+### PE|Coal
+```{r}
+items <- c(
+  "PE|Coal|Gases",
+  "PE|Coal|Liquids",
+  "PE|Coal|Solids",
+  "PE|Coal|Heat",
+  "PE|Coal|Electricity",
+  "PE|Coal|Hydrogen")
+showAreaAndBarPlots(data, items)
+```
+
+### PE|Coal
+```{r}
+items <- c(
+  "PE|Gas|Gases",
+  "PE|Gas|Heat",
+  "PE|Gas|Electricity|w/ CCS",
+  "PE|Gas|Electricity|w/o CCS",
+  "PE|Gas|Liquids|w/ CCS",
+  "PE|Gas|Liquids|w/o CCS",
+  "PE|Gas|Hydrogen|w/ CCS",
+  "PE|Gas|Hydrogen|w/o CCS")
+showAreaAndBarPlots(data, items)
+```
+
+
+### PE|Biomass
+
+```{r}
+items <- c(
+  "PE|Biomass|Solids",
+  "PE|Biomass|Heat",
+  "PE|Biomass|Liquids|w/ CCS",
+  "PE|Biomass|Liquids|w/o CCS",
+  "PE|Biomass|Gases",
+  "PE|Biomass|Electricity|w/ CCS",
+  "PE|Biomass|Electricity|w/o CCS",
+  "PE|Biomass|Hydrogen|w/ CCS",
+  "PE|Biomass|Hydrogen|w/o CCS")
+showAreaAndBarPlots(data, items)
+```
+
+## Primary Energy line plots
+
+```{r}
+showLinePlots(data, "PE|Coal")
+showLinePlots(data, "PE|Oil")
+showLinePlots(data, "PE|Gas")
+showLinePlots(data, "PE|Biomass")
+showLinePlots(data, "Primary Energy Production|Biomass|Energy Crops")
+```
+
+### PE|Coal|Extraction
+```{r}
+showLinePlots(data, "Res|Extraction|Coal")
+```
+
+### PE|Oil|Extraction
+```{r}
+showLinePlots(data, "Res|Extraction|Oil")
+```
+
+### PE|Gas|Extraction
+```{r}
+showLinePlots(data, "Res|Extraction|Gas")
+```
+
+## Secondary Energy Mixes
+### SE|Liquids
+
+```{r}
+items <- paste0("SE|Liquids|", c(
+  "Oil",
+  "Biomass|w/ CCS",
+  "Biomass|w/o CCS",
+  "Coal|w/ CCS",
+  "Coal|w/o CCS",
+  "Gas|w/ CCS",
+  "Gas|w/o CCS",
+  "Hydrogen",
+  "Hydrogen|Net Imports"))
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Gases
+```{r}
+items <- paste0("SE|Gases|", c( # TODO: this style or full name?
+  "Natural Gas",
+  "Biomass|w/ CCS",
+  "Biomass|w/o CCS",
+  "Coal|w/ CCS",
+  "Coal|w/o CCS",
+  "Hydrogen"))
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Hydrogen
+```{r}
+items <- paste0("SE|Hydrogen|", c(
+  "Biomass|w/ CCS",
+  "Biomass|w/o CCS",
+  "Coal|w/ CCS",
+  "Coal|w/o CCS",
+  "Gas|w/ CCS",
+  "Gas|w/o CCS",
+  "Electricity|VRE Storage Electrolysis",
+  "Electricity|Standard Electrolysis",
+  "Net Imports"))
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Hydrogen - Usage
+```{r}
+items <- c(
+  "FE|Industry|Hydrogen",
+  "FE|Buildings|Hydrogen",
+  "FE|Transport|Hydrogen",
+  "FE|CDR|Hydrogen",
+  "SE|Hydrogen|used for electricity|normal turbines",
+  "SE|Hydrogen|used for electricity|forced VRE turbines",
+  "SE|Hydrogen|used for synthetic fuels|liquids",
+  "SE|Hydrogen|used for synthetic fuels|gases")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Electricity - Usage
+```{r}
+items <- c(
+  "SE|Electricity|used for H2|for synthetic fuels|gases",
+  "SE|Electricity|used for H2|for synthetic fuels|liquids",
+  "SE|Electricity|used for H2|direct FE H2",
+  "SE|Electricity|used for H2|VRE Storage",
+  "SE|Electricity|used in Buildings",
+  "SE|Electricity|used in Industry",
+  "SE|Electricity|used in Transport",
+  "SE|Electricity|used for CDR",
+  "SE|Electricity|used for own consumption of energy system")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Solids
+```{r}
+items <- paste0("SE|Solids|", c(
+  "Biomass",
+  "Traditional Biomass",
+  "Coal"))
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Heat
+```{r}
+items <- c(
+  "SE|Heat|Biomass",
+  "SE|Heat|Coal",
+  "SE|Heat|Gas",
+  "SE|Heat|Geothermal")
+showAreaAndBarPlots(data, items)
+```
+
+## Secondary Energy line plots
+### SE|Gases
+```{r}
+items <- c(
+  "SE|Gases|Natural Gas", 
+  "SE|Gases|Gas")
+showLinePlots(data, items)
+showLinePlots(data, "SE|Gases|Coal")
+showLinePlots(data, "SE|Gases|Biomass")
+```
+
+### SE|Electricity
+```{r}
+showLinePlots(data, "SE|Electricity|Gas")
+showLinePlots(data, "SE|Electricity|Coal")
+showLinePlots(data, "SE|Electricity|Oil")
+showLinePlots(data, "SE|Electricity|Hydro")
+showLinePlots(data, "SE|Electricity|Wind")
+showLinePlots(data, "SE|Electricity|Nuclear")
+showLinePlots(data, "SE|Electricity|Solar")
+showLinePlots(data, "SE|Electricity|Biomass")
+```
+
+### SE|Solids
+```{r}
+showLinePlots(data, "SE|Solids|Coal")
+showLinePlots(data, "SE|Solids|Biomass")
+showLinePlots(data, "SE|Solids|Traditional Biomass")
+```
