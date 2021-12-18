@@ -15,18 +15,23 @@ params:
   y_hist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   y_bar: !r c(2010, 2030, 2050, 2100)
   reg: !r NULL
+  includes: !r NULL
   mainReg: "World"
 ---
 
 
 ```{r includes, include=FALSE}
-INCLUDE_SUMMARY <- FALSE
-INCLUDE_MACRO <- FALSE
-INCLUDE_EMISSIONS <- FALSE
-INCLUDE_ENERGY_SUPPLY <- FALSE
-INCLUDE_ENERGY_DEMAND <- TRUE#FALSE
-INCLUDE_ENERGY_SERVICES <- FALSE
-INCLUDE_CLIMATE <- FALSE
+includes <- params$includes
+if (is.null(includes)) {
+  includes <- c(
+    "summary",
+    "macro",
+    "emissions",
+    "energy_supply",
+    "energy_demand",
+    "energy_services",
+    "climate")
+}
 ```
 
 
@@ -101,7 +106,20 @@ pCapVariables <- tribble(
   "FE|Transport", "GJ/yr", 1e9,
   "FE|Buildings", "GJ/yr", 1e9,
   "FE|Industry", "GJ/yr", 1e9,
-  "GDP|PPP", "kUS$2005", 1e6)
+  "GDP|PPP", "kUS$2005", 1e6,
+  "ES|Transport|Pass", "km/yr", 1e9,
+  "ES|Transport|Pass|Road|LDV", "km/yr", 1e9,
+  "ES|Transport|Pass|non-LDV", "km/yr", 1e9,
+  "ES|Transport|Pass|Road|LDV|BEV", "km/yr", 1e9,
+  "ES|Transport|Pass|Road|LDV|FCEV", "km/yr", 1e9,
+  "ES|Transport|Pass|Road|LDV|Gases", "km/yr", 1e9,
+  "ES|Transport|Pass|Road|LDV|Hybrid Electric", "km/yr", 1e9,
+  "ES|Transport|Pass|Road|LDV|Liquids", "km/yr", 1e9,
+  "ES|Transport|Freight", "tkm/yr", 1e9,
+  "ES|Transport|Freight|Road|Electric", "tkm/yr", 1e9,
+  "ES|Transport|Freight|Road|FCEV", "tkm/yr", 1e9,
+  "ES|Transport|Freight|Road|Gases", "tkm/yr", 1e9,
+  "ES|Transport|Freight|Road|Liquids", "tkm/yr", 1e9)
 
 data %>% 
   filter(variable == "Population") %>% 
@@ -210,7 +228,12 @@ showAreaAndBarPlots <- function(
   y_bar = c(2010, 2030, 2050, 2100)) {
   
   data %>% 
-    filter(variable %in% items, scenario != "historical") %>% 
+    filter(variable %in% items, scenario != "historical") ->
+    d
+  if (NROW(d) == 0) return(invisible(NULL))
+  
+  # order variables by mean value
+  d %>% 
     mutate(variable = fct_reorder(variable, value, mean, na.rm=TRUE)) ->
     d
   
@@ -260,27 +283,44 @@ showLinePlots <- function(data, filter_variable=NULL, mainReg = "World") {
   } else {
     d <- data
   }
-  # If there is no scenario data, do nothing.
-  if (NROW(filter(d, scenario != "historical")) == 0) return(invisible(NULL))
-  
+  d %>% 
+    filter(region == mainReg, scenario != "historical") ->
+    dMainScen
+  d %>% 
+    filter(region == mainReg, scenario == "historical") ->
+    dMainHist
+  d %>% 
+    filter(region != mainReg, scenario != "historical") ->
+    dRegiScen
+  d %>% 
+    filter(region != mainReg, scenario == "historical") ->
+    dRegiHist
   label <- paste0(filter_variable, " (", paste0(unique(d$unit), collapse="|"), ")")
-  d %>% 
-    filter(region == mainReg, scenario != "historical") %>% 
-    mipLineHistorical(
-      x_hist = d %>% filter(region == mainReg, scenario == "historical"),
-      ylab = label,
-      scales = "free_y",
-      plot.priority = c("x_hist","x","x_proj")) ->
-    p1
-  d %>% 
-    filter(region != mainReg, scenario != "historical") %>% 
-    mipLineHistorical(
-      x_hist = d %>% filter(region != mainReg, scenario == "historical"),
-      ylab = NULL,
-      scales = "free_y",
-      plot.priority = c("x_hist","x","x_proj"),
-      facet.ncol = 3) ->
-    p2
+  
+  if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) return(invisible(NULL))
+  if (NROW(dMainScen) == 0) {
+    p1 <- grid::grid.rect(gp=grid::gpar(col=NA))
+  } else {
+   dMainScen %>% 
+      mipLineHistorical(
+        x_hist = d %>% filter(region == mainReg, scenario == "historical"),
+        ylab = label,
+        scales = "free_y",
+        plot.priority = c("x_hist","x","x_proj")) ->
+      p1
+  }
+  if (NROW(dRegiScen) == 0) {
+    p2 <- grid::grid.rect(gp=grid::gpar(col=NA))
+  } else {
+    dRegiScen %>% 
+      mipLineHistorical(
+        x_hist = d %>% filter(region != mainReg, scenario == "historical"),
+        ylab = NULL,
+        scales = "free_y",
+        plot.priority = c("x_hist","x","x_proj"),
+        facet.ncol = 3) ->
+      p2
+  }
   
   grid.arrange(p1, p2, nrow=1)
   
@@ -324,15 +364,86 @@ showLinePlotsWithTarget <- function(data, filter_variable) {
 }
 ```
 
-```{r keepFinalVariables}
-keepFinalVariables <- function(vars) { # TODO
-  vars <- sort(vars)
-  varsNext <- c(vars[-1], vars[1])
-  isPrefix <- str_starts(varsNext, fixed(vars))
-  vars[!isPrefix]
+
+```{r showMultiLinePlots}
+showMultiLinePlots <- function(data, items, mainReg = "World") {
+  
+  data %>% 
+    filter(variable %in% items) ->
+    d
+  
+  label <- paste0("(", paste0(unique(d$unit), collapse="|"), ")")
+  
+  d %>% 
+    filter(region == mainReg, scenario != "historical") %>% 
+    ggplot(aes(period, value)) + 
+    facet_wrap(vars(variable), scales="free_y") +
+    geom_line(aes(linetype=scenario)) +
+    geom_point(
+      data = d %>% filter(region == mainReg, scenario == "historical"), 
+      aes(shape = model)) +
+    theme_minimal() +
+    ylab(label) ->
+    p1
+  
+  d %>% 
+    filter(region != mainReg, scenario != "historical") %>% 
+    ggplot(aes(period, value, color=region)) + 
+    facet_wrap(vars(variable), scales="free_y") +
+    geom_line(aes(linetype=scenario)) +
+    geom_point(
+      data = d %>% filter(region != mainReg, scenario == "historical"), 
+      aes(shape = model)) +
+    theme_minimal() +
+    ylab(label) ->
+    p2
+  
+  print(p1)
+  print(p2)
+  
+  return(invisible(NULL))
 }
 ```
 
+```{r showMultiLinePlotsByGDP}
+showMultiLinePlotsByGDP <- function(data, items, mainReg = "World") {
+  
+  data %>% 
+    filter(variable %in% items) ->
+    d
+  
+  label <- paste0("(", paste0(unique(d$unit), collapse="|"), ")")
+  
+  d %>% 
+    filter(region == mainReg, scenario != "historical") %>% 
+    ggplot(aes(gdp, value)) + 
+    facet_wrap(vars(variable), scales="free_y") +
+    geom_line(aes(linetype=scenario)) +
+    geom_point(
+      data = d %>% filter(region == mainReg, scenario == "historical"), 
+      aes(shape = model)) +
+    theme_minimal() +
+    ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
+    p1
+  
+  d %>% 
+    filter(region != mainReg, scenario != "historical") %>% 
+    ggplot(aes(gdp, value, color=region)) + 
+    facet_wrap(vars(variable), scales="free_y") +
+    geom_line(aes(linetype=scenario)) +
+    geom_point(
+      data = d %>% filter(region != mainReg, scenario == "historical"), 
+      aes(shape = model)) +
+    theme_minimal() +
+    ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
+    p2
+  
+  print(p1)
+  print(p2)
+  
+  return(invisible(NULL))
+}
+```
 
 
 
@@ -340,24 +451,5 @@ keepFinalVariables <- function(vars) { # TODO
 ```
 
 
-```{r summary, child = if (INCLUDE_SUMMARY) 'cs2_summary.Rmd'}
+```{r include sections, child = paste0("cs2_", includes, ".Rmd")}
 ```
-
-```{r macro, child = if (INCLUDE_MACRO) 'cs2_macro.Rmd'}
-```
-
-```{r macro, child = if (INCLUDE_EMISSIONS) 'cs2_emissions.Rmd'}
-```
-
-```{r macro, child = if (INCLUDE_ENERGY_SUPPLY) 'cs2_energy_supply.Rmd'}
-```
-
-```{r macro, child = if (INCLUDE_ENERGY_DEMAND) 'cs2_energy_demand.Rmd'}
-```
-
-```{r macro, child = if (INCLUDE_ENERGY_SERVICES) 'cs2_energy_services.Rmd'}
-```
-
-```{r macro, child = if (INCLUDE_CLIMATE) 'cs2_climate.Rmd'}
-```
-

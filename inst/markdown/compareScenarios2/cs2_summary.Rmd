@@ -101,26 +101,7 @@ items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-
-data %>% 
-  filter(variable %in% items) ->
-  d
-
-d %>% 
-  filter(region == mainReg, scenario != "historical") %>% 
-  ggplot(aes(period, value)) + 
-  facet_wrap(vars(variable), scales="free_y") +
-  geom_line(aes(linetype=scenario)) +
-  geom_point(data = d %>% filter(region == mainReg, scenario == "historical"), aes(shape = model)) +
-  ylab("FE pCap (GJ/yr)") # TODO: remove explicit naming
-
-d %>% 
-  filter(region != mainReg, scenario != "historical") %>% 
-  ggplot(aes(period, value, color=region)) + 
-  facet_wrap(vars(variable), scales="free_y") +
-  geom_line(aes(linetype=scenario)) +
-  geom_point(data = d %>% filter(region != mainReg, scenario == "historical"), aes(shape = model)) +
-  ylab("FE pCap (GJ/yr)")
+showMultiLinePlots(data, items)
 ```
 
 ## FE per capita (by sector, GDP)
@@ -130,26 +111,7 @@ items <- c(
   "FE|Transport pCap",
 	"FE|Buildings pCap",
   "FE|Industry pCap")
-
-data %>% 
-  filter(variable %in% items) ->
-  d
-
-d %>% 
-  filter(region == mainReg, scenario != "historical") %>% 
-  ggplot(aes(gdp, value)) + 
-  facet_wrap(vars(variable), scales="free_y") +
-  geom_line(aes(linetype=scenario)) +
-  geom_point(data = d %>% filter(region == mainReg, scenario == "historical"), aes(shape = model)) +
-  ylab("FE pCap (GJ/yr)") + xlab("GDP PPP pCap (kUS$2005)")
-
-d %>% 
-  filter(region != mainReg, scenario != "historical") %>% 
-  ggplot(aes(gdp, value, color=region)) + 
-  facet_wrap(vars(variable), scales="free_y") +
-  geom_line(aes(linetype=scenario)) +
-  geom_point(data = d %>% filter(region != mainReg, scenario == "historical"), aes(shape = model)) +
-  ylab("FE pCap (GJ/yr)") + xlab("GDP PPP pCap (kUS$2005)")
+showMultiLinePlotsByGDP(data, items)
 ```
 
 ## FE by carrier

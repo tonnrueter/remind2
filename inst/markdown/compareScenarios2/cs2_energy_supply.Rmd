@@ -3,34 +3,47 @@
 ## Investments Electricity
 
 ```{r}
-variables %>% # TODO remove in favor of explicit
-  str_subset("^Energy Investments\\|Elec\\|") %>% 
-  keepFinalVariables() ->
-  items
+items <- c(
+  "Energy Investments|Elec|Biomass|w/ CCS", 
+  "Energy Investments|Elec|Biomass|w/o CCS", 
+  "Energy Investments|Elec|Coal|w/ CCS", 
+  "Energy Investments|Elec|Coal|w/o CCS", 
+  "Energy Investments|Elec|Fossil", 
+  "Energy Investments|Elec|Gas|w/ CCS", 
+  "Energy Investments|Elec|Gas|w/o CCS", 
+  "Energy Investments|Elec|Geothermal", 
+  "Energy Investments|Elec|Grid", 
+  "Energy Investments|Elec|Hydro", 
+  "Energy Investments|Elec|Hydrogen", 
+  "Energy Investments|Elec|Nuclear", 
+  "Energy Investments|Elec|Oil", 
+  "Energy Investments|Elec|Solar", 
+  "Energy Investments|Elec|Storage", 
+  "Energy Investments|Elec|Wind")
 showAreaAndBarPlots(data, items)
 ```
 
 ## Capacities Electricity
 
 ```{r}
-items <- paste0("Cap|Electricity|", c(
-  "Coal|w/ CCS",
-  "Coal|w/o CCS",
-  "Gas|w/ CCS",
-  "Gas|w/o CCS",
-  "Oil|w/o CCS",
-  "Biomass",
-  "Nuclear",
-  "Hydro",
-  "Geothermal",
-  "Hydrogen",
-  "Storage|Battery",
-  "Solar",
+items <- c(
+  "Cap|Electricity|Coal|w/ CCS",
+  "Cap|Electricity|Coal|w/o CCS",
+  "Cap|Electricity|Gas|w/ CCS",
+  "Cap|Electricity|Gas|w/o CCS",
+  "Cap|Electricity|Oil|w/o CCS",
+  "Cap|Electricity|Biomass",
+  "Cap|Electricity|Nuclear",
+  "Cap|Electricity|Hydro",
+  "Cap|Electricity|Geothermal",
+  "Cap|Electricity|Hydrogen",
+  "Cap|Electricity|Storage|Battery",
+  "Cap|Electricity|Solar",
   if ("Cap|Electricity|Wind|Offshore" %in% variables)
-    c("Wind|Onshore", "Wind|Offshore")
+    c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
   else
-    "Wind"
-  ))
+    "Cap|Electricity|Wind"
+  )
 showAreaAndBarPlots(data, items)
 ```
 
@@ -156,43 +169,43 @@ showLinePlots(data, "Res|Extraction|Gas")
 ### SE|Liquids
 
 ```{r}
-items <- paste0("SE|Liquids|", c(
-  "Oil",
-  "Biomass|w/ CCS",
-  "Biomass|w/o CCS",
-  "Coal|w/ CCS",
-  "Coal|w/o CCS",
-  "Gas|w/ CCS",
-  "Gas|w/o CCS",
-  "Hydrogen",
-  "Hydrogen|Net Imports"))
+items <- c(
+  "SE|Liquids|Oil",
+  "SE|Liquids|Biomass|w/ CCS",
+  "SE|Liquids|Biomass|w/o CCS",
+  "SE|Liquids|Coal|w/ CCS",
+  "SE|Liquids|Coal|w/o CCS",
+  "SE|Liquids|Gas|w/ CCS",
+  "SE|Liquids|Gas|w/o CCS",
+  "SE|Liquids|Hydrogen",
+  "SE|Liquids|Hydrogen|Net Imports")
 showAreaAndBarPlots(data, items)
 ```
 
 ### SE|Gases
 ```{r}
-items <- paste0("SE|Gases|", c( # TODO: this style or full name?
-  "Natural Gas",
-  "Biomass|w/ CCS",
-  "Biomass|w/o CCS",
-  "Coal|w/ CCS",
-  "Coal|w/o CCS",
-  "Hydrogen"))
+items <- c(
+  "SE|Gases|Natural Gas",
+  "SE|Gases|Biomass|w/ CCS",
+  "SE|Gases|Biomass|w/o CCS",
+  "SE|Gases|Coal|w/ CCS",
+  "SE|Gases|Coal|w/o CCS",
+  "SE|Gases|Hydrogen")
 showAreaAndBarPlots(data, items)
 ```
 
 ### SE|Hydrogen
 ```{r}
-items <- paste0("SE|Hydrogen|", c(
-  "Biomass|w/ CCS",
-  "Biomass|w/o CCS",
-  "Coal|w/ CCS",
-  "Coal|w/o CCS",
-  "Gas|w/ CCS",
-  "Gas|w/o CCS",
-  "Electricity|VRE Storage Electrolysis",
-  "Electricity|Standard Electrolysis",
-  "Net Imports"))
+items <- c(
+  "SE|Hydrogen|Biomass|w/ CCS",
+  "SE|Hydrogen|Biomass|w/o CCS",
+  "SE|Hydrogen|Coal|w/ CCS",
+  "SE|Hydrogen|Coal|w/o CCS",
+  "SE|Hydrogen|Gas|w/ CCS",
+  "SE|Hydrogen|Gas|w/o CCS",
+  "SE|Hydrogen|Electricity|VRE Storage Electrolysis",
+  "SE|Hydrogen|Electricity|Standard Electrolysis",
+  "SE|Hydrogen|Net Imports")
 showAreaAndBarPlots(data, items)
 ```
 
@@ -227,10 +240,10 @@ showAreaAndBarPlots(data, items)
 
 ### SE|Solids
 ```{r}
-items <- paste0("SE|Solids|", c(
-  "Biomass",
-  "Traditional Biomass",
-  "Coal"))
+items <- c(
+  "SE|Solids|Biomass",
+  "SE|Solids|Traditional Biomass",
+  "SE|Solids|Coal")
 showAreaAndBarPlots(data, items)
 ```
 
@@ -247,10 +260,7 @@ showAreaAndBarPlots(data, items)
 ## Secondary Energy line plots
 ### SE|Gases
 ```{r}
-items <- c(
-  "SE|Gases|Natural Gas", 
-  "SE|Gases|Gas")
-showLinePlots(data, items)
+showLinePlots(data,  c("SE|Gases|Natural Gas", "SE|Gases|Gas"))
 showLinePlots(data, "SE|Gases|Coal")
 showLinePlots(data, "SE|Gases|Biomass")
 ```
