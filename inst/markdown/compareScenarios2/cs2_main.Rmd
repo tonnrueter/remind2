@@ -9,8 +9,8 @@ output:
     toc: yes
     number_sections: yes
 params:
-  mif: !r c("C:/Users/cschoetz/Documents/compareScenarios/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif", "C:/Users/cschoetz/Documents/compareScenarios/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif")
-  hist: "C:/Users/cschoetz/Documents/compareScenarios/mif/REMIND/historical.mif"
+  mif: !r c("C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif", "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif")
+  hist: "C:/Users/chris/Documents/PIK/mif/REMIND/historical.mif"
   y: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   y_hist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   y_bar: !r c(2010, 2030, 2050, 2100)
