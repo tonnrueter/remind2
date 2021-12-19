@@ -18,7 +18,7 @@ params:
   y_hist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   y_bar: !r c(2010, 2030, 2050, 2100)
   reg: null
-  includes: "summary"
+  includes: null
   mainReg: "World"
 ---
 
@@ -215,7 +215,7 @@ y_bar <- params$y_bar
 ```{r section_paths, include=FALSE}
 # Set the paths of the section's *.Rmd-files.
 if (is.null(params$includes)) {
-  params$includes <- c(
+  includes <- c(
     "summary",
     "macro",
     "emissions",
@@ -223,9 +223,11 @@ if (is.null(params$includes)) {
     "energy_demand",
     "energy_services",
     "climate")
+} else {
+  includes <- params$includes
 }
-if (length(params$includes) > 0) {
-  section_paths <- paste0("cs2_", params$includes, ".Rmd")
+if (length(includes) > 0) {
+  section_paths <- paste0("cs2_", includes, ".Rmd")
 } else {
   section_paths <- character(0)
 }
