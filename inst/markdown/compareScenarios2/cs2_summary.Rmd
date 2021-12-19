@@ -3,7 +3,7 @@
 
 ## GHG Emissions
 
-```{r}
+```{r Emi-GHG}
 tot <- "Emi|GHG"
 items <- c(
   "Emi|CO2|Energy",
@@ -18,7 +18,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ## GHG by sector (w/ gross emissions, excl. BECCS)
 
-```{r}
+```{r Emi-GHG with gross}
 tot <- "Emi|GHG"
 items <- c(
   "Emi|GHG|Gross|Energy|Supply|Electricity",
