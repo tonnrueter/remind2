@@ -203,21 +203,6 @@ y_bar <- params$y_bar
 ```
 
 
-```{r clean environment}
-keep <- c(
-  "variables",
-  "regions",
-  "mainReg",
-  "y_bar",
-  "params",
-  "data")
-# remove variables that are not used anymore
-rm(list = setdiff(ls(), keep))
-```
-
-
-
-
 ```{r include plot functions, child = "cs2_plot_functions.Rmd"}
 ```
 
