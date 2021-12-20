@@ -28,11 +28,11 @@ compareScenarios2 <- function(mif,
   outputFormat = "html_document",
   ...) {
   yaml_params <- list(
-    mif = mif,
-    hist = hist,
-    y = y,
-    y_hist = y_hist,
-    y_bar = y_bar,
+    mifScen = mif,
+    mifHist = hist,
+    yearsScen = y,
+    yearshist = y_hist,
+    yearsBarPlot = y_bar,
     reg = reg,
     mainReg = mainReg)
   rmarkdown::render(

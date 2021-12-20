@@ -1,9 +1,7 @@
 
 ```{r def showAreaAndBarPlots}
-showAreaAndBarPlots <- function(
-  data, items, tot = NULL, 
-  mainReg = "World",
-  y_bar = c(2010, 2030, 2050, 2100)) {
+showAreaAndBarPlots <- function(data, items, tot = NULL) {
+  # This function uses the 'global' variables: mainReg, yearsBarPlot.
   
   data %>% 
     filter(variable %in% items, scenario != "historical") ->
@@ -16,6 +14,7 @@ showAreaAndBarPlots <- function(
     d
   
   # Create plots.
+  
   d %>% 
     filter(region == mainReg) %>% 
     mipArea(scales="free_y", total = is.null(tot)) + 
@@ -24,28 +23,31 @@ showAreaAndBarPlots <- function(
   if (!is.null(tot)) {
     p1 <- p1 +
       geom_line(
-        d = d %>% filter(region == mainReg, variable == tot), 
+        data = data %>% 
+          filter(region == mainReg, variable == tot, scenario != "historical"), 
         mapping = aes(period, value),
         size=1.3)
   }
   
   d %>% 
-    filter(region == mainReg, period %in% y_bar) %>% 
+    filter(region == mainReg, period %in% yearsBarPlot) %>% 
     mipBarYearData() +
     theme(legend.position="none") ->
     p2
   
   d %>% 
-    filter(region != mainReg, period %in% y_bar) %>% 
+    filter(region != mainReg, period %in% yearsBarPlot) %>% 
     mipBarYearData() +
-    guides(fill=guide_legend(ncol=3)) ->
+    guides(fill=guide_legend(reverse=TRUE)) ->
     p3
   
   d %>% 
     filter(region != mainReg) %>% 
-    mipArea(scales="free_y", total = is.null(tot)) ->
+    mipArea(scales="free_y", total = is.null(tot)) +
+    guides(fill=guide_legend(reverse=TRUE)) ->
     p4
   
+  # Show plots.
   grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
   plot(p4)
   
@@ -55,7 +57,9 @@ showAreaAndBarPlots <- function(
 
 
 ```{r def showLinePlots}
-showLinePlots <- function(data, filter_variable=NULL, mainReg = "World") {
+showLinePlots <- function(data, filter_variable=NULL) {
+  # This function uses the 'global' variables: mainReg
+  
   if (!is.null(filter_variable)) {
     d <- filter(data, variable %in% filter_variable)
   } else {
@@ -145,6 +149,7 @@ showLinePlotsWithTarget <- function(data, filter_variable) {
 
 ```{r showMultiLinePlots}
 showMultiLinePlots <- function(data, items) {
+  # This function uses the 'global' variables: mainReg.
   
   data %>% 
     filter(variable %in% items) ->
@@ -184,7 +189,8 @@ showMultiLinePlots <- function(data, items) {
 ```
 
 ```{r showMultiLinePlotsByGDP}
-showMultiLinePlotsByGDP <- function(data, items, mainReg = "World") {
+showMultiLinePlotsByGDP <- function(data, items) {
+  # This function uses the 'global' variables: mainReg.
   
   data %>% 
     filter(variable %in% items) ->

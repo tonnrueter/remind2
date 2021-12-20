@@ -10,16 +10,17 @@ output:
     toc: yes
     number_sections: yes
 params:
-  mif: 
+  mifScen: 
   - "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif"
   - "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif"
-  hist: "C:/Users/chris/Documents/PIK/mif/REMIND/historical.mif"
-  y: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
-  y_hist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
-  y_bar: !r c(2010, 2030, 2050, 2100)
+  mifHist: "C:/Users/chris/Documents/PIK/mif/REMIND/historical.mif"
+  yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
+  yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
+  yearsBarPlot: !r c(2010, 2030, 2050, 2100)
   reg: null
-  includes: null
+  includes: "summary"
   mainReg: "World"
+  userSectionPath: null
 ---
 
 ```{r setup, include=FALSE}
@@ -30,6 +31,32 @@ knitr::opts_chunk$set(
   fig.width = 14, 
   fig.height = 8)
 ```
+
+
+```{r}
+# Ultra hacky stuff to use the same fig.width and fig.height for chunks in 
+# RStudio Notebook mode as described in previous chunk.
+if (interactive()) {
+  insertExprAtBeginningOfFunction <- function(fun, funName, env, expr) {
+    body(env[[funName]]) <- call("{", expr, body(fun))
+  }
+  fn <- ".rs.setNotebookGraphicsOption"
+  envToolsRstudio <- as.environment("tools:rstudio")
+  if (!exists(".old.rs.setNotebookGraphicsOption")) 
+    old.rs.setNotebookGraphicsOption <- envToolsRstudio[[fn]]
+  insertExprAtBeginningOfFunction(
+    old.rs.setNotebookGraphicsOption,
+    fn,
+    envToolsRstudio,
+    rlang::expr({
+      width <- !!knitr::opts_chunk$get()$fig.width
+      height <- !!knitr::opts_chunk$get()$fig.height
+      units <- "in"
+    })
+  )
+}
+```
+
 
 
 ```{r libraries, include=FALSE}
@@ -43,29 +70,29 @@ library(mip)
 
 ```{r read mifs}
 # Read *.mif-files.
-read.quitte(params$mif, factors=FALSE) ->
-  dataScenarios
-read.quitte(params$hist, factors=FALSE) ->
-  dataHistorical
+read.quitte(params$mifScen, factors=FALSE) ->
+  dataScen
+read.quitte(params$mifHist, factors=FALSE) ->
+  dataHist
 
 # Filter years.
-dataScenarios %>% 
-  filter(period %in% params$y) ->
-  dataScenarios
-dataHistorical %>% 
-  filter(period %in% params$y_hist, !is.na(value)) ->
-  dataHistorical
+dataScen %>% 
+  filter(period %in% params$yearsScen) ->
+  dataScen
+dataHist %>% 
+  filter(period %in% params$yearsHist, !is.na(value)) ->
+  dataHist
 
 # Combine into one data frame.
-data <- bind_rows(dataScenarios, dataHistorical)
+data <- bind_rows(dataScen, dataHist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>% 
   mutate(variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
   data
   
-# For following variables, use only following models for the given scenario.
-model_filter <- tribble(
+# For following scenario-variable combinations, use only the specified models.
+modelFilter <- tribble(
   ~scenario, ~variable, ~model, 
   "historical", "Population", "WDI",
   "historical", "GDP|PPP", "James_IMF",
@@ -74,10 +101,10 @@ model_filter <- tribble(
   "historical", "FE|Buildings", "IEA",
   "historical", "FE|Industry", "IEA")
 data %>% 
-  # Remove all matching variable, scenario combinations.
-  anti_join(model_filter, by=c("variable", "scenario")) %>% 
-  # Add only matching variable, scenario, model combinations.
-  bind_rows(data %>% semi_join(model_filter)) ->
+  # Remove all matching scenario-variable combinations.
+  anti_join(modelFilter, by=c("scenario", "variable")) %>% 
+  # Add only matching scenario-variable-model combinations.
+  bind_rows(data %>% semi_join(modelFilter)) ->
   data
 
 # Filter regions.
@@ -131,9 +158,7 @@ data %>%
     value = value / population * conversionFactor,
     variable = paste0(variable, " pCap"),
     unit = newUnit,
-    newUnit = NULL,
-    conversionFactor = NULL,
-    population = NULL) ->
+    newUnit = NULL, conversionFactor = NULL, population = NULL) ->
   dataPCap
 
 data %>% 
@@ -194,16 +219,17 @@ data %>%
 ```
 
 
-```{r define additional global variables}
+```{r global variables}
 # Define some global variables for use in plotting. 
 variables <- unique(data$variable)
 regions <- unique(data$region)
 mainReg <- params$mainReg
-y_bar <- params$y_bar
+yearsBarPlot <- params$yearsBarPlot
 ```
 
 
 ```{r include plot functions, child = "cs2_plot_functions.Rmd"}
+# TODO: does not work in interactive use???
 ```
 
 
@@ -212,7 +238,7 @@ y_bar <- params$y_bar
 ```
 
 
-```{r section_paths, include=FALSE}
+```{r sectionPaths, include=FALSE}
 # Set the paths of the section's *.Rmd-files.
 if (is.null(params$includes)) {
   includes <- c(
@@ -227,12 +253,15 @@ if (is.null(params$includes)) {
   includes <- params$includes
 }
 if (length(includes) > 0) {
-  section_paths <- paste0("cs2_", includes, ".Rmd")
+  sectionPaths <- paste0("cs2_", includes, ".Rmd")
 } else {
-  section_paths <- character(0)
+  sectionPaths <- character(0)
 }
 ```
 
 
-```{r include sections, child = section_paths}
+```{r include sections, child = sectionPaths}
+```
+
+```{r include user section, child = params$userSectionPath}
 ```
