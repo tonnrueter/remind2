@@ -96,7 +96,7 @@ reportSDPVariables <- function(output=NULL) {
     
     
   }
-  output <- mbind(output,addUEperCapForTransport(output))
+  
   
   addIndustry_UE_from_FE <- function(output) {
     
@@ -155,7 +155,7 @@ reportSDPVariables <- function(output=NULL) {
     
     return(tmp)
   }
-  output <- mbind(output,addIndustry_UE_from_FE(output))
+  
   
   addUEperCapForBuildings <- function(output){
     
@@ -174,7 +174,7 @@ reportSDPVariables <- function(output=NULL) {
     
     
   }
-  output <- mbind(output,addUEperCapForBuildings(output))
+  
   
   #SDG|SDG07|Intensity|GDP|UE
   addIntensityUE <- function(output){
@@ -186,8 +186,11 @@ reportSDPVariables <- function(output=NULL) {
     
     return(tmp)  
   }
-  output <- mbind(output,addIntensityUE(output))
   
+  output <- mbind(output,addIntensityUE(output))
+  output <- mbind(output,addIndustry_UE_from_FE(output))
+  output <- mbind(output,addUEperCapForBuildings(output))
+  output <- mbind(output,addUEperCapForTransport(output))
   
   return(output)
 }
