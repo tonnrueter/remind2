@@ -187,10 +187,12 @@ reportSDPVariables <- function(output=NULL) {
     return(tmp)  
   }
   
-  output <- mbind(output,addIntensityUE(output))
+  
+  output <- mbind(output,addUEperCapForTransport(output))
   output <- mbind(output,addIndustry_UE_from_FE(output))
   output <- mbind(output,addUEperCapForBuildings(output))
-  output <- mbind(output,addUEperCapForTransport(output))
+  output <- mbind(output,addIntensityUE(output))
+ 
   
   return(output)
 }
