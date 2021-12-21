@@ -15,6 +15,22 @@ items <- c(
 showAreaAndBarPlots(data, items, tot)
 ```
 
+### Region Intercomparison
+
+```{r}
+items <- c(
+  "FE|Buildings|Heating",
+  "FE|Buildings|Appliances and Light",
+  "FE|Buildings|Cooking and Water",
+  "FE|Buildings|Space Cooling",
+  "FE|Buildings|Space Heating")
+showMultiLinePlots(data, items[1:3])
+showMultiLinePlots(data, items[4:5])
+showMultiLinePlotsByGDP(data, items[1:3])
+showMultiLinePlotsByGDP(data, items[4:5])
+```
+
+
 ## Transport
 ### Energy Services for Passenger Transport
 ```{r}
@@ -104,5 +120,19 @@ showLinePlots(data, "Production|Industry|Steel|Secondary")
 showLinePlots(data, "Production|Industry|Cement")
 showLinePlots(data, "Value Added|Industry|Chemicals")
 showLinePlots(data, c("Value Added|Industry|Other Industry", "Value Added|Industry|other"))
+```
+
+### Region Intercomparison FE
+
+```{r}
+items <- c(
+  "FE|Industry|Cement",
+  "FE|Industry|Steel",
+  "FE|Industry|Chemicals",
+  "FE|Industry|Other Industry")
+showMultiLinePlots(data, items[1:2])
+showMultiLinePlots(data, items[3:4])
+showMultiLinePlotsByGDP(data, items[1:2])
+showMultiLinePlotsByGDP(data, items[3:4])
 ```
 

@@ -18,12 +18,20 @@ params:
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
   reg: null
-  includes: "summary"
-  mainReg: "World"
+  sections: # "all" for all
+  - "01_summary"
+  - "02_macro"
+  - "03_emissions"
+  - "04_energy_supply"
+  - "05_energy_demand"
+  - "06_energy_services"
+  - "07_climate"
   userSectionPath: null
+  mainReg: "World"
   figWidth: 14 
   figHeight: 8
   warning: no
+  dpi: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -33,7 +41,8 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = params$warning,
   fig.width = params$figWidth, 
-  fig.height = params$figHeight)
+  fig.height = params$figHeight,
+  dpi = params$dpi)
 ```
 
 
@@ -60,7 +69,6 @@ if (interactive()) {
   )
 }
 ```
-
 
 
 ```{r libraries, include=FALSE}
@@ -128,12 +136,17 @@ if (!is.null(params$reg)) {
 # The new variable "OldName pCap" will be available in the plot sections.
 pCapVariables <- tribble(
   ~variable, ~newUnit, ~conversionFactor,
+  "GDP|PPP", "kUS$2005", 1e6,
   "FE", "GJ/yr", 1e9,
   "FE|CDR", "GJ/yr", 1e9,
   "FE|Transport", "GJ/yr", 1e9,
   "FE|Buildings", "GJ/yr", 1e9,
   "FE|Industry", "GJ/yr", 1e9,
-  "GDP|PPP", "kUS$2005", 1e6,
+  "FE|Buildings|Heating", "GJ/yr", 1e9,
+  "FE|Buildings|Appliances and Light", "GJ/yr", 1e9,
+  "FE|Buildings|Cooking and Water", "GJ/yr", 1e9,
+  "FE|Buildings|Space Cooling", "GJ/yr", 1e9,
+  "FE|Buildings|Space Heating", "GJ/yr", 1e9,
   "ES|Transport|Pass", "km/yr", 1e9,
   "ES|Transport|Pass|Road|LDV", "km/yr", 1e9,
   "ES|Transport|Pass|non-LDV", "km/yr", 1e9,
@@ -220,6 +233,27 @@ data %>%
   mutate(
     value = value / ifelse(variable == "SE|Electricity|Hydrogen", 0.4, 1)) ->
   data
+
+# Correct confusing variable naming in Eurostat FE|Transport.
+if (data %>% filter(model == "Eurostat", variable == "FE|Transport w/ Bunkers") %>% NROW() > 0) {
+  data %>% 
+    filter(model == "Eurostat") %>% 
+    mutate(
+      variable = recode(variable, 
+                        "FE|Transport w/ Bunkers" = "tmp", 
+                        "FE|Transport" = "FE|Transport w/o Bunkers"),
+      variable = recode(variable, "tmp" = "FE|Transport"),
+      variable = recode(variable, 
+                        "FE|Transport|Liquids w/ Bunkers" = "tmp", 
+                        "FE|Transport|Liquids" = "FE|Transport|w/o Bunkers|Liquids"),
+      variable = recode(variable, "tmp" = "FE|Transport|Liquids"),
+      ) ->
+    dEurostat
+  data %>% 
+    filter(model != "Eurostat") %>% 
+    bind_rows(dEurostat) ->
+    data
+}
 ```
 
 
@@ -243,29 +277,24 @@ source("cs2_plot_functions.R", local=TRUE)
 
 
 ```{r sectionPaths, include=FALSE}
-# Set the paths of the section's *.Rmd-files.
-if (is.null(params$includes)) {
-  includes <- c(
-    "summary",
-    "macro",
-    "emissions",
-    "energy_supply",
-    "energy_demand",
-    "energy_services",
-    "climate")
+if (length(params$sections) == 1 && params$sections == "all") {
+  dir() %>% 
+    str_subset("^cs2_[0-9]{2}.+\\.Rmd$") %>% 
+    sort() ->
+    sectionPaths
 } else {
-  includes <- params$includes
-}
-if (length(includes) > 0) {
-  sectionPaths <- paste0("cs2_", includes, ".Rmd")
-} else {
-  sectionPaths <- character(0)
+  if (length(params$sections) > 0) {
+    sectionPaths <- paste0("cs2_", params$sections, ".Rmd")
+  } else {
+    sectionPaths <- character(0)
+  }
 }
 ```
 
 
 ```{r include sections, child = sectionPaths}
 ```
+
 
 ```{r include user section, child = params$userSectionPath}
 ```

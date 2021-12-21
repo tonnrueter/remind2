@@ -138,33 +138,14 @@ items <- c(
   "FE|Transport pGDP",
 	"FE|Buildings pGDP",
   "FE|Industry pGDP")
-
-data %>% 
-  filter(variable %in% items) ->
-  d
-
-d %>% 
-  filter(region == mainReg, scenario != "historical") %>% 
-  ggplot(aes(gdp, value)) + 
-  facet_wrap(vars(variable), scales="free_y") +
-  geom_line(aes(linetype=scenario)) +
-  geom_point(data = d %>% filter(region == mainReg, scenario == "historical"), aes(shape = model)) +
-  ylab("FE Intensity (MJ/US$2005)") + xlab("GDP PPP pCap (kUS$2005)")
-
-d %>% 
-  filter(region != mainReg, scenario != "historical") %>% 
-  ggplot(aes(gdp, value, color=region)) + 
-  facet_wrap(vars(variable), scales="free_y") +
-  geom_line(aes(linetype=scenario)) +
-  geom_point(data = d %>% filter(region != mainReg, scenario == "historical"), aes(shape = model)) +
-  ylab("FE Intensity (MJ/US$2005)") + xlab("GDP PPP pCap (kUS$2005)")
+showMultiLinePlots(data, items)
+showMultiLinePlotsByGDP(data, items)
 ```
 
 ## Kaya-Decomposition
 
 ```{r kaya calc}
 # TODO: plot description, units, colors
-# Not robust wrt change of unit.
 data %>% 
   filter(scenario != "historical") %>% 
   filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>% 
@@ -212,12 +193,14 @@ kaya %>%
 kaya %>% 
   ggplot(aes(period, value, color=region)) + 
   geom_point() + geom_line() +
-  facet_grid(vars(variable), vars(scenario), scales="free_y")
+  facet_grid(vars(variable), vars(scenario), scales="free_y") + 
+  theme_minimal()
 
 kaya_rel %>% 
   ggplot(aes(period, value, color=region)) + 
   geom_point() + geom_line() +
-  facet_grid(vars(variable), vars(scenario), scales="free_y")
+  facet_grid(vars(variable), vars(scenario), scales="free_y") + 
+  theme_minimal()
 ```
 
 ```{r kaya_vars plot}

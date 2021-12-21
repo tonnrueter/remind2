@@ -109,8 +109,8 @@ showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 
 ## Transport Final Energy 
 ```{r}
-showLinePlots(data, c("FE|Transport", "FE|Transport w/ Bunkers"))
-showLinePlots(data, c("FE|Transport|w/o Bunkers", "FE|Transport")) # TODO: Eurostat.
+showLinePlots(data, "FE|Transport")
+showLinePlots(data, "FE|Transport|w/o Bunkers")
 ```
 
 ### Transport per type
@@ -135,11 +135,11 @@ if (all(items %in% variables)) showAreaAndBarPlots(data, items, tot)
 ### per carrier with Bunkers
 
 ```{r}
-# TODO: for historical: Eurostat.FE|Transport|Bunkers is calculated as FE|Transport w/ Bunkers - FE|Transport. But Eurostat.FE|Transport may not exist
+# TODO: for historical: Eurostat.FE|Transport|Bunkers may be calculated as FE|Transport w/ Bunkers - FE|Transport. But Eurostat.FE|Transport may not exist
 showLinePlots(data, "FE|Transport|Bunkers")
 ```
 ```{r}
-showLinePlots(data, c("FE|Transport|Liquids", "FE|Transport|Liquids w/ Bunkers"))
+showLinePlots(data, "FE|Transport|Liquids")
 showLinePlots(data, "FE|Transport|Gases")
 showLinePlots(data, "FE|Transport|Electricity")
 showLinePlots(data, "FE|Transport|Hydrogen")
@@ -147,13 +147,9 @@ showLinePlots(data, "FE|Transport|Hydrogen")
 
 ### per carrier Without Bunkers
 ```{r}
-# TODO: bunkers naming problem, conflict with hist vs scenario
-showLinePlots(data, c("FE|Transport|w/o Bunkers|Liquids", "FE|Transport|Liquids"))
-```
-
-```{r}
-showLinePlots(data, c("FE|Transport|w/o Bunkers|Gases", "FE|Transport|Gases"))
-showLinePlots(data, c("FE|Transport|w/o Bunkers|Electricity", "FE|Transport|Electricity"))
+showLinePlots(data, "FE|Transport|w/o Bunkers|Liquids")
+showLinePlots(data, "FE|Transport|w/o Bunkers|Gases")
+showLinePlots(data, "FE|Transport|w/o Bunkers|Electricity")
 showLinePlots(data, "FE|Transport|w/o Bunkers|Hydrogen")
 ```
 

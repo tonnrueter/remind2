@@ -17,7 +17,7 @@ compareScenarios2 <- function(
   outputFormat = "html_document"
   ) {
   yamlParams <- list(...)
-  if (outputFormat == "rmd") {
+  if (identical(tolower(outputFormat), "rmd")) {
     return(.compareScenarios2_rmd(yamlParams, outputDir, outputFile))
   }
   rmarkdown::render(

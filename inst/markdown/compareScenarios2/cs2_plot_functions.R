@@ -77,7 +77,7 @@ showLinePlots <- function(data, filter_variable=NULL) {
   
   if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) return(invisible(NULL))
   if (NROW(dMainScen) == 0) {
-    p1 <- grid::grid.rect(gp=grid::gpar(col=NA))
+    p1 <- ggplot() + theme_minimal()
   } else {
    dMainScen %>% 
       mipLineHistorical(
@@ -88,7 +88,7 @@ showLinePlots <- function(data, filter_variable=NULL) {
       p1
   }
   if (NROW(dRegiScen) == 0) {
-    p2 <- grid::grid.rect(gp=grid::gpar(col=NA))
+    p2 <- ggplot() + theme_minimal()
   } else {
     dRegiScen %>% 
       mipLineHistorical(
@@ -99,7 +99,7 @@ showLinePlots <- function(data, filter_variable=NULL) {
         facet.ncol = 3) ->
       p2
   }
-  
+ 
   grid.arrange(p1, p2, nrow=1)
   
   return(invisible(NULL))
