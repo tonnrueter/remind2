@@ -21,6 +21,9 @@ params:
   includes: "summary"
   mainReg: "World"
   userSectionPath: null
+  figWidth: 14 
+  figHeight: 8
+  warning: no
 ---
 
 ```{r setup, include=FALSE}
@@ -28,12 +31,13 @@ knitr::opts_chunk$set(
   echo = FALSE,
   error = TRUE,
   message = FALSE,
-  fig.width = 14, 
-  fig.height = 8)
+  warning = params$warning,
+  fig.width = params$figWidth, 
+  fig.height = params$figHeight)
 ```
 
 
-```{r}
+```{r fix interactive plot size}
 # Ultra hacky stuff to use the same fig.width and fig.height for chunks in 
 # RStudio Notebook mode as described in previous chunk.
 if (interactive()) {
@@ -228,8 +232,8 @@ yearsBarPlot <- params$yearsBarPlot
 ```
 
 
-```{r include plot functions, child = "cs2_plot_functions.Rmd"}
-# TODO: does not work in interactive use???
+```{r define plot functions}
+source("cs2_plot_functions.R", local=TRUE)
 ```
 
 
