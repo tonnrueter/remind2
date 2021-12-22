@@ -1,0 +1,82 @@
+# SDP
+
+```{r}
+items <- c(
+  "UE|per capita|Buildings",
+  "UE|per capita|Industry",
+  "UE|per capita|Transport|Pass",
+  "UE|per capita|Transport")
+```
+
+```{r}
+"FE|per capita|Buildings|Solids|Biomass|Traditional"
+```
+
+## modern
+
+```{r}
+"FE|Electricity|Share"
+```
+
+```{r}
+"UE|Electricity and Hydrogen|Share|Transport"
+"UE|Electricity and Hydrogen|Share|Transport|Pass"
+```
+
+
+```{r}
+"Intensity|GDP|UE"
+"FE|Buildings|Solids" #used as proxy for traditional biomass
+"Energy Service|Buildings|UE intensity"
+"Energy Service|Buildings|FE intensity"
+"Intensity|Final Energy|Useful Energy|Transport"
+"Intensity|GDP|Final Energy|Transport"
+"Intensity|GDP|Useful Energy|Transport"
+```
+
+## Clean
+```{r}
+"PE|Non-Biomass Renewables"
+"SE|Electricity|Non-Biomass Renewables"
+"FE|Share of renewables in gross demand"
+```
+
+
+```{r}
+"ES|Transport|Pass|Road|LDV|Share"
+"ES|per capita|Transport|Pass"
+"ES|per capita|Transport|Freight"
+"ES|Electricity and Hydrogen|Share|Transport|Pass"
+"ES|Electricity and Hydrogen|Share|Transport|Freight"
+"Intensity|Final Energy|Energy Service|Transport|Pass"
+"Intensity|Final Energy|Energy Service|Transport|Freight"
+"ES|Transport|Pass|ActiveTransport|Share"
+"ES|Transport|Pass|PublicTransport|Share"
+```
+
+
+```{r}
+"Secondary Energy|Electricity|Share of renewables in gross demand|Estimation"
+```
+
+## SDG 8
+
+```{r}
+"GDP|PPP|Per capita growth rate"
+"GDP|PPP|Per capita ratio to OECD"
+```
+
+## SDG 9
+
+```{r}
+"Final Energy|Industry|Electricity|Share"
+"Final Energy|Industry|Hydrogen and Electricity|Share"
+"Production|Industry|Cement|per-capita"
+"Production|Industry|Steel|per-capita"
+"Production|Industry|Steel|Primary|per-capita"
+"Production|Industry|Steel|Secondary|per-capita"
+"Value Added|Industry|Chemicals|per-capita"
+"Value Added|Industry|Other Industry|per-capita"
+```
+
+

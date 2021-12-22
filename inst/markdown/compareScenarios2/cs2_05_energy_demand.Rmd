@@ -1,44 +1,53 @@
 # Energy Demand
-## Final Energy line plot
+
+## Final Energy total
+
 ```{r}
-showLinePlots(data, "FE")
-showLinePlots(data, "FE|Electricity")
-showLinePlots(data, "FE|Gases")
-showLinePlots(data, "FE|Heat")
-showLinePlots(data, "FE|Solids")
-showLinePlots(data, "FE|Liquids")
-showLinePlots(data, "FE|Hydrogen")
+tot <- "FE"
+items <- c(
+  "FE|Electricity",
+  "FE|Gases",
+  "FE|Heat",
+  "FE|Solids",
+  "FE|Liquids",
+  "FE|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
 ```
 
 ## Buildings Final Energy
 ```{r}
-showLinePlots(data, "FE|Buildings")
-showLinePlots(data, "FE|Buildings|Electricity")
-showLinePlots(data, "FE|Buildings|Gases")
-showLinePlots(data, "FE|Buildings|Heat")
-showLinePlots(data, "FE|Buildings|Solids")
-showLinePlots(data, "FE|Buildings|Liquids")
-showLinePlots(data, "FE|Buildings|Hydrogen")
+tot <- "FE|Buildings"
+items <- c(
+  "FE|Buildings|Electricity",
+  "FE|Buildings|Gases",
+  "FE|Buildings|Heat",
+  "FE|Buildings|Solids",
+  "FE|Buildings|Liquids",
+  "FE|Buildings|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
 ```
+
 
 ## Industry Final Energy
 ```{r}
-showLinePlots(data, "FE|Industry")
-showLinePlots(data, "FE|Industry|Electricity")
-showLinePlots(data, "FE|Industry|Gases")
-showLinePlots(data, "FE|Industry|Heat")
-showLinePlots(data, "FE|Industry|Solids")
-showLinePlots(data, "FE|Industry|Liquids")
-showLinePlots(data, "FE|Industry|Hydrogen")
-``` 
-
-```{r}
-showLinePlots(data, "FE|Industry|Liquids|Biomass")
-showLinePlots(data, "FE|Industry|Solids|Biomass")
-showLinePlots(data, "FE|Industry|Gases|Biomass")
-showLinePlots(data, "FE|Industry|Liquids|Fossil")
-showLinePlots(data, "FE|Industry|Solids|Fossil")
-showLinePlots(data, "FE|Industry|Gases|Fossil")
+tot <- "FE|Industry"
+items <- c(
+  "FE|Industry|Electricity",
+  "FE|Industry|Gases",
+  "FE|Industry|Heat",
+  "FE|Industry|Solids",
+  "FE|Industry|Liquids",
+  "FE|Industry|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
 ```
 
 
@@ -66,6 +75,19 @@ items <- c(
   "FE|Industry|Cement|Liquids",
   "FE|Industry|Cement|Gases",
   "FE|Industry|Cement|Electricity")
+showAreaAndBarPlots(data, items, tot)
+```
+
+### FE mix Non-metallic minerals
+```{r}
+tot <- "FE|Industry|Non-metallic minerals"
+items <- c(
+  "FE|Industry|Electricity|Non-metallic minerals",
+  "FE|Industry|Gases|Non-metallic minerals",
+  "FE|Industry|Heat|Non-metallic minerals",
+  "FE|Industry|Hydrogen|Non-metallic minerals",
+  "FE|Industry|Liquids|Non-metallic minerals",
+  "FE|Industry|Solids|Non-metallic minerals")
 showAreaAndBarPlots(data, items, tot)
 ```
 
@@ -103,14 +125,51 @@ showLinePlots(data, "FE|Industry|Steel")
 showLinePlots(data, "FE|Industry|Steel|Primary" )
 showLinePlots(data, "FE|Industry|Steel|Secondary")
 showLinePlots(data, "FE|Industry|Cement")
+showLinePlots(data, "FE|Industry|Non-metallic minerals")
 showLinePlots(data, "FE|Industry|Chemicals")
 showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 ```
 
+### Specific Energy Consumption
+
+```{r}
+items <- c(
+  "FE|Industry|Specific Energy Consumption|Cement",
+  "FE|Industry|Specific Energy Consumption|Chemicals",
+  "FE|Industry|Specific Energy Consumption|Other Industry",
+  "FE|Industry|Specific Energy Consumption|Primary Steel",
+  "FE|Industry|Specific Energy Consumption|Secondary Steel")
+showAreaAndBarPlots(data, items)
+walk(items, showLinePlots, data=data)
+```
+
+
 ## Transport Final Energy 
 ```{r}
-showLinePlots(data, "FE|Transport")
-showLinePlots(data, "FE|Transport|w/o Bunkers")
+tot <- "FE|Transport"
+items <- c(
+  "FE|Transport|Electricity",
+  "FE|Transport|Gases",
+  "FE|Transport|Liquids",
+  "FE|Transport|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
+```
+
+### w/o Bunkers
+
+```{r}
+tot <- "FE|Transport|w/o Bunkers"
+items <- c(
+  "FE|Transport|w/o Bunkers|Electricity",
+  "FE|Transport|w/o Bunkers|Gases",
+  "FE|Transport|w/o Bunkers|Liquids",
+  "FE|Transport|w/o Bunkers|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
 ```
 
 ### Transport per type
@@ -120,36 +179,21 @@ items <- c(
   "FE|Transport|LDV|Liquids",
   "FE|Transport|LDV|Gases",
   "FE|Transport|LDV|Electricity",
-  "FE|Transport|LDV|Hydrogen",
-  "FE|Transport|non-LDV|w/o Bunkers|Liquids",
-  "FE|Transport|non-LDV|w/o Bunkers|Gases",
-  "FE|Transport|non-LDV|w/o Bunkers|Electricity",
-  "FE|Transport|non-LDV|w/o Bunkers|Hydrogen",
-  "FE|Transport|non-LDV|Bunkers|Liquids",
-  "FE|Transport|non-LDV|Bunkers|Gases",
-  "FE|Transport|non-LDV|Bunkers|Electricity",
-  "FE|Transport|non-LDV|Bunkers|Hydrogen")
-if (all(items %in% variables)) showAreaAndBarPlots(data, items, tot)
+  "FE|Transport|LDV|Hydrogen", # TODO: does this exist / part of Liquids?
+  "FE|Transport|non-LDV|Liquids",
+  "FE|Transport|non-LDV|Gases",
+  "FE|Transport|non-LDV|Electricity",
+  "FE|Transport|non-LDV|Hydrogen") # TODO: does this exist / part of Liquids?
+showAreaAndBarPlots(data, items, tot)
 ```
 
-### per carrier with Bunkers
+### Bunkers
 
 ```{r}
-# TODO: for historical: Eurostat.FE|Transport|Bunkers may be calculated as FE|Transport w/ Bunkers - FE|Transport. But Eurostat.FE|Transport may not exist
-showLinePlots(data, "FE|Transport|Bunkers")
-```
-```{r}
-showLinePlots(data, "FE|Transport|Liquids")
-showLinePlots(data, "FE|Transport|Gases")
-showLinePlots(data, "FE|Transport|Electricity")
-showLinePlots(data, "FE|Transport|Hydrogen")
-```
-
-### per carrier Without Bunkers
-```{r}
-showLinePlots(data, "FE|Transport|w/o Bunkers|Liquids")
-showLinePlots(data, "FE|Transport|w/o Bunkers|Gases")
-showLinePlots(data, "FE|Transport|w/o Bunkers|Electricity")
-showLinePlots(data, "FE|Transport|w/o Bunkers|Hydrogen")
+tot <- "FE|Transport"
+items <- c(
+  "FE|Transport|Bunkers",
+  "FE|Transport|w/o Bunkers")
+showAreaAndBarPlots(data, items, tot)
 ```
 

@@ -26,6 +26,7 @@ params:
   - "05_energy_demand"
   - "06_energy_services"
   - "07_climate"
+  - "08_sdp"
   userSectionPath: null
   mainReg: "World"
   figWidth: 14 
@@ -87,7 +88,7 @@ read.quitte(params$mifScen, factors=FALSE) ->
 read.quitte(params$mifHist, factors=FALSE) ->
   dataHist
 
-# Filter years.
+# Filter years and NA.
 dataScen %>% 
   filter(period %in% params$yearsScen) ->
   dataScen
@@ -95,8 +96,32 @@ dataHist %>%
   filter(period %in% params$yearsHist, !is.na(value)) ->
   dataHist
 
+# Remove rows where all values of the same model, scenario, variable, region are 0.
+dataHist %>% 
+  group_by(model, scenario, variable, region) %>% 
+  summarize(all0 = all(value == 0, na.rm=TRUE)) ->
+  dataHistAll0
+dataHistAll0 %>% 
+  group_by(model, scenario, variable) %>% 
+  summarize(anyAll0 = any(all0)) ->
+  dataHistAnyAll0
+bind_rows(
+  dataHistAll0 %>% 
+    filter(all0) %>% 
+    select(-all0),
+  dataHistAnyAll0 %>% 
+    filter(anyAll0) %>% 
+    select(-anyAll0) %>% 
+    mutate(region = "World")
+  ) ->
+  invalidHistVars
+dataHist %>% 
+  anti_join(invalidHistVars) ->
+  dataHist
+
 # Combine into one data frame.
 data <- bind_rows(dataScen, dataHist)
+rm(dataScen, dataHist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>% 
@@ -271,11 +296,6 @@ source("cs2_plot_functions.R", local=TRUE)
 ```
 
 
-```{r prepare mark}
-# CLICK "RUN ALL RUNS ABOVE" HERE TO PREPARE YOUR ENVIRONMENT
-```
-
-
 ```{r sectionPaths, include=FALSE}
 if (length(params$sections) == 1 && params$sections == "all") {
   dir() %>% 
@@ -289,6 +309,11 @@ if (length(params$sections) == 1 && params$sections == "all") {
     sectionPaths <- character(0)
   }
 }
+```
+
+
+```{r prepare mark}
+# CLICK "RUN ALL RUNS ABOVE" HERE TO PREPARE YOUR ENVIRONMENT
 ```
 
 

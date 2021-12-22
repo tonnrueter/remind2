@@ -56,9 +56,12 @@ showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 ## Prices
 
 ```{r}
+# Local (this subsection) preprocessing for all price variables.
 data %>% 
-  filter(scenario != "historical") ->
-  d
+  filter(scenario != "historical") %>%
+  filter(str_starts(variable, "Price")) %>% 
+  filter(period >= 2010) -> # 2005 values are invalid
+  dPrice
 ```
 
 
@@ -69,7 +72,7 @@ variables %>%
   str_subset("^Price\\|Primary Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
-walk(vars, showLinePlots, data=d)
+walk(vars, showLinePlots, data=dPrice, scale="fixed")
 ```
 
 ### SE Prices
@@ -80,7 +83,7 @@ variables %>%
   str_subset("^Price\\|Secondary Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
-walk(vars, showLinePlots, data=d)
+walk(vars, showLinePlots, data=dPrice, scale="fixed")
 ```
 
 ### FE Prices
@@ -93,22 +96,22 @@ variables %>%
 
 vars %>% 
   str_subset("Liquids") %>% 
-  walk(showLinePlots, data=d)
+  walk(showLinePlots, data=dPrice, scale="fixed")
 vars %>% 
   str_subset("Gases") %>% 
-  walk(showLinePlots, data=d)
+  walk(showLinePlots, data=dPrice, scale="fixed")
 vars %>% 
   str_subset("Solids") %>% 
-  walk(showLinePlots, data=d)
+  walk(showLinePlots, data=dPrice, scale="fixed")
 vars %>% 
   str_subset("Electricity") %>% 
-  walk(showLinePlots, data=d)
+  walk(showLinePlots, data=dPrice, scale="fixed")
 vars %>% 
   str_subset("Hydrogen") %>% 
-  walk(showLinePlots, data=d)
+  walk(showLinePlots, data=dPrice, scale="fixed")
 vars %>% 
   str_subset("Heat") %>% 
-  walk(showLinePlots, data=d)
+  walk(showLinePlots, data=dPrice, scale="fixed")
 ``` 
 
 ## Trade
@@ -146,14 +149,16 @@ showMultiLinePlotsByGDP(data, items)
 
 ```{r kaya calc}
 # TODO: plot description, units, colors
+# TODO: historical values?
+# TODO: GDP|MER vs GDP|PPP?
+
 data %>% 
-  filter(scenario != "historical") %>% 
   filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>% 
+  filter(scenario != "historical") %>% 
   select(model, scenario, region, variable, unit, period, value) ->
   d
 d %>% 
-  select(variable, unit) %>% 
-  distinct() ->
+  distinct(variable, unit) ->
   old_units
 d %>% 
   select(-unit) %>% 
@@ -173,12 +178,17 @@ kaya_units <- tribble(
   "GDP_by_Pop", "billion US$2005/yr/million",
   "FE_by_GDP", "EJ/billion US$2005",
   "emiCO2_by_FE", "EJ/Mt CO2")
+kaya_vars <- kaya_units$variable
 kaya %>%
   left_join(kaya_units) ->
   kaya
 
 ref_year <- 2005
-kaya %>% filter(period==ref_year) %>% select(-period) %>% rename(ref_value=value) -> kaya_ref
+kaya %>% 
+  filter(period==ref_year) %>% 
+  select(-period) %>% 
+  rename(ref_value=value) -> 
+  kaya_ref
 kaya %>% 
   left_join(kaya_ref) %>% 
   mutate(
@@ -188,22 +198,34 @@ kaya %>%
   kaya_rel
 ```
 
+### Absolute
 
-```{r kaya plot}
+```{r kaya plot abs}
+showMultiLinePlots(kaya, kaya_vars)
+
 kaya %>% 
-  ggplot(aes(period, value, color=region)) + 
-  geom_point() + geom_line() +
-  facet_grid(vars(variable), vars(scenario), scales="free_y") + 
-  theme_minimal()
-
-kaya_rel %>% 
+  filter(region != mainReg) %>% 
   ggplot(aes(period, value, color=region)) + 
   geom_point() + geom_line() +
   facet_grid(vars(variable), vars(scenario), scales="free_y") + 
   theme_minimal()
 ```
 
+### Relative to 2005
+
+```{r kaya plot rel}
+showMultiLinePlots(kaya_rel, kaya_vars)
+
+kaya_rel %>% 
+  filter(region != mainReg) %>% 
+  ggplot(aes(period, value, color=region)) + 
+  geom_point() + geom_line() +
+  facet_grid(vars(variable), vars(scenario), scales="free_y") + 
+  theme_minimal()
+```
+
+### Components
+
 ```{r kaya_vars plot}
-kaya_vars <- kaya_units$variable
 walk(kaya_vars, showLinePlots, data=kaya_rel)
 ```

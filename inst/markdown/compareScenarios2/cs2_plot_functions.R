@@ -1,5 +1,29 @@
-showAreaAndBarPlots <- function(data, items, tot = NULL) {
+calacuateRatio <- function(data, numerators, denominator, newUnit="1", conversionFactor=1) {
+  data %>% 
+    filter(variable == denominator) %>% 
+    rename(denom_value = value) %>% 
+    select(model, scenario, region, period, denom_value) ->
+    denom
+  data %>% 
+    filter(variable %in% numerators) %>% 
+    left_join(denom) %>% 
+    mutate(
+      value = value / denom_value * conversionFactor,
+      unit = newUnit)
+}
+
+
+showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   # This function uses the 'global' variables: mainReg, yearsBarPlot.
+  
+  if (fill) {
+    if (is.null(tot)) 
+      stop("fill=TRUE without explicit tot variable is not implemented yet")
+    data %>% 
+      calacuateRatio(items, tot) ->
+      data
+    tot <- NULL
+  }
   
   data %>% 
     filter(variable %in% items, scenario != "historical") ->
@@ -53,11 +77,11 @@ showAreaAndBarPlots <- function(data, items, tot = NULL) {
 }
 
 
-showLinePlots <- function(data, filter_variable=NULL) {
+showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   # This function uses the 'global' variables: mainReg
   
-  if (!is.null(filter_variable)) {
-    d <- filter(data, variable %in% filter_variable)
+  if (!is.null(filterVars)) {
+    d <- filter(data, variable %in% filterVars)
   } else {
     d <- data
   }
@@ -73,7 +97,7 @@ showLinePlots <- function(data, filter_variable=NULL) {
   d %>% 
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
-  label <- paste0(filter_variable, " (", paste0(unique(d$unit), collapse="|"), ")")
+  label <- paste0(filterVars, " (", paste0(unique(d$unit), collapse="|"), ")")
   
   if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) return(invisible(NULL))
   if (NROW(dMainScen) == 0) {
@@ -83,7 +107,7 @@ showLinePlots <- function(data, filter_variable=NULL) {
       mipLineHistorical(
         x_hist = d %>% filter(region == mainReg, scenario == "historical"),
         ylab = label,
-        scales = "free_y",
+        scales = scales,
         plot.priority = c("x_hist","x","x_proj")) ->
       p1
   }
@@ -94,7 +118,7 @@ showLinePlots <- function(data, filter_variable=NULL) {
       mipLineHistorical(
         x_hist = d %>% filter(region != mainReg, scenario == "historical"),
         ylab = NULL,
-        scales = "free_y",
+        scales = scales,
         plot.priority = c("x_hist","x","x_proj"),
         facet.ncol = 3) ->
       p2
