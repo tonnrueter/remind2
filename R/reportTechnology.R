@@ -144,7 +144,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "gashp"  = "Heat|Gas",
     "coalhp" = "Heat|Coal",
     "geohe"  = "Heat|Electricity|Heat Pumps",
-    "solhe"  = "Heat|Solar",
     "biohp"  = "Heat|Biomass"
     )
   
