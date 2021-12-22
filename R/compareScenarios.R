@@ -1631,6 +1631,8 @@ compareScenarios <- function(mif, hist,
   
   ## ---- Total Emissions with LULLUCF national accounting correction ----
   
+  if ("Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)" %in% getNames(data)) {
+  
   ## ---- GHG by sector ----
   
   swlatex(sw,"\\subsection{GHG by sector (w/ gross emissions and national LULUCF accounting correction)}")
@@ -1675,6 +1677,9 @@ compareScenarios <- function(mif, hist,
   swlatex(sw,"\\twocolumn")
   
   ## ---- CO2 by sector ----
+  
+  
+ 
   
   swlatex(sw,"\\subsection{CO2 by sector (w/ gross emissions and national LULUCF accounting correction)}")
   
@@ -1725,7 +1730,7 @@ compareScenarios <- function(mif, hist,
                          ylab='Emi|CO2|Land-Use Change|LULUCF national accounting [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
   
-  
+  }
 
   ## ---- Emissions GHG Sectors ----
   items <- c("Emi|GHG|Energy (Mt CO2eq/yr)",
