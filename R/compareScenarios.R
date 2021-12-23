@@ -3092,7 +3092,7 @@ compareScenarios <- function(mif, hist,
   items<- c ("SE|Heat|Biomass (EJ/yr)",
              "SE|Heat|Coal (EJ/yr)",
              "SE|Heat|Gas (EJ/yr)",
-             "SE|Heat|Geothermal (EJ/yr)")
+             "SE|Heat|Electricity|Heat Pumps (EJ/yr)")
   
   var <- data[,,intersect(items,getNames(data,dim=3))]
   
