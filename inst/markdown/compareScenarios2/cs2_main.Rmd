@@ -2,36 +2,45 @@
 title: "Compare Scenarios 2"
 date: '`r format(Sys.Date())`'
 output:
-  html_document:
-    toc: yes
-    toc_float: yes
-    number_sections: yes
   pdf_document:
     toc: yes
     number_sections: yes
+    toc_depth: 3
+  html_document:
+    toc: yes
+    toc_float: yes
+    toc_depth: 3
+    number_sections: yes
 params:
   mifScen: 
-  - "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif"
-  - "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif"
-  mifHist: "C:/Users/chris/Documents/PIK/mif/REMIND/historical.mif"
+  - C:/Users/chris/Nextcloud/Documents/mif/test/BAU_Nash.mif
+  - C:/Users/chris/Nextcloud/Documents/mif/test/default.mif
+  #- C:/Users/chris/Documents/PIK/mif/SDP/Base.mif
+  #- C:/Users/chris/Documents/PIK/mif/SDP/NDC.mif
+  #- C:/Users/chris/Documents/PIK/mif/SDP/NPi.mif
+  #- C:/Users/chris/Documents/PIK/mif/SDP/PkBudg870.mif
+  #- C:/Users/chris/Documents/PIK/mif/SDP/PkBudg1520.mif
+  #- "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif"
+  #- "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif"
+  mifHist: C:/Users/chris/Nextcloud/Documents/mif/test/historical.mif # C:/Users/chris/Documents/PIK/mif/SDP/historical.mif
   yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
   reg: null
   sections: # "all" for all
-  - "01_summary"
-  - "02_macro"
-  - "03_emissions"
-  - "04_energy_supply"
-  - "05_energy_demand"
-  - "06_energy_services"
-  - "07_climate"
+  #- "01_summary"
+  #- "02_macro"
+  #- "03_emissions"
+  #- "04_energy_supply"
+  #- "05_energy_demand"
+  #- "06_energy_services"
+  #- "07_climate"
   - "08_sdp"
   userSectionPath: null
   mainReg: "World"
   figWidth: 14 
   figHeight: 8
-  warning: no
+  warning: yes
   dpi: 72
 ---
 
@@ -83,11 +92,30 @@ library(mip)
 
 ```{r read mifs}
 # Read *.mif-files.
-read.quitte(params$mifScen, factors=FALSE) ->
+##dataScen <- read.quitte(params$mifScen, factors=FALSE)
+tibble(
+  path = params$mifScen,
+  filename = str_extract(path, "[^/]+(?=.mif$)"),
+  data = map(path, read.quitte, factors=FALSE)) %>% 
+  unnest() ->
   dataScen
-read.quitte(params$mifHist, factors=FALSE) ->
-  dataHist
+# If scenario names do not uniquely identify scenarios, use file names instead.
+if (length(unique(dataScen$scenario)) < length(params$mifScen)) {
+  dataScen %>% 
+    mutate(scenario = filename) ->
+    dataScen
+}
+dataScen %>% 
+  select(-path, -filename) ->
+  dataScen
 
+params$mifHist %>% 
+  read.quitte(factors=FALSE) ->
+  dataHist
+```
+
+
+```{r preprocess}
 # Filter years and NA.
 dataScen %>% 
   filter(period %in% params$yearsScen) ->
@@ -119,7 +147,7 @@ dataHist %>%
   anti_join(invalidHistVars) ->
   dataHist
 
-# Combine into one data frame.
+# Combine into one data frame and remove old.
 data <- bind_rows(dataScen, dataHist)
 rm(dataScen, dataHist)
 

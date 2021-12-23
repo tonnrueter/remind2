@@ -28,7 +28,10 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   data %>% 
     filter(variable %in% items, scenario != "historical") ->
     d
-  if (NROW(d) == 0) return(invisible(NULL))
+  if (NROW(d) == 0) {
+    warning("Nothing to plot:", paste(items, collapse=","))
+    return(invisible(NULL))
+  }
   
   # order variables by mean value
   d %>% 
@@ -97,9 +100,12 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   d %>% 
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
-  label <- paste0(filterVars, " (", paste0(unique(d$unit), collapse="|"), ")")
+  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse="|"), "]")
   
-  if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) return(invisible(NULL))
+  if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) {
+    warning("Nothing to plot:", paste(filterVars, collapse=","))
+    return(invisible(NULL))
+  }
   if (NROW(dMainScen) == 0) {
     p1 <- ggplot() + theme_minimal()
   } else {
@@ -130,8 +136,8 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
 }
 
 
-showLinePlotsWithTarget <- function(data, filter_variable) {
-  filter_variable %>% 
+showLinePlotsWithTarget <- function(data, filterVars) {
+  filterVars %>% 
     paste0("|target|") %>% 
     str_replace_all(fixed("|"), fixed("\\|")) %>% 
     paste0(collapse="|") ->
@@ -142,11 +148,14 @@ showLinePlotsWithTarget <- function(data, filter_variable) {
     dTar
   regionsWithTarget <- unique(dTar$region)
   data %>% 
-    filter(variable %in% filter_variable, region %in% regionsWithTarget) ->
+    filter(variable %in% filterVars, region %in% regionsWithTarget) ->
     d
-  if (NROW(d) == 0) return(invisible(NULL))
+  if (NROW(d) == 0) {
+    warning("Nothing to plot:", paste(filterVars, collapse=","))
+    return(invisible(NULL))
+  }
   
-  label <- paste0(filter_variable, " (", paste0(unique(d$unit), collapse="|"), ")")
+  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse="|"), "]")
   d %>% 
     filter(scenario != "historical") %>% 
     mipLineHistorical(
@@ -172,7 +181,7 @@ showMultiLinePlots <- function(data, items) {
     filter(variable %in% items) ->
     d
   
-  label <- paste0("(", paste0(unique(d$unit), collapse="|"), ")")
+  label <- paste0("[", paste0(unique(d$unit), collapse="|"), "]")
   
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
@@ -212,7 +221,7 @@ showMultiLinePlotsByGDP <- function(data, items) {
     filter(variable %in% items) ->
     d
   
-  label <- paste0("(", paste0(unique(d$unit), collapse="|"), ")")
+  label <- paste0("[", paste0(unique(d$unit), collapse="|"), "]")
   
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
