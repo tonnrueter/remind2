@@ -122,7 +122,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "tnrs" = "Electricity|Nuclear",
     "spv" = "Electricity|Solar|PV",
     "csp" = "Electricity|Solar|CSP",
-	"h2turb" = "Electricity|Hydrogen",
+	  "h2turb" = "Electricity|Hydrogen",
     "storspv" = "Electricity|Storage|Battery|For PV",
     "storcsp" = "Electricity|Storage|Battery|For CSP",
     "biogas" = "Gases|Biomass|w/o CCS",
@@ -140,7 +140,12 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "bioeths" = "Liquids|Biomass|Biofuel|Ethanol|Conventional|w/o CCS",
     "biodiesel" = "Liquids|Biomass|Biofuel|Biodiesel|w/o CCS",
     "coalftcrec" = "Liquids|Coal|w/ CCS",
-    "coalftrec" = "Liquids|Coal|w/o CCS")
+    "coalftrec" = "Liquids|Coal|w/o CCS",
+    "gashp"  = "Heat|Gas",
+    "coalhp" = "Heat|Coal",
+    "geohe"  = "Heat|Electricity|Heat Pumps",
+    "biohp"  = "Heat|Biomass"
+    )
   
   if (tran_mod == "complex") {
     carmap <- c(
