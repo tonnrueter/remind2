@@ -78,7 +78,15 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
       x1 <- dimSums(v_directteinv[, , sub1_pe2se], dim = 3) * 1000
       x2 <- dimSums(v_directteinv[, , sub2_pe2se] + v_adjustteinv[, , sub2_pe2se], dim = 3) * 1000
     }
-    out <- (x1 + x2)
+    if(is.magpie(x1) & is.magpie(x2)){
+      out <- (x1 + x2)
+    } else if(is.magpie(x1)){
+      out <- x1
+    } else if(is.magpie(x2)){
+      out <- x2
+    } else {
+      out <- NULL
+    }
     return(out)
   }
 
