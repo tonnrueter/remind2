@@ -1632,9 +1632,9 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsection{GHG - total}")
 
-  targets = c("Emi|GHGtot|target|40% (Mt CO2-equiv/yr)"="-40% by 2030 (vs. 1990)",
-              "Emi|GHGtot|target|55% (Mt CO2-equiv/yr)"="-55% by 2030 (vs. 1990)",
-              "Emi|GHGtot|target|65% (Mt CO2-equiv/yr)"="-65% by 2030 (vs. 1990)")
+  targets = c("Emi|GHG|target|40% (Mt CO2eq/yr)"="-40% by 2030 (vs. 1990)",
+              "Emi|GHG|target|55% (Mt CO2eq/yr)"="-55% by 2030 (vs. 1990)",
+              "Emi|GHG|target|65% (Mt CO2eq/yr)"="-65% by 2030 (vs. 1990)")
   
   # combine historical data with old and new name for total GHG variables
   var_ghg <- histData[,,intersect(c("Emi|GHG (Mt CO2eq/yr)", "Emi|GHGtot (Mt CO2-equiv/yr)"), getNames(histData,dim=3))]
@@ -1714,7 +1714,7 @@ compareScenarios <- function(mif, hist,
 
     swlatex(sw,"\\subsubsection{ETS}")
 
-    targets = c("Emi|GHG|ETS|target|61% (Mt CO2-equiv/yr)"="-61% by 2030 (vs. 2005)")
+    targets = c("Emi|GHG|ETS|target|61% (Mt CO2eq/yr)"="-61% by 2030 (vs. 2005)")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ETS (Mt CO2eq/yr)"],
                            x_hist=if("Emi|GHG|ETS (Mt CO2-equiv/yr)" %in% getNames(histData, dim=3)) histData[mainReg,,"Emi|GHG|ETS (Mt CO2-equiv/yr)"] else NULL,
@@ -1735,7 +1735,7 @@ compareScenarios <- function(mif, hist,
 
     swlatex(sw,"\\subsubsection{ESR}")
     
-    targets = c("Emi|GHG|ESR|target|40% (Mt CO2-equiv/yr)"="-40% by 2030 (vs. 2005)")
+    targets = c("Emi|GHG|ESR|target|40% (Mt CO2eq/yr)"="-40% by 2030 (vs. 2005)")
     
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|ESR (Mt CO2eq/yr)"],
                            x_hist=if("Emi|GHG|ESR (Mt CO2-equiv/yr)" %in% getNames(histData, dim=3)) histData[mainReg,,"Emi|GHG|ESR (Mt CO2-equiv/yr)"] else NULL,

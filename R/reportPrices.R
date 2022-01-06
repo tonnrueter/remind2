@@ -13,7 +13,7 @@
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #'
 #' @return MAgPIE object - contains the price variables
-#' @author Alois Dirnaichner, Felix Schreyer, David Klein
+#' @author Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues
 #' @seealso \code{\link{convGDX2MIF}}
 #' @examples
 #'
@@ -348,6 +348,19 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_CH4, "Price|CH4 (US$2005/t CH4)"))
 
+  
+  # adding extra variables for alternative carbon price aggregation weights
+  out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"],                 
+                            "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|Captured (US$2005/t CO2)"],        
+                            "Price|Carbon|Captured|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"], 
+                            "Price|Carbon|EU-wide Regulation For All Sectors|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|Guardrail (US$2005/t CO2)"],       
+                            "Price|Carbon|Guardrail|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|SCC (US$2005/t CO2)"], 
+                            "Price|Carbon|SCC|AggregatedByGrossCO2 (US$2005/t CO2)"))
+
 
   # ---- mapping of weights for the variables for global aggregation ----
   int2ext <- c(
@@ -381,7 +394,19 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Secondary Energy|Liquids (US$2005/GJ)"                      = "SE|Liquids (EJ/yr)",
     "Price|Secondary Energy|Gases (US$2005/GJ)"                        = "SE|Gases (EJ/yr)",
     "Price|Carbon|ETS (US$2005/t CO2)"                                 = "Emi|GHG|++|ETS (Mt CO2eq/yr)",
-    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|++|ESR (Mt CO2eq/yr)"
+    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|++|ESR (Mt CO2eq/yr)",
+    
+    "Price|Carbon (US$2005/t CO2)"                                    = "FE (EJ/yr)",               
+    "Price|Carbon|Captured (US$2005/t CO2)"                           = "FE (EJ/yr)",
+    "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)" = "FE (EJ/yr)",
+    "Price|Carbon|Guardrail (US$2005/t CO2)"                          = "FE (EJ/yr)",
+    "Price|Carbon|SCC (US$2005/t CO2)"                                = "FE (EJ/yr)",
+    
+    "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)"               = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",               
+    "Price|Carbon|Captured|AggregatedByGrossCO2 (US$2005/t CO2)"      = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)", 
+    "Price|Carbon|EU-wide Regulation For All Sectors|AggregatedByGrossCO2 (US$2005/t CO2)" = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)", 
+    "Price|Carbon|Guardrail|AggregatedByGrossCO2 (US$2005/t CO2)"     = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)", 
+    "Price|Carbon|SCC|AggregatedByGrossCO2 (US$2005/t CO2)"           = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"
     )
 
   if (!is.null(esm2macro.m)) {
@@ -391,10 +416,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     )
   }
 
-  if (all(cm_emiscen == 9)) int2ext <- c(int2ext, c( "Price|Carbon (US$2005/t CO2)"  = "Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
-
-
-  ## weights definition for region aggregtation
+  ## weights definition for region aggregation
   int2ext <- c(int2ext,
 
                ## transport prices
@@ -567,23 +589,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   ## special global prices
 
-  #AJS calc global carbon price as average over regional pm_pvpRegi's, weighted by total emissions.
-  regi_on_gdx <- unique(readGDX(gdx, name = "regi2iso")[,1])
-
-  out["GLO",,"Price|Carbon (US$2005/t CO2)"] <-
-    dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
-    dimSums(output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
-    (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44
-
-  # add other region aggregations carbon price as average over regional pm_pvpRegi's, weighted by total emissions.
-  if (!is.null(regionSubsetList)){
-    for(region in names(regionSubsetList)){
-      out[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
-        dimSums(output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
-        (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44;
-    }
-  }
-
   ## not meaningful global prices set to NA
   out["GLO",,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
 
@@ -596,10 +601,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       out[region,,"Internal|Price|Biomass|Shiftfactor ()"] <- NA
     }
   }
-  
-  
 
-  
   # comment out this section for now as errors, debug this section if needed
   # # ---- debug information for industry/subsectors ----
   # if ('subsectors' == indu_mod & !is.null(q37_limit_secondary_steel_share.m)) {

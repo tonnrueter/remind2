@@ -39,5 +39,5 @@ for the reporting
 \code{\link{convGDX2MIF}}
 }
 \author{
-Alois Dirnaichner, Felix Schreyer, David Klein
+Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues
 }
