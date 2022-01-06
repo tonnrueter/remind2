@@ -21,9 +21,12 @@
 #'
 #' @export
 #' @importFrom magclass dimSums mbind
+#' @importFrom gdx readGDX
+
 reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
 
   # read sets
+  te      <- readGDX(gdx, "te", format = "first_found")
   adjte   <- readGDX(gdx, name = c("teAdj", "adjte"), format = "first_found")
   petyf   <- readGDX(gdx, c("peFos", "petyf"), format = "first_found")
   perenew <- readGDX(gdx, c("peRe", "perenew"), format = "first_found")
@@ -35,8 +38,8 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   sety       <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
 
   # the set liquids changed from sepet+sedie to seLiq in REMIND 1.7. Seliq, sega and seso changed to include biomass or Fossil origin after REMIND 2.0
-  se_Liq    <- intersect(c("seliqfos", "seliqbio", "seliq", "sepet", "sedie"), sety)
-  se_Gas    <- intersect(c("segafos", "segabio", "sega"), sety)
+  se_Liq    <- intersect(c("seliqfos", "seliqbio", "seliqsyn", "seliq", "sepet", "sedie"), sety)
+  se_Gas    <- intersect(c("segafos", "segabio", "segasyn", "sega"), sety)
   se_Solids <- intersect(c("sesofos", "sesobio", "seso"), sety)
 
   all_te  <- readGDX(gdx, name = c("all_te"), format = "first_found")
@@ -75,7 +78,15 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
       x1 <- dimSums(v_directteinv[, , sub1_pe2se], dim = 3) * 1000
       x2 <- dimSums(v_directteinv[, , sub2_pe2se] + v_adjustteinv[, , sub2_pe2se], dim = 3) * 1000
     }
-    out <- (x1 + x2)
+    if(is.magpie(x1) & is.magpie(x2)){
+      out <- (x1 + x2)
+    } else if(is.magpie(x1)){
+      out <- x1
+    } else if(is.magpie(x2)){
+      out <- x2
+    } else {
+      out <- NULL
+    }
     return(out)
   }
 
@@ -98,7 +109,13 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   tmp <- mbind(tmp, setNames(inv_se(ie = "pebiolc", te = tenoccs, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv), "Energy Investments|Elec|Biomass|w/o CCS (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "peur", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),              "Energy Investments|Elec|Nuclear (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pesol", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Elec|Solar (billion US$2005/yr)"))
-  tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Elec|Wind (billion US$2005/yr)"))
+  if ("windoff" %in% te) {
+    tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),               "Energy Investments|Elec|Wind (billion US$2005/yr)"))
+    tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv, te="wind"),    "Energy Investments|Elec|Wind|Onshore (billion US$2005/yr)"))
+    tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv, te="windoff"), "Energy Investments|Elec|Wind|Offshore (billion US$2005/yr)"))
+  }  else {
+    tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),               "Energy Investments|Elec|Wind (billion US$2005/yr)"))
+  }
   tmp <- mbind(tmp, setNames(inv_se(ie = "pehyd", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Elec|Hydro (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pegeo", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Elec|Geothermal (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = NULL, oe = NULL, stor, adjte, v_directteinv, v_adjustteinv, te = all_te),         "Energy Investments|Elec|Storage (billion US$2005/yr)"))
@@ -109,17 +126,25 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   tmp <- mbind(tmp, setNames(inv_se(ie = pe2se$all_enty, oe = "seh2", pe2se, adjte, v_directteinv, v_adjustteinv)
   + inv_se(ie = "seel", oe = "seh2", se2se, adjte, v_directteinv, v_adjustteinv, te = se2se$all_te)
     + inv_se(ie = "seh2", oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te), "Energy Investments|Hydrogen (billion US$2005/yr)"))
+  
+  
+  tmp <- mbind(tmp, setNames(inv_se(ie = pe2se$all_enty, oe = "seh2", pe2se, adjte, v_directteinv, v_adjustteinv), "Energy Investments|Hydrogen|PE (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = "seel", oe = "seh2", se2se, adjte, v_directteinv, v_adjustteinv, te = se2se$all_te), "Energy Investments|Hydrogen|se2se (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames( inv_se(ie = "seh2", oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te), "Energy Investments|Hydrogen|se2fe (billion US$2005/yr)"))
+  
+  
   tmp <- mbind(tmp, setNames(inv_se(ie = petyf, oe = "seh2", pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Hydrogen|Fossil (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = perenew, oe = "seh2", pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Hydrogen|RE (billion US$2005/yr)"))
-  tmp <- mbind(tmp, setNames(inv_se(ie = "seel", oe = "seh2", se2se, adjte, v_directteinv, v_adjustteinv),            "Energy Investments|Hydrogen|Electrolysis (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = pebio, oe = "seh2", pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Hydrogen|Bio (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = "seel", oe = "seh2", se2se, adjte, v_directteinv, v_adjustteinv, te = se2se$all_te),            "Energy Investments|Hydrogen|Electrolysis (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "seh2", oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te),           "Energy Investments|Hydrogen|Transmission and Distribution (billion US$2005/yr)"))
 
   tmp <- mbind(tmp, setNames(inv_se(ie = pe2se$all_enty, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),    "Energy Investments|Liquids (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "peoil", oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Liquids|Oil Ref (billion US$2005/yr)"))
-  tmp <- mbind(tmp, setNames(inv_se(ie = petyf, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Liquids|Fossil|w/ oil (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = petyf, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),             "Energy Investments|Liquids|Fossil (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pecoal", oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv)
-  + inv_se(ie = "pegas", oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Liquids|Fossil (billion US$2005/yr)"))
-  tmp <- mbind(tmp, setNames(inv_se(ie = perenew, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Liquids|Bio (billion US$2005/yr)"))
+  + inv_se(ie = "pegas", oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Liquids|Fossil|w/o oil (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = pebio, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Liquids|Bio (billion US$2005/yr)"))
 
   tmp <- mbind(tmp, setNames((inv_se(ie = pe2se$all_enty, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv)
   + inv_se(ie = se2se$all_enty, oe = "seel", se2se, adjte, v_directteinv, v_adjustteinv, te = se2se$all_te)
@@ -133,8 +158,22 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   + inv_se(ie = se_Solids, oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te)),  "Energy Investments|Solids (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames((inv_se(ie = pe2se$all_enty, oe = se_Gas, pe2se, adjte, v_directteinv, v_adjustteinv)
   + inv_se(ie = se_Gas, oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te)),  "Energy Investments|Gases (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = petyf, oe = se_Gas, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Gases|Fossil (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = pebio, oe = se_Gas, pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Gases|Biomass (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = pebio, te = teccs, oe = se_Gas, pe2se, adjte, v_directteinv, v_adjustteinv),  "Energy Investments|Gases|Biomass|w/ CCS (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = pebio, te = tenoccs, oe = se_Gas, pe2se, adjte, v_directteinv, v_adjustteinv), "Energy Investments|Gases|Biomass|w/o CCS (billion US$2005/yr)"))
+  # tmp <- mbind(tmp, setNames(inv_se(ie = NULL, oe = NULL, c("tdbiogas","tdfosgas","tdsyngas","tdbiogat","tdfosgat","tdsyngat"), adjte, v_directteinv, v_adjustteinv, te = all_te), "Energy Investments|Gases|Grid (billion US$2005/yr)"))  
+  tmp <- mbind(tmp, setNames(inv_se(ie = se_Gas, oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te),           "Energy Investments|Gases|Transmission and Distribution (billion US$2005/yr)"))
+  
   tmp <- mbind(tmp, setNames((inv_se(ie = pe2se$all_enty, oe = "sehe", pe2se, adjte, v_directteinv, v_adjustteinv)
   + inv_se(ie = "sehe", oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te)),  "Energy Investments|Heat (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = "pegeo", oe = "sehe", pe2se, adjte, v_directteinv, v_adjustteinv),            "Energy Investments|Heat|Heat Pumps (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = "pegas", oe = "sehe", pe2se, adjte, v_directteinv, v_adjustteinv),            "Energy Investments|Heat|Gas (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = "pecoal", oe = "sehe", pe2se, adjte, v_directteinv, v_adjustteinv),            "Energy Investments|Heat|Coal (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = petyf, oe = "sehe", pe2se, adjte, v_directteinv, v_adjustteinv),            "Energy Investments|Heat|Fossil (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = pebio, oe = "sehe", pe2se, adjte, v_directteinv, v_adjustteinv),            "Energy Investments|Heat|Biomass (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = NULL, oe = NULL, c("tdhes"), adjte, v_directteinv, v_adjustteinv, te = all_te), "Energy Investments|Heat|Grid (billion US$2005/yr)")) 
+  
   tmp <- mbind(tmp, setNames((tmp[, , "Energy Investments|Supply (billion US$2005/yr)"]
   - tmp[, , "Energy Investments|Electricity (billion US$2005/yr)"]
     - tmp[, , "Energy Investments|Hydrogen (billion US$2005/yr)"]
