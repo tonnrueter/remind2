@@ -13,8 +13,10 @@ output:
     number_sections: yes
 params:
   mifScen: 
-  - C:/Users/chris/Nextcloud/Documents/mif/test/BAU_Nash.mif
-  - C:/Users/chris/Nextcloud/Documents/mif/test/default.mif
+  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP2-Base.mif"
+  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP2-NDC.mif"
+  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP2-PkBudg900.mif"
+  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP5-Base.mif"
   #- C:/Users/chris/Documents/PIK/mif/SDP/Base.mif
   #- C:/Users/chris/Documents/PIK/mif/SDP/NDC.mif
   #- C:/Users/chris/Documents/PIK/mif/SDP/NPi.mif
@@ -22,12 +24,13 @@ params:
   #- C:/Users/chris/Documents/PIK/mif/SDP/PkBudg1520.mif
   #- "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif"
   #- "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif"
-  mifHist: C:/Users/chris/Nextcloud/Documents/mif/test/historical.mif # C:/Users/chris/Documents/PIK/mif/SDP/historical.mif
+  mifHist: "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/historical.mif"
+  #mifHist: C:/Users/chris/Documents/PIK/mif/SDP/historical.mif
   yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
   reg: null
-  sections: # "all" for all
+  sections: "all" # "all" for all
   #- "01_summary"
   #- "02_macro"
   #- "03_emissions"
@@ -35,7 +38,7 @@ params:
   #- "05_energy_demand"
   #- "06_energy_services"
   #- "07_climate"
-  - "08_sdp"
+  #- "08_sdp"
   userSectionPath: null
   mainReg: "World"
   figWidth: 14 
@@ -57,8 +60,8 @@ knitr::opts_chunk$set(
 
 
 ```{r fix interactive plot size}
-# Ultra hacky stuff to use the same fig.width and fig.height for chunks in 
-# RStudio Notebook mode as described in previous chunk.
+# Hack to use the same fig.width and fig.height as described in previous chunk 
+# for chunks in RStudio Notebook mode.
 if (interactive()) {
   insertExprAtBeginningOfFunction <- function(fun, funName, env, expr) {
     body(env[[funName]]) <- call("{", expr, body(fun))
@@ -97,7 +100,7 @@ tibble(
   path = params$mifScen,
   filename = str_extract(path, "[^/]+(?=.mif$)"),
   data = map(path, read.quitte, factors=FALSE)) %>% 
-  unnest() ->
+  unnest(cols=c(data)) ->
   dataScen
 # If scenario names do not uniquely identify scenarios, use file names instead.
 if (length(unique(dataScen$scenario)) < length(params$mifScen)) {
@@ -156,6 +159,7 @@ data %>%
   mutate(variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
   data
   
+# TODO: ok?
 # For following scenario-variable combinations, use only the specified models.
 modelFilter <- tribble(
   ~scenario, ~variable, ~model, 

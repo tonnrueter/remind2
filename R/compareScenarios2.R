@@ -1,22 +1,53 @@
-#' Render CompareScenarios2.Rmd
+#' Render CompareScenarios2
 #'
-#' Renders the CompareScenarios2.Rmd. In the Rmd, Scenario- and historical .mif-files are loaded. Plots are created from
-#' this data. The result may be rendered to PDF or html.
+#' Renders the *.Rmd-files associated to CompareScenarios2. In the Rmds,
+#' scenario- and historical .mif-files are loaded. Then plots are created from
+#' this data. The result may be rendered to PDF or HTML. Alternatively one can
+#' choose Rmd as output format and obtain a copy of the *.Rmd-files.
 #'
-#' @param ... YAML parameters.
-#' @param outputFile character(1). File name of the output document to be created (without extension).
-#' @param outputDir character(1). The directory where the output document and intermediary files are created.
-#' @param outputFormat character(1). "html_document", "pdf_document", or "rmd".
-#' @return The value returned by rmarkdown::render() is returned.
+#' @param ... YAML parameters, see below.
+#' @param outputFile \code{character(1)}. File name (without extension) of the
+#'   output document to be created.
+#' @param outputDir \code{character(1)}. The directory where the output document
+#'   and intermediary files are created.
+#' @param outputFormat \code{character(1)}, not case-sensitive. \code{"html"},
+#'   \code{"pdf"}, or \code{"rmd"}.
+#' @return The value returned by \code{\link[rmarkdown]{rmarkdown::render()}}.
+#' @section YAML Parameters:
+#' \describe{
+#'   \item{mifScen}{\code{character(n)}. Paths to scenario mifs.}
+#'   \item{mifHist}{\code{character(1)}. Path to historical mif.}
+#'   \item{yearsScen}{\code{numeric(n)}. Default: \code{c(seq(2005, 2060, 5), seq(2070, 2100, 10))}. Years to show for scenario data.}
+#'   \item{yearsHist}{\code{numeric(n)}. Default: \code{c(seq(1960, 2020, 1), seq(2025, 2100, 5))}. Years to show for historical data.}
+#'   \item{yearsBarPlot}{\code{numeric(n)}. Default: \code{c(2010, 2030, 2050, 2100)}. Years to show in bar plots of scenario data.}
+#'   \item{reg}{\code{NULL} or \code{character(n)}. Default: \code{NULL}. Regions to show. \code{NULL} means all.}
+#'   \item{sections}{\code{character(n)}. Default: \code{"all"}. Names of sections to include. \code{"all"} for all.}
+#'   \item{userSectionPath}{\code{NULL} or \code{character(n)}. Default: \code{NULL}. Path to a *.Rmd-file that may be included as additional section.}
+#'   \item{mainReg}{\code{character(1)}. Default: \code{"World"}. A region for which larger plots are shown.}
+#'   \item{figWidth, figHeight}{\code{numeric(1)}. Default: \code{14} and \code{8}, respectively. Size of plots in inches.}
+#'   \item{warning}{\code{logical(1)}. Default: \code{TRUE}. Show warnings in output?}
+#'   \item{dpi}{\code{numeric(1)}. Default: \code{72}. Dots per inch of plots.}
+#' }
 #' @author Christof Schoetz
+#' @examples
+#' \dontrun{
+#' compareScenarios2(
+#'   outputFile = "CompareScenarios2Example",
+#'   mifScen = c("path/to/Base.mif", "path/to/NDC.mif"),
+#'   mifHist = "path/to/historical.mif",
+#'   userSectionPath = "path/to/myPlots.Rmd")
+#' }
 #' @export
 compareScenarios2 <- function(
   ...,
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
-  outputFormat = "html_document"
+  outputFormat = "PDF"
   ) {
   yamlParams <- list(...)
+  outputFormat <- tolower(outputFormat)
+  if (outputFormat == "pdf") outputFormat <- "pdf_document"
+  if (outputFormat == "html") outputFormat <- "html_document"
   if (identical(tolower(outputFormat), "rmd")) {
     return(.compareScenarios2_rmd(yamlParams, outputDir, outputFile))
   }
@@ -30,29 +61,36 @@ compareScenarios2 <- function(
     envir = new.env())
 }
 
+#' Modify and Copy CompareScenarios2-Rmds.
+#'
+#' Copies the CompareScenarios2-Rmds to the specified location and modifies
+#' their YAML header according to \code{yamlParams}.
 .compareScenarios2_rmd <- function(yamlParams, outputDir, outputFile) {
-  system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2") %>% 
-    ymlthis:::read_rmd() %>% 
-    yaml::yaml.load(handlers=list(r = \(x) ymlthis::yml_params_code(!!rlang::parse_expr(x)))) %>% 
-    ymlthis::as_yml() ->
-    baseYaml
-  baseYaml %>% 
-    ymlthis::yml_pluck("params") ->
-    newYamlParams
+  rmd <- ymlthis:::read_rmd(
+    system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"))
+  yml <- yaml::yaml.load(
+    rmd, 
+    handlers = list(r = \(x) ymlthis::yml_params_code(!!rlang::parse_expr(x))))
+  baseYaml <- ymlthis::as_yml(yml)
+  newYamlParams <- baseYaml$params
   newYamlParams[names(yamlParams)] <- yamlParams
-  baseYaml %>% 
-    ymlthis::yml_replace(params = newYamlParams) ->
-    yaml
+  newYaml <- ymlthis::yml_replace(baseYaml, params = newYamlParams)
   pathDir <- file.path(outputDir, paste0(outputFile, "_Rmd"))
   if (!dir.exists(pathDir)) dir.create(pathDir)
-  system.file("markdown/compareScenarios2", package = "remind2") %>% 
-    dir(full.names = TRUE) %>% 
-    grep(pattern="cs2_main\\.Rmd$", invert=TRUE, value=TRUE) %>% 
-    file.copy(pathDir)
+  dirFiles <- dir(
+    system.file("markdown/compareScenarios2", package = "remind2"), 
+    full.names = TRUE)
+  rmdDirFiles <- grep(
+    dirFiles, 
+    pattern="cs2_main\\.Rmd$", 
+    invert=TRUE, value=TRUE)
+  file.copy(rmdDirFiles, pathDir)
   ymlthis::use_rmarkdown(
-    yaml,
+    newYaml,
     path = file.path(pathDir, "cs2_main.Rmd"),
-    template = system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"),
+    template = system.file(
+      "markdown/compareScenarios2/cs2_main.Rmd", 
+      package = "remind2"),
     include_yaml = FALSE)
 }
 
