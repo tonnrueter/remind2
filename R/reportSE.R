@@ -249,7 +249,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(prodSe, dataoc, oc2te, sety,  pebio, "sehe",                      name = "SE|Heat|+|Biomass (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, "pecoal", "sehe",                    name = "SE|Heat|+|Coal (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, "pegas", "sehe",                     name = "SE|Heat|+|Gas (EJ/yr)"),
-    #se.prod(prodSe, dataoc, oc2te, sety, "pegeo", "sehe",                     name = "SE|Heat|+|Geothermal (EJ/yr)"),
+    se.prod(prodSe, dataoc, oc2te, sety, "pegeo", "sehe",                     name = "SE|Heat|+|Geothermal (EJ/yr)"), # same as SE|Heat|Electricity|Heat Pumps
     se.prod(prodSe, dataoc, oc2te, sety, "pegeo", "sehe",                     name = "SE|Heat|Electricity|Heat Pumps (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety, "pesol", "sehe",                     name = "SE|Heat|+|Solar (EJ/yr)"),
     se.prod(prodSe, dataoc, oc2te, sety,  pety, "sehe", te = techp,           name = "SE|Heat|Combined Heat and Power (EJ/yr)"),
