@@ -13,14 +13,14 @@
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #'
 #' @return MAgPIE object - contains the price variables
-#' @author Alois Dirnaichner, Felix Schreyer, David Klein
+#' @author Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues
 #' @seealso \code{\link{convGDX2MIF}}
 #' @examples
 #'
 #' \dontrun{reportPrices(gdx)}
 #'
 #' @importFrom luscale speed_aggregate
-#' @importFrom dplyr %>% case_when distinct filter inner_join tibble
+#' @importFrom dplyr %>% case_when distinct filter inner_join tibble left_join rename
 #' @importFrom gdx readGDX
 #' @importFrom luscale speed_aggregate
 #' @importFrom magclass mbind getYears getRegions setNames dimSums new.magpie lowpass complete_magpie getItems<- getNames
@@ -70,7 +70,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   budget.m       <- readGDX(gdx,name='qm_budget',types = "equations",field = "m",format = "first_found")[, t,] # Alternative: calcPrice
   balcapture.m   <- readGDX(gdx,name=c("q_balcapture", "q12_balcapture"), field = "m", restore_zeros = F)[, t,]
 
-  esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found")[, t,]
+  esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found", react = "silent")[, t,]
 
   cm_emiscen     <- readGDX(gdx,name='cm_emiscen',format="first_found")
 
@@ -98,13 +98,41 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   rownames(module2realisation) <- module2realisation$modules
 
 
-  pm_FEPrice <- readGDX(gdx, "pm_FEPrice", restore_zeros = FALSE)
-  pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = FALSE)
-  p_PEPrice <- readGDX(gdx, "p_PEPrice", restore_zeros = FALSE)
+  pm_FEPrice <- readGDX(gdx, "pm_FEPrice")
+  pm_SEPrice <- readGDX(gdx, "pm_SEPrice")
+  pm_PEPrice <- readGDX(gdx, c("p_PEPrice", "pm_PEPrice"), format = "first_found")
+  
+
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = FALSE)[,t,]
   prodSe         <- readGDX(gdx, "vm_prodSe", field = "l", restore_zeros = FALSE)[,t,]
   try(seAgg <- readGDX(gdx, name="seAgg", type="set"))
   try(seAgg2se <- readGDX(gdx, name="seAgg2se", type="set"))
+  
+  
+  
+  
+  # subset price parameters to those entries used in the model
+  pe2se <- readGDX(gdx, "pe2se")
+  se2fe <- readGDX(gdx, "se2fe")
+  sector2emiMkt <- readGDX(gdx, "sector2emimkt")
+  entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
+  
+
+  sector <- emi_sectors <- emiMkt <- all_emiMkt <- NULL
+  fe.entries <- entyFe2Sector %>% 
+                  left_join(sector2emiMkt) %>% 
+                  rename( sector = emi_sectors, emiMkt = all_emiMkt) %>% 
+                  filter( sector != "CDR")
+  
+  
+  fe.entries.dot <- paste(fe.entries[,1],fe.entries[,2], fe.entries[,3], sep = ".")
+  
+  ttot <- readGDX(gdx, "ttot")
+  YearsFrom2005 <- paste0("y",ttot[ttot >= 2005])
+  
+  pm_PEPrice <- pm_PEPrice[,YearsFrom2005,unique(pe2se$all_enty)]
+  pm_SEPrice <- pm_SEPrice[,YearsFrom2005,unique(se2fe$all_enty)]
+  pm_FEPrice <- pm_FEPrice[,YearsFrom2005,fe.entries.dot]
 
 
   ## weights for market aggregation of prices: FE share of market
@@ -225,20 +253,20 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   ## PE Prices
   out <- mbind(out,
-               setNames(mselect(p_PEPrice, all_enty="peoil")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="peoil")*tdptwyr2dpgj,
                         "Price|Primary Energy|Oil (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pegas")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pegas")*tdptwyr2dpgj,
                         "Price|Primary Energy|Gas (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pecoal")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pecoal")*tdptwyr2dpgj,
                         "Price|Primary Energy|Coal (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="peur")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="peur")*tdptwyr2dpgj,
                         "Price|Primary Energy|Nuclear (US$2005/GJ)"),
                ## only modern (ligno-cellulosic) biomass reported
-               setNames(mselect(p_PEPrice, all_enty="pebiolc")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pebiolc")*tdptwyr2dpgj,
                         "Price|Primary Energy|Biomass|Modern (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
                         "Price|Primary Energy|Biomass|1st Generation|Sugar and Starch (US$2005/GJ)"),
-               setNames(mselect(p_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
+               setNames(mselect(pm_PEPrice, all_enty="pebios")*tdptwyr2dpgj,
                         "Price|Primary Energy|Biomass|1st Generation|Oil-based (US$2005/GJ)")
                )
 
@@ -320,6 +348,19 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_CH4, "Price|CH4 (US$2005/t CH4)"))
 
+  
+  # adding extra variables for alternative carbon price aggregation weights
+  out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"],                 
+                            "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|Captured (US$2005/t CO2)"],        
+                            "Price|Carbon|Captured|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"], 
+                            "Price|Carbon|EU-wide Regulation For All Sectors|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|Guardrail (US$2005/t CO2)"],       
+                            "Price|Carbon|Guardrail|AggregatedByGrossCO2 (US$2005/t CO2)"))
+  out <- mbind(out,setNames(out[,,"Price|Carbon|SCC (US$2005/t CO2)"], 
+                            "Price|Carbon|SCC|AggregatedByGrossCO2 (US$2005/t CO2)"))
+
 
   # ---- mapping of weights for the variables for global aggregation ----
   int2ext <- c(
@@ -352,8 +393,21 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Secondary Energy|Solids (US$2005/GJ)"                       = "SE|Solids (EJ/yr)",
     "Price|Secondary Energy|Liquids (US$2005/GJ)"                      = "SE|Liquids (EJ/yr)",
     "Price|Secondary Energy|Gases (US$2005/GJ)"                        = "SE|Gases (EJ/yr)",
+
     "Price|Carbon|ETS (US$2005/t CO2)"                                 = "Emi|GHG|ETS (Mt CO2eq/yr)",
-    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|ESR (Mt CO2eq/yr)"
+    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|ESR (Mt CO2eq/yr)",
+
+    "Price|Carbon (US$2005/t CO2)"                                    = "FE (EJ/yr)",               
+    "Price|Carbon|Captured (US$2005/t CO2)"                           = "FE (EJ/yr)",
+    "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)" = "FE (EJ/yr)",
+    "Price|Carbon|Guardrail (US$2005/t CO2)"                          = "FE (EJ/yr)",
+    "Price|Carbon|SCC (US$2005/t CO2)"                                = "FE (EJ/yr)",
+    
+    "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)"               = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",               
+    "Price|Carbon|Captured|AggregatedByGrossCO2 (US$2005/t CO2)"      = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)", 
+    "Price|Carbon|EU-wide Regulation For All Sectors|AggregatedByGrossCO2 (US$2005/t CO2)" = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)", 
+    "Price|Carbon|Guardrail|AggregatedByGrossCO2 (US$2005/t CO2)"     = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)", 
+    "Price|Carbon|SCC|AggregatedByGrossCO2 (US$2005/t CO2)"           = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"
     )
 
   if (!is.null(esm2macro.m)) {
@@ -363,10 +417,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     )
   }
 
-  if (all(cm_emiscen == 9)) int2ext <- c(int2ext, c( "Price|Carbon (US$2005/t CO2)"  = "Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"))
-
-
-  ## weights definition for region aggregtation
+  ## weights definition for region aggregation
   int2ext <- c(int2ext,
 
                ## transport prices
@@ -423,9 +474,59 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   output[is.na(output)] <- 0  # substitute na by 0
+
   ## delete "+" and "++" from variable names
   output <- deletePlus(output)
   
+
+  # # ---- internal price variables used for modelg diagnostics -----
+  
+  # # CES prices and CES markup cost
+  
+  
+  
+  
+  
+  o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = T, react = "silent")
+  
+  if (!is.null(o01_CESderivatives)) {
+  
+  
+  o01_CESderivatives <- o01_CESderivatives[,YearsFrom2005,]
+  
+  
+  # CES price is derivative of GDP with respect to production factor (CES node)
+  # temporay: only report CES prices of primary production factors (bottom-most CES nodes) for buildings and industry for now to not oversize the reporting
+  # TODO: generate MIF without internal variables as standard such that more internal variables can be added here
+  
+  ppfen_industry_dyn37 <- readGDX(gdx, "ppfen_industry_dyn37")
+  ppfen_buildings_dyn36 <- readGDX(gdx, "ppfen_buildings_dyn36")
+  ppfen <- c(ppfen_industry_dyn37, ppfen_buildings_dyn36)
+  
+  
+  # CES Prices
+  
+  # choose derivative of GDP (inco) with respect to input
+  ces_price <- collapseDim(mselect(o01_CESderivatives, all_in = "inco", all_in1 = ppfen))
+  # variable names
+  ces_price <- setNames(ces_price, paste0("Internal|Price|CES|",getNames(ces_price)," (tr US$2005/input unit)"))
+  
+  # CES Markup Cost
+  p37_CESMkup <- readGDX(gdx, "p37_CESMkup") # markup in industry
+  p36_CESMkup <- readGDX(gdx, "p36_CESMkup") # markup in buildings
+  
+  
+  CESMkup <- mbind(
+    mselect(p36_CESMkup[,YearsFrom2005,], all_in = ppfen_buildings_dyn36),
+    mselect(p37_CESMkup[,YearsFrom2005,], all_in = ppfen_industry_dyn37))
+  
+  CESMkup <- setNames( CESMkup, paste0("Internal|CES Markup Cost|",getNames(CESMkup)," (tr US$2005/input unit)"))
+  
+  
+  out <- mbind(out, ces_price, CESMkup)
+  
+  }
+
   # add global prices
   map <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
   tmp_GLO <- new.magpie("GLO",getYears(out),getNames(out),fill=0)
@@ -491,23 +592,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   out <- mbind(out,setNames(glob_price,                                       "Price|Biomass|World Market (US$2005/GJ)"))
 
   ## special global prices
-
-  #AJS calc global carbon price as average over regional pm_pvpRegi's, weighted by total emissions.
-  regi_on_gdx <- unique(readGDX(gdx, name = "regi2iso")[,1])
-
-  out["GLO",,"Price|Carbon (US$2005/t CO2)"] <-
-    dimSums( pm_pvpRegi[regi_on_gdx,,"perm"] * output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
-    dimSums(output[regi_on_gdx,,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
-    (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44
-
-  # add other region aggregations carbon price as average over regional pm_pvpRegi's, weighted by total emissions.
-  if (!is.null(regionSubsetList)){
-    for(region in names(regionSubsetList)){
-      out[region,,"Price|Carbon (US$2005/t CO2)"] <- dimSums( pm_pvpRegi[regionSubsetList[[region]],,"perm"] * output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1 ) /
-        dimSums(output[regionSubsetList[[region]],,"Internal|Emi|GHG|Emissions to which global CO2 tax is applied (Mt CO2eq/yr)"],dim=1) /
-        (pm_pvp[1,,"good"] + 1e-10) * 1000*12/44;
-    }
-  }
 
   ## not meaningful global prices set to NA
   out["GLO",,"Internal|Price|Biomass|Shiftfactor ()"] <- NA

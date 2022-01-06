@@ -64,7 +64,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   petyf        <- readGDX(gdx,c("peFos","petyf"),format="first_found")
   sety         <- readGDX(gdx,c("entySe","sety"),format="first_found")
   fety         <- readGDX(gdx,c("entyFe","fety"),format="first_found")
-  potentialseLiq <- c("seliq","sepet","sedie")  # the sety liquids changed from sepet+sedie to seLiq in REMIND 1.7
+  potentialseLiq <- c("seliqbio","seliqfos","seliqsyn","seliq","sepet","sedie")  # the sety liquids changed from sepet+sedie to seLiq in REMIND 1.7
   se_Liq    <- intersect(potentialseLiq,sety)
   teccs        <- readGDX(gdx,c("teCCS","teccs"),format="first_found")
   pebio        <- readGDX(gdx,c("peBio","pebio"),format="first_found")
@@ -561,7 +561,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   
   ##### Liquids|Fossil|w/ oil
   cost <- op_costs(ei=petyf,eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil|w/ oil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil|w/ oil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil|w/o oil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil|w/o oil (billion US$2005/yr)"))
   
   ##### Liquids|Fossil 
   cost <- op_costs(ei="pecoal",eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)

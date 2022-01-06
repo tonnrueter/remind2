@@ -95,11 +95,22 @@ convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(20
       warning(paste0("File ",gdx_ref," not found. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the   'policyCosts' output.R script."))
     }
   }
+  
+  # reporting of SDP variables
+  message("running reportSDPVariables...")
+  tmp <- try(reportSDPVariables(gdx,output))  # test whether reportSDPVariables works
+  if(class(tmp)!="try-error") {
+    if(!is.null(tmp)) output <- tmp
+  } else {
+    message("function reportSDPVariables does not work and is skipped")
+  }
 
   # Add dimension names "scenario.model.variable"
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
+  
+
   
   # either write the *.mif or return the magpie object
   if(!is.null(file)) {

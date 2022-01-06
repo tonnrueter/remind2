@@ -48,7 +48,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   CDR_mod <- module2realisation[module2realisation$modules == "CDR", 2]
 
   sety       <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
-  all_te    <- readGDX(gdx, "all_te")
+  te <- readGDX(gdx, "te")
 
   # calculate maximal temporal resolution
   p_dataeta    <- readGDX(gdx, name = c("pm_dataeta", "p_dataeta"), format = "first_found")
@@ -141,8 +141,13 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "bioeths" = "Liquids|Biomass|Biofuel|Ethanol|Conventional|w/o CC",
     "biodiesel" = "Liquids|Biomass|Biofuel|Biodiesel|w/o CC",
     "coalftcrec" = "Liquids|Coal|w/ CC",
-    "coalftrec" = "Liquids|Coal|w/o CC")
-  
+    "coalftrec" = "Liquids|Coal|w/o CC",
+    "gashp"  = "Heat|Gas",
+    "coalhp" = "Heat|Coal",
+    "geohe"  = "Heat|Electricity|Heat Pumps",
+    "biohp"  = "Heat|Biomass"
+  )
+
   if (tran_mod == "complex") {
     carmap <- c(
       "apCarPeT" = "Transport|Pass|Road|LDV|ICE",
@@ -170,7 +175,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     techmap[["refdip"]] <- "Liquids|Oil"
   }
 
-  if ("windoff" %in% all_te) {
+  if ("windoff" %in% te) {
     techmap <- append(techmap, c("wind" = "Electricity|Wind|Onshore",
                                  "storwind" = "Electricity|Storage|Battery|For Wind Onshore",
                                  "windoff" = "Electricity|Wind|Offshore",
@@ -220,7 +225,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
       int2ext[[report_str("Electricity|Storage|Battery|For PV", category, unit)]] <- report_str("Electricity|Solar|PV", unit = "EJ/yr", predicate = "SE")
       int2ext[[report_str("Electricity|Storage|Battery|For CSP", category, unit)]] <- report_str("Electricity|Solar|CSP", unit = "EJ/yr", predicate = "SE")
       
-      if ("windoff" %in% all_te) {
+      if ("windoff" %in% te) {
         int2ext[[report_str("Electricity|Storage|Battery|For Wind Onshore", category, unit)]] <- report_str("Electricity|Wind|Onshore", unit = "EJ/yr", predicate = "SE")
         int2ext[[report_str("Electricity|Storage|Battery|For Wind Offshore", category, unit)]] <- report_str("Electricity|Wind|Offshore", unit = "EJ/yr", predicate = "SE")
       } else {

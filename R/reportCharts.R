@@ -1080,7 +1080,7 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   vars <- c("Biomass"    = "SE|Heat|Biomass (EJ/yr)", 
             "Coal"       = "SE|Heat|Coal (EJ/yr)", 
             "Gas"        = "SE|Heat|Gas (EJ/yr)",
-            "Geothermal" = "SE|Heat|Geothermal (EJ/yr)"
+            "Heat Pumps" = "SE|Heat|Electricity|Heat Pumps (EJ/yr)"
   )
   
   color <- plotstyle(as.character(gsub("\\+\\|","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)
