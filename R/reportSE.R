@@ -109,8 +109,6 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   se.prod <- function(vm_prodSe, dataoc, oc2te, entySe, enty.input, se.output, te = te_pese2se,
                       name = NULL, storageLoss = storLoss, all_pety = entyPe, storageLossOnly = F) {
 
-    print(name)
-    
     if (storageLossOnly && is.null(storageLoss)) {
       return(NULL)
     }
@@ -265,18 +263,9 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pebiolc", se_Liq, tenoccs,          name = "SE|Liquids|Biomass|Cellulosic|+|w/o CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, c("pebioil", "pebios"), se_Liq,      name = "SE|Liquids|Biomass|++|Non-Cellulosic (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pebios", se_Liq,                    name = "SE|Liquids|Biomass|Conventional Ethanol (EJ/yr)"),
-    
-    # TODO: remove these?
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pebiolc", se_Liq, "bioethl",        name = "SE|Liquids|Biomass|Biofuel|Ethanol|Cellulosic|w/o CC (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pebios", se_Liq, "bioeths",         name = "SE|Liquids|Biomass|Biofuel|Ethanol|Conventional|w/o CC (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Liq, c("bioftrec", "bioftcrec", "biodiesel"), name = "SE|Liquids|Biomass|Biofuel (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Liq, c("bioftrec", "biodiesel"), name = "SE|Liquids|Biomass|Biofuel|w/o CC (EJ/yr)"),
-    # end TODO
-    
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Liq, "bioftcrec",          name = "SE|Liquids|Biomass|BioFTR|w/ CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Liq, "bioftrec",           name = "SE|Liquids|Biomass|BioFTR|w/o CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Liq, "biodiesel",          name = "SE|Liquids|Biomass|Biodiesel|w/o CC (EJ/yr)"),
-    
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", se_Liq,                    name = "SE|Liquids|+|Coal (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", se_Liq, te = teccs,        name = "SE|Liquids|Coal|+|w/ CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", se_Liq, te = tenoccs,      name = "SE|Liquids|Coal|+|w/o CC (EJ/yr)"),
@@ -357,8 +346,9 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   # if CCU on
   if (module2realisation["CCU", 2] == "on" & "seliqsyn" %in% getNames(vm_demSe, dim = 2)) {
     tmp1 <- mbind(tmp1,
-      setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seliqsyn", all_te = "MeOH"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|Liquids (EJ/yr)"),
-      setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "segasyn", all_te = "h22ch4"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|Gases (EJ/yr)")
+      setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = c("seliqsyn", "segasyn"), all_te = c("MeOH", "h22ch4")), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels (EJ/yr)"),            
+      setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seliqsyn", all_te = "MeOH"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Liquids (EJ/yr)"),
+      setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "segasyn", all_te = "h22ch4"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Gases (EJ/yr)")
     )
   }
 
@@ -448,7 +438,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     tmp1 <- mbind(tmp1,
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = c("seliqsyn", "segasyn")), dim = 3) * p_share_H2DomProd *
         p_shareElec_H2 / mselect(pm_eta_conv, all_te = "elh2"),
-      "SE|Input|Electricity|Hydrogen|Synthetic Fuels"),          
+      "SE|Input|Electricity|Hydrogen|Synthetic Fuels (EJ/yr)"),          
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = c("seliqsyn")), dim = 3) * p_share_H2DomProd *
         p_shareElec_H2 / mselect(pm_eta_conv, all_te = "elh2"),
       "SE|Input|Electricity|Hydrogen|Synthetic Fuels|+|Liquids (EJ/yr)"),
