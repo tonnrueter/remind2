@@ -1700,7 +1700,39 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Emi|CO2|Energy|Supply|++|Fuels (Mt CO2/yr)"))
   
   
+  # emissions with Grassi Correction (LULUCF emissions adjusted to national LULUCF accouting)
+  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = F, react = "silent")
   
+  if (!is.null(p47_LULUCFEmi_GrassiShift)) {
+    
+    # variables of which version with Grassi correction should be reported
+    vars.lulucf <- c("Emi|GHG (Mt CO2eq/yr)",
+                     "Emi|CO2 (Mt CO2/yr)",
+                     "Emi|GHG|+++|Land-Use Change (Mt CO2eq/yr)",
+                     "Emi|CO2|+|Land-Use Change (Mt CO2/yr)")
+    
+    
+    
+    
+    
+    out.lulucf <- out[,,vars.lulucf]
+    # subtract shift of LULUCF emissions to be in line with national accounting
+    # (note: the parameter p47_LULUCFEmi_GrassiShift has the same value over all years but is zero before cm_startyear
+    # as the regipol realization regiCarbonPrice is only used in policy runs
+    # therefore choose 2050 as some year after cm_startyear)
+    out.lulucf <- out.lulucf - collapseDim(p47_LULUCFEmi_GrassiShift[,"y2050",])*GtC_2_MtCO2
+    # variable names, insert "LULUCF national accouting"
+    names.lulucf <- vars.lulucf
+    names.lulucf <- gsub("\\ \\(Mt CO2eq/yr\\)", "|LULUCF national accounting (Mt CO2eq/yr)", names.lulucf)
+    names.lulucf <- gsub("\\ \\(Mt CO2/yr\\)", "|LULUCF national accounting (Mt CO2/yr)", names.lulucf)
+    names.lulucf <- gsub("\\|\\+\\|", "\\|", names.lulucf )
+    names.lulucf <- gsub("\\|\\+\\+\\+\\|", "\\|", names.lulucf )
+    getNames(out.lulucf) <- names.lulucf
+    
+    
+    out <- mbind(out, out.lulucf)
+    
+  }
 
   
   
