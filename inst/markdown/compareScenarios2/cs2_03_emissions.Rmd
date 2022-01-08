@@ -217,7 +217,7 @@ d %>%
     suffix = c("", "2010")) %>% 
   mutate(value = value - value2010) ->
   d
-showLinePlots(d) # TODO: does not show label
+showLinePlots(d)
 ```
 
 

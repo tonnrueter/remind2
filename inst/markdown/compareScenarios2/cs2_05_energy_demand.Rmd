@@ -179,11 +179,11 @@ items <- c(
   "FE|Transport|LDV|Liquids",
   "FE|Transport|LDV|Gases",
   "FE|Transport|LDV|Electricity",
-  "FE|Transport|LDV|Hydrogen", # TODO: does this exist / part of Liquids?
+  "FE|Transport|LDV|Hydrogen",
   "FE|Transport|non-LDV|Liquids",
   "FE|Transport|non-LDV|Gases",
   "FE|Transport|non-LDV|Electricity",
-  "FE|Transport|non-LDV|Hydrogen") # TODO: does this exist / part of Liquids?
+  "FE|Transport|non-LDV|Hydrogen")
 showAreaAndBarPlots(data, items, tot)
 ```
 

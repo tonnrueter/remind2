@@ -138,7 +138,7 @@ data %>%
   mutate(variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
   data
   
-# TODO: ok?
+# TODO: ok? Should probably be filtered in historical.mif
 # For following scenario-variable combinations, use only the specified models.
 modelFilter <- tribble(
   ~scenario, ~variable, ~model, 
@@ -282,8 +282,7 @@ if (data %>% filter(model == "Eurostat", variable == "FE|Transport w/ Bunkers") 
       variable = recode(variable, 
                         "FE|Transport|Liquids w/ Bunkers" = "tmp", 
                         "FE|Transport|Liquids" = "FE|Transport|w/o Bunkers|Liquids"),
-      variable = recode(variable, "tmp" = "FE|Transport|Liquids"),
-      ) ->
+      variable = recode(variable, "tmp" = "FE|Transport|Liquids")) ->
     dEurostat
   data %>% 
     filter(model != "Eurostat") %>% 

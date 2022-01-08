@@ -85,8 +85,12 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   
   if (!is.null(filterVars)) {
     d <- filter(data, variable %in% filterVars)
+    label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse=","), "]")
   } else {
     d <- data
+    label <- paste0(
+      paste0(unique(d$variable), collapse=","), 
+      " [", paste0(unique(d$unit), collapse=","), "]")
   }
   d %>% 
     filter(region == mainReg, scenario != "historical") ->
@@ -100,7 +104,6 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   d %>% 
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
-  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse=","), "]")
   
   if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) {
     warning("Nothing to plot:", paste(filterVars, collapse=","))
@@ -175,7 +178,7 @@ showLinePlotsWithTarget <- function(data, filterVars) {
 
 
 showMultiLinePlots <- function(data, items) {
-  # This function uses the 'global' variables: mainReg.
+  # This function uses the 'global' variables: mainReg, regions.
   
   data %>% 
     filter(variable %in% items) ->
@@ -186,7 +189,6 @@ showMultiLinePlots <- function(data, items) {
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
     ggplot(aes(period, value)) + 
-    facet_wrap(vars(variable), scales="free_y") +
     geom_line(aes(linetype=scenario)) +
     geom_point(
       data = d %>% filter(region == mainReg, scenario == "historical"), 
@@ -198,14 +200,19 @@ showMultiLinePlots <- function(data, items) {
   d %>% 
     filter(region != mainReg, scenario != "historical") %>% 
     ggplot(aes(period, value, color=region)) + 
-    facet_wrap(vars(variable), scales="free_y") +
     geom_line(aes(linetype=scenario)) +
     geom_point(
       data = d %>% filter(region != mainReg, scenario == "historical"), 
       aes(shape = model)) +
     theme_minimal() +
+    scale_color_manual(values = plotstyle(regions)) + 
     ylab(label) ->
     p2
+  
+  if (length(unique(d$variable)) > 1) {
+    p1 <- p1 + facet_wrap(vars(variable), scales="free_y")
+    p2 <- p2 + facet_wrap(vars(variable), scales="free_y")
+  }
   
   print(p1)
   print(p2)
@@ -226,7 +233,6 @@ showMultiLinePlotsByGDP <- function(data, items) {
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
     ggplot(aes(gdp, value)) + 
-    facet_wrap(vars(variable), scales="free_y") +
     geom_line(aes(linetype=scenario)) +
     geom_point(
       data = d %>% filter(region == mainReg, scenario == "historical"), 
@@ -238,7 +244,6 @@ showMultiLinePlotsByGDP <- function(data, items) {
   d %>% 
     filter(region != mainReg, scenario != "historical") %>% 
     ggplot(aes(gdp, value, color=region)) + 
-    facet_wrap(vars(variable), scales="free_y") +
     geom_line(aes(linetype=scenario)) +
     geom_point(
       data = d %>% filter(region != mainReg, scenario == "historical"), 
@@ -246,6 +251,11 @@ showMultiLinePlotsByGDP <- function(data, items) {
     theme_minimal() +
     ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
     p2
+  
+  if (length(unique(d$variable)) > 1) {
+    p1 <- p1 + facet_wrap(vars(variable), scales="free_y")
+    p2 <- p2 + facet_wrap(vars(variable), scales="free_y")
+  }
   
   print(p1)
   print(p2)

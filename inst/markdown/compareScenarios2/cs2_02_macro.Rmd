@@ -148,10 +148,6 @@ showMultiLinePlotsByGDP(data, items)
 ## Kaya-Decomposition
 
 ```{r kaya calc}
-# TODO: plot description, units, colors
-# TODO: historical values?
-# TODO: GDP|MER vs GDP|PPP?
-
 data %>% 
   filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>% 
   filter(scenario != "historical") %>% 
@@ -208,6 +204,7 @@ kaya %>%
   ggplot(aes(period, value, color=region)) + 
   geom_point() + geom_line() +
   facet_grid(vars(variable), vars(scenario), scales="free_y") + 
+  scale_color_manual(values = plotstyle(regions)) + 
   theme_minimal()
 ```
 
@@ -221,6 +218,7 @@ kaya_rel %>%
   ggplot(aes(period, value, color=region)) + 
   geom_point() + geom_line() +
   facet_grid(vars(variable), vars(scenario), scales="free_y") + 
+  scale_color_manual(values = plotstyle(regions)) + 
   theme_minimal()
 ```
 

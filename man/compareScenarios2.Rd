@@ -5,14 +5,20 @@
 \title{Render CompareScenarios2}
 \usage{
 compareScenarios2(
-  ...,
+  mifScen,
+  mifHist,
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
-  outputFormat = "PDF"
+  outputFormat = "PDF",
+  ...
 )
 }
 \arguments{
-\item{...}{YAML parameters, see below.}
+\item{mifScen}{\code{character(n)}, optionally named. Paths to scenario mifs.
+If the vector has names, those are used to refer to the scenarios in the
+output file.}
+
+\item{mifHist}{\code{character(1)}. Path to historical mif.}
 
 \item{outputDir}{\code{character(1)}. The directory where the output document
 and intermediary files are created.}
@@ -22,6 +28,8 @@ output document to be created.}
 
 \item{outputFormat}{\code{character(1)}, not case-sensitive. \code{"html"},
 \code{"pdf"}, or \code{"rmd"}.}
+
+\item{...}{YAML parameters, see below.}
 }
 \value{
 The value returned by \code{\link[rmarkdown]{rmarkdown::render()}}.
@@ -35,12 +43,6 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
 \section{YAML Parameters}{
 
 \describe{
-  \item{\code{mifScen}}{
-    \code{character(n)}, optionally named. 
-    Paths to scenario mifs. If the vector has names, those are used to refer to the scenarios in the output file.}
-  \item{\code{mifHist}}{
-    \code{character(1)}. 
-    Path to historical mif.}
   \item{\code{yearsScen}}{
     \code{numeric(n)}. 
     Default: \code{c(seq(2005, 2060, 5), seq(2070, 2100, 10))}.
@@ -90,14 +92,14 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
 \examples{
 \dontrun{
 compareScenarios2(
-  outputFile = "CompareScenarios2Example1",
   mifScen = c("path/to/Base.mif", "path/to/NDC.mif"),
   mifHist = "path/to/historical.mif",
+  outputFile = "CompareScenarios2Example1",
   userSectionPath = "path/to/myPlots.Rmd")
 compareScenarios2(
-  outputFile = "CompareScenarios2Example2",
   mifScen = c(ScenarioName1="path/to/scen1.mif", ScenarioName2="path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
+  outputFile = "CompareScenarios2Example2",
   figWidth = 18, figHeight = 10)
 }
 }

@@ -226,18 +226,6 @@ showLinePlots(data, "SE|Electricity|Wind|Offshore")
 ```
 
 
-## SE non-electric by carrier
-
-```{r SE non-electric by carrier}
-## TODO
-```
-
-## PE by sector
-
-```{r PE by sector}
-## TODO
-```
-
 ## PE by carrier
 
 ```{r PE by carrier}
