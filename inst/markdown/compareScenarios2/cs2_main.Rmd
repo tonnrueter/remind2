@@ -1,6 +1,6 @@
 ---
 title: "Compare Scenarios 2"
-date: '`r format(Sys.Date())`'
+date: "`r format(Sys.Date())`"
 output:
   pdf_document:
     toc: yes
@@ -12,33 +12,14 @@ output:
     toc_depth: 3
     number_sections: yes
 params:
-  mifScen: 
-  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP2-Base.mif"
-  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP2-NDC.mif"
-  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP2-PkBudg900.mif"
-  - "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/REMIND_generic_SSP5-Base.mif"
-  #- C:/Users/chris/Documents/PIK/mif/SDP/Base.mif
-  #- C:/Users/chris/Documents/PIK/mif/SDP/NDC.mif
-  #- C:/Users/chris/Documents/PIK/mif/SDP/NPi.mif
-  #- C:/Users/chris/Documents/PIK/mif/SDP/PkBudg870.mif
-  #- C:/Users/chris/Documents/PIK/mif/SDP/PkBudg1520.mif
-  #- "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-NDC.mif"
-  #- "C:/Users/chris/Documents/PIK/mif/REMIND/REMIND_generic_SSP2EU-AMT-PkBudg1520.mif"
-  mifHist: "C:/Users/chris/Nextcloud/Documents/mif/2022-01-04/historical.mif"
-  #mifHist: C:/Users/chris/Documents/PIK/mif/SDP/historical.mif
+  mifScen: ""
+  mifScenNames: null
+  mifHist: ""
   yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
   reg: null
-  sections: "all" # "all" for all
-  #- "01_summary"
-  #- "02_macro"
-  #- "03_emissions"
-  #- "04_energy_supply"
-  #- "05_energy_demand"
-  #- "06_energy_services"
-  #- "07_climate"
-  #- "08_sdp"
+  sections: "all"
   userSectionPath: null
   mainReg: "World"
   figWidth: 14 
@@ -95,21 +76,19 @@ library(mip)
 
 ```{r read mifs}
 # Read *.mif-files.
-##dataScen <- read.quitte(params$mifScen, factors=FALSE)
 tibble(
-  path = params$mifScen,
-  filename = str_extract(path, "[^/]+(?=.mif$)"),
+  path = unname(params$mifScen),
+  newScenarioName = params$mifScenNames,
   data = map(path, read.quitte, factors=FALSE)) %>% 
-  unnest(cols=c(data)) ->
+  unnest(cols = data) ->
   dataScen
-# If scenario names do not uniquely identify scenarios, use file names instead.
-if (length(unique(dataScen$scenario)) < length(params$mifScen)) {
+if (!is.null(dataScen$newScenarioName)) {
   dataScen %>% 
-    mutate(scenario = filename) ->
+    mutate(scenario = newScenarioName) ->
     dataScen
-}
+} 
 dataScen %>% 
-  select(-path, -filename) ->
+  select(model, scenario, region, variable, unit, period, value) ->
   dataScen
 
 params$mifHist %>% 

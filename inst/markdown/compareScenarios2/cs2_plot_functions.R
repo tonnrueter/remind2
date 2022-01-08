@@ -100,7 +100,7 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   d %>% 
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
-  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse="|"), "]")
+  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse=","), "]")
   
   if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) {
     warning("Nothing to plot:", paste(filterVars, collapse=","))
@@ -155,7 +155,7 @@ showLinePlotsWithTarget <- function(data, filterVars) {
     return(invisible(NULL))
   }
   
-  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse="|"), "]")
+  label <- paste0(filterVars, " [", paste0(unique(d$unit), collapse=","), "]")
   d %>% 
     filter(scenario != "historical") %>% 
     mipLineHistorical(
@@ -181,7 +181,7 @@ showMultiLinePlots <- function(data, items) {
     filter(variable %in% items) ->
     d
   
-  label <- paste0("[", paste0(unique(d$unit), collapse="|"), "]")
+  label <- paste0("[", paste0(unique(d$unit), collapse=","), "]")
   
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
@@ -221,7 +221,7 @@ showMultiLinePlotsByGDP <- function(data, items) {
     filter(variable %in% items) ->
     d
   
-  label <- paste0("[", paste0(unique(d$unit), collapse="|"), "]")
+  label <- paste0("[", paste0(unique(d$unit), collapse=","), "]")
   
   d %>% 
     filter(region == mainReg, scenario != "historical") %>% 
