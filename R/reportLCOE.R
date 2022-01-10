@@ -85,6 +85,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  temapall <- readGDX(gdx,c("en2en","temapall"),format="first_found")
  teall2rlf <- readGDX(gdx,c("te2rlf","teall2rlf"),format="first_found")
  te        <- readGDX(gdx,"te")
+ te <- te[!te %in% c("lng_liq","gas_pipe", "lng_gas", "lng_ves","coal_ves")]
  te2stor   <- readGDX(gdx,"VRE2teStor")
  te2grid   <- readGDX(gdx,"VRE2teGrid")
  teVRE   <- readGDX(gdx,"teVRE")
@@ -664,9 +665,18 @@ reportLCOE <- function(gdx, output.type = "both"){
   ### 4. plant lifetime and annuity factor
   
   #discount rate
-  r <- 0.06
+  r <- 0.051
+  # r <- readGDX(gdx, name="p_r", restore_zeros = F)
+  # 
+  # r <- r %>% 
+  #   as.data.frame() %>% 
+  #   # filter(Year < 2110) %>% 
+  #   dplyr::group_by() %>%
+  #   dplyr::summarise( Value = mean(Value) , .groups = 'keep' ) %>% 
+  #   dplyr::ungroup() %>% 
+  #   as.magpie()
   
-  # read lifetime of tecnology 
+  # read lifetime of technology 
   # calculate annuity factor to annuitize CAPEX and OMF (annuity factor labeled "disc.fac")
   lt <- readGDX(gdx, name="fm_dataglob", restore_zeros = F)[,,"lifetime"][,,te_LCOE_Inv][,,"lifetime"]
   
