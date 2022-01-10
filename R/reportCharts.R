@@ -497,13 +497,13 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   ##### PRIMARY ENERGY
   
   #var.tot <-"PE (EJ/yr)"
-  vars <- c("Coal with CCS" = "PE|Coal|w/ CCS (EJ/yr)", 
-            "Coal without CCS" = "PE|Coal|w/o CCS (EJ/yr)",
+  vars <- c("Coal with CCS" = "PE|Coal|w/ CC (EJ/yr)", 
+            "Coal without CCS" = "PE|Coal|w/o CC (EJ/yr)",
             "Oil" = "PE|Oil (EJ/yr)",
-            "Gas with CCS" = "PE|Gas|w/ CCS (EJ/yr)", 
-            "Gas without CCS" = "PE|Gas|w/o CCS (EJ/yr)",
-            "Biomass with CCS" = "PE|Biomass|w/ CCS (EJ/yr)", 
-            "Biomass without CCS" = "PE|Biomass|w/o CCS (EJ/yr)",
+            "Gas with CCS" = "PE|Gas|w/ CC (EJ/yr)", 
+            "Gas without CCS" = "PE|Gas|w/o CC (EJ/yr)",
+            "Biomass with CCS" = "PE|Biomass|w/ CC (EJ/yr)", 
+            "Biomass without CCS" = "PE|Biomass|w/o CC (EJ/yr)",
             "Nuclear" = "PE|Nuclear (EJ/yr)", 
             "Hydro" = "PE|Hydro (EJ/yr)",
             "Geothermal" = "PE|Geothermal (EJ/yr)",
@@ -955,7 +955,7 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
             "Gas without CC"  = "SE|Electricity|Gas|w/o CC (EJ/yr)",
             "Biomass with CC" = "SE|Electricity|Biomass|w/ CC (EJ/yr)",  
             "Biomass without CC" = "SE|Electricity|Biomass|w/o CC (EJ/yr)",
-            "Nuclear"          = "SE|ElectricityNuclear (EJ/yr)", 
+            "Nuclear"          = "SE|Electricity|Nuclear (EJ/yr)", 
             "Hydrogen"         = "SE|Electricity|Hydrogen (EJ/yr)",
             "Solar"            = "SE|Electricity|Solar (EJ/yr)", 
             "Wind"             = "SE|Electricity|Wind (EJ/yr)",

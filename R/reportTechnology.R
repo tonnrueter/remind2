@@ -127,7 +127,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "storspv" = "Electricity|Storage|Battery|For PV",
     "storcsp" = "Electricity|Storage|Battery|For CSP",
     "biogas" = "Gases|Biomass|w/o CC",
-    "coalgas" = "Gases|Coal|w/o CC",
+    "coalgas" = "Gases|Fossil|Coal|w/o CC",
     "bioh2c" = "Hydrogen|Biomass|w/ CC",
     "bioh2" = "Hydrogen|Biomass|w/o CC",
     "coalh2c" = "Hydrogen|Coal|w/ CC",
@@ -135,13 +135,13 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "elh2" = "Hydrogen|Electricity",
     "gash2c" = "Hydrogen|Gas|w/ CC",
     "gash2" = "Hydrogen|Gas|w/o CC",
-    "bioftcrec" = "Liquids|Biomass|Biofuel|BioFTR|w/ CC",
-    "bioftrec" = "Liquids|Biomass|Biofuel|BioFTR|w/o CC",
-    "bioethl" = "Liquids|Biomass|Biofuel|Ethanol|Cellulosic|w/o CC",
-    "bioeths" = "Liquids|Biomass|Biofuel|Ethanol|Conventional|w/o CC",
-    "biodiesel" = "Liquids|Biomass|Biofuel|Biodiesel|w/o CC",
-    "coalftcrec" = "Liquids|Coal|w/ CC",
-    "coalftrec" = "Liquids|Coal|w/o CC",
+    "bioftcrec" = "Liquids|Biomass|BioFTR|w/ CC",
+    "bioftrec" = "Liquids|Biomass|BioFTR|w/o CC",
+    "bioethl" = "Liquids|Biomass|Cellulosic|w/o CC",
+    "bioeths" = "Liquids|Biomass|Conventional Ethanol",
+    "biodiesel" = "Liquids|Biomass|Biodiesel|w/o CC",
+    "coalftcrec" = "Liquids|Fossil|Coal|w/ CC",
+    "coalftrec" = "Liquids|Fossil|Coal|w/o CC",
     "gashp"  = "Heat|Gas",
     "coalhp" = "Heat|Coal",
     "geohe"  = "Heat|Electricity|Heat Pumps",
@@ -170,9 +170,9 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   }
 
   if (("seliq" %in% sety) || ("seliqbio" %in% sety)) {
-    techmap[["refliq"]] <- "Liquids|Oil"
+    techmap[["refliq"]] <- "Liquids|Fossil|Oil"
   } else {
-    techmap[["refdip"]] <- "Liquids|Oil"
+    techmap[["refdip"]] <- "Liquids|Fossil|Oil"
   }
 
   if ("windoff" %in% te) {

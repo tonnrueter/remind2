@@ -123,13 +123,13 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   swlatex(sw,"\\subsection{PE}")
   
   #var.tot <-"PE (EJ/yr)"
-  vars <- c("PE|Coal|w/ CCS (EJ/yr)", 
-            "PE|Coal|w/o CCS (EJ/yr)",
+  vars <- c("PE|Coal|w/ CC (EJ/yr)", 
+            "PE|Coal|w/o CC (EJ/yr)",
             "PE|+|Oil (EJ/yr)",
-            "PE|Gas|w/ CCS (EJ/yr)", 
-            "PE|Gas|w/o CCS (EJ/yr)",
-            "PE|Biomass|w/ CCS (EJ/yr)", 
-            "PE|Biomass|w/o CCS (EJ/yr)",
+            "PE|Gas|w/ CC (EJ/yr)", 
+            "PE|Gas|w/o CC (EJ/yr)",
+            "PE|Biomass|w/ CC (EJ/yr)", 
+            "PE|Biomass|w/o CC (EJ/yr)",
             "PE|+|Nuclear (EJ/yr)", 
             "PE|+|Hydro (EJ/yr)",
             "PE|+|Geothermal (EJ/yr)",

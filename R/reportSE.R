@@ -67,7 +67,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   ## variables
   vm_prodSe <- readGDX(gdx, name = c("vm_prodSe", "v_seprod"), field = "l", restore_zeros = FALSE, format = "first_found") * pm_conv_TWa_EJ
   vm_prodSe <- mselect(vm_prodSe, all_enty1 = entySe)
-
+  
   if (length(tmp_d3 <- intersect(c("MeOH", "h22ch4"),
     getNames(vm_prodSe, dim = 3)))) {
     # if synfuels are activated, there might be no demand until 2020. This can

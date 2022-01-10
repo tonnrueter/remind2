@@ -151,7 +151,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   # correct global values for intensive variables (prices, LCOES, Capacity factors) 
   map <- data.frame(region=getRegions(tmp["GLO",,,invert=TRUE]),world="GLO",stringsAsFactors=FALSE)
   tmp["GLO",,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- 
-            speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Oil (EJ/yr)"])
+            speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Fossil|Oil (EJ/yr)"])
   tmp["GLO",,"Capacity Factor|Electricity|Gas (%)"] <- 
     speed_aggregate(tmp[map$region,,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[map$region,,"Cap|Electricity|Gas (GW)"])   
   tmp["GLO",,"Real Capacity Factor|Electricity|Wind (%)"] <- 
@@ -167,7 +167,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   if (!is.null(regionSubsetList)){
     for (region in names(regionSubsetList)){
       map <- data.frame(region=regionSubsetList[[region]],parentRegion=region,stringsAsFactors=FALSE)
-      tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Oil (EJ/yr)"])
+      tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Fossil|Oil (EJ/yr)"])
       tmp[region,,"Capacity Factor|Electricity|Gas (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Gas (GW)"])
       tmp[region,,"Real Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Real Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
       tmp[region,,"Theoretical Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Theoretical Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
