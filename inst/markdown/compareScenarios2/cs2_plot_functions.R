@@ -1,3 +1,7 @@
+# TODO: document/comment functions in this file
+
+
+
 calacuateRatio <- function(data, numerators, denominator, newUnit="1", conversionFactor=1) {
   data %>% 
     filter(variable == denominator) %>% 

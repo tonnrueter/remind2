@@ -259,7 +259,9 @@ d %>%
     color.dim="region",
     facet.dim="scenario",
     facet.ncol=2) +
-  theme(legend.position="right")
+  theme(legend.position="right") +
+  scale_color_manual(values = plotstyle(regions)) + 
+  theme_minimal()
 ```
 
 
