@@ -115,7 +115,7 @@ compareScenarios2 <- function(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"))
   yml <- yaml::yaml.load(
     rmd, 
-    handlers = list(r = \(x) ymlthis::yml_params_code(!!rlang::parse_expr(x))))
+    handlers = list(r = function(x) ymlthis::yml_params_code(!!rlang::parse_expr(x))))
   baseYaml <- ymlthis::as_yml(yml)
   newYamlParams <- baseYaml$params
   newYamlParams[names(yamlParams)] <- yamlParams

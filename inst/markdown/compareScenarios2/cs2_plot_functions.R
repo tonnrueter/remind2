@@ -148,10 +148,10 @@ showLinePlotsWithTarget <- function(data, filterVars) {
     paste0("|target|") %>% 
     str_replace_all(fixed("|"), fixed("\\|")) %>% 
     paste0(collapse="|") ->
-    target_pattern
+    targetPattern
   
   data %>% 
-    filter(str_detect(variable, target_pattern)) ->
+    filter(str_detect(variable, targetPattern)) ->
     dTar
   regionsWithTarget <- unique(dTar$region)
   data %>% 

@@ -14,6 +14,19 @@ showLinePlotsWithTarget(data, items)
 showLinePlots(data, "Emi|GHG|w/ Bunkers")
 ```
 
+
+##  GHG Sectors
+
+```{r}
+items <- c(
+  "Emi|GHG|Energy",
+  "Emi|GHG|Industrial Processes",
+  "Emi|GHG|Agriculture",
+  "Emi|GHG|Waste")
+walk(items, showLinePlots, data=data)
+```
+
+
 ## GHG - Market
 
 ### ETS
@@ -23,6 +36,7 @@ items <- "Emi|GHG|ETS"
 showLinePlots(data, items)
 showLinePlotsWithTarget(data, items)
 ```
+
 
 ### ESR
 
@@ -40,6 +54,7 @@ Note: Reduction targets wrt 2005
 ```{r}
 showLinePlots(data, "Emi|GHG|Outside ETS and ESR")
 ```
+
 
 ## CO2
 
@@ -60,11 +75,13 @@ items <- c(
 showAreaAndBarPlots(data, items, tot)
 ```
 
+
 ### Total CO2
 
 ```{r}
 showLinePlots(data, "Emi|CO2")
 ```
+
 
 ### Energy and Industrial Processes - Net (incl BECCS)
 
@@ -85,11 +102,13 @@ items <- c(
 showLinePlots(data, items)
 ```
 
+
 ### Energy
 
 ```{r}
 showLinePlots(data, "Emi|CO2|Energy")
 ```
+
 
 ### Energy Supply
 
@@ -100,6 +119,7 @@ items <- c(
 showLinePlots(data, items)
 ```
 
+
 ### Electricity
 
 ```{r}
@@ -108,6 +128,32 @@ items <- c(
   "Emi|CO2|Energy|Supply|Electricity") # historical
 showLinePlots(data, items)
 ```
+
+
+### Electricity and Heat
+
+```{r}
+# UNFCCC has "EMI|CO2|Energy|Demand|Electricity and Heat", 
+# CEDS and REMIND only separate
+# manually added for now
+# TODO: move to mrremind!
+
+item <- "Emi|CO2|Energy|Supply|Electricity and Heat"
+summands <- c(
+  "Emi|CO2|Energy|Supply|Electricity", 
+  "Emi|CO2|Energy|Supply|Heat")
+data %>% 
+  filter(variable %in% summands) %>% 
+  pivot_wider(names_from=variable, values_from=value) %>% 
+  rowwise() %>%
+  mutate(!!item := sum(c_across(all_of(summands)))) %>% 
+  ungroup() %>% 
+  select(!all_of(summands)) %>% 
+  pivot_longer(all_of(item), names_to="variable", values_to="value") ->
+  newRows
+showLinePlots(bind_rows(data, newRows), item)
+```
+
 
 ### Buildings
 
@@ -118,6 +164,7 @@ items <- c(
 showLinePlots(data, items)
 ```
 
+
 ### Industry
 
 ```{r}
@@ -127,12 +174,39 @@ items <- c(
 showLinePlots(data, items)
 ```
 
+
+### Industry, Gross
+
 ```{r}
 items <- c(
   "Emi|CO2|Gross|Energy|Demand|Industry", # scenario
   "Emi|CO2|Industry|Direct") # historical
 showLinePlots(data, items)
 ```
+
+
+### Industry with Industrial Processes
+
+```{r}
+# Emi|CO2|Industry = Emi|CO2|Energy|Demand|Industry + Emi|CO2|Industrial Processes 
+# (new REMIND reporting variable coming soon, current solution is terrible)
+# TODO: Switch to new variable as soon as it is also available in historical data.
+item <- "Emi|CO2|Industry"
+summands <- c(
+  "Emi|CO2|Energy|Demand|Industry", 
+  "Emi|CO2|Industrial Processes")
+data %>% 
+  filter(variable %in% summands) %>% 
+  pivot_wider(names_from=variable, values_from=value) %>% 
+  rowwise() %>%
+  mutate(!!item := sum(c_across(all_of(summands)))) %>% 
+  ungroup() %>% 
+  select(!all_of(summands)) %>% 
+  pivot_longer(all_of(item), names_to="variable", values_to="value") ->
+  newRows
+showLinePlots(bind_rows(data, newRows), item)                           
+```
+
 
 ### Transport
 
@@ -142,6 +216,14 @@ items <- c(
   "Emi|CO2|Transport|Demand") # historical
 showLinePlots(data, items)
 ```
+
+
+### International Bunkers
+
+```{r}
+showLinePlots(data, "Emi|CO2|Energy|Demand|Transport|International Bunkers")
+```
+
 
 ### Process Emissions
 
@@ -176,6 +258,7 @@ items <- c(
   "Emi|CO2|Gross|Energy and Industrial Processes",
   "Emi|CO2|Land-Use Change",
   "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW"
 )
@@ -187,7 +270,9 @@ showAreaAndBarPlots(data, items, tot)
 tot <- "Emi|CO2|CDR"
 items <- c(
   "Emi|CO2|CDR|Land-Use Change",
-  "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|BECCS|Pe2Se",
+  "Emi|CO2|CDR|BECCS|Industry",
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW"
 )
@@ -233,7 +318,9 @@ tot <- "Emi|CO2|Cumulated"
 items <- c(
   "Emi|CO2|Cumulated|Gross|Energy and Industrial Processes",
   "Emi|CO2|Cumulated|Land-Use Change",
-  "Emi|CO2|Cumulated|CDR|BECCS",
+  "Emi|CO2|Cumulated|CDR|BECCS|Pe2Se",
+  "Emi|CO2|Cumulated|CDR|BECCS|Industry",
+  "Emi|CO2|Cumulated|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|Cumulated|CDR|DACCS",
   "Emi|CO2|Cumulated|CDR|EW")
 showAreaAndBarPlots(data, items, tot)
@@ -346,5 +433,7 @@ items <- c(
   "Emi|CO2|Energy|Demand|Industry|Chemicals",
   "Emi|CO2|Energy|Demand|Industry|Other Industry")
 showAreaAndBarPlots(data, items)
+walk(items, showLinePlots, data=data)
 ```
+
 

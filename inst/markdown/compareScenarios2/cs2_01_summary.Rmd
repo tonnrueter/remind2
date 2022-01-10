@@ -32,6 +32,7 @@ items <- c(
   "Emi|GHG|Waste",
   "Emi|GHG|F-Gas",
   "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW")
 showAreaAndBarPlots(data, items, tot)
@@ -50,6 +51,7 @@ items <- c(
   "Emi|CO2|Gross|Energy|Supply|Non-electric",
   "Emi|CO2|Gross|Energy|Supply|Electricity",
   "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW")
 showAreaAndBarPlots(data, items, tot)

@@ -106,6 +106,7 @@ dataHist %>%
   filter(period %in% params$yearsHist, !is.na(value)) ->
   dataHist
 
+# TODO: Should be filtered in historical.mif or kept in plots
 # Remove rows where all values of the same model, scenario, variable, region are 0.
 dataHist %>% 
   group_by(model, scenario, variable, region) %>% 
@@ -138,7 +139,7 @@ data %>%
   mutate(variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
   data
   
-# TODO: ok? Should probably be filtered in historical.mif
+# TODO: Should probably be filtered in historical.mif
 # For following scenario-variable combinations, use only the specified models.
 modelFilter <- tribble(
   ~scenario, ~variable, ~model, 
