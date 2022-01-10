@@ -1660,6 +1660,109 @@ compareScenarios <- function(mif, hist,
   p <- mipLineHistorical(data[,,"Emi|GHG|w/ Bunkers (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],x_hist=NULL,
                          ylab='Total GHG Emisions w/ Bunkers [Mt CO2-equiv/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
   swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  ## ---- Total Emissions with LULLUCF national accounting correction ----
+  
+  if ("Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)" %in% getNames(data)) {
+  
+  ## ---- GHG by sector ----
+  
+  swlatex(sw,"\\subsection{GHG by sector (w/ gross emissions and national LULUCF accounting correction)}")
+  
+  tot <- "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)"
+  items <- c("Emi|GHG|Gross|Energy|Supply|Electricity (Mt CO2eq/yr)",
+             "Emi|GHG|Gross|Energy|Supply|Non-electric (Mt CO2eq/yr)",
+             "Emi|GHG|Energy|Demand|Transport (Mt CO2eq/yr)",
+             "Emi|GHG|Energy|Demand|Buildings (Mt CO2eq/yr)",
+             "Emi|GHG|Gross|Energy|Demand|Industry (Mt CO2eq/yr)",
+             "Emi|GHG|Industrial Processes (Mt CO2eq/yr)",
+             "Emi|GHG|Agriculture (Mt CO2eq/yr)",
+             "Emi|GHG|Land-Use Change|LULUCF national accounting (Mt CO2eq/yr)",
+             "Emi|GHG|Waste (Mt CO2eq/yr)",
+             "Emi|GHG|F-Gas (Mt CO2eq/yr)",
+             "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
+             "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
+             "Emi|CO2|CDR|EW (Mt CO2/yr)")
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="none") + 
+    scale_y_continuous("Emi|GHG (Mt CO2eq/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],scales="free_y", total = F)
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  swlatex(sw,"\\twocolumn")
+  
+  ## ---- CO2 by sector ----
+  
+  
+ 
+  
+  swlatex(sw,"\\subsection{CO2 by sector (w/ gross emissions and national LULUCF accounting correction)}")
+  
+  tot <-"Emi|CO2|LULUCF national accounting (Mt CO2/yr)"
+  items <- c(
+    "Emi|CO2|Land-Use Change|LULUCF national accounting (Mt CO2/yr)",
+    "Emi|CO2|Industrial Processes (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|Transport (Mt CO2/yr)",
+    "Emi|CO2|Gross|Energy|Demand|Industry (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|Buildings (Mt CO2/yr)",
+    "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
+    "Emi|CO2|Gross|Energy|Supply|Electricity (Mt CO2/yr)",
+    "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+    "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
+    "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
+    "Emi|CO2|CDR|EW (Mt CO2/yr)")
+  
+  
+  var <- data[,,intersect(items,getNames(data,dim=3))]
+  
+  p <- mipArea(var[mainReg,,],scales="free_y", total = F)
+  p <- p + theme(legend.position="bottom") + 
+    scale_y_continuous("Emi|CO2 (Mt CO2/yr)") +
+    geom_line(data=as.quitte(data[mainReg,,tot]), 
+              mapping=aes(period, value),
+              size=1.3)
+  swfigure(sw,print,p,sw_option="height=3.5,width=7")
+  
+  p <- mipBarYearData(var[mainReg,y_bar,])
+  p <- p + theme(legend.position="none")
+  swfigure(sw,print,p,sw_option="height=4.5,width=7")
+  
+  p <- mipBarYearData(var[,y_bar,][mainReg,,,invert=TRUE]) +
+    guides(fill=guide_legend(ncol=3))
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  swlatex(sw,"\\onecolumn")
+  p <- mipArea(var[mainReg,,,invert=TRUE],total=data[,,tot][mainReg,,,invert=TRUE],scales="free_y")
+  swfigure(sw,print,p,sw_option="height=8,width=16")
+  
+  
+  swlatex(sw,"\\twocolumn")
+  # line plot: land-use change emissions with national LULUCF accounting
+  p <- mipLineHistorical(data[mainReg,,"Emi|CO2|Land-Use Change|LULUCF national accounting (Mt CO2/yr)"],x_hist=histData[mainReg,,"Emi|CO2|Land Use (Mt CO2/yr)"],
+                         ylab='Emi|CO2|Land-Use Change|LULUCF national accounting [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+  swfigure(sw,print,p,sw_option="height=8,width=8")
+  p <- mipLineHistorical(data[,,"Emi|CO2|Land-Use Change|LULUCF national accounting (Mt CO2/yr)"][mainReg,,,invert=TRUE],x_hist=histData[,,"Emi|CO2|Land Use (Mt CO2/yr)"][mainReg,,,invert=TRUE],
+                         ylab='Emi|CO2|Land-Use Change|LULUCF national accounting [Mt CO2/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
+  swfigure(sw,print,p,sw_option="height=9,width=8")
+  
+  }
 
   ## ---- Emissions GHG Sectors ----
   items <- c("Emi|GHG|Energy (Mt CO2eq/yr)",
@@ -1702,7 +1805,7 @@ compareScenarios <- function(mif, hist,
     
     swlatex(sw,"\\subsubsection{GHG Land-Use Change}")
     p <- mipLineHistorical(data[mainReg,,"Emi|GHG|Land-Use Change (Mt CO2eq/yr)"],
-                           ylab='Emi|GHG|Waste [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
+                           ylab='Emi|GHG|Land-Use Change [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"))
     swfigure(sw,print,p,sw_option="height=8,width=8")
     p <- mipLineHistorical(data[,,"Emi|GHG|Land-Use Change (Mt CO2eq/yr)"][mainReg,,,invert=TRUE],
                            ylab='Emi|GHG|Land-Use Change [Mt CO2eq/yr]',scales="free_y",plot.priority=c("x_hist","x","x_proj"),facet.ncol=3)
