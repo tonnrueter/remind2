@@ -32,7 +32,7 @@ output document to be created.}
 \item{...}{YAML parameters, see below.}
 }
 \value{
-The value returned by \code{\link[rmarkdown]{rmarkdown::render()}}.
+The value returned by \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 }
 \description{
 Renders the *.Rmd-files associated to CompareScenarios2. In the Rmds,

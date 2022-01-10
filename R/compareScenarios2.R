@@ -16,7 +16,7 @@
 #' @param outputFormat \code{character(1)}, not case-sensitive. \code{"html"},
 #'   \code{"pdf"}, or \code{"rmd"}.
 #' @param ... YAML parameters, see below.
-#' @return The value returned by \code{\link[rmarkdown]{rmarkdown::render()}}.
+#' @return The value returned by \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 #' @section YAML Parameters:
 #' \describe{
 #'   \item{\code{yearsScen}}{
@@ -110,7 +110,8 @@ compareScenarios2 <- function(
 # Copies the CompareScenarios2-Rmds to the specified location and modifies
 # their YAML header according to \code{yamlParams}.
 .compareScenarios2_rmd <- function(yamlParams, outputDir, outputFile) {
-  rmd <- ymlthis:::read_rmd(
+  read_rmd <- utils::getFromNamespace("read_rmd", "ymlthis")
+  rmd <- read_rmd(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"))
   yml <- yaml::yaml.load(
     rmd, 
