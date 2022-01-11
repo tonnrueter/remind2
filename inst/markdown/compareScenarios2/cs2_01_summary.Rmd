@@ -98,8 +98,8 @@ showAreaAndBarPlots(data, items)
 ## FE per capita (by sector, time domain, line graph)
 
 ```{r FE per capita (by sector, time domain, line graph)}
+showMultiLinePlots(data, "FE pCap")
 items <- c(
-  "FE pCap",
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
@@ -109,6 +109,7 @@ showMultiLinePlots(data, items)
 ## FE per capita (by sector, GDP)
 
 ```{r FE per capita by sector (GDP domain)}
+showMultiLinePlotsByGDP(data, "FE pCap")
 items <- c(
   "FE|Transport pCap",
 	"FE|Buildings pCap",
@@ -267,23 +268,9 @@ d %>%
 ```
 
 
-```{r CO2 Prices ETS}
-data %>% 
-  filter(variable == "Price|Carbon|ETS", scenario != "historical") ->
-  d
-if (isTRUE(any(d$value!=0))) {
-  showLinePlots(d)
-}
-```
-
-
-```{r CO2 Prices ESR}
-data %>% 
-  filter(variable == "Price|Carbon|ESR", scenario != "historical") ->
-  d
-if (isTRUE(any(d$value!=0))) {
-  showLinePlots(d)
-}
+```{r CO2 Prices ETS,ESR}
+showLinePlots(data, "Price|Carbon|ETS")
+showLinePlots(data, "Price|Carbon|ESR")
 ```
 
 

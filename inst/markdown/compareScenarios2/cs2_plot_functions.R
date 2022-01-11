@@ -1,6 +1,11 @@
 # TODO: document/comment functions in this file
 
-
+getLegend <- function(plt) {
+  tmp <- ggplot_gtable(ggplot_build(plt))
+  legIdx <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  if (length(legIdx) == 0) return(NULL)
+  tmp$grobs[[legIdx[1]]]
+}
 
 calacuateRatio <- function(data, numerators, denominator, newUnit="1", conversionFactor=1) {
   data %>% 
@@ -46,17 +51,9 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   
   d %>% 
     filter(region == mainReg) %>% 
-    mipArea(scales="free_y", total = is.null(tot)) + 
+    mipArea(scales = "free_y", total = is.null(tot)) + 
     theme(legend.position="none") ->
     p1
-  if (!is.null(tot)) {
-    p1 <- p1 +
-      geom_line(
-        data = data %>% 
-          filter(region == mainReg, variable == tot, scenario != "historical"), 
-        mapping = aes(period, value),
-        size=1.3)
-  }
   
   d %>% 
     filter(region == mainReg, period %in% yearsBarPlot) %>% 
@@ -76,6 +73,22 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
     guides(fill=guide_legend(reverse=TRUE)) ->
     p4
   
+  # Add black lines in area plots from variable tot if provided.
+  if (!is.null(tot)) {
+    p1 <- p1 +
+      geom_line(
+        data = data %>% 
+          filter(region == mainReg, variable == tot, scenario != "historical"), 
+        mapping = aes(period, value),
+        size=1.3)
+    p4 <- p4 +
+      geom_line(
+        data = data %>% 
+          filter(region != mainReg, variable == tot, scenario != "historical"), 
+        mapping = aes(period, value),
+        size=1.3)
+  }
+  
   # Show plots.
   grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
   plot(p4)
@@ -84,6 +97,7 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
 }
 
 
+# scales: "free_y" or "fixed"
 showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   # This function uses the 'global' variables: mainReg
   
@@ -137,13 +151,20 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
       p2
   }
  
+  # If available, show only legend of regions plot below mainReg-plot.
+  lgnd <- getLegend(p2)
+  if (!is.null(lgnd)) {
+    p1 <- arrangeGrob(p1 + theme(legend.position="none"), lgnd, ncol = 1, heights = c(0.76, 0.24))
+    p2 <- p2 + theme(legend.position="none")
+  }
+  
   grid.arrange(p1, p2, nrow=1)
   
   return(invisible(NULL))
 }
 
 
-showLinePlotsWithTarget <- function(data, filterVars) {
+showLinePlotsWithTarget <- function(data, filterVars, scales="free_y") {
   filterVars %>% 
     paste0("|target|") %>% 
     str_replace_all(fixed("|"), fixed("\\|")) %>% 
@@ -168,7 +189,7 @@ showLinePlotsWithTarget <- function(data, filterVars) {
     mipLineHistorical(
       x_hist = d %>% filter(scenario == "historical"),
       ylab = label,
-      scales = "free_y",
+      scales = scales,
       plot.priority = c("x_hist","x","x_proj"),
       facet.ncol = 3) + 
     geom_hline(data = dTar, aes(yintercept=value), linetype=2, color = "coral") +
@@ -181,7 +202,7 @@ showLinePlotsWithTarget <- function(data, filterVars) {
 }
 
 
-showMultiLinePlots <- function(data, items) {
+showMultiLinePlots <- function(data, items, scales="fixed") {
   # This function uses the 'global' variables: mainReg, regions.
   
   data %>% 
@@ -198,6 +219,7 @@ showMultiLinePlots <- function(data, items) {
       data = d %>% filter(region == mainReg, scenario == "historical"), 
       aes(shape = model)) +
     theme_minimal() +
+    ylim(0, NA) + 
     ylab(label) ->
     p1
   
@@ -210,12 +232,13 @@ showMultiLinePlots <- function(data, items) {
       aes(shape = model)) +
     theme_minimal() +
     scale_color_manual(values = plotstyle(regions)) + 
+    ylim(0, NA) + 
     ylab(label) ->
     p2
   
   if (length(unique(d$variable)) > 1) {
-    p1 <- p1 + facet_wrap(vars(variable), scales="free_y")
-    p2 <- p2 + facet_wrap(vars(variable), scales="free_y")
+    p1 <- p1 + facet_wrap(vars(variable), scales=scales)
+    p2 <- p2 + facet_wrap(vars(variable), scales=scales)
   }
   
   print(p1)
@@ -225,7 +248,7 @@ showMultiLinePlots <- function(data, items) {
 }
 
 
-showMultiLinePlotsByGDP <- function(data, items) {
+showMultiLinePlotsByGDP <- function(data, items, scales="fixed") {
   # This function uses the 'global' variables: mainReg.
   
   data %>% 
@@ -242,6 +265,7 @@ showMultiLinePlotsByGDP <- function(data, items) {
       data = d %>% filter(region == mainReg, scenario == "historical"), 
       aes(shape = model)) +
     theme_minimal() +
+    ylim(0, NA) + 
     ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
     p1
   
@@ -253,12 +277,13 @@ showMultiLinePlotsByGDP <- function(data, items) {
       data = d %>% filter(region != mainReg, scenario == "historical"), 
       aes(shape = model)) +
     theme_minimal() +
+    ylim(0, NA) + 
     ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
     p2
   
   if (length(unique(d$variable)) > 1) {
-    p1 <- p1 + facet_wrap(vars(variable), scales="free_y")
-    p2 <- p2 + facet_wrap(vars(variable), scales="free_y")
+    p1 <- p1 + facet_wrap(vars(variable), scales=scales)
+    p2 <- p2 + facet_wrap(vars(variable), scales=scales)
   }
   
   print(p1)
