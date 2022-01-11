@@ -2985,13 +2985,13 @@ compareScenarios <- function(mif, hist,
 
   swlatex(sw,"\\subsubsection{SE|Liquids}")
 
-  items <- c("SE|Liquids|Oil (EJ/yr)",
+  items <- c("SE|Liquids|Fossil|Oil (EJ/yr)",
              "SE|Liquids|Biomass|w/ CC (EJ/yr)",
              "SE|Liquids|Biomass|w/o CC (EJ/yr)",
-             "SE|Liquids|Coal|w/ CC (EJ/yr)",
-             "SE|Liquids|Coal|w/o CC (EJ/yr)",
-             "SE|Liquids|Gas|w/ CC (EJ/yr)",
-             "SE|Liquids|Gas|w/o CC (EJ/yr)",
+             "SE|Liquids|Fossil|Coal|w/ CC (EJ/yr)",
+             "SE|Liquids|Fossil|Coal|w/o CC (EJ/yr)",
+             "SE|Liquids|Fossil|Gas|w/ CC (EJ/yr)",
+             "SE|Liquids|Fossil|Gas|w/o CC (EJ/yr)",
              "SE|Liquids|Hydrogen (EJ/yr)",
              "SE|Liquids|Hydrogen|Net Imports (EJ/yr)")
   
@@ -3115,7 +3115,9 @@ compareScenarios <- function(mif, hist,
              "SE|Input|Electricity|Industry (EJ/yr)",
              "SE|Input|Electricity|Transport (EJ/yr)",
              "SE|Input|Electricity|CDR (EJ/yr)",
-             "SE|Input|Electricity|Energy System (EJ/yr)")
+             "SE|Input|Electricity|Self Consumption Energy System (EJ/yr)")
+  
+  
   
   var <- data[,,intersect(items,getNames(data,dim = 3))]
   

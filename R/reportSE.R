@@ -455,13 +455,13 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     setNames(
       dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = c("feh2s", "feh2t")), dim = 3) * p_share_H2DomProd *
         p_shareElec_H2 / mselect(pm_eta_conv, all_te = "elh2"),
-      "SE|Electricity|used for H2|direct FE H2 (EJ/yr)"
+      "SE|Input|Electricity|Hydrogen|direct FE H2 (EJ/yr)"
     ),
     # calculate electricity used for storage of electricity
     setNames(
       dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel"), dim = 3) * p_share_H2DomProd *
         p_shareElec_H2 / mselect(pm_eta_conv, all_te = "elh2"),
-      "SE|Electricity|used for H2|Electricity Storage (EJ/yr)"
+      "SE|Input|Electricity|Hydrogen|Electricity Storage (EJ/yr)"
     )
   )
 
