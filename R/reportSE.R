@@ -178,7 +178,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "seel", te = "pc",      name = "SE|Electricity|Coal|++|Pulverised Coal w/o CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "seel", te = "pcc",     name = "SE|Electricity|Coal|++|Pulverised Coal w/ CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "seel", te = "coalchp", name = "SE|Electricity|Coal|++|Combined Heat and Power w/o CC (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "seel", te = setdiff(pe2se$all_te, c("igcc", "igccc", "pc", "coalchp")),
+    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "seel", te = setdiff(pe2se$all_te, c("igcc", "igccc", "pcc", "pc", "coalchp")),
                                                                                 name = "SE|Electricity|Coal|++|Other (EJ/yr)"),
     
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pegas", "seel",                  name = "SE|Electricity|+|Gas (EJ/yr)"),
