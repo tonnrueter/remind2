@@ -32,5 +32,5 @@ reportSE(gdx)
 
 }
 \author{
-Gunnar Luderer, Lavinia Baumstark, Felix Schreyer
+Gunnar Luderer, Lavinia Baumstark, Felix Schreyer, Falk Benke
 }
