@@ -30,6 +30,9 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   if(is.null(output)){
     stop("please provide a file containing all needed information")
   }
+  
+  ## delete "+" and "++" from variable names
+  output <- deletePlus(output)
 
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   rownames(module2realisation) <- module2realisation$modules
@@ -99,15 +102,15 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|1st Generation (EJ/yr)"]
-                 / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|1st Generation (EJ/yr)"))
+                 / output[r,,"PE|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|1st Generation (EJ/yr)"))
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|Residues (EJ/yr)"]
-                 / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Residues (EJ/yr)"))
+                 / output[r,,"PE|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Residues (EJ/yr)"))
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|Energy Crops (EJ/yr)"]
-                 / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Energy Crops (EJ/yr)"))
+                 / output[r,,"PE|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Energy Crops (EJ/yr)"))
   
  
   tmp <- mbind(tmp,setNames(
@@ -148,7 +151,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   # correct global values for intensive variables (prices, LCOES, Capacity factors) 
   map <- data.frame(region=getRegions(tmp["GLO",,,invert=TRUE]),world="GLO",stringsAsFactors=FALSE)
   tmp["GLO",,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- 
-            speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Oil (EJ/yr)"])
+            speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Fossil|Oil (EJ/yr)"])
   tmp["GLO",,"Capacity Factor|Electricity|Gas (%)"] <- 
     speed_aggregate(tmp[map$region,,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[map$region,,"Cap|Electricity|Gas (GW)"])   
   tmp["GLO",,"Real Capacity Factor|Electricity|Wind (%)"] <- 
@@ -164,7 +167,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   if (!is.null(regionSubsetList)){
     for (region in names(regionSubsetList)){
       map <- data.frame(region=regionSubsetList[[region]],parentRegion=region,stringsAsFactors=FALSE)
-      tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Oil (EJ/yr)"])
+      tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Fossil|Oil (EJ/yr)"])
       tmp[region,,"Capacity Factor|Electricity|Gas (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Gas (GW)"])
       tmp[region,,"Real Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Real Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
       tmp[region,,"Theoretical Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Theoretical Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
@@ -225,16 +228,16 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   # Energy shares
   tmp <- mbind(tmp,setNames(       # assume 8% for transmission losses and autoconsumption of power plants
     100 * (output[,,"SE|Electricity|Non-Biomass Renewables (EJ/yr)"] + output[,,"SE|Electricity|Biomass (EJ/yr)"])
-    / 1.08 / output[,,"FE|+|Electricity (EJ/yr)"],    "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))   
+    / 1.08 / output[,,"FE|Electricity (EJ/yr)"],    "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))   
   tmp <- mbind(tmp,setNames(       # divide biomass by 2 to roughly account for conversion losses 
-    100 * (output[,,"PE|Non-Biomass Renewables (EJ/yr)"] + output[,,"PE|+|Biomass (EJ/yr)"]/2)
+    100 * (output[,,"PE|Non-Biomass Renewables (EJ/yr)"] + output[,,"PE|Biomass (EJ/yr)"]/2)
     / output[,,"FE (EJ/yr)"],    "Final Energy|Share of renewables in gross demand|Rough estimation (Percent)"))   
   
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
-    output[,,"FE|Transport|+|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
-    output[,,"FE|Transport|+|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
-    output[,,"FE|Transport|+|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"], 
+    output[,,"FE|Transport|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
+    output[,,"FE|Transport|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
+    output[,,"FE|Transport|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"], 
                        "Expenditure|Transport|Fuel (billion $US/yr)"))
   
   # calculate intensities growth
