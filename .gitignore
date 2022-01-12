@@ -1,4 +1,5 @@
 inst/doc
+.RData
 .Rproj.user
 .Rhistory
 tests/testthat/test-convGDX2mif-data
