@@ -11,6 +11,7 @@ output:
     toc_float: yes
     toc_depth: 3
     number_sections: yes
+geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footnotesep=0.0cm,footskip=0.1cm"
 params:
   mifScen: ""
   mifScenNames: null
@@ -22,10 +23,9 @@ params:
   sections: "all"
   userSectionPath: null
   mainReg: "World"
-  figWidth: 14 
-  figHeight: 8
+  figWidth: 15 
+  figHeight: 10
   warning: yes
-  dpi: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -35,8 +35,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = params$warning,
   fig.width = params$figWidth, 
-  fig.height = params$figHeight,
-  dpi = params$dpi)
+  fig.height = params$figHeight)
 ```
 
 
@@ -128,6 +127,23 @@ bind_rows(
   invalidHistVars
 dataHist %>% 
   anti_join(invalidHistVars) ->
+  dataHist
+
+# TODO: Should be done in historical.mif?
+# preprocess IEA WEO 2021
+dataHist %>% 
+  filter(str_detect(model, "^IEA WEO 2021")) %>% 
+  select(model, region) %>% 
+  distinct() ->
+  ieaWeo
+ieaWeo %>% 
+  filter(
+    !((str_ends(model, "GLO") & region == "World") |
+    (str_ends(model, "regional") & region != "World"))) ->
+  iaeWeoInvalid
+dataHist %>% 
+  anti_join(iaeWeoInvalid) %>% 
+  mutate(model = str_remove(model, " GLO$| regional$")) ->
   dataHist
 
 # Combine into one data frame and remove old.

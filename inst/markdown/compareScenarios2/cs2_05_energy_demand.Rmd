@@ -139,7 +139,6 @@ items <- c(
   "FE|Industry|Specific Energy Consumption|Other Industry",
   "FE|Industry|Specific Energy Consumption|Primary Steel",
   "FE|Industry|Specific Energy Consumption|Secondary Steel")
-showAreaAndBarPlots(data, items)
 walk(items, showLinePlots, data=data)
 ```
 

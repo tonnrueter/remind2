@@ -118,8 +118,7 @@ vars %>%
 
 ```{r Trade}
 variables %>% 
-  str_subset("^Trade\\|") %>% 
-  str_subset("Exports|Imports|Volume|Value|Uranium", negate=TRUE) ->
+  str_subset("^Trade\\|[^|]*$") ->
   vars
 walk(vars, showLinePlots, data=data)
 ```
@@ -197,7 +196,7 @@ kaya %>%
 ### Absolute
 
 ```{r kaya plot abs}
-showMultiLinePlots(kaya, kaya_vars)
+showMultiLinePlots(kaya, kaya_vars, scales="free_y")
 
 kaya %>% 
   filter(region != mainReg) %>% 
@@ -211,7 +210,7 @@ kaya %>%
 ### Relative to 2005
 
 ```{r kaya plot rel}
-showMultiLinePlots(kaya_rel, kaya_vars)
+showMultiLinePlots(kaya_rel, kaya_vars, scales="free_y")
 
 kaya_rel %>% 
   filter(region != mainReg) %>% 

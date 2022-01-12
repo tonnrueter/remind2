@@ -31,7 +31,6 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
     data %>% 
       calacuateRatio(items, tot) ->
       data
-    tot <- NULL
   }
   
   data %>% 
@@ -64,6 +63,7 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   d %>% 
     filter(region != mainReg, period %in% yearsBarPlot) %>% 
     mipBarYearData() +
+    ylab(NULL) +
     guides(fill=guide_legend(reverse=TRUE, ncol=3)) ->
     p3
   
@@ -74,7 +74,7 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
     p4
   
   # Add black lines in area plots from variable tot if provided.
-  if (!is.null(tot)) {
+  if (!is.null(tot) && !fill) {
     p1 <- p1 +
       geom_line(
         data = data %>% 
@@ -91,7 +91,9 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   
   # Show plots.
   grid.arrange(p1, p2, p3, layout_matrix = rbind(c(1, 3), c(2, 3)))
+  cat("\n\n")
   plot(p4)
+  cat("\n\n")
   
   return(invisible(NULL))
 }
@@ -151,14 +153,25 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
       p2
   }
  
-  # If available, show only legend of regions plot below mainReg-plot.
-  lgnd <- getLegend(p2)
+  # If a legend of the plots can be used as common legend for both plots, 
+  # show that legend below mainReg-plot and only that legend.
+  mainHistModels <- unique(dMainHist$model)
+  regiHistModels <- unique(dRegiHist$model)
+  if (length(mainHistModels) == 0 || identical(mainHistModels, regiHistModels)) {
+    lgnd <- getLegend(p2)
+  } else if (length(regiHistModels) == 0) {
+    lgnd <- getLegend(p1)
+  } else {
+    lgnd <- NULL
+  }
   if (!is.null(lgnd)) {
     p1 <- arrangeGrob(p1 + theme(legend.position="none"), lgnd, ncol = 1, heights = c(0.76, 0.24))
     p2 <- p2 + theme(legend.position="none")
   }
   
+  # Show plots.
   grid.arrange(p1, p2, nrow=1)
+  cat("\n\n")
   
   return(invisible(NULL))
 }
@@ -196,7 +209,10 @@ showLinePlotsWithTarget <- function(data, filterVars, scales="free_y") {
     geom_vline(data = dTar, aes(xintercept=period), linetype=2, color = "coral") +
     geom_text(data = dTar, aes(x=max(d$period) - (max(d$period) - min(d$period)) / 4, y=value, label = paste(variable, period))) ->
     p
+  
+  # Show plot.
   print(p)
+  cat("\n\n")
   
   return(invisible(NULL))
 }
@@ -208,87 +224,111 @@ showMultiLinePlots <- function(data, items, scales="fixed") {
   data %>% 
     filter(variable %in% items) ->
     d
+  d %>% 
+    filter(region == mainReg, scenario != "historical") ->
+    dMainScen
+  d %>% 
+    filter(region == mainReg, scenario == "historical") ->
+    dMainHist
+  d %>% 
+    filter(region != mainReg, scenario != "historical") ->
+    dRegiScen
+  d %>% 
+    filter(region != mainReg, scenario == "historical") ->
+    dRegiHist
+  if (NROW(dMainScen) == 0) {
+    warning("Nothing to plot:", paste(items, collapse=","))
+    return(invisible(NULL))
+  }
   
   label <- paste0("[", paste0(unique(d$unit), collapse=","), "]")
   
-  d %>% 
-    filter(region == mainReg, scenario != "historical") %>% 
+  dMainScen %>% 
     ggplot(aes(period, value)) + 
     geom_line(aes(linetype=scenario)) +
-    geom_point(
-      data = d %>% filter(region == mainReg, scenario == "historical"), 
-      aes(shape = model)) +
+    geom_point(data = dMainHist, aes(shape = model)) +
+    geom_line(data = dMainHist, aes(group = paste0(model, region)), alpha=0.5) +
+    facet_wrap(vars(variable), scales=scales) +
     theme_minimal() +
     ylim(0, NA) + 
     ylab(label) ->
     p1
   
-  d %>% 
-    filter(region != mainReg, scenario != "historical") %>% 
+  dRegiScen %>% 
     ggplot(aes(period, value, color=region)) + 
     geom_line(aes(linetype=scenario)) +
-    geom_point(
-      data = d %>% filter(region != mainReg, scenario == "historical"), 
-      aes(shape = model)) +
+    geom_point(data = dRegiHist, aes(shape = model)) +
+    geom_line(data = dRegiHist, aes(group = paste0(model, region)), alpha=0.5) +
+    facet_wrap(vars(variable), scales=scales) +
     theme_minimal() +
     scale_color_manual(values = plotstyle(regions)) + 
     ylim(0, NA) + 
     ylab(label) ->
     p2
   
-  if (length(unique(d$variable)) > 1) {
-    p1 <- p1 + facet_wrap(vars(variable), scales=scales)
-    p2 <- p2 + facet_wrap(vars(variable), scales=scales)
-  }
-  
+  # Show plots.
   print(p1)
+  cat("\n\n")
   print(p2)
+  cat("\n\n")
   
   return(invisible(NULL))
 }
 
 
+# When plotting by GDP, data from historical.mif is only shown for years where historical GDP is available.
 showMultiLinePlotsByGDP <- function(data, items, scales="fixed") {
   # This function uses the 'global' variables: mainReg.
   
   data %>% 
     filter(variable %in% items) ->
     d
+  d %>% 
+    filter(region == mainReg, scenario != "historical") ->
+    dMainScen
+  d %>% 
+    filter(region == mainReg, scenario == "historical") ->
+    dMainHist
+  d %>% 
+    filter(region != mainReg, scenario != "historical") ->
+    dRegiScen
+  d %>% 
+    filter(region != mainReg, scenario == "historical") ->
+    dRegiHist
+  if (NROW(dMainScen) == 0) {
+    warning("Nothing to plot:", paste(items, collapse=","))
+    return(invisible(NULL))
+  }
   
   label <- paste0("[", paste0(unique(d$unit), collapse=","), "]")
   
-  d %>% 
-    filter(region == mainReg, scenario != "historical") %>% 
+  dMainScen %>% 
     ggplot(aes(gdp, value)) + 
     geom_line(aes(linetype=scenario)) +
-    geom_point(
-      data = d %>% filter(region == mainReg, scenario == "historical"), 
-      aes(shape = model)) +
+    geom_point(data = dMainHist, aes(shape = model)) +
+    geom_line(data = dMainHist, aes(group = paste0(model, region)), alpha=0.5) +
+    facet_wrap(vars(variable), scales=scales) +
     theme_minimal() +
     ylim(0, NA) + 
     ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
     p1
   
-  d %>% 
-    filter(region != mainReg, scenario != "historical") %>% 
+  dRegiScen %>% 
     ggplot(aes(gdp, value, color=region)) + 
     geom_line(aes(linetype=scenario)) +
-    geom_point(
-      data = d %>% filter(region != mainReg, scenario == "historical"), 
-      aes(shape = model)) +
+    geom_point(data = dRegiHist, aes(shape = model)) +
+    geom_line(data = dRegiHist, aes(group = paste0(model, region)), alpha=0.5) +
+    facet_wrap(vars(variable), scales=scales) +
     theme_minimal() +
     ylim(0, NA) + 
     ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
     p2
   
-  if (length(unique(d$variable)) > 1) {
-    p1 <- p1 + facet_wrap(vars(variable), scales=scales)
-    p2 <- p2 + facet_wrap(vars(variable), scales=scales)
-  }
-  
+  # Show plots.
   print(p1)
+  cat("\n\n")
   print(p2)
+  cat("\n\n")
   
   return(invisible(NULL))
 }
-

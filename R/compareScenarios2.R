@@ -52,16 +52,12 @@
 #'     A region for which larger plots are shown.}
 #'   \item{\code{figWidth, figHeight}}{
 #'     \code{numeric(1)}. 
-#'     Default: \code{14} and \code{8}, respectively.
+#'     Default: \code{15} and \code{10}, respectively.
 #'     Size of plots in inches.}
 #'   \item{\code{warning}}{
 #'     \code{logical(1)}. 
 #'     Default: \code{TRUE}.
 #'     Show warnings in output?}
-#'   \item{\code{dpi}}{
-#'     \code{numeric(1)}. 
-#'     Default: \code{72}.
-#'     Dots per inch of plots.}
 #' }
 #' @author Christof Schoetz
 #' @examples

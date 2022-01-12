@@ -1,6 +1,6 @@
 # Energy Services and Products
 
-## Buildings
+## FE|Buildings
 ```{r}
 tot <- "FE|Buildings"
 items <- c(
@@ -15,7 +15,7 @@ items <- c(
 showAreaAndBarPlots(data, items, tot)
 ```
 
-### Region Intercomparison
+### Region Intercomparison FE|Buildings
 
 ```{r}
 items <- c(
