@@ -15,14 +15,23 @@
 #' @importFrom openxlsx createWorkbook addWorksheet writeData createStyle addStyle saveWorkbook
 #' @importFrom utils read.csv2
 #' @importFrom withr defer local_connection
-
-colorScenConf <- function(fileList = "", configfile = "./default.cfg") {
+#' @export
+colorScenConf <- function(fileList = "", configfile = "default.cfg") {
   if (!file.exists(configfile)) {
-    stop(paste0("No 'default.cfg' in working directory (", getwd(), ") or unknown 'configfile' in function call."))
+    if (file.exists(paste0("config/", configfile))) {
+      configfile <- paste0("config/", configfile)
+    } else {
+      stop(paste0("No 'default.cfg' in working directory (", getwd(), ") or unknown 'configfile' in function call."))
+    }
   }
   cfg <- list() # to avoid 'no visible binding' error
-  source(configfile)
+  source(configfile, local = TRUE)
   if (!length(cfg)) stop(paste0("In ", configfile, ", no 'cfg' data was found."))
+  # enable script to match default data not in gms
+  try(cfg$gms[["output"]] <- paste0(cfg$output, collapse = ","))
+  try(cfg$gms[["model"]] <- cfg$model)
+  try(cfg$gms[["regionmapping"]] <- cfg$regionmapping)
+  try(cfg$gms[["inputRevision"]] <- cfg$inputRevision)
 
   if (fileList == "") {
     cat("Specify folder with .csv files. The script also searches in subdirectories.\n")
@@ -43,14 +52,14 @@ colorScenConf <- function(fileList = "", configfile = "./default.cfg") {
 
   for (csvFile in fileList) {
     xlsxFile <- sub(".csv", "_colorful.xlsx", csvFile, fixed = TRUE)
-    cat(paste0("Start converting '", csvFile, "' to '..._colorful.xlsx'.\n"))
+    cat(paste0("\nStart converting '", csvFile, "' to '..._colorful.xlsx'.\n"))
     settings <- read.csv2(csvFile, stringsAsFactors = FALSE, row.names = 1,
                           comment.char = "", na.strings = "", dec = ".")
     settings <- rbind(rep("unknown", length(names(settings))), settings)
     for (switchname in intersect(names(cfg$gms), names(settings))) {
       settings[1, switchname] <- cfg$gms[[switchname]]
     }
-    colnamesNeverInDefault <- c("path_gdx", "path_gdx_ref", "path_gdx_bau", "start")
+    colnamesNeverInDefault <- c("path_gdx", "path_gdx_ref", "path_gdx_bau", "start", "path_gdx_carbonprice")
     settings[1, colnamesNeverInDefault] <- ""
     row.names(settings)[1] <- paste0("# ", configfile, " on ", Sys.time())
 
@@ -81,7 +90,7 @@ colorScenConf <- function(fileList = "", configfile = "./default.cfg") {
   cat("- from row 3: cells identical to default marked turquoise.\n")
   cat("  They may be deleted if you always want to use the default in the future.\n\n")
   cat("Note: opening the xlsx, excel may complain that numbers are saved as text.\n")
-  cat("After saving as csv this should disappear and work, but please check.\n")
+  cat("After saving as csv this should disappear and work, but please check.\n\n")
 }
 
 getLine <- function() {
