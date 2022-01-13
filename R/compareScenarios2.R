@@ -20,42 +20,42 @@
 #' @section YAML Parameters:
 #' \describe{
 #'   \item{\code{yearsScen}}{
-#'     \code{numeric(n)}. 
+#'     \code{numeric(n)}.
 #'     Default: \code{c(seq(2005, 2060, 5), seq(2070, 2100, 10))}.
 #'     Years to show for scenario data.}
 #'   \item{\code{yearsHist}}{
-#'     \code{numeric(n)}. 
-#'     Default: \code{c(seq(1960, 2020, 1), seq(2025, 2100, 5))}. 
+#'     \code{numeric(n)}.
+#'     Default: \code{c(seq(1960, 2020, 1), seq(2025, 2100, 5))}.
 #'     Years to show for historical data.}
 #'   \item{\code{yearsBarPlot}}{
-#'     \code{numeric(n)}. 
+#'     \code{numeric(n)}.
 #'     Default: \code{c(2010, 2030, 2050, 2100)}.
 #'     Years to show in bar plots of scenario data.}
 #'   \item{\code{reg}}{
-#'     \code{NULL} or \code{character(n)}. 
+#'     \code{NULL} or \code{character(n)}.
 #'     Default: \code{NULL}.
 #'     Regions to show. \code{NULL} means all.}
 #'   \item{\code{sections}}{
-#'     \code{character(n)}. 
+#'     \code{character(n)}.
 #'     Default: \code{"all"}.
-#'     Names of sections to include. A subset of  
-#'     \code{c("01_summary", "02_macro", "03_emissions", "04_energy_supply", 
-#'     "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")} 
+#'     Names of sections to include. A subset of
+#'     \code{c("01_summary", "02_macro", "03_emissions", "04_energy_supply",
+#'     "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}
 #'     or \code{"all"} for all available sections.}
 #'   \item{\code{userSectionPath}}{
-#'     \code{NULL} or \code{character(n)}. 
+#'     \code{NULL} or \code{character(n)}.
 #'     Default: \code{NULL}.
 #'     Path to a *.Rmd-file that may be included as additional section.}
 #'   \item{\code{mainReg}}{
-#'     \code{character(1)}. 
+#'     \code{character(1)}.
 #'     Default: \code{"World"}.
 #'     A region for which larger plots are shown.}
 #'   \item{\code{figWidth, figHeight}}{
-#'     \code{numeric(1)}. 
+#'     \code{numeric(1)}.
 #'     Default: \code{15} and \code{10}, respectively.
 #'     Size of plots in inches.}
 #'   \item{\code{warning}}{
-#'     \code{logical(1)}. 
+#'     \code{logical(1)}.
 #'     Default: \code{TRUE}.
 #'     Show warnings in output?}
 #' }
@@ -91,7 +91,7 @@ compareScenarios2 <- function(
   if (outputFormat == "pdf") outputFormat <- "pdf_document"
   if (outputFormat == "html") outputFormat <- "html_document"
   if (identical(tolower(outputFormat), "rmd")) {
-    return(.compareScenarios2_rmd(yamlParams, outputDir, outputFile))
+    return(.compareScenarios2Rmd(yamlParams, outputDir, outputFile))
   }
   rmarkdown::render(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"),
@@ -105,39 +105,39 @@ compareScenarios2 <- function(
 
 # Copies the CompareScenarios2-Rmds to the specified location and modifies
 # their YAML header according to \code{yamlParams}.
-.compareScenarios2_rmd <- function(yamlParams, outputDir, outputFile) {
-  read_rmd <- utils::getFromNamespace("read_rmd", "ymlthis")
-  rmd <- read_rmd(
+.compareScenarios2Rmd <- function(yamlParams, outputDir, outputFile) {
+  # TODO: read_rmd() is not exported from ymlthis.
+  readRmd <- utils::getFromNamespace("read_rmd", "ymlthis")
+  rmd <- readRmd(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"))
   yml <- yaml::yaml.load(
-    rmd, 
+    rmd,
     handlers = list(r = function(x) ymlthis::yml_params_code(!!rlang::parse_expr(x))))
   baseYaml <- ymlthis::as_yml(yml)
   newYamlParams <- baseYaml$params
   newYamlParams[names(yamlParams)] <- yamlParams
   if (!is.null(names(yamlParams$mifScen))) {
-    newYamlParams$mifScenNames = names(yamlParams$mifScen)
+    newYamlParams$mifScenNames <- names(yamlParams$mifScen)
   }
   newYaml <- ymlthis::yml_replace(
-    baseYaml, 
+    baseYaml,
     params = newYamlParams,
     date = format(Sys.Date()))
   pathDir <- file.path(outputDir, paste0(outputFile, "_Rmd"))
   if (!dir.exists(pathDir)) dir.create(pathDir)
   dirFiles <- dir(
-    system.file("markdown/compareScenarios2", package = "remind2"), 
+    system.file("markdown/compareScenarios2", package = "remind2"),
     full.names = TRUE)
   rmdDirFiles <- grep(
     dirFiles, 
-    pattern = "cs2_main\\.Rmd$", 
+    pattern = "cs2_main\\.Rmd$",
     invert = TRUE, value = TRUE)
   file.copy(rmdDirFiles, pathDir)
   ymlthis::use_rmarkdown(
     newYaml,
     path = file.path(pathDir, "cs2_main.Rmd"),
     template = system.file(
-      "markdown/compareScenarios2/cs2_main.Rmd", 
+      "markdown/compareScenarios2/cs2_main.Rmd",
       package = "remind2"),
     include_yaml = FALSE)
 }
-

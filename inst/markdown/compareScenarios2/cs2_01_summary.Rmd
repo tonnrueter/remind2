@@ -90,7 +90,7 @@ showAreaAndBarPlots(data, items)
 ```{r FE per capita (by sector, time domain, area plot)}
 items <- c(
   "FE|Transport pCap",
-	"FE|Buildings pCap",
+  "FE|Buildings pCap",
   "FE|Industry pCap")
 showAreaAndBarPlots(data, items)
 ```
@@ -112,7 +112,7 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByGDP(data, "FE pCap")
 items <- c(
   "FE|Transport pCap",
-	"FE|Buildings pCap",
+  "FE|Buildings pCap",
   "FE|Industry pCap")
 showMultiLinePlotsByGDP(data, items)
 ```
@@ -256,9 +256,9 @@ showLinePlots(d)
 d %>% 
   filter(region != mainReg) %>% 
   mipLineHistorical(
-    ylab='Price|Carbon [US$2005/t CO2]',
+    ylab="Price|Carbon [US$2005/t CO2]",
     scales="free_y",
-    plot.priority=c("x_hist","x","x_proj"),
+    plot.priority=c("x_hist", "x", "x_proj"),
     color.dim="region",
     facet.dim="scenario",
     facet.ncol=2) +

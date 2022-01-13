@@ -128,7 +128,7 @@ walk(vars, showLinePlots, data=data)
 ```{r FE intensity of GDP}
 items <- c(
   "FE|Transport pGDP",
-	"FE|Buildings pGDP",
+  "FE|Buildings pGDP",
   "FE|Industry pGDP")
 showAreaAndBarPlots(data, items)
 ```
@@ -138,7 +138,7 @@ showAreaAndBarPlots(data, items)
 ```{r FE intensity of GDP-linegraph}
 items <- c(
   "FE|Transport pGDP",
-	"FE|Buildings pGDP",
+  "FE|Buildings pGDP",
   "FE|Industry pGDP")
 showMultiLinePlots(data, items)
 showMultiLinePlotsByGDP(data, items)

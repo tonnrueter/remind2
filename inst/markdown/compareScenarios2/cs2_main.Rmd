@@ -43,14 +43,14 @@ knitr::opts_chunk$set(
 # Hack to use the same fig.width and fig.height as described in previous chunk 
 # for chunks in RStudio Notebook mode.
 if (interactive()) {
-  insertExprAtBeginningOfFunction <- function(fun, funName, env, expr) {
+  insertExprAtStartOfFun <- function(fun, funName, env, expr) {
     body(env[[funName]]) <- call("{", expr, body(fun))
   }
   fn <- ".rs.setNotebookGraphicsOption"
   envToolsRstudio <- as.environment("tools:rstudio")
   if (!exists(".old.rs.setNotebookGraphicsOption")) 
     old.rs.setNotebookGraphicsOption <- envToolsRstudio[[fn]]
-  insertExprAtBeginningOfFunction(
+  insertExprAtStartOfFun(
     old.rs.setNotebookGraphicsOption,
     fn,
     envToolsRstudio,

@@ -84,7 +84,7 @@ showAreaAndBarPlots(data, items, tot)
 ### LDV Vehicles Sales
 ```{r}
 tot <- "Est LDV Sales"
-items <- c(      
+items <- c(
   "Est EV LDV Sales",
   "Est H2 LDV Sales",
   "Est ICE LDV Sales")

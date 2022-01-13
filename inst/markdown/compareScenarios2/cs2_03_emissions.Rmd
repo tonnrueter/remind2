@@ -283,8 +283,8 @@ showAreaAndBarPlots(data, items, tot)
 ```{r}
 variables %>% 
   str_subset(fixed("Emi|CO2|CDR|")) ->
-  cdr_vars
-walk(cdr_vars, showLinePlots, data=data)
+  cdrVars
+walk(cdrVars, showLinePlots, data=data)
 ```
 
 

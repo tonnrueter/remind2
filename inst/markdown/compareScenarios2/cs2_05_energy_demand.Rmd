@@ -94,7 +94,7 @@ showAreaAndBarPlots(data, items, tot)
 ### FE mix Chemicals
 ```{r}
 tot <- "FE|Industry|Chemicals"
-items <- c (
+items <- c(
   "FE|Industry|Chemicals|Heat",
   "FE|Industry|Chemicals|Hydrogen",
   "FE|Industry|Chemicals|Solids",
@@ -122,7 +122,7 @@ showAreaAndBarPlots(data, items, tot)
 ### FE|Industry|* line plots
 ```{r}
 showLinePlots(data, "FE|Industry|Steel")
-showLinePlots(data, "FE|Industry|Steel|Primary" )
+showLinePlots(data, "FE|Industry|Steel|Primary")
 showLinePlots(data, "FE|Industry|Steel|Secondary")
 showLinePlots(data, "FE|Industry|Cement")
 showLinePlots(data, "FE|Industry|Non-metallic minerals")

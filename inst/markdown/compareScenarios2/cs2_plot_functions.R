@@ -137,7 +137,7 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
         x_hist = d %>% filter(region == mainReg, scenario == "historical"),
         ylab = label,
         scales = scales,
-        plot.priority = c("x_hist","x","x_proj")) ->
+        plot.priority = c("x_hist", "x", "x_proj")) ->
       p1
   }
   if (NROW(dRegiScen) == 0) {
@@ -148,7 +148,7 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
         x_hist = d %>% filter(region != mainReg, scenario == "historical"),
         ylab = NULL,
         scales = scales,
-        plot.priority = c("x_hist","x","x_proj"),
+        plot.priority = c("x_hist", "x", "x_proj"),
         facet.ncol = 3) ->
       p2
   }
@@ -203,11 +203,13 @@ showLinePlotsWithTarget <- function(data, filterVars, scales="free_y") {
       x_hist = d %>% filter(scenario == "historical"),
       ylab = label,
       scales = scales,
-      plot.priority = c("x_hist","x","x_proj"),
+      plot.priority = c("x_hist", "x", "x_proj"),
       facet.ncol = 3) + 
     geom_hline(data = dTar, aes(yintercept=value), linetype=2, color = "coral") +
     geom_vline(data = dTar, aes(xintercept=period), linetype=2, color = "coral") +
-    geom_text(data = dTar, aes(x=max(d$period) - (max(d$period) - min(d$period)) / 4, y=value, label = paste(variable, period))) ->
+    geom_text(data = dTar, aes(
+      x=max(d$period) - (max(d$period) - min(d$period)) / 4, 
+      y=value, label = paste(variable, period))) ->
     p
   
   # Show plot.
