@@ -6,7 +6,7 @@
 from configfile in first row, identical values in this column in turquoise,
 and unknown column names in red}
 \usage{
-colorScenConf(fileList = "", configfile = "./default.cfg")
+colorScenConf(fileList = "", configfile = "default.cfg")
 }
 \arguments{
 \item{fileList}{vector containing csv file paths}
