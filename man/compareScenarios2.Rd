@@ -44,42 +44,42 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
 
 \describe{
   \item{\code{yearsScen}}{
-    \code{numeric(n)}. 
+    \code{numeric(n)}.
     Default: \code{c(seq(2005, 2060, 5), seq(2070, 2100, 10))}.
     Years to show for scenario data.}
   \item{\code{yearsHist}}{
-    \code{numeric(n)}. 
-    Default: \code{c(seq(1960, 2020, 1), seq(2025, 2100, 5))}. 
+    \code{numeric(n)}.
+    Default: \code{c(seq(1960, 2020, 1), seq(2025, 2100, 5))}.
     Years to show for historical data.}
   \item{\code{yearsBarPlot}}{
-    \code{numeric(n)}. 
+    \code{numeric(n)}.
     Default: \code{c(2010, 2030, 2050, 2100)}.
     Years to show in bar plots of scenario data.}
   \item{\code{reg}}{
-    \code{NULL} or \code{character(n)}. 
+    \code{NULL} or \code{character(n)}.
     Default: \code{NULL}.
     Regions to show. \code{NULL} means all.}
   \item{\code{sections}}{
-    \code{character(n)}. 
+    \code{character(n)}.
     Default: \code{"all"}.
-    Names of sections to include. A subset of  
-    \code{c("01_summary", "02_macro", "03_emissions", "04_energy_supply", 
-    "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")} 
+    Names of sections to include. A subset of
+    \code{c("01_summary", "02_macro", "03_emissions", "04_energy_supply",
+    "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}
     or \code{"all"} for all available sections.}
   \item{\code{userSectionPath}}{
-    \code{NULL} or \code{character(n)}. 
+    \code{NULL} or \code{character(n)}.
     Default: \code{NULL}.
     Path to a *.Rmd-file that may be included as additional section.}
   \item{\code{mainReg}}{
-    \code{character(1)}. 
+    \code{character(1)}.
     Default: \code{"World"}.
     A region for which larger plots are shown.}
   \item{\code{figWidth, figHeight}}{
-    \code{numeric(1)}. 
+    \code{numeric(1)}.
     Default: \code{15} and \code{10}, respectively.
     Size of plots in inches.}
   \item{\code{warning}}{
-    \code{logical(1)}. 
+    \code{logical(1)}.
     Default: \code{TRUE}.
     Show warnings in output?}
 }
