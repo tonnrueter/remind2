@@ -497,13 +497,13 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   ##### PRIMARY ENERGY
   
   #var.tot <-"PE (EJ/yr)"
-  vars <- c("Coal with CCS" = "PE|Coal|w/ CCS (EJ/yr)", 
-            "Coal without CCS" = "PE|Coal|w/o CCS (EJ/yr)",
+  vars <- c("Coal with CCS" = "PE|Coal|w/ CC (EJ/yr)", 
+            "Coal without CCS" = "PE|Coal|w/o CC (EJ/yr)",
             "Oil" = "PE|Oil (EJ/yr)",
-            "Gas with CCS" = "PE|Gas|w/ CCS (EJ/yr)", 
-            "Gas without CCS" = "PE|Gas|w/o CCS (EJ/yr)",
-            "Biomass with CCS" = "PE|Biomass|w/ CCS (EJ/yr)", 
-            "Biomass without CCS" = "PE|Biomass|w/o CCS (EJ/yr)",
+            "Gas with CCS" = "PE|Gas|w/ CC (EJ/yr)", 
+            "Gas without CCS" = "PE|Gas|w/o CC (EJ/yr)",
+            "Biomass with CCS" = "PE|Biomass|w/ CC (EJ/yr)", 
+            "Biomass without CCS" = "PE|Biomass|w/o CC (EJ/yr)",
             "Nuclear" = "PE|Nuclear (EJ/yr)", 
             "Hydro" = "PE|Hydro (EJ/yr)",
             "Geothermal" = "PE|Geothermal (EJ/yr)",
@@ -948,13 +948,13 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   
   ### SE Electricity
   #var.tot <-"SE|Electricity (EJ/yr)"
-  vars <- c("Coal with CCS"    = "SE|Electricity|Coal|w/ CCS (EJ/yr)", 
-            "Coal without CCS" = "SE|Electricity|Coal|w/o CCS (EJ/yr)",
-            "Oil"              = "SE|Electricity|Oil (EJ/yr)",
-            "Gas with CCS"     = "SE|Electricity|Gas|w/ CCS (EJ/yr)", 
-            "Gas without CCS"  = "SE|Electricity|Gas|w/o CCS (EJ/yr)",
-            "Biomass with CCS" = "SE|Electricity|Biomass|w/ CCS (EJ/yr)",  
-            "Biomass without CCS" = "SE|Electricity|Biomass|w/o CCS (EJ/yr)",
+  vars <- c("Coal with CC"    = "SE|Electricity|Coal|w/ CC (EJ/yr)", 
+            "Coal without CC" = "SE|Electricity|Coal|w/o CC (EJ/yr)",
+            "Oil"             = "SE|Electricity|Oil (EJ/yr)",
+            "Gas with CC"     = "SE|Electricity|Gas|w/ CC (EJ/yr)", 
+            "Gas without CC"  = "SE|Electricity|Gas|w/o CC (EJ/yr)",
+            "Biomass with CC" = "SE|Electricity|Biomass|w/ CC (EJ/yr)",  
+            "Biomass without CC" = "SE|Electricity|Biomass|w/o CC (EJ/yr)",
             "Nuclear"          = "SE|Electricity|Nuclear (EJ/yr)", 
             "Hydrogen"         = "SE|Electricity|Hydrogen (EJ/yr)",
             "Solar"            = "SE|Electricity|Solar (EJ/yr)", 
@@ -1020,11 +1020,11 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   
   ### SE Gases
   #var.tot <-"SE|Gases (EJ/yr)"
-  vars <- c("Biomass with CCS" = "SE|Gases|Biomass|w/ CCS (EJ/yr)", 
-            "Biomass without CCS" = "SE|Gases|Biomass|w/o CCS (EJ/yr)",
-            "Coal with CCS"    = "SE|Gases|Coal|w/ CCS (EJ/yr)", 
-            "Coal without CCS" = "SE|Gases|Coal|w/o CCS (EJ/yr)", 
-            "Natural Gas"      = "SE|Gases|Natural Gas (EJ/yr)"
+  vars <- c("Biomass with CC"    = "SE|Gases|Biomass|w/ CC (EJ/yr)", 
+            "Biomass without CC" = "SE|Gases|Biomass|w/o CC (EJ/yr)",
+            "Coal with CC"       = "SE|Gases|Coal|w/ CC (EJ/yr)", 
+            "Coal without CC"    = "SE|Gases|Coal|w/o CC (EJ/yr)", 
+            "Natural Gas"        = "SE|Gases|Natural Gas (EJ/yr)"
   )
   
   color <- plotstyle(as.character(gsub("\\+\\|","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)
@@ -1133,12 +1133,12 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   
   ### SE Liquids
   #var.tot <-"SE|Liquids (EJ/yr)"
-  vars <- c("Biomass"         = "SE|Liquids|Biomass (EJ/yr)", 
-            "Coal with CCS"   = "SE|Liquids|Coal|w/ CCS (EJ/yr)",
-            "Coal without CCS"= "SE|Liquids|Coal|w/o CCS (EJ/yr)", 
-            "Gas with CCS"    = "SE|Liquids|Gas|w/ CCS (EJ/yr)",
-            "Gas without CCS" = "SE|Liquids|Gas|w/o CCS (EJ/yr)", 
-            "Oil"             = "SE|Liquids|Oil (EJ/yr)"
+  vars <- c("Biomass"           = "SE|Liquids|Biomass (EJ/yr)", 
+            "Coal with CC"      = "SE|Liquids|Coal|w/ CC (EJ/yr)",
+            "Coal without CC"   = "SE|Liquids|Coal|w/o CC (EJ/yr)", 
+            "Gas with CC"       = "SE|Liquids|Gas|w/ CC (EJ/yr)",
+            "Gas without CC"    = "SE|Liquids|Gas|w/o CC (EJ/yr)", 
+            "Oil"               = "SE|Liquids|Oil (EJ/yr)"
   )
   
   color <- plotstyle(as.character(gsub("\\+\\|","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)
@@ -1191,9 +1191,9 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   
   ### SE Solids
   #var.tot <-"SE|Solids (EJ/yr)"
-  vars <- c("Biomass"   = "SE|Solids|Biomass (EJ/yr)",
+  vars <- c("Biomass"             = "SE|Solids|Biomass (EJ/yr)",
             "Traditional Biomass" = "SE|Solids|Traditional Biomass (EJ/yr)",
-            "Coal"     = "SE|Solids|Coal (EJ/yr)"
+            "Coal"                = "SE|Solids|Coal (EJ/yr)"
   )
   
   color <- plotstyle(as.character(gsub("\\+\\|","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)
@@ -1246,13 +1246,13 @@ reportCharts <- function(gdx=NULL, regionMapping=NULL, hist=NULL, reportfile=NUL
   
   ### SE Hydrogen
   #var.tot <-"SE|Hydrogen (EJ/yr)"
-  vars <- c("Biomass with CCS"    = "SE|Hydrogen|Biomass|w/ CCS (EJ/yr)", 
-            "Biomass without CCS" = "SE|Hydrogen|Biomass|w/o CCS (EJ/yr)", 
-            "Coal with CCS"       = "SE|Hydrogen|Coal|w/ CCS (EJ/yr)", 
-            "Coal without CCS"    = "SE|Hydrogen|Coal|w/o CCS (EJ/yr)",
-            "Gas with CCS"        = "SE|Hydrogen|Gas|w/ CCS (EJ/yr)", 
-            "Gas without CCS"     = "SE|Hydrogen|Gas|w/o CCS (EJ/yr)",
-            "Electricity"         = "SE|Hydrogen|Electricity (EJ/yr)"
+  vars <- c("Biomass with CC"    = "SE|Hydrogen|Biomass|w/ CC (EJ/yr)", 
+            "Biomass without CC" = "SE|Hydrogen|Biomass|w/o CC (EJ/yr)", 
+            "Coal with CC"       = "SE|Hydrogen|Coal|w/ CC (EJ/yr)", 
+            "Coal without CC"    = "SE|Hydrogen|Coal|w/o CC (EJ/yr)",
+            "Gas with CC"        = "SE|Hydrogen|Gas|w/ CC (EJ/yr)", 
+            "Gas without CC"     = "SE|Hydrogen|Gas|w/o CC (EJ/yr)",
+            "Electricity"        = "SE|Hydrogen|Electricity (EJ/yr)"
   )
   
   color <- plotstyle(as.character(gsub("\\+\\|","",shorten_legend(vars,identical_only=TRUE))),unknown=missingColorsdf)

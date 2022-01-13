@@ -1,8 +1,8 @@
 Package: remind2
 Type: Package
 Title: The REMIND R package (2nd generation)
-Version: 1.63.0
-Date: 2022-01-13
+Version: 1.64.1
+Date: 2022-01-12
 Authors@R: as.person(c(
     "Renato Rodrigues <renato.rodrigues@pik-potsdam.de> [aut,cre]"))
 Description: Contains the REMIND-specific routines for data and model output manipulation.
@@ -28,6 +28,7 @@ Imports:
     lusweave,
     madrat,
     mip,
+    openxlsx,
     plotly,
     quitte,
     RColorBrewer,
