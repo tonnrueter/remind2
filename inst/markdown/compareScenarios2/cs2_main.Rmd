@@ -75,10 +75,10 @@ library(mip)
 
 ```{r read mifs}
 # Read *.mif-files.
-tibble(
-  path = unname(params$mifScen),
-  newScenarioName = params$mifScenNames,
-  data = map(path, read.quitte, factors=FALSE)) %>% 
+tibble(path = unname(params$mifScen)) %>% 
+  mutate(
+    newScenarioName = params$mifScenNames,
+    data = map(path, read.quitte, factors=FALSE)) %>% 
   unnest(cols = data) ->
   dataScen
 if (!is.null(dataScen$newScenarioName)) {
