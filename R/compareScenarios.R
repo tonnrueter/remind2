@@ -811,9 +811,6 @@ compareScenarios <- function(mif, hist,
   
   var <- data[,,intersect(items,getNames(data,dim=3))]
 
-  # correct SE|Electricity|Hydrogen, current value is FE, SE can be calculated by estimating turbine efficiency
-  var[,,"SE|Electricity|Hydrogen (EJ/yr)"] <- var[,,"SE|Electricity|Hydrogen (EJ/yr)"] / 0.4
-  
   p <- mipArea(var[mainReg,,],scales="free_y")
   p <- p + theme(legend.position="none")
   swfigure(sw,print,p,sw_option="height=3.5,width=7")

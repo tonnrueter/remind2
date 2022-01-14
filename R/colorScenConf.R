@@ -60,7 +60,7 @@ colorScenConf <- function(fileList = "", configfile = "default.cfg") {
       settings[1, switchname] <- cfg$gms[[switchname]]
     }
     colnamesNeverInDefault <- c("path_gdx", "path_gdx_ref", "path_gdx_bau", "start", "path_gdx_carbonprice")
-    settings[1, colnamesNeverInDefault] <- ""
+    settings[1, intersect(names(settings), colnamesNeverInDefault)] <- ""
     row.names(settings)[1] <- paste0("# ", configfile, " on ", Sys.time())
 
     wb <- createWorkbook() # create a workbook

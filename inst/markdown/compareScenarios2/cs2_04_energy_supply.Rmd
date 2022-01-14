@@ -1,0 +1,285 @@
+# Energy Supply
+
+## Investments Electricity
+
+```{r}
+items <- c(
+  "Energy Investments|Elec|Biomass|w/ CCS", 
+  "Energy Investments|Elec|Biomass|w/o CCS", 
+  "Energy Investments|Elec|Coal|w/ CCS", 
+  "Energy Investments|Elec|Coal|w/o CCS", 
+  "Energy Investments|Elec|Fossil", 
+  "Energy Investments|Elec|Gas|w/ CCS", 
+  "Energy Investments|Elec|Gas|w/o CCS", 
+  "Energy Investments|Elec|Geothermal", 
+  "Energy Investments|Elec|Grid", 
+  "Energy Investments|Elec|Hydro", 
+  "Energy Investments|Elec|Hydrogen", 
+  "Energy Investments|Elec|Nuclear", 
+  "Energy Investments|Elec|Oil", 
+  "Energy Investments|Elec|Solar", 
+  "Energy Investments|Elec|Storage", 
+  "Energy Investments|Elec|Wind")
+showAreaAndBarPlots(data, items)
+```
+
+## Capacities Electricity
+
+```{r}
+items <- c(
+  "Cap|Electricity|Coal|w/ CCS",
+  "Cap|Electricity|Coal|w/o CCS",
+  "Cap|Electricity|Gas|w/ CCS",
+  "Cap|Electricity|Gas|w/o CCS",
+  "Cap|Electricity|Oil|w/o CCS",
+  "Cap|Electricity|Biomass",
+  "Cap|Electricity|Nuclear",
+  "Cap|Electricity|Hydro",
+  "Cap|Electricity|Geothermal",
+  "Cap|Electricity|Hydrogen",
+  "Cap|Electricity|Storage|Battery",
+  "Cap|Electricity|Solar",
+  if ("Cap|Electricity|Wind|Offshore" %in% variables)
+    c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
+  else
+    "Cap|Electricity|Wind"
+  )
+showAreaAndBarPlots(data, items)
+```
+
+## Capacities electricity line plots
+
+### Nuclear
+```{r}
+showLinePlots(data, "Cap|Electricity|Nuclear")
+```
+
+### Hydro
+```{r}
+showLinePlots(data, "Cap|Electricity|Hydro")
+```
+
+### Wind
+```{r}
+showLinePlots(data, "Cap|Electricity|Wind")
+showLinePlots(data, "Cap|Electricity|Wind|Onshore")
+showLinePlots(data, "Cap|Electricity|Wind|Offshore")
+```
+
+### Solar
+```{r}
+showLinePlots(data, "Cap|Electricity|Solar")
+```
+
+### Coal
+```{r}
+showLinePlots(data, "Cap|Electricity|Coal")
+```
+
+### Coal
+```{r}
+showLinePlots(data, "Cap|Electricity|Gas")
+```
+
+### Oil
+```{r}
+showLinePlots(data, "Cap|Electricity|Oil")
+```
+
+### Biomass
+```{r}
+showLinePlots(data, "Cap|Electricity|Biomass")
+```
+
+### Hydrogen
+```{r}
+showLinePlots(data, "Cap|Electricity|Hydrogen")
+```
+
+## PE Mix
+### PE|Coal
+```{r}
+items <- c(
+  "PE|Coal|Gases",
+  "PE|Coal|Liquids",
+  "PE|Coal|Solids",
+  "PE|Coal|Heat",
+  "PE|Coal|Electricity",
+  "PE|Coal|Hydrogen")
+showAreaAndBarPlots(data, items)
+```
+
+### PE|Coal
+```{r}
+items <- c(
+  "PE|Gas|Gases",
+  "PE|Gas|Heat",
+  "PE|Gas|Electricity|w/ CCS",
+  "PE|Gas|Electricity|w/o CCS",
+  "PE|Gas|Liquids|w/ CCS",
+  "PE|Gas|Liquids|w/o CCS",
+  "PE|Gas|Hydrogen|w/ CCS",
+  "PE|Gas|Hydrogen|w/o CCS")
+showAreaAndBarPlots(data, items)
+```
+
+
+### PE|Biomass
+
+```{r}
+items <- c(
+  "PE|Biomass|Solids",
+  "PE|Biomass|Heat",
+  "PE|Biomass|Liquids|w/ CCS",
+  "PE|Biomass|Liquids|w/o CCS",
+  "PE|Biomass|Gases",
+  "PE|Biomass|Electricity|w/ CCS",
+  "PE|Biomass|Electricity|w/o CCS",
+  "PE|Biomass|Hydrogen|w/ CCS",
+  "PE|Biomass|Hydrogen|w/o CCS")
+showAreaAndBarPlots(data, items)
+```
+
+## Primary Energy line plots
+
+```{r}
+showLinePlots(data, "PE|Coal")
+showLinePlots(data, "PE|Oil")
+showLinePlots(data, "PE|Gas")
+showLinePlots(data, "PE|Biomass")
+showLinePlots(data, "Primary Energy Production|Biomass|Energy Crops")
+```
+
+### PE|Coal|Extraction
+```{r}
+showLinePlots(data, "Res|Extraction|Coal")
+```
+
+### PE|Oil|Extraction
+```{r}
+showLinePlots(data, "Res|Extraction|Oil")
+```
+
+### PE|Gas|Extraction
+```{r}
+showLinePlots(data, "Res|Extraction|Gas")
+```
+
+## Secondary Energy Mixes
+### SE|Liquids
+
+```{r}
+items <- c(
+  "SE|Liquids|Oil",
+  "SE|Liquids|Biomass|w/ CCS",
+  "SE|Liquids|Biomass|w/o CCS",
+  "SE|Liquids|Coal|w/ CCS",
+  "SE|Liquids|Coal|w/o CCS",
+  "SE|Liquids|Gas|w/ CCS",
+  "SE|Liquids|Gas|w/o CCS",
+  "SE|Liquids|Hydrogen",
+  "SE|Liquids|Hydrogen|Net Imports")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Gases
+```{r}
+items <- c(
+  "SE|Gases|Natural Gas",
+  "SE|Gases|Biomass|w/ CCS",
+  "SE|Gases|Biomass|w/o CCS",
+  "SE|Gases|Coal|w/ CCS",
+  "SE|Gases|Coal|w/o CCS",
+  "SE|Gases|Hydrogen")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Hydrogen
+```{r}
+items <- c(
+  "SE|Hydrogen|Biomass|w/ CCS",
+  "SE|Hydrogen|Biomass|w/o CCS",
+  "SE|Hydrogen|Coal|w/ CCS",
+  "SE|Hydrogen|Coal|w/o CCS",
+  "SE|Hydrogen|Gas|w/ CCS",
+  "SE|Hydrogen|Gas|w/o CCS",
+  "SE|Hydrogen|Electricity|VRE Storage Electrolysis",
+  "SE|Hydrogen|Electricity|Standard Electrolysis",
+  "SE|Hydrogen|Net Imports")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Hydrogen - Usage
+```{r}
+items <- c(
+  "FE|Industry|Hydrogen",
+  "FE|Buildings|Hydrogen",
+  "FE|Transport|Hydrogen",
+  "FE|CDR|Hydrogen",
+  "SE|Hydrogen|used for electricity|normal turbines",
+  "SE|Hydrogen|used for electricity|forced VRE turbines",
+  "SE|Hydrogen|used for synthetic fuels|liquids",
+  "SE|Hydrogen|used for synthetic fuels|gases")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Electricity - Usage
+```{r}
+items <- c(
+  "SE|Electricity|used for H2|for synthetic fuels|gases",
+  "SE|Electricity|used for H2|for synthetic fuels|liquids",
+  "SE|Electricity|used for H2|direct FE H2",
+  "SE|Electricity|used for H2|VRE Storage",
+  "SE|Electricity|used in Buildings",
+  "SE|Electricity|used in Industry",
+  "SE|Electricity|used in Transport",
+  "SE|Electricity|used for CDR",
+  "SE|Electricity|used for own consumption of energy system")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Solids
+```{r}
+items <- c(
+  "SE|Solids|Biomass",
+  "SE|Solids|Traditional Biomass",
+  "SE|Solids|Coal")
+showAreaAndBarPlots(data, items)
+```
+
+### SE|Heat
+```{r}
+items <- c(
+  "SE|Heat|Biomass",
+  "SE|Heat|Coal",
+  "SE|Heat|Gas",
+  "SE|Heat|Electricity|Heat Pumps")
+showAreaAndBarPlots(data, items)
+```
+
+## Secondary Energy line plots
+### SE|Gases
+```{r}
+showLinePlots(data,  c("SE|Gases|Natural Gas", "SE|Gases|Gas"))
+showLinePlots(data, "SE|Gases|Coal")
+showLinePlots(data, "SE|Gases|Biomass")
+```
+
+### SE|Electricity
+```{r}
+showLinePlots(data, "SE|Electricity|Gas")
+showLinePlots(data, "SE|Electricity|Coal")
+showLinePlots(data, "SE|Electricity|Oil")
+showLinePlots(data, "SE|Electricity|Hydro")
+showLinePlots(data, "SE|Electricity|Wind")
+showLinePlots(data, "SE|Electricity|Nuclear")
+showLinePlots(data, "SE|Electricity|Solar")
+showLinePlots(data, "SE|Electricity|Biomass")
+```
+
+### SE|Solids
+```{r}
+showLinePlots(data, "SE|Solids|Coal")
+showLinePlots(data, "SE|Solids|Biomass")
+showLinePlots(data, "SE|Solids|Traditional Biomass")
+```
