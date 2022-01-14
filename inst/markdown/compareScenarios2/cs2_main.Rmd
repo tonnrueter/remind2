@@ -278,7 +278,7 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r prepare mark}
-# CLICK "RUN ALL RUNS ABOVE" HERE TO PREPARE YOUR ENVIRONMENT
+# CLICK "RUN ALL CHUNKS ABOVE" HERE TO PREPARE THE ENVIRONMENT
 ```
 
 

@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 The function `compareScenarios2()` of the `remind2` package can be used to visually compare the results of multiple runs of the IAM REMIND. 
 
-The function reads the results from the output-mif-files (in the remind folder after runs are completed, the files `output/<scenario_folder>/REMIND_generic_<scenario>.mif`). Additionally it reads historical data from a `historical.mif` in one of the scenario output folders. Using this data, a report containing many plots is created and written as a PDF- or HTML-file. See `?remind2::compareScenarios2` for information on how to call the function with the appropieate argumens.
+The function reads the results from the output-mif-files (in the remind folder after runs are completed, the files `output/<scenario_folder>/REMIND_generic_<scenario>.mif`). Additionally it reads historical data from a `historical.mif` in one of the scenario output folders. Using this data, a report containing many plots is created and written as a PDF- or HTML-file. See `?remind2::compareScenarios2` for information on how to call the function with the appropriate arguments.
 
 Internally, `compareScenarios2()` calls `rmarkdown::render()` on certain Rmarkdown-files (Rmd-files). Rmd-files may contain R-code (e.g., for creating plots) as well as descriptive text (in this case, mostly section titles). The Rmd-files to be rendered are part of the remind2-package. In the development state of the package, they can be found in the folder `inst/markdown/compareScenarios2/`. 
 To be more precises, `rmarkdown::render()` is called on `cs2_main.Rmd` in this folder, which includes other Rmd-files - one for each section of the output document.
@@ -34,7 +34,7 @@ Aside from HTML- and PDF-documents as output, `compareScenarios2()` also allows 
 The code in these files is structured in chunks and each chunk can be run separately by clicking on its play-button. Typically, one would call `compareScenarios2()` with `outputFormat = "Rmd"`, then open the file `cs2_main.Rmd`. At the end of the file, there is a chunk
 ````
 ```{r prepare mark}
-# CLICK "RUN ALL RUNS ABOVE" HERE TO PREPARE YOUR ENVIRONMENT
+# CLICK "RUN ALL CHUNKS ABOVE" HERE TO PREPARE THE ENVIRONMENT
 ```
 ```` 
 Clicking on the *triangle above bar*-button on the right executes all chunks above and by that loads and prepares the data for plotting. After that one can open any section-Rmd-file and execute a chunk to create the respective plots. The plots should appear in RStudio inside the Rmd-file below the chunk.
@@ -57,9 +57,7 @@ In the sections, `data` is used to provide the data necessary for the plots.
 
 * Scenarios are renamed if the user specifies new names (using a named vector for the argument `mifScen` of `compareScenarios2()` or by setting the parameter `mifScenNames` in the Rmd-files).
 * The columns `period` (years) and `region` are filtered according to the parameters `yearsScen`, `yearsHist`, and `reg`.
-* In the historical data, if all values of the same model, scenario, variable and region are 0, these rows are removed.
 * `|+|, |++|, |+++|, ...` are removed from variable names.
-* Optionally, for some scenario-variable combinations, the models in the data can be filtered (mostly for historical data, i.e., `scenario == "historical"`, that provides multiple models for the same variable).
 * For a specified list of variables, a new per-capita-variable is created with the name `"<OLD_NAME> pCap"`.
 * `"GDP|PPP pCap"` is added as a new column `gdp` of `data` to make it easier to create plots with GDP per capita on the horizontal axis.
 * For a specified list of variables, a new per-GDP-variable is created with the name `"<OLD_NAME> pGDP"`. As the denominator, the value of `GDP|PPP pCap` is used.
