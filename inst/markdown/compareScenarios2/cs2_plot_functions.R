@@ -1,5 +1,4 @@
-# TODO: document/comment functions in this file
-
+# Helper function to extract the legend of a ggplot object.
 getLegend <- function(plt) {
   tmp <- ggplot_gtable(ggplot_build(plt))
   legIdx <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
@@ -7,6 +6,8 @@ getLegend <- function(plt) {
   tmp$grobs[[legIdx[1]]]
 }
 
+# Helper function. Changes the value of variables given in numerators by dividing 
+# by denominator and multiplying conversionFactor. Sets unit of these variables to newUnit.
 calacuateRatio <- function(data, numerators, denominator, newUnit="1", conversionFactor=1) {
   data %>% 
     filter(variable == denominator) %>% 
@@ -22,6 +23,13 @@ calacuateRatio <- function(data, numerators, denominator, newUnit="1", conversio
 }
 
 
+# Creates 2 area plots (main region + others) and to bar plots (main region +
+# others) of the variables specified in items over time. For area plots,
+# faceting is done by region and scenario; for bar plots over region. If a
+# variables is given in tot, this is shown as a black line. If not the sum of
+# the values of items is drawn. If fill=TRUE, the values of items are divided by
+# the values of tot to show share of total. The plots arranged and shown and
+# NULL is returned invisibly.
 showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   # This function uses the 'global' variables: mainReg, yearsBarPlot.
   
@@ -98,8 +106,10 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   return(invisible(NULL))
 }
 
-
-# scales: "free_y" or "fixed"
+# Two lineplots are shown (main region + others), depicting the values in
+# filterVars over time. Faceting is done by region. For scales, choose either
+# "free_y" or "fixed". The plots arranged and shown and NULL is returned
+# invisibly.
 showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
   # This function uses the 'global' variables: mainReg
   
@@ -177,6 +187,10 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
 }
 
 
+# Creates a line plot showing single line plot of filterVars over time
+# Additionally target values given in variables of the form
+# <filterVars>|target|<sth> are shown. The plot is shown and NULL is returned
+# invisibly.
 showLinePlotsWithTarget <- function(data, filterVars, scales="free_y") {
   filterVars %>% 
     paste0("|target|") %>% 
@@ -220,6 +234,9 @@ showLinePlotsWithTarget <- function(data, filterVars, scales="free_y") {
 }
 
 
+# Creates two plots (main region + others) with the values of items over time.
+# Different regions are shown in the same plot. Faceting is done by variable.
+# The plots arranged and shown and NULL is returned invisibly.
 showMultiLinePlots <- function(data, items, scales="fixed") {
   # This function uses the 'global' variables: mainReg, regions.
   
@@ -278,7 +295,9 @@ showMultiLinePlots <- function(data, items, scales="fixed") {
 }
 
 
-# When plotting by GDP, data from historical.mif is only shown for years where historical GDP is available.
+# Same as showMultiLinePlots() but with GDP on x-axis. When plotting by GDP,
+# data from historical.mif is only shown for years where historical GDP is
+# available. The plots arranged and shown and NULL is returned invisibly.
 showMultiLinePlotsByGDP <- function(data, items, scales="fixed") {
   # This function uses the 'global' variables: mainReg.
   
