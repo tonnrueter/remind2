@@ -105,47 +105,6 @@ dataHist %>%
   filter(period %in% params$yearsHist, !is.na(value)) ->
   dataHist
 
-# TODO: Should be filtered in historical.mif or kept in plots
-# Remove rows where all values of the same model, scenario, variable, region are 0.
-dataHist %>% 
-  group_by(model, scenario, variable, region) %>% 
-  summarize(all0 = all(value == 0, na.rm=TRUE)) ->
-  dataHistAll0
-dataHistAll0 %>% 
-  group_by(model, scenario, variable) %>% 
-  summarize(anyAll0 = any(all0)) ->
-  dataHistAnyAll0
-bind_rows(
-  dataHistAll0 %>% 
-    filter(all0) %>% 
-    select(-all0),
-  dataHistAnyAll0 %>% 
-    filter(anyAll0) %>% 
-    select(-anyAll0) %>% 
-    mutate(region = "World")
-  ) ->
-  invalidHistVars
-dataHist %>% 
-  anti_join(invalidHistVars) ->
-  dataHist
-
-# TODO: Should be done in historical.mif?
-# preprocess IEA WEO 2021
-dataHist %>% 
-  filter(str_detect(model, "^IEA WEO 2021")) %>% 
-  select(model, region) %>% 
-  distinct() ->
-  ieaWeo
-ieaWeo %>% 
-  filter(
-    !((str_ends(model, "GLO") & region == "World") |
-    (str_ends(model, "regional") & region != "World"))) ->
-  iaeWeoInvalid
-dataHist %>% 
-  anti_join(iaeWeoInvalid) %>% 
-  mutate(model = str_remove(model, " GLO$| regional$")) ->
-  dataHist
-
 # Combine into one data frame and remove old.
 data <- bind_rows(dataScen, dataHist)
 rm(dataScen, dataHist)
@@ -154,23 +113,6 @@ rm(dataScen, dataHist)
 data %>% 
   mutate(variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
   data
-  
-# TODO: Should probably be filtered in historical.mif
-# For following scenario-variable combinations, use only the specified models.
-modelFilter <- tribble(
-  ~scenario, ~variable, ~model, 
-  "historical", "Population", "WDI",
-  "historical", "GDP|PPP", "James_IMF",
-  "historical", "FE", "IEA",
-  "historical", "FE|Transport", "IEA",
-  "historical", "FE|Buildings", "IEA",
-  "historical", "FE|Industry", "IEA")
-data %>% 
-  # Remove all matching scenario-variable combinations.
-  anti_join(modelFilter, by=c("scenario", "variable")) %>% 
-  # Add only matching scenario-variable-model combinations.
-  bind_rows(data %>% semi_join(modelFilter)) ->
-  data
 
 # Filter regions.
 if (!is.null(params$reg)) {
@@ -178,6 +120,31 @@ if (!is.null(params$reg)) {
     filter(region %in% params$reg) ->
     data
 }
+```
+
+
+```{r Corrections}
+# TODO: Should not be done in compareScenarios.
+
+# Change unit million US$2005/yr to billion US$2005/yr.
+# Relevant for ARIADNE historical EUR GDP|PPP.
+bind_rows(
+  data %>% filter(unit != "million US$2005/yr"),
+  data %>% 
+    filter(unit == "million US$2005/yr") %>% 
+    mutate(
+      unit = "billion US$2005/yr",
+      value = value / 1000)) ->
+  data
+```
+
+
+```{r reference models for historical}
+# Sometimes it is necessary to choose a single model for the historical data, 
+# e.g., calculating per capita variables. These reference models are defined here.
+histRefModel <- c(
+  "Population" = "WDI",
+  "GDP|PPP pCap" = "James_IMF")
 ```
 
 
@@ -215,10 +182,12 @@ pCapVariables <- tribble(
   "ES|Transport|Freight|Road|Liquids", "tkm/yr", 1e9)
 
 data %>% 
-  filter(variable == "Population") %>% 
+  filter(variable == "Population") %>%
+  filter(scenario != "historical" | model == histRefModel["Population"]) %>% 
   select(scenario, region, period, value) %>% 
-  mutate(population = value * 1e6) %>% # unit originally is million, now is 1
-  select(!value) -> 
+  mutate(
+    population = value * 1e6, # unit originally is million, now is 1
+    value = NULL) -> 
   dataPop
 
 data %>% 
@@ -241,6 +210,7 @@ data %>%
 # Create a new column gdp with the value of GDP|PPP pCap (kUS$2005).
 data %>% 
   filter(variable == "GDP|PPP pCap") %>% 
+  filter(scenario != "historical" | model == histRefModel["GDP|PPP pCap"]) %>% 
   select(scenario, region, period, value) %>% 
   rename(gdp = value) ->   
   dataGDP
@@ -274,38 +244,6 @@ data %>%
 data %>% 
   bind_rows(dataPGdp) ->
   data
-```
-
-
-```{r corrections}
-# TODO: This should definitely not be done here!!
-
-# correct SE|Electricity|Hydrogen, current value is FE, SE can be calculated by
-# estimating turbine efficiency
-data %>% 
-  mutate(
-    value = value / ifelse(variable == "SE|Electricity|Hydrogen", 0.4, 1)) ->
-  data
-
-# Correct confusing variable naming in Eurostat FE|Transport.
-if (data %>% filter(model == "Eurostat", variable == "FE|Transport w/ Bunkers") %>% NROW() > 0) {
-  data %>% 
-    filter(model == "Eurostat") %>% 
-    mutate(
-      variable = recode(variable, 
-                        "FE|Transport w/ Bunkers" = "tmp", 
-                        "FE|Transport" = "FE|Transport w/o Bunkers"),
-      variable = recode(variable, "tmp" = "FE|Transport"),
-      variable = recode(variable, 
-                        "FE|Transport|Liquids w/ Bunkers" = "tmp", 
-                        "FE|Transport|Liquids" = "FE|Transport|w/o Bunkers|Liquids"),
-      variable = recode(variable, "tmp" = "FE|Transport|Liquids")) ->
-    dEurostat
-  data %>% 
-    filter(model != "Eurostat") %>% 
-    bind_rows(dEurostat) ->
-    data
-}
 ```
 
 

@@ -136,12 +136,16 @@ showAreaAndBarPlots(data, items)
 ## FE intensity of GDP, linegraph (by GDP)
 
 ```{r FE intensity of GDP-linegraph}
+data %>% 
+  # To make the plots less crowded, show only IEA historical data.
+  filter(scenario != "historical" | model == "IEA") -> 
+  dIea
 items <- c(
   "FE|Transport pGDP",
   "FE|Buildings pGDP",
   "FE|Industry pGDP")
-showMultiLinePlots(data, items)
-showMultiLinePlotsByGDP(data, items)
+showMultiLinePlots(dIea, items)
+showMultiLinePlotsByGDP(dIea, items)
 ```
 
 ## Kaya-Decomposition
