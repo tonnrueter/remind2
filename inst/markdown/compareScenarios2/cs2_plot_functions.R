@@ -341,6 +341,7 @@ showMultiLinePlotsByGDP <- function(data, items, scales="fixed") {
     geom_line(data = dRegiHist, aes(group = paste0(model, region)), alpha=0.5) +
     facet_wrap(vars(variable), scales=scales) +
     theme_minimal() +
+    scale_color_manual(values = plotstyle(regions)) + 
     ylim(0, NA) + 
     ylab(label) + xlab("GDP PPP pCap (kUS$2005)") ->
     p2
