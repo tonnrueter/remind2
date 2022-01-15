@@ -1,3 +1,12 @@
+# Generates a warning if some of the variable names in the character vector vars
+# are not entries of the variables column of the data frame data.
+warnMissingVars <- function(data, vars) {
+  available <- vars %in% unique(data$variable)
+  missingVars <- vars[!available]
+  if (length(missingVars) > 0)
+    warning("Variables not found: ", paste(missingVars, collapse=", "), call.=FALSE)
+}
+
 # Helper function to extract the legend of a ggplot object.
 getLegend <- function(plt) {
   tmp <- ggplot_gtable(ggplot_build(plt))
@@ -44,8 +53,9 @@ showAreaAndBarPlots <- function(data, items, tot=NULL, fill=FALSE) {
   data %>% 
     filter(variable %in% items, scenario != "historical") ->
     d
+  warnMissingVars(d, items)
   if (NROW(d) == 0) {
-    warning("Nothing to plot:", paste(items, collapse=","))
+    warning("Nothing to plot.", call.=FALSE)
     return(invisible(NULL))
   }
   
@@ -135,8 +145,10 @@ showLinePlots <- function(data, filterVars=NULL, scales="free_y") {
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
   
+  if (!is.null(filterVars))
+    warnMissingVars(bind_rows(dMainScen, dRegiScen), filterVars)
   if (NROW(dMainScen) == 0 && NROW(dRegiScen) == 0) {
-    warning("Nothing to plot:", paste(filterVars, collapse=","))
+    warning("Nothing to plot.", call.=FALSE)
     return(invisible(NULL))
   }
   if (NROW(dMainScen) == 0) {
@@ -205,8 +217,9 @@ showLinePlotsWithTarget <- function(data, filterVars, scales="free_y") {
   data %>% 
     filter(variable %in% filterVars, region %in% regionsWithTarget) ->
     d
+  warnMissingVars(d, filterVars)
   if (NROW(d) == 0) {
-    warning("Nothing to plot:", paste(filterVars, collapse=","))
+    warning("Nothing to plot.", call.=FALSE)
     return(invisible(NULL))
   }
   
@@ -255,8 +268,10 @@ showMultiLinePlots <- function(data, items, scales="fixed") {
   d %>% 
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
+  
+  warnMissingVars(dMainScen, filterVars)
   if (NROW(dMainScen) == 0) {
-    warning("Nothing to plot:", paste(items, collapse=","))
+    warning("Nothing to plot.", call.=FALSE)
     return(invisible(NULL))
   }
   
@@ -316,8 +331,10 @@ showMultiLinePlotsByGDP <- function(data, items, scales="fixed") {
   d %>% 
     filter(region != mainReg, scenario == "historical") ->
     dRegiHist
+  
+  warnMissingVars(dMainScen, filterVars)
   if (NROW(dMainScen) == 0) {
-    warning("Nothing to plot:", paste(items, collapse=","))
+    warning("Nothing to plot.", call.=FALSE)
     return(invisible(NULL))
   }
   
