@@ -191,16 +191,16 @@ showAreaAndBarPlots(data, items)
 
 ```{r SE Electricity by carrier}
 items <- c(
-  "SE|Electricity|Coal|w/ CCS",
-  "SE|Electricity|Coal|w/o CCS",
+  "SE|Electricity|Coal|w/ CC",
+  "SE|Electricity|Coal|w/o CC",
   "SE|Electricity|Oil",
-  "SE|Electricity|Gas|w/ CCS",
-  "SE|Electricity|Gas|w/o CCS",
+  "SE|Electricity|Gas|w/ CC",
+  "SE|Electricity|Gas|w/o CC",
   "SE|Electricity|Geothermal",
   "SE|Electricity|Hydro",
   "SE|Electricity|Nuclear",
-  "SE|Electricity|Biomass|w/ CCS",
-  "SE|Electricity|Biomass|w/o CCS",
+  "SE|Electricity|Biomass|w/ CC",
+  "SE|Electricity|Biomass|w/o CC",
   "SE|Electricity|Solar|CSP",
   "SE|Electricity|Solar|PV",
   "SE|Electricity|Hydrogen",
