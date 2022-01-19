@@ -83,9 +83,9 @@ compareScenarios2 <- function(
   ) {
   yamlParams <- c(
     list(
-      mifScen = unname(mifScen),
+      mifScen = normalizePath(mifScen, mustWork = TRUE),
       mifScenNames = names(mifScen),
-      mifHist = mifHist),
+      mifHist = normalizePath(mifHist, mustWork = TRUE)),
     list(...))
   outputFormat <- tolower(outputFormat)
   if (outputFormat == "pdf") outputFormat <- "pdf_document"
