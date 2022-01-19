@@ -81,7 +81,7 @@ tibble(path = unname(params$mifScen)) %>%
     data = map(path, read.quitte, factors=FALSE)) %>% 
   unnest(cols = data) ->
   dataScen
-if (!is.null(dataScen$newScenarioName)) {
+if ('newScenarioName' %in% colnames(dataScen)) {
   dataScen %>% 
     mutate(scenario = newScenarioName) ->
     dataScen
