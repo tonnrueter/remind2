@@ -20,7 +20,7 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom dplyr %>%
-#' @importFrom magclass mselect dimSums mselect<- collapseDim getItems
+#' @importFrom magclass mselect dimSums mselect<- collapseDim getItems getRegions getYears
 #' @importFrom madrat toolAggregate
 
 
@@ -1800,9 +1800,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       
       emi.vars.wNonEn.inclWaste <- c(emi.vars.wNonEn.inclWaste, 
                                      "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)",
-                                     "Emi|CO2|LULUCF national accounting (Mt CO2/yr)",                  
-                                     "Emi|GHG|Land-Use Change|LULUCF national accounting (Mt CO2eq/yr)",
-                                     "Emi|CO2|Land-Use Change|LULUCF national accounting (Mt CO2/yr)"  )
+                                     "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
     }
 
     ### variables for which non-energy emissions should be substracted (and no waste fraction added)
@@ -1939,9 +1937,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     
     emi.vars.wBunkers <- c(emi.vars.wBunkers, 
                                    "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)",
-                                   "Emi|CO2|LULUCF national accounting (Mt CO2/yr)",                  
-                                   "Emi|GHG|Land-Use Change|LULUCF national accounting (Mt CO2eq/yr)",
-                                   "Emi|CO2|Land-Use Change|LULUCF national accounting (Mt CO2/yr)"  )
+                                   "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
   }
 
   # variable names for emission variables with bunkers, insert w/ Bunkers
