@@ -68,7 +68,7 @@ reportFE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
   
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
-  vm_demFeSector_new <- vm_demFeSector[demFemapping]
+  vm_demFeSector <- vm_demFeSector[demFemapping]
   
   # only retain combinations of SE, FE, te which actually exist in the model (qm_balFe)
   vm_prodFe <- vm_prodFe[se2fe]
