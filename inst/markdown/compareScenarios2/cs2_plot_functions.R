@@ -30,7 +30,7 @@ calacuateRatio <- function(data,
       denom
     data %>%
       filter(variable %in% numerators) %>%
-      left_join(denom) %>%
+      left_join(denom, c('model', 'scenario', 'region', 'period')) %>%
       mutate(value = value / denom_value * conversionFactor,
              unit = newUnit)
   }

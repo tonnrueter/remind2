@@ -191,8 +191,8 @@ data %>%
   dataPop
 
 data %>% 
-  inner_join(pCapVariables) %>% 
-  left_join(dataPop) %>% 
+  inner_join(pCapVariables, 'variable') %>% 
+  left_join(dataPop, c('scenario', 'region', 'period')) %>% 
   mutate(
     value = value / population * conversionFactor,
     variable = paste0(variable, " pCap"),
@@ -215,7 +215,7 @@ data %>%
   rename(gdp = value) ->   
   dataGDP
 data %>% 
-  left_join(dataGDP) ->
+  left_join(dataGDP, c('scenario', 'region', 'period')) ->
   data
 ```
 
@@ -234,7 +234,7 @@ pGdpVariables <- tribble(
   "FE|Buildings", "MJ/US$2005", 1e3,
   "FE|Industry", "MJ/US$2005", 1e3)
 data %>% 
-  inner_join(pGdpVariables) %>% 
+  inner_join(pGdpVariables, 'variable') %>% 
   mutate(
     value = value / gdp * conversionFactor,
     variable = paste0(variable, " pGDP"),
