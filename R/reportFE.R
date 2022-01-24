@@ -730,10 +730,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                all_enty1 = "feels"), dim = 3),
                "FE|Industry|Steel|+|Electricity (EJ/yr)"),
       
-      setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "steel",
-                               all_enty1 = "fehes"), dim = 3),
-               "FE|Industry|Steel|+|Heat (EJ/yr)"),
-      
       setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "steel", 
                                all_enty1 = "feh2s"), dim = 3 ),
                "FE|Industry|Steel|+|Hydrogen (EJ/yr)"),
@@ -788,10 +784,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                all_enty1 = "feels"), dim = 3),
                "FE|Industry|Cement|+|Electricity (EJ/yr)"),
       
-      setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "cement",
-                               all_enty1 = "fehes"), dim = 3),
-               "FE|Industry|Cement|+|Heat (EJ/yr)"),
-      
       setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "cement", 
                                all_enty1 = "feh2s"), dim = 3),
                "FE|Industry|Cement|+|Hydrogen (EJ/yr)"),
@@ -814,10 +806,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "chemicals", 
                                all_enty1 = "feels"), dim = 3),
                "FE|Industry|Chemicals|+|Electricity (EJ/yr)"),
-      
-      setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "chemicals",
-                               all_enty1 = "fehes"), dim = 3),
-               "FE|Industry|Chemicals|+|Heat (EJ/yr)"),
       
       setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "chemicals", 
                                all_enty1 = "feh2s"), dim = 3),
