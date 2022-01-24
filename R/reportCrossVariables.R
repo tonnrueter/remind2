@@ -26,8 +26,10 @@
 #' @importFrom tidyselect everything
 #'
  
-reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
-  if(is.null(output)){
+reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
+                                 t = c(seq(2005, 2060, 5), seq(2070, 2110, 10),
+                                       2130, 2150)) {
+  if (is.null(output)) {
     stop("please provide a file containing all needed information")
   }
   
@@ -309,8 +311,8 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   
   out <- mbind(tmp, int_gr)
   
-  # add per-capita industry activity ----
   if ('subsectors' == module2realisation['industry',2]) {
+    # add per-capita industry activity ----
     # find all activity variables
     foo <- grep('^(Production|Value Added)\\|Industry', getNames(output), 
                 value = TRUE)
