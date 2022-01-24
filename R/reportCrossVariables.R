@@ -355,6 +355,48 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
         `colnames<-`(c(getSets(out, fulldim = FALSE), 'Value')) %>% 
         as.magpie(spatial = 1, temporal = 2, data = 4)
     )
+    
+    # add per-GDP industry activity ----
+    out <- mbind(
+      out,
+
+      # get activity data
+      output[,,foo] %>%
+        as.data.frame() %>%
+        as_tibble() %>%
+        select(-'Cell') %>%
+        # join with population numbers
+        left_join(
+          output[,,'GDP|PPP (billion US$2005/yr)'] %>%
+            as.data.frame() %>%
+            as_tibble() %>%
+            select('Region', 'Year', population = 'Value'),
+
+          c('Region', 'Year')
+        ) %>%
+        # join unit conversion
+        extract(.data$Data1, c('variable', 'unit'), '^(.*) \\((.*)\\)$') %>%
+        full_join(
+          tribble(
+            ~unit,                  ~new.unit,    ~factor,
+            # Mt/$bn * 1e6 t/Mt * 1e-3 $bn/$m = t/$m
+            'Mt/yr',                't/million US$2005',   1e3,
+            'billion US$2005/yr',   'US$2005/US$2005',     1     # $bn/$bn = $/$
+          ),
+
+          'unit'
+        ) %>%
+        assert(not_na, everything()) %>%
+        # calculate
+        mutate(Value = .data$Value / .data$population * .data$factor,
+               !!sym(getSets(out, fulldim = FALSE)[3]) :=
+                 paste0(.data$variable, '|per-GDP (', .data$new.unit, ')')
+        ) %>%
+        # build magpie
+        select('Region', 'Year', getSets(out, fulldim = FALSE)[3], 'Value') %>%
+        `colnames<-`(c(getSets(out, fulldim = FALSE), 'Value')) %>%
+        as.magpie(spatial = 1, temporal = 2, data = 4)
+    )
   }
 
   return(out)
