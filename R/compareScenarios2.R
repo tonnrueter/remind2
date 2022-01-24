@@ -87,6 +87,13 @@ compareScenarios2 <- function(
       mifScenNames = names(mifScen),
       mifHist = normalizePath(mifHist, mustWork = TRUE)),
     list(...))
+
+  # convert relative to absolute paths
+  if ('userSectionPath' %in% names(yamlParams)) {
+    yamlParams$userSectionPath <- normalizePath(yamlParams$userSectionPath,
+                                                mustWork = TRUE)
+  }
+
   outputFormat <- tolower(outputFormat)
   if (outputFormat == "pdf") outputFormat <- "pdf_document"
   if (outputFormat == "html") outputFormat <- "html_document"
