@@ -286,5 +286,5 @@ if (length(params$sections) == 1 && params$sections == "all") {
 ```
 
 
-```{r include user section, child = normalizePath(params$userSectionPath, mustWork = TRUE)}
+```{r include user section, child = params$userSectionPath}
 ```
