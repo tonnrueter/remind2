@@ -60,7 +60,8 @@ showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 data %>% 
   filter(scenario != "historical") %>%
   filter(str_starts(variable, "Price")) %>% 
-  filter(period >= 2010) -> # 2005 values are invalid
+  filter(period >= 2010) %>% # 2005 values are invalid
+  droplevels() -> 
   dPrice
 ```
 
@@ -68,7 +69,7 @@ data %>%
 ### PE Prices
 
 ```{r PE Prices}
-variables %>% 
+levels(dPrice$variable) %>% 
   str_subset("^Price\\|Primary Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
@@ -79,7 +80,7 @@ walk(vars, showLinePlots, data=dPrice, scale="fixed")
 
 
 ```{r SE Prices}
-variables %>% 
+levels(dPrice$variable) %>% 
   str_subset("^Price\\|Secondary Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
@@ -89,7 +90,7 @@ walk(vars, showLinePlots, data=dPrice, scale="fixed")
 ### FE Prices
 
 ```{r FE Prices}
-variables %>% 
+levels(dPrice$variable) %>% 
   str_subset("^Price\\|Final Energy\\|") %>% 
   str_subset("\\|Moving Avg$", negate=TRUE) ->
   vars
@@ -117,7 +118,7 @@ vars %>%
 ## Trade
 
 ```{r Trade}
-variables %>% 
+levels(data$variable) %>% 
   str_subset("^Trade\\|[^|]*$") ->
   vars
 walk(vars, showLinePlots, data=data)
@@ -144,8 +145,8 @@ items <- c(
   "FE|Transport pGDP",
   "FE|Buildings pGDP",
   "FE|Industry pGDP")
-showMultiLinePlots(dIea, items)
-showMultiLinePlotsByGDP(dIea, items)
+showMultiLinePlots(dIea, items, scales="fixed")
+showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales="fixed")
 ```
 
 ## Kaya-Decomposition
@@ -179,7 +180,8 @@ kaya_units <- tribble(
   "emiCO2_by_FE", "EJ/Mt CO2")
 kaya_vars <- kaya_units$variable
 kaya %>%
-  left_join(kaya_units) ->
+  left_join(kaya_units) %>% 
+  as.quitte() ->
   kaya
 
 ref_year <- 2005
@@ -193,36 +195,23 @@ kaya %>%
   mutate(
     value = value / ref_value,
     unit = paste0("relative to ", ref_year),
-    ref_value = NULL) ->
+    ref_value = NULL) %>% 
+  as.quitte() ->
   kaya_rel
 ```
 
 ### Absolute
 
 ```{r kaya plot abs}
-showMultiLinePlots(kaya, kaya_vars, scales="free_y")
-
-kaya %>% 
-  filter(region != mainReg) %>% 
-  ggplot(aes(period, value, color=region)) + 
-  geom_point() + geom_line() +
-  facet_grid(vars(variable), vars(scenario), scales="free_y") + 
-  scale_color_manual(values = plotstyle(regions)) + 
-  theme_minimal()
+showMultiLinePlots(kaya, kaya_vars)
+walk(kaya_vars, showRegiLinePlots, data=kaya)
 ```
 
 ### Relative to 2005
 
 ```{r kaya plot rel}
-showMultiLinePlots(kaya_rel, kaya_vars, scales="free_y")
-
-kaya_rel %>% 
-  filter(region != mainReg) %>% 
-  ggplot(aes(period, value, color=region)) + 
-  geom_point() + geom_line() +
-  facet_grid(vars(variable), vars(scenario), scales="free_y") + 
-  scale_color_manual(values = plotstyle(regions)) + 
-  theme_minimal()
+showMultiLinePlots(kaya_rel, kaya_vars)
+walk(kaya_vars, showRegiLinePlots, data=kaya)
 ```
 
 ### Components
