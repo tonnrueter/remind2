@@ -275,6 +275,26 @@ d %>%
   theme_minimal()
 ```
 
+```{r CO2 Sectors Prices}
+items <- c(
+  "Price|Carbon|Demand|Transport",
+  "Price|Carbon|Demand|Buildings",
+  "Price|Carbon|Demand|Industry"
+)
+# older runs might not have the new sector tax variables
+if (all(items %in% data$variable)) {
+  base_tax <- data[data$variable == "Price|Carbon" & data$scenario != "historical", "value"]
+  buildings_tax <- data[data$variable == "Price|Carbon|Demand|Buildings", "value"]
+  transport_tax <- data[data$variable == "Price|Carbon|Demand|Transport", "value"]
+  # only create plots if a sector tax is unequal to the base co2 tax
+  if (any(buildings_tax != base_tax) | any(transport_tax != base_tax)) {
+    showLinePlots(data, "Price|Carbon|Demand|Buildings")
+    showLinePlots(data, "Price|Carbon|Demand|Transport")
+    showLinePlots(data, "Price|Carbon|Demand|Industry")
+    showLinePlots(data, "Price|Carbon|Supply")
+  }
+}
+```
 
 ```{r CO2 Prices ETS,ESR}
 showLinePlots(data, "Price|Carbon|ETS")
