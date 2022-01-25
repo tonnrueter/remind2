@@ -9,7 +9,7 @@ output:
   html_document:
     toc: yes
     toc_float: yes
-    toc_depth: 3
+    toc_depth: 6
     number_sections: yes
 geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footnotesep=0.0cm,footskip=0.1cm"
 params:
