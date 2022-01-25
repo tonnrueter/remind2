@@ -21,9 +21,10 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind write.report
 
-convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
- 
-  # Define region subsets
+convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
+                        t = c(seq(2005, 2060, 5), seq(2070, 2110, 10),
+                              2130, 2150)) {
+   # Define region subsets
   regionSubsetList <- toolRegionSubsets(gdx)
   # ADD EU-27 region aggregation if possible
   if("EUR" %in% names(regionSubsetList)){
@@ -73,7 +74,8 @@ convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(20
   message("running reportCosts...")
   output <- mbind(output,reportCosts(gdx,output,regionSubsetList,t)[,t,])  # needs output from reportEnergyInvestment, reportPrices, reportEnergyInvestments
 
-  # reporting of cross variables - needs variables from different other report* functions
+  # reporting of cross variables ----
+  # needs variables from different other report* functions
   message("running reportCrossVariables...")
   output <- mbind(output,reportCrossVariables(gdx,output,regionSubsetList,t)[,t,])
 
