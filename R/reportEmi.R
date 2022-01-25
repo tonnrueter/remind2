@@ -20,7 +20,7 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom dplyr %>%
-#' @importFrom magclass mselect dimSums mselect<- collapseDim getItems
+#' @importFrom magclass mselect dimSums mselect<- collapseDim getItems getRegions getYears
 #' @importFrom madrat toolAggregate
 
 
@@ -1701,7 +1701,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   
   
   # emissions with Grassi Correction (LULUCF emissions adjusted to national LULUCF accouting)
-  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = F, react = "silent")
+  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = T, react = "silent")[getRegions(out), getYears(out),]
   
   if (!is.null(p47_LULUCFEmi_GrassiShift)) {
     
@@ -1793,6 +1793,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
       # CO2 Emissions
       "Emi|CO2 (Mt CO2/yr)")
+    
+    
+    # add emissions variables with LULUCF national accounting
+    if (!is.null(p47_LULUCFEmi_GrassiShift)) {
+      
+      emi.vars.wNonEn.inclWaste <- c(emi.vars.wNonEn.inclWaste, 
+                                     "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)",
+                                     "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
+    }
 
     ### variables for which non-energy emissions should be substracted (and no waste fraction added)
     emi.vars.wNonEn.exclWaste <- c(
@@ -1920,6 +1929,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
     emi.vars.wBunkers <- c(emi.vars.wBunkers, emi.vars.wBunkers.wNonEn)
 
+  }
+  
+  
+  # add emissions variables with LULUCF national accounting
+  if (!is.null(p47_LULUCFEmi_GrassiShift)) {
+    
+    emi.vars.wBunkers <- c(emi.vars.wBunkers, 
+                                   "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)",
+                                   "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
   }
 
   # variable names for emission variables with bunkers, insert w/ Bunkers
