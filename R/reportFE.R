@@ -915,22 +915,22 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
           ( out[,,'FE|Industry|+++|Cement (EJ/yr)']
           / out[,,'Production|Industry|Cement (Mt/yr)']
-          ) * 1e6,
-          'FE|Industry|Specific Energy Consumption|Cement (MJ/t)'),
+          ) * 1e3,
+          'FE|Industry|Specific Energy Consumption|Cement (GJ/t)'),
         
         setNames(
           # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
           ( out[,,'FE|Industry|Steel|++|Primary (EJ/yr)']
           / out[,,'Production|Industry|Steel|Primary (Mt/yr)']
-          ) * 1e6,
-          'FE|Industry|Specific Energy Consumption|Primary Steel (MJ/t)'),
+          ) * 1e3,
+          'FE|Industry|Specific Energy Consumption|Primary Steel (GJ/t)'),
         
         setNames(
           # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
           ( out[,,'FE|Industry|Steel|++|Secondary (EJ/yr)']
           / out[,,'Production|Industry|Steel|Secondary (Mt/yr)']
-          ) * 1e6,
-          'FE|Industry|Specific Energy Consumption|Secondary Steel (MJ/t)'),
+          ) * 1e3,
+          'FE|Industry|Specific Energy Consumption|Secondary Steel (GJ/t)'),
         
         setNames(
           ( out[,,'FE|Industry|+++|Chemicals (EJ/yr)']
