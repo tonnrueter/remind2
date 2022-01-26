@@ -275,6 +275,33 @@ d %>%
   theme_minimal()
 ```
 
+```{r CO2 Sector Prices}
+items <- c(
+  "Price|Carbon|Demand|Transport",
+  "Price|Carbon|Demand|Buildings",
+  "Price|Carbon|Demand|Industry",
+  "Price|Carbon|Supply"
+)
+# older runs might not have the new sector tax variables
+if (all(items %in% data$variable)) {
+  avg_tax <- data[data$variable == "Price|Carbon"                  & data$scenario != "historical", "value"]
+  bui_tax <- data[data$variable == "Price|Carbon|Demand|Buildings" & data$scenario != "historical", "value"]
+  tra_tax <- data[data$variable == "Price|Carbon|Demand|Transport" & data$scenario != "historical", "value"]
+  ind_tax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
+  sup_tax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
+  # only create plots if a tax is unequal to the average co2 tax
+  if (! identical(bui_tax, avg_tax) |
+      ! identical(tra_tax, avg_tax) |
+      ! identical(ind_tax, avg_tax) |
+      ! identical(sup_tax, avg_tax)
+      ) {
+    showLinePlots(data, "Price|Carbon|Demand|Buildings")
+    showLinePlots(data, "Price|Carbon|Demand|Transport")
+    showLinePlots(data, "Price|Carbon|Demand|Industry")
+    showLinePlots(data, "Price|Carbon|Supply")
+  }
+}
+```
 
 ```{r CO2 Prices ETS,ESR}
 showLinePlots(data, "Price|Carbon|ETS")
