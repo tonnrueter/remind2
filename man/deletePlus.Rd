@@ -2,27 +2,35 @@
 % Please edit documentation in R/deletePlus.R
 \name{deletePlus}
 \alias{deletePlus}
-\title{Delete "+" in a *.mif reporting and save it with the addition "withoutPlus"}
+\title{Delete "+" in Variable Names. Optionally Save in File with Suffix
+"_withoutPlus"}
 \usage{
 deletePlus(mif, writemif = FALSE)
 }
 \arguments{
-\item{mif}{a path to a mif-file (might be created by confGDX2MIF) or a magpie object containing reporting}
+\item{mif}{A path to a mif-file (might be created by confGDX2MIF), a magpie
+object containing reporting, a quitte object, or a character vector of
+variable names.}
 
-\item{writemif}{a logical indicator whether the new mif with the adjusted names is saved under a new name containing "withoutPlus", if FALSE the new reporting is returnes as magpie object}
+\item{writemif}{A single truth value. Only used when mif is a file path.
+Should the new mif with the adjusted names be saved? If yes the new name
+will have the suffix "_withoutPlus.mif".}
 }
 \value{
-MAgPIE object - contains the reporting without "+" and "++" in the variable names
+If mif is a file path and \code{writemif} is \code{FALSE}, a MAgPIE
+  object. If mif is not a file path the result is the object \code{mif} with
+  replaced variable names.
 }
 \description{
-Delete "+" in a *.mif reporting and save it with the addition "withoutPlus"
+The function can take a multiple of input formats. It replaces "|+|", "|++|",
+"|+++|", ... by "|" in variable names and in this "deletes" the
+"plus-notation".
 }
 \examples{
-
-\dontrun{deletePlus(mif)}
-
-
-}
-\author{
-Lavinia Baumstark
+deletePlus(c(
+  "ab|cd", # "ab|cd"
+  "de|+|fgh", # "de|fgh"
+  "i|j|++|k|l|++++|mno|p", # "i|j|k|l|mno|p"
+  "++|q+|+r|+p+|u+v|+", # "++|q+|+r|+p+|u+v|+"
+  "w|+|+|x")) # "w|x"
 }
