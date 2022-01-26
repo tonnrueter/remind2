@@ -289,11 +289,11 @@ if (all(items %in% data$variable)) {
   tra_tax <- data[data$variable == "Price|Carbon|Demand|Transport" & data$scenario != "historical", "value"]
   ind_tax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
   sup_tax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
-  # only create plots if a sector tax is unequal to the base co2 tax
-  if (any(bui_tax != avg_tax) | 
-      any(tra_tax != avg_tax) | 
-      any(ind_tax != avg_tax) | 
-      any(sup_tax != avg_tax)
+  # only create plots if a tax is unequal to the average co2 tax
+  if (! identical(bui_tax, avg_tax) |
+      ! identical(tra_tax, avg_tax) |
+      ! identical(ind_tax, avg_tax) |
+      ! identical(sup_tax, avg_tax)
       ) {
     showLinePlots(data, "Price|Carbon|Demand|Buildings")
     showLinePlots(data, "Price|Carbon|Demand|Transport")
