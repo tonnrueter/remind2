@@ -275,19 +275,26 @@ d %>%
   theme_minimal()
 ```
 
-```{r CO2 Sectors Prices}
+```{r CO2 Sector Prices}
 items <- c(
   "Price|Carbon|Demand|Transport",
   "Price|Carbon|Demand|Buildings",
-  "Price|Carbon|Demand|Industry"
+  "Price|Carbon|Demand|Industry",
+  "Price|Carbon|Supply"
 )
 # older runs might not have the new sector tax variables
 if (all(items %in% data$variable)) {
-  base_tax <- data[data$variable == "Price|Carbon" & data$scenario != "historical", "value"]
-  buildings_tax <- data[data$variable == "Price|Carbon|Demand|Buildings", "value"]
-  transport_tax <- data[data$variable == "Price|Carbon|Demand|Transport", "value"]
+  avg_tax <- data[data$variable == "Price|Carbon"                  & data$scenario != "historical", "value"]
+  bui_tax <- data[data$variable == "Price|Carbon|Demand|Buildings" & data$scenario != "historical", "value"]
+  tra_tax <- data[data$variable == "Price|Carbon|Demand|Transport" & data$scenario != "historical", "value"]
+  ind_tax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
+  sup_tax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
   # only create plots if a sector tax is unequal to the base co2 tax
-  if (any(buildings_tax != base_tax) | any(transport_tax != base_tax)) {
+  if (any(bui_tax != avg_tax) | 
+      any(tra_tax != avg_tax) | 
+      any(ind_tax != avg_tax) | 
+      any(sup_tax != avg_tax)
+      ) {
     showLinePlots(data, "Price|Carbon|Demand|Buildings")
     showLinePlots(data, "Price|Carbon|Demand|Transport")
     showLinePlots(data, "Price|Carbon|Demand|Industry")
