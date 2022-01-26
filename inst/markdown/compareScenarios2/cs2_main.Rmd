@@ -111,7 +111,9 @@ rm(dataScen, dataHist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>% 
-  mutate(variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
+  mutate(
+    varplus = variable,
+    variable = str_replace_all(variable, "\\|\\++\\|", "|")) ->
   data
 
 # Filter regions.

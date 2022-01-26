@@ -344,7 +344,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ### GHG ESR Emissions
 
-```{r }
+```{r}
 tot <- "Emi|GHG|ESR"
 items <- c(
   "Emi|GHG|ESR|Buildings",
@@ -357,7 +357,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ### GHG Other Emissions - Outisde ETS and ESR
 
-```{r }
+```{r}
 tot <- "Emi|GHG|Outside ETS and ESR"
 items <- c(
   "Emi|GHG|Outside ETS and ESR|Transport",
