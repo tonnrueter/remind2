@@ -112,27 +112,138 @@ showAreaAndBarPlots(data, items, tot)
 ```
 
 ## Industry Production
-### per sector
-```{r}
+### Subsector Production
+```{r plot industry subsector production}
+showLinePlots(data, "Production|Industry|Cement")
+showLinePlots(data, "Value Added|Industry|Chemicals")
 showLinePlots(data, "Production|Industry|Steel")
 showLinePlots(data, "Production|Industry|Steel|Primary") 
 showLinePlots(data, "Production|Industry|Steel|Secondary")
-showLinePlots(data, "Production|Industry|Cement")
-showLinePlots(data, "Value Added|Industry|Chemicals")
-showLinePlots(data, c("Value Added|Industry|Other Industry", "Value Added|Industry|other"))
+showLinePlots(data, "Value Added|Industry|Other Industry")
 ```
 
-### Region Intercomparison FE
+### Steel Produciton Mix
+```{r plot steel production mix, results = 'asis'}
+items <- c('Production|Industry|Steel|Primary',
+           'Production|Industry|Steel|Secondary')
 
-```{r}
-items <- c(
-  "FE|Industry|Cement",
-  "FE|Industry|Steel",
-  "FE|Industry|Chemicals",
-  "FE|Industry|Other Industry")
-showMultiLinePlots(data, items[1:2])
-showMultiLinePlots(data, items[3:4])
-showMultiLinePlotsByGDP(data, items[1:2])
-showMultiLinePlotsByGDP(data, items[3:4])
+d_plot <- data %>% 
+  filter(variable %in% items) %>% 
+  mutate(foo = shorten_legend(variable)) %>% 
+  order.levels(foo = rev(shorten_legend(items)))
+
+# Show at max 5 scenario rows by 7 region column plots
+for (regions in bin_distribute(getRegs(d_plot), 7)) {
+  for (scenarios in bin_distribute(getScenarios(d_plot), 5)) {
+    suppressWarnings(
+      p <- ggplot_bar_remind_vts(
+        data = d_plot %>% 
+          filter(scenario %in% scenarios,
+                 region %in% regions),
+        mapping = aes(x = period, y = value, fill = foo),
+        gaps = 0) +
+        scale_fill_discrete(breaks = shorten_legend(items),
+                            name = attr(shorten_legend(items), 'front')) +
+        # fix y-axis across regions (columns)
+        geom_blank(
+          data = d_plot %>% 
+          filter(scenario %in% scenarios,
+                 region %in% regions) %>% 
+            group_by(region, period, scenario) %>% 
+            summarise(value = sum(value), .groups = 'drop_last') %>% 
+            mutate(value = max(value)) %>% 
+            add_remind_timesteps_columns(),
+          mapping = aes(x = xpos, y = value)) +
+        facet_wrap(~ interaction(region, scenario, sep = ' '), 
+                   nrow = length(scenarios), scales = 'free_y') +
+        labs(x = NULL, y = d_plot %>% pull(unit) %>% unique()) +
+        theme_minimal() + 
+        theme(legend.position = 'bottom')
+    )
+    plot(p)
+    cat('\n\n')
+  }
+}
 ```
 
+### Subsector per-Capita Production 
+```{r plot subsector per-capita production}
+items <- c('Production|Industry|Cement|per-capita',
+           'Value Added|Industry|Chemicals|per-capita',
+           'Production|Industry|Steel|per-capita',
+           'Production|Industry|Steel|Primary|per-capita',
+           'Production|Industry|Steel|Secondary|per-capita',
+           'Value Added|Industry|Other Industry|per-capita')
+walk(items, showLinePlots, data = data, scales = 'fixed')
+```
+
+### Subsector per-GDP Production
+```{r plot subsector per-GDP production}
+items <- c('Production|Industry|Cement|per-GDP',
+           'Value Added|Industry|Chemicals|per-GDP',
+           'Production|Industry|Steel|per-GDP',
+           'Production|Industry|Steel|Primary|per-GDP',
+           'Production|Industry|Steel|Secondary|per-GDP',
+           'Value Added|Industry|Other Industry|per-GDP')
+walk(items, showLinePlots, data = data, scales = 'fixed')
+```
+
+### Subsector per-capita Production over per-capita GDP
+```{r plot subsectpr per-capita production over per-capita GDP, results = 'asis'}
+items <- c('Production|Industry|Cement|per-capita',
+           'Value Added|Industry|Chemicals|per-capita',
+           'Production|Industry|Steel|per-capita',
+           'Production|Industry|Steel|Primary|per-capita',
+           'Production|Industry|Steel|Secondary|per-capita',
+           'Value Added|Industry|Other Industry|per-capita')
+
+d_plot <- full_join(
+  data %>% 
+    select(scenario, region, variable, unit, period, value) %>% 
+    filter(variable %in% items),
+  
+  data %>% 
+    filter('GDP|per capita|PPP' == variable) %>% 
+    select(scenario, region, period, GDP_pC = value),
+  
+  c('scenario', 'region', 'period')
+)
+
+x_lab <- data %>% 
+  filter('GDP|per capita|PPP' == variable) %>% 
+  distinct(variable, unit) %>% 
+    mutate(label = paste0(variable, ' [', unit, ']')) %>% 
+    pull(label)
+
+x_lim <- data %>% 
+  filter('GDP|per capita|PPP' == variable) %>% 
+  pull(value) %>% 
+  range()
+
+for (i in items) {
+  cat('\n\n####', sub('.*Industry\\|(.*)\\|per-capita', '\\1', i), '\n')
+  
+  y_lab <- d_plot %>% 
+    filter(i == variable) %>% 
+    distinct(variable, unit) %>% 
+    mutate(label = paste0(variable, ' [', unit, ']')) %>% 
+    pull(label)
+    
+  p <- ggplot(mapping = aes(x = GDP_pC, y = value, colour = scenario)) +
+    geom_line(data = d_plot %>% 
+                filter(i == variable,
+                       mainReg == region) %>% 
+                select(-region),
+              mapping = aes(linetype = 'World')) +
+    scale_linetype_manual(values = c('World' = 'dotted'), name = NULL) +
+    geom_line(data = d_plot %>% 
+                filter(i == variable,
+                       mainReg != region)) +
+    scale_colour_discrete(name = NULL) +
+    facet_wrap(~ region, scales = 'fixed') +
+    expand_limits(x = 0, y = 0) +
+    labs(x = x_lab, y = y_lab) +
+    theme_minimal()
+  plot(p)
+}
+```
