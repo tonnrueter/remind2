@@ -126,10 +126,12 @@ showLinePlots(data, "Value Added|Industry|Other Industry")
 ```{r plot steel production mix, results = 'asis'}
 items <- c('Production|Industry|Steel|Primary',
            'Production|Industry|Steel|Secondary')
+
 d_plot <- data %>% 
   filter(variable %in% items) %>% 
   mutate(foo = shorten_legend(variable)) %>% 
   order.levels(foo = rev(shorten_legend(items)))
+
 # Show at max 5 scenario rows by 7 region column plots
 for (regions in bin_distribute(getRegs(d_plot), 7)) {
   for (scenarios in bin_distribute(getScenarios(d_plot), 5)) {
@@ -194,6 +196,7 @@ items <- c('Production|Industry|Cement|per-capita',
            'Production|Industry|Steel|Primary|per-capita',
            'Production|Industry|Steel|Secondary|per-capita',
            'Value Added|Industry|Other Industry|per-capita')
+
 d_plot <- full_join(
   data %>% 
     select(scenario, region, variable, unit, period, value) %>% 
@@ -205,15 +208,18 @@ d_plot <- full_join(
   
   c('scenario', 'region', 'period')
 )
+
 x_lab <- data %>% 
   filter('GDP|per capita|PPP' == variable) %>% 
   distinct(variable, unit) %>% 
     mutate(label = paste0(variable, ' [', unit, ']')) %>% 
     pull(label)
+
 x_lim <- data %>% 
   filter('GDP|per capita|PPP' == variable) %>% 
   pull(value) %>% 
   range()
+
 for (i in items) {
   cat('\n\n####', sub('.*Industry\\|(.*)\\|per-capita', '\\1', i), '\n')
   
