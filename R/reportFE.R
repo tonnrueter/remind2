@@ -908,42 +908,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                  + out[,,"Production|Industry|Steel|Secondary (Mt/yr)"],
                  "Production|Industry|Steel (Mt/yr)"))
 
-      ## specific energy use (FE per product/value added) ----
-      out <- mbind(
-        out,
-        setNames(
-          # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
-          ( out[,,'FE|Industry|+++|Cement (EJ/yr)']
-          / out[,,'Production|Industry|Cement (Mt/yr)']
-          ) * 1e3,
-          'FE|Industry|Specific Energy Consumption|Cement (GJ/t)'),
-        
-        setNames(
-          # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
-          ( out[,,'FE|Industry|Steel|++|Primary (EJ/yr)']
-          / out[,,'Production|Industry|Steel|Primary (Mt/yr)']
-          ) * 1e3,
-          'FE|Industry|Specific Energy Consumption|Primary Steel (GJ/t)'),
-        
-        setNames(
-          # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
-          ( out[,,'FE|Industry|Steel|++|Secondary (EJ/yr)']
-          / out[,,'Production|Industry|Steel|Secondary (Mt/yr)']
-          ) * 1e3,
-          'FE|Industry|Specific Energy Consumption|Secondary Steel (GJ/t)'),
-        
-        setNames(
-          ( out[,,'FE|Industry|+++|Chemicals (EJ/yr)']
-          / out[,,'Value Added|Industry|Chemicals (billion US$2005/yr)']
-          ) * 1e3,
-          'FE|Industry|Specific Energy Consumption|Chemicals (MJ/US$2005)'),
-        
-        setNames(
-          ( out[,,'FE|Industry|+++|Other Industry (EJ/yr)']
-          / out[,,"Value Added|Industry|Other Industry (billion US$2005/yr)"]
-          ) * 1e3,
-          'FE|Industry|Specific Energy Consumption|Other Industry (MJ/US$2005)')
-      )
+      
     }
   } 
   
@@ -1616,6 +1581,45 @@ reportFE <- function(gdx, regionSubsetList = NULL,
    setNames(out[,,'FE|Transport|Fuels (EJ/yr)'] / out[,,'FE|++|Transport (EJ/yr)'] * 100, 'FE|Transport|Fuels|Share (%)'),
    setNames(out[,,'FE|Fuels (EJ/yr)'] / out[,,'FE (EJ/yr)'] * 100, 'FE|Fuels|Share (%)')
   )
+  
+  if (indu_mod == 'subsectors') {
+    ## specific energy use (FE per product/value added) ----
+    out <- mbind(
+      out,
+      setNames(
+        # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
+        ( out[,,'FE|Industry|+++|Cement (EJ/yr)']
+        / out[,,'Production|Industry|Cement (Mt/yr)']
+        ) * 1e3,
+        'FE|Industry|Specific Energy Consumption|Cement (GJ/t)'),
+      
+      setNames(
+        # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
+        ( out[,,'FE|Industry|Steel|++|Primary (EJ/yr)']
+        / out[,,'Production|Industry|Steel|Primary (Mt/yr)']
+        ) * 1e3,
+        'FE|Industry|Specific Energy Consumption|Primary Steel (GJ/t)'),
+      
+      setNames(
+        # EJ/yr / Mt/yr * 1e12 MJ/EJ / (1e6 t/Mt) = MJ/t
+        ( out[,,'FE|Industry|Steel|++|Secondary (EJ/yr)']
+        / out[,,'Production|Industry|Steel|Secondary (Mt/yr)']
+        ) * 1e3,
+        'FE|Industry|Specific Energy Consumption|Secondary Steel (GJ/t)'),
+      
+      setNames(
+        ( out[,,'FE|Industry|+++|Chemicals (EJ/yr)']
+        / out[,,'Value Added|Industry|Chemicals (billion US$2005/yr)']
+        ) * 1e3,
+        'FE|Industry|Specific Energy Consumption|Chemicals (MJ/US$2005)'),
+      
+      setNames(
+        ( out[,,'FE|Industry|+++|Other Industry (EJ/yr)']
+        / out[,,"Value Added|Industry|Other Industry (billion US$2005/yr)"]
+        ) * 1e3,
+        'FE|Industry|Specific Energy Consumption|Other Industry (MJ/US$2005)')
+    )
+  }
 
   return(out)
 }
