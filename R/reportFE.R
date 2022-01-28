@@ -1581,9 +1581,21 @@ reportFE <- function(gdx, regionSubsetList = NULL,
    setNames(out[,,'FE|Transport|Fuels (EJ/yr)'] / out[,,'FE|++|Transport (EJ/yr)'] * 100, 'FE|Transport|Fuels|Share (%)'),
    setNames(out[,,'FE|Fuels (EJ/yr)'] / out[,,'FE (EJ/yr)'] * 100, 'FE|Fuels|Share (%)')
   )
-  
-  if (indu_mod == 'subsectors') {
-    ## specific energy use (FE per product/value added) ----
+
+  ## specific energy use (FE per product/value added) ----
+  if (all(indu_mod == 'subsectors',
+          c('FE|Industry|+++|Cement (EJ/yr)',
+            'Production|Industry|Cement (Mt/yr)',
+            'FE|Industry|Steel|++|Primary (EJ/yr)',
+            'Production|Industry|Steel|Primary (Mt/yr)',
+            'FE|Industry|Steel|++|Secondary (EJ/yr)',
+            'Production|Industry|Steel|Secondary (Mt/yr)',
+            'FE|Industry|+++|Chemicals (EJ/yr)',
+            'Value Added|Industry|Chemicals (billion US$2005/yr)',
+            'FE|Industry|+++|Other Industry (EJ/yr)',
+            'Value Added|Industry|Other Industry (billion US$2005/yr)') %>% 
+          `%in%`(getNames(out)))) {
+    
     out <- mbind(
       out,
       setNames(
@@ -1615,11 +1627,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       
       setNames(
         ( out[,,'FE|Industry|+++|Other Industry (EJ/yr)']
-        / out[,,"Value Added|Industry|Other Industry (billion US$2005/yr)"]
+        / out[,,'Value Added|Industry|Other Industry (billion US$2005/yr)']
         ) * 1e3,
         'FE|Industry|Specific Energy Consumption|Other Industry (MJ/US$2005)')
     )
   }
-
+  
   return(out)
 }
