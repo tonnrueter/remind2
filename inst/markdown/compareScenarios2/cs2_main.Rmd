@@ -113,7 +113,7 @@ rm(dataScen, dataHist)
 data %>% 
   mutate(
     varplus = variable,
-    variable = deletePlus(variable)) ->
+    variable = remind2::deletePlus(variable)) ->
   data
 
 # Filter regions.
