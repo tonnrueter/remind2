@@ -461,9 +461,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Carbon|Guardrail (US$2005/t CO2)"                          = "FE (EJ/yr)",
     "Price|Carbon|SCC (US$2005/t CO2)"                                = "FE (EJ/yr)",
 
-    "Price|Carbon|Demand|Buildings (US$2005/t CO2)"                   = "FE|Buildings (EJ/yr)",
-    "Price|Carbon|Demand|Transport (US$2005/t CO2)"                   = "FE|Transport (EJ/yr)",
-    "Price|Carbon|Demand|Industry (US$2005/t CO2)"                    = "FE|Industry (EJ/yr)",
+    "Price|Carbon|Demand|Buildings (US$2005/t CO2)"                   = "FE (EJ/yr)",
+    "Price|Carbon|Demand|Transport (US$2005/t CO2)"                   = "FE (EJ/yr)",
+    "Price|Carbon|Demand|Industry (US$2005/t CO2)"                    = "FE (EJ/yr)",
     "Price|Carbon|Supply (US$2005/t CO2)"                             = "FE (EJ/yr)",
 
     "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)"               = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
