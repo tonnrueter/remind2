@@ -151,7 +151,7 @@ data %>%
   select(!all_of(summands)) %>% 
   pivot_longer(all_of(item), names_to="variable", values_to="value") ->
   newRows
-showLinePlots(bind_rows(data, newRows), item)
+showLinePlots(bind_rows(data, newRows) %>% as.quitte(), item)
 ```
 
 
@@ -204,7 +204,7 @@ data %>%
   select(!all_of(summands)) %>% 
   pivot_longer(all_of(item), names_to="variable", values_to="value") ->
   newRows
-showLinePlots(bind_rows(data, newRows), item)                           
+showLinePlots(bind_rows(data, newRows) %>% as.quitte(), item)                           
 ```
 
 
@@ -281,7 +281,7 @@ showAreaAndBarPlots(data, items, tot)
 
 
 ```{r}
-variables %>% 
+levels(data$variable) %>% 
   str_subset(fixed("Emi|CO2|CDR|")) ->
   cdrVars
 walk(cdrVars, showLinePlots, data=data)
@@ -307,7 +307,7 @@ showLinePlots(d)
 
 
 ```{r}
-variables %>% 
+levels(data$variable) %>% 
   str_subset(fixed("Emi|CO2|Cumulated|CDR|")) ->
   cdr_vars
 walk(cdr_vars, showLinePlots, data=data)
@@ -344,7 +344,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ### GHG ESR Emissions
 
-```{r }
+```{r}
 tot <- "Emi|GHG|ESR"
 items <- c(
   "Emi|GHG|ESR|Buildings",
@@ -357,7 +357,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ### GHG Other Emissions - Outisde ETS and ESR
 
-```{r }
+```{r}
 tot <- "Emi|GHG|Outside ETS and ESR"
 items <- c(
   "Emi|GHG|Outside ETS and ESR|Transport",

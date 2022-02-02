@@ -107,7 +107,7 @@ items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-showMultiLinePlots(dIea, items)
+showMultiLinePlots(dIea, items, scales="fixed")
 ```
 
 ## FE per capita (by sector, GDP)
@@ -117,12 +117,12 @@ data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA") -> 
   dIea
-showMultiLinePlotsByGDP(dIea, "FE pCap")
+showMultiLinePlotsByVariable(dIea, "FE pCap", "GDP|PPP pCap")
 items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-showMultiLinePlotsByGDP(dIea, items)
+showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales="fixed")
 ```
 
 ## FE by carrier
@@ -206,7 +206,7 @@ items <- c(
   "SE|Electricity|Hydrogen",
   "SE|Electricity|Net Imports")
 
-if ("SE|Electricity|Wind|Offshore" %in% variables) {
+if ("SE|Electricity|Wind|Offshore" %in% levels(data$variable)) {
   items <- c(
     items, 
     "SE|Electricity|Wind|Onshore",
@@ -257,22 +257,8 @@ showAreaAndBarPlots(data, items)
 ## CO2 Prices
 
 ```{r CO2 Prices}
-data %>% 
-  filter(variable == "Price|Carbon", scenario != "historical") ->
-  d
-showLinePlots(d)
-d %>% 
-  filter(region != mainReg) %>% 
-  mipLineHistorical(
-    ylab="Price|Carbon [US$2005/t CO2]",
-    scales="free_y",
-    plot.priority=c("x_hist", "x", "x_proj"),
-    color.dim="region",
-    facet.dim="scenario",
-    facet.ncol=2) +
-  theme(legend.position="right") +
-  scale_color_manual(values = plotstyle(regions)) + 
-  theme_minimal()
+showLinePlots(data, "Price|Carbon")
+showRegiLinePlots(data, "Price|Carbon")
 ```
 
 ```{r CO2 Sector Prices}

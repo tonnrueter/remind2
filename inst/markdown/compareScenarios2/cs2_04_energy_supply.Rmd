@@ -39,7 +39,7 @@ items <- c(
   "Cap|Electricity|Hydrogen",
   "Cap|Electricity|Storage|Battery",
   "Cap|Electricity|Solar",
-  if ("Cap|Electricity|Wind|Offshore" %in% variables)
+  if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
     c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
   else
     "Cap|Electricity|Wind"
