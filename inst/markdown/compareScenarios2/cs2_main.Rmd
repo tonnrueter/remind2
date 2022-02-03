@@ -5,7 +5,9 @@ output:
   pdf_document:
     toc: yes
     number_sections: yes
-    toc_depth: 3
+    toc_depth: 6
+	includes: 
+      in_header: cs_pdf_header_include.tex
   html_document:
     toc: yes
     toc_float: yes
