@@ -6,7 +6,7 @@ output:
     toc: yes
     number_sections: yes
     toc_depth: 6
-	includes: 
+    includes: 
       in_header: cs_pdf_header_include.tex
   html_document:
     toc: yes
