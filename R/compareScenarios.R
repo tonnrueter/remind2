@@ -36,7 +36,6 @@ compareScenarios <- function(mif, hist,
                              y_bar=c(2010,2030,2050,2100),
                              reg=NULL, mainReg="GLO", fileName="CompareScenarios.pdf",
                              sr15marker_RCP=NULL) {
-
   lineplots_perCap <- function(data, vars, percap_factor, ylabstr,
                                global=FALSE, mainReg_plot=mainReg, per_gdp=FALSE, histdata_plot=NULL){
 
