@@ -1,0 +1,7 @@
+# Climate
+
+```{r}
+showLinePlots(data, "Forcing")
+showLinePlots(data, "Temperature|Global Mean")
+```
+

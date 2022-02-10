@@ -1,0 +1,313 @@
+# Summary
+
+
+## GHG Emissions
+
+```{r Emi-GHG}
+tot <- "Emi|GHG"
+items <- c(
+  "Emi|CO2|Energy",
+  "Emi|CO2|Industrial Processes",
+  "Emi|CO2|Land-Use Change",
+  "Emi|GHG|CH4",
+  "Emi|GHG|N2O",
+  "Emi|GHG|F-Gases",
+  "Emi|CO2|non-BECCS CDR")
+showAreaAndBarPlots(data, items, tot)
+```
+
+## GHG by sector (w/ gross emissions, excl. BECCS)
+
+```{r Emi-GHG with gross}
+tot <- "Emi|GHG"
+items <- c(
+  "Emi|GHG|Gross|Energy|Supply|Electricity",
+  "Emi|GHG|Gross|Energy|Supply|Non-electric",
+  "Emi|GHG|Energy|Demand|Transport",
+  "Emi|GHG|Energy|Demand|Buildings",
+  "Emi|GHG|Gross|Energy|Demand|Industry",
+  "Emi|GHG|Industrial Processes",
+  "Emi|GHG|Agriculture",
+  "Emi|GHG|Land-Use Change",
+  "Emi|GHG|Waste",
+  "Emi|GHG|F-Gas",
+  "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
+  "Emi|CO2|CDR|DACCS",
+  "Emi|CO2|CDR|EW")
+showAreaAndBarPlots(data, items, tot)
+```
+
+## CO2 by sector (w/ gross emissions, excl. BECCS)
+
+```{r CO2 by sector}
+tot <- "Emi|CO2"
+items <- c(
+  "Emi|CO2|Land-Use Change",
+  "Emi|CO2|Industrial Processes",
+  "Emi|CO2|Energy|Demand|Transport",
+  "Emi|CO2|Gross|Energy|Demand|Industry",
+  "Emi|CO2|Energy|Demand|Buildings",
+  "Emi|CO2|Gross|Energy|Supply|Non-electric",
+  "Emi|CO2|Gross|Energy|Supply|Electricity",
+  "Emi|CO2|CDR|BECCS",
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
+  "Emi|CO2|CDR|DACCS",
+  "Emi|CO2|CDR|EW")
+showAreaAndBarPlots(data, items, tot)
+```
+
+```{r CO2 by sector cumulated}
+tot <- "Emi|CO2|Cumulated"
+items <- c(
+  "Emi|CO2|Cumulated|Land-Use Change",
+  "Emi|CO2|Cumulated|Industrial Processes",
+  "Emi|CO2|Cumulated|Energy|Demand|Transport",
+  "Emi|CO2|Cumulated|Energy|Demand|Industry",
+  "Emi|CO2|Cumulated|Energy|Demand|Buildings",
+  "Emi|CO2|Cumulated|Gross|Energy|Supply|Non-electric",
+  "Emi|CO2|Cumulated|Gross|Energy|Supply|Electricity",
+  "Emi|CO2|Cumulated|CDR|BECCS",
+  "Emi|CO2|Cumulated|CDR|DACCS",
+  "Emi|CO2|Cumulated|CDR|EW")
+showAreaAndBarPlots(data, items, tot)
+```
+
+
+## FE by sector
+
+```{r FE by sector}
+items <- c(
+  "FE|CDR",
+  "FE|Transport",
+  "FE|Buildings",
+  "FE|Industry")
+showAreaAndBarPlots(data, items)
+```
+
+## FE per capita (by sector, time domain, area plot)
+
+```{r FE per capita (by sector, time domain, area plot)}
+items <- c(
+  "FE|Transport pCap",
+  "FE|Buildings pCap",
+  "FE|Industry pCap")
+showAreaAndBarPlots(data, items)
+```
+
+## FE per capita (by sector, time domain, line graph)
+
+```{r FE per capita (by sector, time domain, line graph)}
+data %>% 
+  # To make the plots less crowded, show only IEA historical data.
+  filter(scenario != "historical" | model == "IEA") -> 
+  dIea
+showMultiLinePlots(dIea, "FE pCap")
+items <- c(
+  "FE|Transport pCap",
+  "FE|Buildings pCap",
+  "FE|Industry pCap")
+showMultiLinePlots(dIea, items, scales="fixed")
+```
+
+## FE per capita (by sector, GDP)
+
+```{r FE per capita by sector (GDP domain)}
+data %>% 
+  # To make the plots less crowded, show only IEA historical data.
+  filter(scenario != "historical" | model == "IEA") -> 
+  dIea
+showMultiLinePlotsByVariable(dIea, "FE pCap", "GDP|PPP pCap")
+items <- c(
+  "FE|Transport pCap",
+  "FE|Buildings pCap",
+  "FE|Industry pCap")
+showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales="fixed")
+```
+
+## FE by carrier
+
+```{r FE by carrier}
+items <- c(
+  "FE|Solids",
+  "FE|Liquids",
+  "FE|Gases",
+  "FE|Heat",
+  "FE|Hydrogen",
+  "FE|Electricity")
+showAreaAndBarPlots(data, items)
+```
+
+## FE Industry by carrier
+
+```{r FE Industry by carrier}
+items <- c(
+  "FE|Industry|Solids",
+  "FE|Industry|Liquids",
+  "FE|Industry|Gases",
+  "FE|Industry|Heat",
+  "FE|Industry|Hydrogen",
+  "FE|Industry|Electricity")
+showAreaAndBarPlots(data, items)
+```
+
+## FE Buildings by carrier
+
+```{r FE Buildings by carrier}
+items <- c(
+  "FE|Buildings|Solids",
+  "FE|Buildings|Liquids",
+  "FE|Buildings|Gases",
+  "FE|Buildings|Heat",
+  "FE|Buildings|Hydrogen",
+  "FE|Buildings|Electricity")
+showAreaAndBarPlots(data, items)
+```
+
+## FE Transport by carrier
+
+```{r FE Transport by carrier}
+items <- c(
+  "FE|Transport|Electricity",
+  "FE|Transport|Hydrogen",
+  "FE|Transport|Liquids",
+  "FE|Transport|Gases")
+showAreaAndBarPlots(data, items)
+```
+
+## FE CDR by carrier
+
+
+```{r FE CDR by carrier}
+items <- c(
+  "FE|CDR|Liquids",
+  "FE|CDR|Gases",
+  "FE|CDR|Hydrogen",
+  "FE|CDR|Electricity")
+showAreaAndBarPlots(data, items)
+```
+
+## SE Electricity by carrier
+
+```{r SE Electricity by carrier}
+items <- c(
+  "SE|Electricity|Coal|w/ CC",
+  "SE|Electricity|Coal|w/o CC",
+  "SE|Electricity|Oil",
+  "SE|Electricity|Gas|w/ CC",
+  "SE|Electricity|Gas|w/o CC",
+  "SE|Electricity|Geothermal",
+  "SE|Electricity|Hydro",
+  "SE|Electricity|Nuclear",
+  "SE|Electricity|Biomass|w/ CC",
+  "SE|Electricity|Biomass|w/o CC",
+  "SE|Electricity|Solar|CSP",
+  "SE|Electricity|Solar|PV",
+  "SE|Electricity|Hydrogen",
+  "SE|Electricity|Net Imports")
+
+if ("SE|Electricity|Wind|Offshore" %in% levels(data$variable)) {
+  items <- c(
+    items, 
+    "SE|Electricity|Wind|Onshore",
+    "SE|Electricity|Wind|Offshore")
+} else {
+  items <- c(
+    items, 
+    "SE|Electricity|Wind")
+}
+
+showAreaAndBarPlots(data, items)
+```
+
+
+
+
+### SE Wind Onshore
+
+```{r SE Wind Onshore}
+showLinePlots(data, "SE|Electricity|Wind|Onshore")
+```
+
+
+### SE Wind Offshore
+
+```{r SE Wind Offshore}
+showLinePlots(data, "SE|Electricity|Wind|Offshore")
+```
+
+
+## PE by carrier
+
+```{r PE by carrier}
+items <- c(
+  "PE|Coal",
+  "PE|Oil",
+  "PE|Gas",
+  "PE|Biomass",
+  "PE|Nuclear",
+  "PE|Solar",
+  "PE|Wind",
+  "PE|Hydro",
+  "PE|Geothermal")
+showAreaAndBarPlots(data, items)
+```
+
+
+## CO2 Prices
+
+```{r CO2 Prices}
+showLinePlots(data, "Price|Carbon")
+showRegiLinePlots(data, "Price|Carbon")
+```
+
+```{r CO2 Sector Prices}
+items <- c(
+  "Price|Carbon|Demand|Transport",
+  "Price|Carbon|Demand|Buildings",
+  "Price|Carbon|Demand|Industry",
+  "Price|Carbon|Supply"
+)
+# older runs might not have the new sector tax variables
+if (all(items %in% data$variable)) {
+  avg_tax <- data[data$variable == "Price|Carbon"                  & data$scenario != "historical", "value"]
+  bui_tax <- data[data$variable == "Price|Carbon|Demand|Buildings" & data$scenario != "historical", "value"]
+  tra_tax <- data[data$variable == "Price|Carbon|Demand|Transport" & data$scenario != "historical", "value"]
+  ind_tax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
+  sup_tax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
+  # only create plots if a tax is unequal to the average co2 tax
+  if (! identical(bui_tax, avg_tax) |
+      ! identical(tra_tax, avg_tax) |
+      ! identical(ind_tax, avg_tax) |
+      ! identical(sup_tax, avg_tax)
+      ) {
+    showLinePlots(data, "Price|Carbon|Demand|Buildings")
+    showLinePlots(data, "Price|Carbon|Demand|Transport")
+    showLinePlots(data, "Price|Carbon|Demand|Industry")
+    showLinePlots(data, "Price|Carbon|Supply")
+  }
+}
+```
+
+```{r CO2 Prices ETS,ESR}
+showLinePlots(data, "Price|Carbon|ETS")
+showLinePlots(data, "Price|Carbon|ESR")
+```
+
+
+## Policy Costs
+
+```{r Policy Costs-Consumption Loss}
+showLinePlots(data, "Policy Cost|Consumption Loss")
+```
+
+
+```{r Policy Cost-Consumption Loss-Relative to Reference Consumption}
+showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumption")
+```
+
+
+```{r Policy Cost-GDP Loss}
+showLinePlots(data, "Policy Cost|GDP Loss")
+```
+

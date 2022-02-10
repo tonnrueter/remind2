@@ -32,6 +32,7 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   }
   
   data <- read.report(reportfile,as.list=FALSE)
+  data <- deletePlus(data)
   data <- collapseNames(data)
   data <- data[,getYears(data)<="y2100",]
 
@@ -122,13 +123,13 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   swlatex(sw,"\\subsection{PE}")
   
   #var.tot <-"PE (EJ/yr)"
-  vars <- c("PE|Coal|w/ CCS (EJ/yr)", 
-            "PE|Coal|w/o CCS (EJ/yr)",
+  vars <- c("PE|Coal|w/ CC (EJ/yr)", 
+            "PE|Coal|w/o CC (EJ/yr)",
             "PE|+|Oil (EJ/yr)",
-            "PE|Gas|w/ CCS (EJ/yr)", 
-            "PE|Gas|w/o CCS (EJ/yr)",
-            "PE|Biomass|w/ CCS (EJ/yr)", 
-            "PE|Biomass|w/o CCS (EJ/yr)",
+            "PE|Gas|w/ CC (EJ/yr)", 
+            "PE|Gas|w/o CC (EJ/yr)",
+            "PE|Biomass|w/ CC (EJ/yr)", 
+            "PE|Biomass|w/o CC (EJ/yr)",
             "PE|+|Nuclear (EJ/yr)", 
             "PE|+|Hydro (EJ/yr)",
             "PE|+|Geothermal (EJ/yr)",
@@ -146,13 +147,13 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   swlatex(sw,"\\subsection{SE Electricity}")
   
   var.tot <-"SE|Electricity (EJ/yr)"
-  vars <- c("SE|Electricity|Coal|w/ CCS (EJ/yr)", 
-            "SE|Electricity|Coal|w/o CCS (EJ/yr)",
+  vars <- c("SE|Electricity|Coal|w/ CC (EJ/yr)", 
+            "SE|Electricity|Coal|w/o CC (EJ/yr)",
             "SE|Electricity|Oil (EJ/yr)",
-            "SE|Electricity|Gas|w/ CCS (EJ/yr)", 
-            "SE|Electricity|Gas|w/o CCS (EJ/yr)",
-            "SE|Electricity|Biomass|w/ CCS (EJ/yr)",  
-            "SE|Electricity|Biomass|w/o CCS (EJ/yr)",
+            "SE|Electricity|Gas|w/ CC (EJ/yr)", 
+            "SE|Electricity|Gas|w/o CC (EJ/yr)",
+            "SE|Electricity|Biomass|w/ CC (EJ/yr)",  
+            "SE|Electricity|Biomass|w/o CC (EJ/yr)",
             "SE|Electricity|Nuclear (EJ/yr)", 
             "SE|Electricity|Hydrogen (EJ/yr)",
             "SE|Electricity|Solar (EJ/yr)", 

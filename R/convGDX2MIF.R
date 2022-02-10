@@ -21,9 +21,10 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind write.report
 
-convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
- 
-  # Define region subsets
+convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
+                        t = c(seq(2005, 2060, 5), seq(2070, 2110, 10),
+                              2130, 2150)) {
+   # Define region subsets
   regionSubsetList <- toolRegionSubsets(gdx)
   # ADD EU-27 region aggregation if possible
   if("EUR" %in% names(regionSubsetList)){
@@ -73,7 +74,8 @@ convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(20
   message("running reportCosts...")
   output <- mbind(output,reportCosts(gdx,output,regionSubsetList,t)[,t,])  # needs output from reportEnergyInvestment, reportPrices, reportEnergyInvestments
 
-  # reporting of cross variables - needs variables from different other report* functions
+  # reporting of cross variables ----
+  # needs variables from different other report* functions
   message("running reportCrossVariables...")
   output <- mbind(output,reportCrossVariables(gdx,output,regionSubsetList,t)[,t,])
 
@@ -95,11 +97,22 @@ convGDX2MIF <- function(gdx,gdx_ref=NULL,file=NULL,scenario="default",t=c(seq(20
       warning(paste0("File ",gdx_ref," not found. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the   'policyCosts' output.R script."))
     }
   }
+  
+  # reporting of SDP variables
+  message("running reportSDPVariables...")
+  tmp <- try(reportSDPVariables(gdx,output))  # test whether reportSDPVariables works
+  if(class(tmp)!="try-error") {
+    if(!is.null(tmp)) output <- tmp
+  } else {
+    message("function reportSDPVariables does not work and is skipped")
+  }
 
   # Add dimension names "scenario.model.variable"
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
+  
+
   
   # either write the *.mif or return the magpie object
   if(!is.null(file)) {

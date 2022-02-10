@@ -85,9 +85,16 @@ reportLCOE <- function(gdx, output.type = "both"){
  temapall <- readGDX(gdx,c("en2en","temapall"),format="first_found")
  teall2rlf <- readGDX(gdx,c("te2rlf","teall2rlf"),format="first_found")
  te        <- readGDX(gdx,"te")
+ te <- te[!te %in% c("lng_liq","gas_pipe", "lng_gas", "lng_ves","coal_ves")]
  te2stor   <- readGDX(gdx,"VRE2teStor")
  te2grid   <- readGDX(gdx,"VRE2teGrid")
  teVRE   <- readGDX(gdx,"teVRE")
+ # exclude "windoff" from teVRE as "windoff" does not have separate grid, storage technologies 
+ if ("windoff" %in% as.vector(teVRE)) {
+   teVRE <- as.vector(teVRE)
+   teVRE <- teVRE[teVRE != "windoff"]
+ }
+ 
  se2fe     <- readGDX(gdx,"se2fe")
  pe2se     <- readGDX(gdx,"pe2se")
  teCCS     <- readGDX(gdx,"teCCS")
@@ -506,6 +513,7 @@ reportLCOE <- function(gdx, output.type = "both"){
    `Additional H2 t&d Cost` <- NULL
    emi_sectors <- NULL
    fe2es.buildings <- pm_tau_fe_tax_ES_st <- pm_tau_fe_sub_ES_st <- NULL
+   model <- scenario <- variable <- unit <- NULL
   
   ##############################################
   
@@ -528,13 +536,19 @@ reportLCOE <- function(gdx, output.type = "both"){
   teCCS <- readGDX(gdx, "teCCS") # ccs technologies
   teReNoBio <- c(teReNoBio) # renewables without biomass
   teVRE   <- readGDX(gdx,"teVRE") # VRE technologies
+  # exclude "windoff" from teVRE as "windoff" does not have separate grid, storage technologies 
+  if ("windoff" %in% as.vector(teVRE)) {
+    teVRE <- as.vector(teVRE)
+    teVRE <- teVRE[teVRE != "windoff"]
+  }
   
   # energy carriers
   entyPe <- readGDX(gdx, "entyPe")
   entySe <- readGDX(gdx, "entySe")
   entyFe <- readGDX(gdx, "entyFe")
   
-
+  # final energy demand
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)
   
   # conversion factors
   s_twa2mwh <- readGDX(gdx,c("sm_TWa_2_MWh","s_TWa_2_MWh","s_twa2mwh"),format="first_found")
@@ -651,9 +665,18 @@ reportLCOE <- function(gdx, output.type = "both"){
   ### 4. plant lifetime and annuity factor
   
   #discount rate
-  r <- 0.06
+  r <- 0.051
+  # r <- readGDX(gdx, name="p_r", restore_zeros = F)
+  # 
+  # r <- r %>% 
+  #   as.data.frame() %>% 
+  #   # filter(Year < 2110) %>% 
+  #   dplyr::group_by() %>%
+  #   dplyr::summarise( Value = mean(Value) , .groups = 'keep' ) %>% 
+  #   dplyr::ungroup() %>% 
+  #   as.magpie()
   
-  # read lifetime of tecnology 
+  # read lifetime of technology 
   # calculate annuity factor to annuitize CAPEX and OMF (annuity factor labeled "disc.fac")
   lt <- readGDX(gdx, name="fm_dataglob", restore_zeros = F)[,,"lifetime"][,,te_LCOE_Inv][,,"lifetime"]
   
@@ -938,9 +961,15 @@ reportLCOE <- function(gdx, output.type = "both"){
   vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
   vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = F)
   
+  if(getSets(vm_co2capture)[[3]] == "emiAll"){
+      sel_vm_co2capture_cco2 <- mselect(vm_co2capture, emiAll = "cco2")
+  } else {
+      sel_vm_co2capture_cco2 <- mselect(vm_co2capture, all_enty = "cco2")
+  }
+
   p_share_carbonCapture_stor <- (
     vm_co2CCS[,,"cco2.ico2.ccsinje.1"]
-    / dimSums(mselect(vm_co2capture, all_enty = "cco2"), dim = 3)
+    / dimSums(sel_vm_co2capture_cco2, dim = 3)
   )
   p_share_carbonCapture_stor[is.na(p_share_carbonCapture_stor)] <- 1
   
@@ -1224,7 +1253,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     
 
     # calculate stored CO2 per output of capture technology (GtC/TWa)
-    pm_eff <- mbind(pm_eta_conv, pm_dataeta)
+    pm_eff <- mbind(pm_eta_conv, pm_dataeta[,, setdiff(getNames(pm_dataeta), getNames(pm_eta_conv)) ])
     vm_co2CCS_m <- pm_emifac_cco2/pm_eff[,,getNames(pm_emifac_cco2, dim=3)]*collapseNames(p_share_carbonCapture_stor)
     
       # calculate CCS tax markup following q21_taxrevCCS, convert to USD2015/MWh
@@ -1292,79 +1321,37 @@ reportLCOE <- function(gdx, output.type = "both"){
     
     
     ### add additional H2 transmission and distribution cost
-    ### for buildings and industry that were added by Renato
+    ### for buildings and industry (calculate average cost for simplicity, not marginal)
     
-    vm_costAddTeInv <- readGDX(gdx, "vm_costAddTeInv", field = "l", restore_zeros = F)
-    getSets(vm_costAddTeInv)[2] <- "ttot"
-    
-    v37_costExponent <- readGDX(gdx, "v37_costExponent", field = "l", restore_zeros = F)
-    v36_costExponent <- readGDX(gdx, "v36_costExponent", field = "l", restore_zeros = F)
-    
-    
-    if (!is.null(v37_costExponent)) {
-      vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[,ttot_from2005,]
-      # calculate H2 and total FE demand in sector
-      H2FE <- dimReduce(dimSums(vm_demFeSector[,,c("indst","build")][,,"feh2s"], dim = c(3.1,3.4), na.rm = T))
-      totalFE <- dimReduce(dimSums(vm_demFeSector[,,c("indst","build")], dim = c(3.1,3.2,3.4), na.rm = T))
-      
-      cm_indst_H2costAddH2Inv <- readGDX(gdx, "cm_indst_H2costAddH2Inv")
-      cm_indst_costDecayStart <- readGDX(gdx, "cm_indst_costDecayStart")
-      cm_indst_H2costDecayEnd <- readGDX(gdx, "cm_indst_H2costDecayEnd")
-      
-      cm_build_H2costAddH2Inv <- readGDX(gdx, "cm_build_H2costAddH2Inv")
-      cm_build_costDecayStart <- readGDX(gdx, "cm_build_costDecayStart")
-      cm_build_H2costDecayEnd <- readGDX(gdx, "cm_build_H2costDecayEnd")
-      
-      # ### derivative of vm_costAddTeInv with respect to FE H2 per sector is
-      # ### (following q36_costAddTeInv and q36_auxCostAddTeInv)
-      # 
-      #       AddtdCostH2Ind =    # marginal LCOE = average LCOE * marginal LCOE component
-      #                     # average LCOE 
-      #                     vm_costAddTeInv[,,"tdh2s.indst"] / H2FE[,,"indst"] +
-      #                     # marginal LCOE component (d (average LCOE) / d(H2FE))
-      #                     # 1. factor: derivative of q37_costAddTeInv
-      #                     cm_indst_H2costAddH2Inv * 8.76 * (1+3^(v37_costExponent))^(-2) *
-      #                     # 2. factor: derivative of q37_auxCostAddTeInv
-      #                     3^(v37_costExponent) * log(3) * 10 / (cm_indst_H2costDecayEnd-cm_indst_costDecayStart) *
-      #                     # 3. factor: derivative of H2Share(H2FE)=H2FE/totalFE*
-      #                     1 / totalFE[,,"indst"] *
-      #                     # convert to USD2015/MWh(H2)
-      #                     1.2 / s_twa2mwh * 1e12
-      
 
-      # check average LCOE component of additional H2 td costs
-      #AvgLCOE <- vm_costAddTeInv[,,"tdh2s.indst"] / H2FE[,,"indst"] * 1.2 / s_twa2mwh * 1e12
+    v37_costAddTeInvH2 <- readGDX(gdx, "v37_costAddTeInvH2", field = "l", restore_zeros = F, react = "silent")
+    v36_costAddTeInvH2 <- readGDX(gdx, "v36_costAddTeInvH2", field = "l", restore_zeros = F, react = "silent")
+    
+    
+    df.AddTeInvH2 <- NULL
+    if (!is.null(v36_costAddTeInvH2)) {
       
-      # AddtdCostH2Build =    # marginal LCOE = average LCOE * marginal LCOE component
-      #   # average LCOE
-      #   vm_costAddTeInv[,,"tdh2s.build"] / H2FE[,,"build"] +
-      #   # marginal LCOE component (d (average LCOE) / d(H2FE))
-      #   # 1. factor: derivative of q37_costAddTeInv
-      #   cm_build_H2costAddH2Inv * 8.76 * (1+3^(v36_costExponent))^(-2) *
-      #   # 2. factor: derivative of q37_auxCostAddTeInv
-      #   3^(v36_costExponent) * log(3) * 10 / (cm_build_H2costDecayEnd-cm_build_costDecayStart) *
-      #   # 3. factor: derivative of H2Share(H2FE)=H2FE/totalFE*
-      #   1 / totalFE[,,"build"] *
-      #   # convert to USD2015/MWh(H2)
-      #   1.2 / s_twa2mwh * 1e12
+      df.AddTeInvH2Build <- as.quitte(v36_costAddTeInvH2[,ttot_from2005,"tdh2s"] / collapseNames(dimSums(vm_demFeSector[,ttot_from2005,"seh2.feh2s.build"], dim=3.4, na.rm = T)) / s_twa2mwh * 1e12 * 1.2) %>%
+                            mutate( value = ifelse(is.infinite(value), 0, value)) %>% 
+                            mutate( emi_sectors = "buildings") %>% 
+                            select(region, period, all_te, emi_sectors, value) %>% 
+                            rename( AddH2TdCost = value, sector = emi_sectors, tech = all_te)  
       
-      
-      ### calculate average LCOE of additional H2 stationary t&d cost for now
-      AddtdCostH2Ind <- vm_costAddTeInv[,,"tdh2s.indst"] / H2FE[,,"indst"] * 1.2 / s_twa2mwh * 1e12
-      AddtdCostH2Build <- vm_costAddTeInv[,,"tdh2s.build"] / H2FE[,,"build"] * 1.2 / s_twa2mwh * 1e12
-      
-      df.AddH2tdCost <- as.quitte(AddtdCostH2Build) %>% 
-                          select(region, period, all_te, emi_sectors, value) %>% 
-                        rbind(as.quitte(AddtdCostH2Ind) %>% 
-                                select(region, period, all_te, emi_sectors, value)) %>% 
-                        rename( AddH2TdCost = value, sector = emi_sectors,
-                                tech = all_te) %>% 
-                        revalue.levels( sector = c("build" = "buildings", "indst" = "industry")) %>% 
-                        mutate( AddH2TdCost = ifelse(is.nan(AddH2TdCost), NA, AddH2TdCost))
-      
-      
-          
+      df.AddTeInvH2 <- rbind(df.AddTeInvH2, df.AddTeInvH2Build)
     }
+    
+    if (!is.null(v37_costAddTeInvH2)) {
+      
+      df.AddTeInvH2Indst <- as.quitte(v37_costAddTeInvH2[,ttot_from2005,"tdh2s"] / collapseNames(dimSums(vm_demFeSector[,ttot_from2005,"seh2.feh2s.indst"], dim=3.4, na.rm = T)) / s_twa2mwh * 1e12 * 1.2) %>%
+        mutate( value = ifelse(is.infinite(value), 0, value)) %>%
+        mutate( emi_sectors = "industry") %>% 
+        select(region, period, all_te, emi_sectors, value) %>% 
+        rename( AddH2TdCost = value, sector = emi_sectors, tech = all_te) 
+      
+      df.AddTeInvH2 <- rbind(df.AddTeInvH2, df.AddTeInvH2Indst)
+    }
+    
+ 
     
   ####################### LCOE calculation (New plant/marginal) ########################
   
@@ -1391,7 +1378,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     left_join(df.CCSCost) %>% 
     left_join(df.flexPriceShare) %>%
     left_join(df.FEtax) %>% 
-    left_join(df.AddH2tdCost) %>% 
+    left_join(df.AddTeInvH2) %>% 
     # filter to only have LCOE technologies
     filter( tech %in% c(te_LCOE)) 
     
@@ -1417,6 +1404,8 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   ### data preparation before LCOE calculation
   df.LCOE <- df.LCOE %>% 
+    # remove some unnecessary columns 
+    select(-model, -scenario, -variable, -unit) %>% 
     # unit conversions for CAPEX and OMV cost
     # conversion from tr USD 2005/TW to USD2015/kW
     mutate(CAPEX = CAPEX *1.2 * 1e3) %>% 

@@ -84,7 +84,6 @@ reportEDGETransport <- function(output_folder=".",
               aggr_mode := "Pass|Road|LDV"]
     datatable[subsector_L2 != "trn_pass_road_LDV" & sector == "Pass",
               aggr_mode := "Pass|non-LDV"]
-    datatable[is.na(aggr_mode), aggr_mode := "Freight"]
 
     ## A little more detail: Vehicle Aggregates
     datatable[grepl("^Truck", vehicle_type), aggr_veh := "Freight|Road"]
@@ -393,7 +392,7 @@ reportEDGETransport <- function(output_folder=".",
       return(NULL)
     }
 
-    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- NULL
+    year_c <- construction_year <- Stock <- Sales <- vintage_demand_vkm <- fct <- category <- NULL
     vintgs <- fread(vintages_file)
 
     ## backward compat. fix
@@ -414,14 +413,26 @@ reportEDGETransport <- function(output_folder=".",
     vintgs[, c("construction_year", "vintage_demand_vkm", "year_c") := NULL]
     vintgs <- unique(vintgs)
 
-    vintgs <- data.table::melt(vintgs, measure.vars = c("Stock", "Sales"))
+    vintgs <- data.table::melt(vintgs, measure.vars = c("Stock", "Sales"), variable.name = "category")
     ## vkm -> v-num
     vintgs = merge(vintgs, annual_mileage, by = c("year", "region", "vehicle_type"))
     vintgs[, value := value / annual_mileage]
-    vintgs[, variable := sprintf("%s|Transport|LDV|%s|%s", variable, vehicle_type, technology)]
+    vintgs[, variable := ifelse(
+               vehicle_type == "Bus_tmp_vehicletype",
+               sprintf("%s|Transport|Bus|%s", category, technology),
+               sprintf("%s|Transport|LDV|%s|%s", category, vehicle_type, technology))]
 
-    vintgs[, c("vehicle_type", "technology", "annual_mileage") := NULL]
-    vintgs <- vintgs[!is.na(value)]
+    ## totals
+    vintgs <- rbindlist(list(
+      vintgs,
+      vintgs[, .(value=sum(value), variable=gsub("(.+)\\|.+$", "\\1", variable)),
+             by=c("category", "year", "region", "vehicle_type")],
+      vintgs[grepl("|LDV|", variable, fixed=TRUE),
+             .(value=sum(value), variable=sprintf("%s|Transport|LDV", category)),
+             by=c("category", "year", "region")]), fill=TRUE)
+
+    vintgs[, c("vehicle_type", "technology", "annual_mileage", "category") := NULL]
+    vintgs <- unique(vintgs[!is.na(value)])
 
     setnames(vintgs, "year", "period")
 
@@ -526,9 +537,9 @@ reportEDGETransport <- function(output_folder=".",
   if (!is.null(regionSubsetList)){
     toMIF <- rbindlist(list(
       toMIF,
-      toMIF[region %in% regionSubsetList[[1]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)],
-      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)],
-      toMIF[region %in% regionSubsetList[[2]],.(value = sum(value), region = "EU27"), by = .(model, scenario, variable, unit, period)]
+      toMIF[region %in% regionSubsetList[["EUR"]],.(value = sum(value), region = "EUR"), by = .(model, scenario, variable, unit, period)],
+      toMIF[region %in% regionSubsetList[["NEU"]],.(value = sum(value), region = "NEU"), by = .(model, scenario, variable, unit, period)],
+      toMIF[region %in% regionSubsetList[["EU27"]],.(value = sum(value), region = "EU27"), by = .(model, scenario, variable, unit, period)]
     ), use.names=TRUE)
   }
 

@@ -44,7 +44,7 @@ reportPE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   dataoc_tmp       <- readGDX(gdx,c("pm_prodCouple","p_prodCouple","p_dataoc"),restore_zeros=FALSE,format="first_found") 
   dataoc_tmp[is.na(dataoc_tmp)] <- 0
   p_costsPEtradeMp <- readGDX(gdx,c("pm_costsPEtradeMp","p_costsPEtradeMp"),restore_zeros=FALSE)
-  p_macBase        <- readGDX(gdx,c("p_macBaseMagpie","p_macBase"),format="first_found")*TWa_2_EJ
+  p_macBase        <- readGDX(gdx,c("pm_macBaseMagpie","p_macBaseMagpie","p_macBase"),format="first_found")*TWa_2_EJ
 #  p_macEmi         <- readGDX(gdx,c("p_macEmi"),format="first_found")*TWa_2_EJ
   ## variables
   demPE  <- readGDX(gdx,name=c("vm_demPe","v_pedem"),field="l",restore_zeros=FALSE,format="first_found")*TWa_2_EJ
@@ -89,23 +89,23 @@ reportPE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
   tmp1 <- NULL 
   tmp1 <- mbind(
           setNames(dimSums(demPE[,,c("peoil","pecoal","pegas")],dim=3),          "PE|Fossil (EJ/yr)"),
-          setNames(dimSums(demPE[,,tefosccs],dim=3),                             "PE|Fossil|w/ CCS (EJ/yr)"),
+          setNames(dimSums(demPE[,,tefosccs],dim=3),                             "PE|Fossil|w/ CC (EJ/yr)"),
           setNames(dimSums(demPE[,,c("peoil","pecoal","pegas")],dim=3) 
-                 - dimSums(demPE[,,tefosccs],dim=3),                             "PE|Fossil|w/o CCS (EJ/yr)"),
+                 - dimSums(demPE[,,tefosccs],dim=3),                             "PE|Fossil|w/o CC (EJ/yr)"),
           setNames(dimSums(demPE[,,"pecoal"],dim=3),                             "PE|+|Coal (EJ/yr)"),
-          setNames(dimSums(mselect(demPE,all_enty="pecoal",all_te=teccs),dim=3), "PE|Coal|w/ CCS (EJ/yr)"),
+          setNames(dimSums(mselect(demPE,all_enty="pecoal",all_te=teccs),dim=3), "PE|Coal|w/ CC (EJ/yr)"),
           setNames(dimSums(demPE[,,"pecoal"],dim=3)
-                 - dimSums(mselect(demPE,all_enty="pecoal",all_te=teccs),dim=3), "PE|Coal|w/o CCS (EJ/yr)"),
+                 - dimSums(mselect(demPE,all_enty="pecoal",all_te=teccs),dim=3), "PE|Coal|w/o CC (EJ/yr)"),
           setNames(dimSums(demPE[,,"peoil"],dim=3),                              "PE|+|Oil (EJ/yr)"),
-          setNames(dimSums(mselect(demPE,all_enty="peoil",all_te=tenoccs),dim=3),"PE|Oil|w/o CCS (EJ/yr)"),
+          setNames(dimSums(mselect(demPE,all_enty="peoil",all_te=tenoccs),dim=3),"PE|Oil|w/o CC (EJ/yr)"),
           setNames(dimSums(demPE[,,"pegas"],dim=3),                              "PE|+|Gas (EJ/yr)"),
-          setNames(dimSums(mselect(demPE,all_enty="pegas",all_te=teccs),dim=3),  "PE|Gas|w/ CCS (EJ/yr)"),
+          setNames(dimSums(mselect(demPE,all_enty="pegas",all_te=teccs),dim=3),  "PE|Gas|w/ CC (EJ/yr)"),
           setNames(dimSums(demPE[,,"pegas"],dim=3)
-                 - dimSums(mselect(demPE,all_enty="pegas",all_te=teccs),dim=3),  "PE|Gas|w/o CCS (EJ/yr)"),
+                 - dimSums(mselect(demPE,all_enty="pegas",all_te=teccs),dim=3),  "PE|Gas|w/o CC (EJ/yr)"),
           setNames(dimSums(demPE[,,pebio],dim=3),                                "PE|+|Biomass (EJ/yr)"),
-          setNames(dimSums(mselect(demPE,all_enty=pebio,all_te=teccs),dim=3),    "PE|Biomass|w/ CCS (EJ/yr)"),
+          setNames(dimSums(mselect(demPE,all_enty=pebio,all_te=teccs),dim=3),    "PE|Biomass|w/ CC (EJ/yr)"),
           setNames(dimSums(demPE[,,pebio],dim=3)
-                 - dimSums(mselect(demPE,all_enty=pebio,all_te=teccs),dim=3),    "PE|Biomass|w/o CCS (EJ/yr)"),
+                 - dimSums(mselect(demPE,all_enty=pebio,all_te=teccs),dim=3),    "PE|Biomass|w/o CC (EJ/yr)"),
           setNames(dimSums(mselect(demPE,all_enty=pebio,all_te="biotr"),dim=3),  "PE|Biomass|Traditional (EJ/yr)"),
           setNames(dimSums(demPE[,,c("pebios","pebioil")],dim=3),                "PE|Biomass|1st Generation (EJ/yr)"),
           setNames(dimSums(demPE[,,pebio],dim=3)
@@ -122,27 +122,27 @@ reportPE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                 
   # primary energy consumption per carrier  --- use function declared above
   tmp3 <- mbind(pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",                     name="PE|Biomass|Electricity (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",teccs,               name="PE|Biomass|Electricity|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",tenoccs,             name="PE|Biomass|Electricity|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",teccs,               name="PE|Biomass|Electricity|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",tenoccs,             name="PE|Biomass|Electricity|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Gas,                     name="PE|Biomass|Gases (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",                     name="PE|Biomass|Hydrogen (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",teccs,               name="PE|Biomass|Hydrogen|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",tenoccs,             name="PE|Biomass|Hydrogen|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",teccs,               name="PE|Biomass|Hydrogen|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",tenoccs,             name="PE|Biomass|Hydrogen|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq ,                    name="PE|Biomass|Liquids (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq,teccs,               name="PE|Biomass|Liquids|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq,tenoccs,             name="PE|Biomass|Liquids|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq,teccs,               name="PE|Biomass|Liquids|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq,tenoccs,             name="PE|Biomass|Liquids|w/o CC (EJ/yr)"),
                 
                 pe_carrier(demPE,dataoc,oc2te,sety,"pebiolc",se_Liq ,                name="PE|Biomass|Liquids|Cellulosic (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pebiolc",se_Liq ,teccs,          name="PE|Biomass|Liquids|Cellulosic|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pebiolc",se_Liq ,tenoccs,        name="PE|Biomass|Liquids|Cellulosic|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pebiolc",se_Liq ,teccs,          name="PE|Biomass|Liquids|Cellulosic|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pebiolc",se_Liq ,tenoccs,        name="PE|Biomass|Liquids|Cellulosic|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,c("pebioil", "pebios"), se_Liq ,  name="PE|Biomass|Liquids|Non-Cellulosic (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pebios",se_Liq ,                 name="PE|Biomass|Liquids|Conventional Ethanol (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq , c("bioftrec", "bioftcrec","biodiesel"),
                                                                                      name="PE|Biomass|Liquids|Biodiesel (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq , c("bioftcrec"),
-                                                                                     name="PE|Biomass|Liquids|Biodiesel|w/ CCS (EJ/yr)"),
+                                                                                     name="PE|Biomass|Liquids|Biodiesel|w/ CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Liq , c("bioftrec","biodiesel"),
-                                                                                     name="PE|Biomass|Liquids|Biodiesel|w/o CCS (EJ/yr)"),
+                                                                                     name="PE|Biomass|Liquids|Biodiesel|w/o CC (EJ/yr)"),
                 
                 
                 
@@ -150,30 +150,30 @@ reportPE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,c(se_Solids),                  name="PE|Biomass|Solids (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,c("sehe"),                  name="PE|Biomass|Heat (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seel",                  name="PE|Coal|Electricity (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seel",teccs,            name="PE|Coal|Electricity|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seel",tenoccs,          name="PE|Coal|Electricity|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seel",teccs,            name="PE|Coal|Electricity|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seel",tenoccs,          name="PE|Coal|Electricity|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Gas,                  name="PE|Coal|Gases (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Gas,teccs,            name="PE|Coal|Gases|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Gas,tenoccs,          name="PE|Coal|Gases|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Gas,teccs,            name="PE|Coal|Gases|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Gas,tenoccs,          name="PE|Coal|Gases|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Liq,                  name="PE|Coal|Liquids (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Liq,teccs,            name="PE|Coal|Liquids|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Liq,tenoccs,          name="PE|Coal|Liquids|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Liq,teccs,            name="PE|Coal|Liquids|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",se_Liq,tenoccs,          name="PE|Coal|Liquids|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seh2",                  name="PE|Coal|Hydrogen (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seh2",teccs,            name="PE|Coal|Hydrogen|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seh2",tenoccs,          name="PE|Coal|Hydrogen|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seh2",teccs,            name="PE|Coal|Hydrogen|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pecoal","seh2",tenoccs,          name="PE|Coal|Hydrogen|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",c("sehe"),               name="PE|Coal|Heat (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pecoal",c(se_Solids),               name="PE|Coal|Solids (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pegas","seel",                   name="PE|Gas|Electricity (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pegas","seel",teccs,             name="PE|Gas|Electricity|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pegas","seel",tenoccs,           name="PE|Gas|Electricity|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pegas","seel",teccs,             name="PE|Gas|Electricity|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pegas","seel",tenoccs,           name="PE|Gas|Electricity|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c(se_Gas),                name="PE|Gas|Gases (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pegas",se_Liq,                   name="PE|Gas|Liquids (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",se_Liq,teccs,             name="PE|Gas|Liquids|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",se_Liq,tenoccs,           name="PE|Gas|Liquids|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",se_Liq,teccs,             name="PE|Gas|Liquids|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",se_Liq,tenoccs,           name="PE|Gas|Liquids|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c("sehe"),                name="PE|Gas|Heat (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c("seh2"),                name="PE|Gas|Hydrogen (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c("seh2"),teccs,          name="PE|Gas|Hydrogen|w/ CCS (EJ/yr)"),
-                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c("seh2"),tenoccs,        name="PE|Gas|Hydrogen|w/o CCS (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c("seh2"),teccs,          name="PE|Gas|Hydrogen|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,"pegas",c("seh2"),tenoccs,        name="PE|Gas|Hydrogen|w/o CC (EJ/yr)"),
                 setNames(dimSums(mselect(prodSE,all_enty="pesol",all_enty1="seel"),dim=3),"PE|Solar|Electricity (EJ/yr)"))
   tmp4 <- NULL
   tmp4 <- mbind(tmp4, setNames( dimSums(demPE[,,c("peoil","pecoal","pegas")],dim=3) 

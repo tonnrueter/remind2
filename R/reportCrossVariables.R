@@ -18,15 +18,23 @@
 #' \dontrun{reportCrossVariables(gdx)}
 #' 
 #' @export
+#' @importFrom assertr assert not_na
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears getRegions mbind setNames dimSums mselect new.magpie setYears
 #' @importFrom luscale speed_aggregate
+#' @importFrom tibble as_tibble
+#' @importFrom tidyselect everything
 #'
  
-reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
-  if(is.null(output)){
+reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
+                                 t = c(seq(2005, 2060, 5), seq(2070, 2110, 10),
+                                       2130, 2150)) {
+  if (is.null(output)) {
     stop("please provide a file containing all needed information")
   }
+  
+  ## delete "+" and "++" from variable names
+  output <- deletePlus(output)
 
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   rownames(module2realisation) <- module2realisation$modules
@@ -96,15 +104,15 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|1st Generation (EJ/yr)"]
-                 / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|1st Generation (EJ/yr)"))
+                 / output[r,,"PE|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|1st Generation (EJ/yr)"))
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|Residues (EJ/yr)"]
-                 / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Residues (EJ/yr)"))
+                 / output[r,,"PE|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Residues (EJ/yr)"))
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|Energy Crops (EJ/yr)"]
-                 / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Energy Crops (EJ/yr)"))
+                 / output[r,,"PE|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Energy Crops (EJ/yr)"))
   
  
   tmp <- mbind(tmp,setNames(
@@ -145,7 +153,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   # correct global values for intensive variables (prices, LCOES, Capacity factors) 
   map <- data.frame(region=getRegions(tmp["GLO",,,invert=TRUE]),world="GLO",stringsAsFactors=FALSE)
   tmp["GLO",,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- 
-            speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Oil (EJ/yr)"])
+            speed_aggregate(tmp[map$region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[map$region,,"SE|Liquids|Fossil|Oil (EJ/yr)"])
   tmp["GLO",,"Capacity Factor|Electricity|Gas (%)"] <- 
     speed_aggregate(tmp[map$region,,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[map$region,,"Cap|Electricity|Gas (GW)"])   
   tmp["GLO",,"Real Capacity Factor|Electricity|Wind (%)"] <- 
@@ -161,7 +169,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   if (!is.null(regionSubsetList)){
     for (region in names(regionSubsetList)){
       map <- data.frame(region=regionSubsetList[[region]],parentRegion=region,stringsAsFactors=FALSE)
-      tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Oil (EJ/yr)"])
+      tmp[region,,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Price|Light Fuel Oil|Secondary Level (US$2005/GJ)"],map,weight=output[regionSubsetList[[region]],,"SE|Liquids|Fossil|Oil (EJ/yr)"])
       tmp[region,,"Capacity Factor|Electricity|Gas (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Capacity Factor|Electricity|Gas (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Gas (GW)"])
       tmp[region,,"Real Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Real Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
       tmp[region,,"Theoretical Capacity Factor|Electricity|Wind (%)"] <- speed_aggregate(tmp[regionSubsetList[[region]],,"Theoretical Capacity Factor|Electricity|Wind (%)"],map,weight=output[regionSubsetList[[region]],,"Cap|Electricity|Wind (GW)"])
@@ -222,16 +230,16 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   # Energy shares
   tmp <- mbind(tmp,setNames(       # assume 8% for transmission losses and autoconsumption of power plants
     100 * (output[,,"SE|Electricity|Non-Biomass Renewables (EJ/yr)"] + output[,,"SE|Electricity|Biomass (EJ/yr)"])
-    / 1.08 / output[,,"FE|+|Electricity (EJ/yr)"],    "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))   
+    / 1.08 / output[,,"FE|Electricity (EJ/yr)"],    "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))   
   tmp <- mbind(tmp,setNames(       # divide biomass by 2 to roughly account for conversion losses 
-    100 * (output[,,"PE|Non-Biomass Renewables (EJ/yr)"] + output[,,"PE|+|Biomass (EJ/yr)"]/2)
+    100 * (output[,,"PE|Non-Biomass Renewables (EJ/yr)"] + output[,,"PE|Biomass (EJ/yr)"]/2)
     / output[,,"FE (EJ/yr)"],    "Final Energy|Share of renewables in gross demand|Rough estimation (Percent)"))   
   
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
-    output[,,"FE|Transport|+|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
-    output[,,"FE|Transport|+|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
-    output[,,"FE|Transport|+|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"], 
+    output[,,"FE|Transport|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
+    output[,,"FE|Transport|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
+    output[,,"FE|Transport|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"], 
                        "Expenditure|Transport|Fuel (billion $US/yr)"))
   
   # calculate intensities growth
@@ -302,6 +310,94 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2
   
   
   out <- mbind(tmp, int_gr)
+  
+  if ('subsectors' == module2realisation['industry',2]) {
+    # add per-capita industry activity ----
+    # find all activity variables
+    foo <- grep('^(Production|Value Added)\\|Industry', getNames(output), 
+                value = TRUE)
+    
+    out <- mbind(
+      out,
+    
+      # get activity data  
+      output[,,foo] %>% 
+        as.data.frame() %>% 
+        as_tibble() %>%
+        select(-'Cell') %>% 
+        # join with population numbers
+        left_join(
+          output[,,'Population (million)'] %>% 
+            as.data.frame() %>% 
+            as_tibble() %>% 
+            select('Region', 'Year', population = 'Value'),
+          
+          c('Region', 'Year')
+        ) %>% 
+        # join unit conversion
+        extract(.data$Data1, c('variable', 'unit'), '^(.*) \\((.*)\\)$') %>% 
+        full_join(
+          tribble(
+            ~unit,                  ~new.unit,    ~factor,
+            'Mt/yr',                't/yr',       1,
+            'billion US$2005/yr',   'US$2005/yr', 1e-3),
+          
+          'unit'
+        ) %>% 
+        assert(not_na, everything()) %>% 
+        # calculate
+        mutate(Value = .data$Value / .data$population * .data$factor,
+               !!sym(getSets(out, fulldim = FALSE)[3]) := 
+                 paste0(.data$variable, '|per-capita (', .data$new.unit, ')')
+        ) %>% 
+        # build magpie
+        select('Region', 'Year', getSets(out, fulldim = FALSE)[3], 'Value') %>% 
+        `colnames<-`(c(getSets(out, fulldim = FALSE), 'Value')) %>% 
+        as.magpie(spatial = 1, temporal = 2, data = 4)
+    )
+    
+    # add per-GDP industry activity ----
+    out <- mbind(
+      out,
+
+      # get activity data
+      output[,,foo] %>%
+        as.data.frame() %>%
+        as_tibble() %>%
+        select(-'Cell') %>%
+        # join with population numbers
+        left_join(
+          output[,,'GDP|PPP (billion US$2005/yr)'] %>%
+            as.data.frame() %>%
+            as_tibble() %>%
+            select('Region', 'Year', population = 'Value'),
+
+          c('Region', 'Year')
+        ) %>%
+        # join unit conversion
+        extract(.data$Data1, c('variable', 'unit'), '^(.*) \\((.*)\\)$') %>%
+        full_join(
+          tribble(
+            ~unit,                  ~new.unit,    ~factor,
+            # Mt/$bn * 1e6 t/Mt * 1e-3 $bn/$m = t/$m
+            'Mt/yr',                't/million US$2005',   1e3,
+            'billion US$2005/yr',   'US$2005/US$2005',     1     # $bn/$bn = $/$
+          ),
+
+          'unit'
+        ) %>%
+        assert(not_na, everything()) %>%
+        # calculate
+        mutate(Value = .data$Value / .data$population * .data$factor,
+               !!sym(getSets(out, fulldim = FALSE)[3]) :=
+                 paste0(.data$variable, '|per-GDP (', .data$new.unit, ')')
+        ) %>%
+        # build magpie
+        select('Region', 'Year', getSets(out, fulldim = FALSE)[3], 'Value') %>%
+        `colnames<-`(c(getSets(out, fulldim = FALSE), 'Value')) %>%
+        as.magpie(spatial = 1, temporal = 2, data = 4)
+    )
+  }
 
   return(out)
 }
