@@ -17,7 +17,7 @@
 #' @importFrom magclass getNames add_columns getItems
 #' @export
 
-reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf, decline) {
+reportEmployment <- function(mif, improvements, multiplier, subtype, share_manf, decline) {
   
   # use setConfig(forcecache=T) to make the code run faster
   # employment factors
@@ -26,33 +26,36 @@ reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf,
   
   ## DECLINE FACTORS------------------------
   if (decline == "capcosts") {
+    
+    input_mif <- remind2::readReportingMIF(pathToMIF = "~/PROJECTS/Employment_model_opensource/REMIND_generic_SSP2EU-PkBudg1150.mif")
+    
     # capital costs and OM fixed costs evolution over time for different techs, used to calculated the decline factor
     report_tech <- reportTechnology(gdx)
     report_tech <- collapseNames(report_tech)
     
-    var <- c("Tech|Electricity|Coal|PC|w/o CCS|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Gas|CC|w/o CCS|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Hydro|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Nuclear|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Solar|PV|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Solar|CSP|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Wind|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Biomass|IGCC|w/o CCS|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Storage|Battery|For PV|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Oil|DOT|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Geothermal|Capital Costs (US$2005/kW)",
+    var <- c("Tech|Electricity|Coal|Pulverised Coal w/o CC|Capital Costs",
+             "Tech|Electricity|Gas|Combined Cycle w/o CC|Capital Costs",
+             "Tech|Electricity|Hydro|Capital Costs",
+             "Tech|Electricity|Nuclear|Capital Costs",
+             "Tech|Electricity|Solar|PV|Capital Costs",
+             "Tech|Electricity|Solar|CSP|Capital Costs",
+             "Tech|Electricity|Wind|Onshore|Capital Costs",
+             "Tech|Electricity|Biomass|Combined Heat and Power w/o CC|Capital Costs",
+             "Tech|Electricity|Storage|Battery|For PV|Capital Costs",
+             "Tech|Electricity|Oil|DOT|Capital Costs",
+             "Tech|Electricity|Geothermal|Capital Costs",
              
-             "Tech|Electricity|Coal|PC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Gas|CC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Hydro|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Nuclear|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Solar|PV|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Solar|CSP|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Wind|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Biomass|IGCC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Oil|DOT|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Geothermal|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed (US$2005/kW/yr)", NULL
+             "Tech|Electricity|Coal|Pulverised Coal w/o CC|OM Cost|fixed",
+             "Tech|Electricity|Gas|Combined Cycle w/o CC|OM Cost|fixed",
+             "Tech|Electricity|Hydro|OM Cost|fixed",
+             "Tech|Electricity|Nuclear|OM Cost|fixed",
+             "Tech|Electricity|Solar|PV|OM Cost|fixed",
+             "Tech|Electricity|Solar|CSP|OM Cost|fixed",
+             "Tech|Electricity|Wind|Onshore|OM Cost|fixed",
+             "Tech|Electricity|Biomass|Combined Heat and Power w/o CC|OM Cost|fixed",
+             "Tech|Electricity|Oil|DOT|OM Cost|fixed",
+             "Tech|Electricity|Geothermal|OM Cost|fixed",
+             "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed", NULL
     )
     # only capital costs
     cap_costs <- report_tech[, seq(2015, 2050, 5), grep(x = var, pattern = "Capital", value = T)]
@@ -92,17 +95,17 @@ reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf,
   #   report_tech <- reportTechnology(gdx)
   #   report_tech <- collapseNames(report_tech)
   #
-  #   var <- c("Tech|Electricity|Coal|PC|w/o CCS|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Gas|CC|w/o CCS|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Hydro|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Nuclear|Capital Costs (US$2005/kW)" ,
-  #            "Tech|Electricity|Solar|PV|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Solar|CSP|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Wind|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Biomass|IGCC|w/o CCS|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Storage|Battery|For PV|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Oil|DOT|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Geothermal|Capital Costs (US$2005/kW)",
+  #   var <- c("Tech|Electricity|Coal|PC|w/o CCS|Capital Costs",
+  #            "Tech|Electricity|Gas|CC|w/o CCS|Capital Costs",
+  #            "Tech|Electricity|Hydro|Capital Costs",
+  #            "Tech|Electricity|Nuclear|Capital Costs" ,
+  #            "Tech|Electricity|Solar|PV|Capital Costs",
+  #            "Tech|Electricity|Solar|CSP|Capital Costs",
+  #            "Tech|Electricity|Wind|Capital Costs",
+  #            "Tech|Electricity|Biomass|IGCC|w/o CCS|Capital Costs",
+  #            "Tech|Electricity|Storage|Battery|For PV|Capital Costs",
+  #            "Tech|Electricity|Oil|DOT|Capital Costs",
+  #            "Tech|Electricity|Geothermal|Capital Costs",
   #
   #            "Tech|Electricity|Coal|PC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
   #            "Tech|Electricity|Gas|CC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
