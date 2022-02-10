@@ -20,7 +20,7 @@ Imports:
     ggplot2,
     highcharter,
     iamc,
-    knitr(== 1.36),
+    knitr,
     lubridate,
     lucode2,
     luplot,
@@ -45,6 +45,7 @@ Imports:
     withr,
     yaml,
     ymlthis
+Remotes: chroetz/knitr@fix-Sweave2knitr
 Encoding: UTF-8
 License: LGPL-3
 RoxygenNote: 7.1.2
