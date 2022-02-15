@@ -93,7 +93,7 @@ compareScenarios2(
   outputFile = "CompareScenarios2Example1",
   userSectionPath = "path/to/myPlots.Rmd")
 compareScenarios2(
-  mifScen = c(ScenarioName1="path/to/scen1.mif", ScenarioName2="path/to/scen2.mif"),
+  mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
   outputFile = "CompareScenarios2Example2",
   figWidth = 18, figHeight = 10)
