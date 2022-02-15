@@ -1,6 +1,6 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.77.5**
+R package **remind2**, version **1.77.6**
 
 [![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)    [![r-universe](https://pik-piam.r-universe.dev/badges/remind2)](https://pik-piam.r-universe.dev/ui#builds)
 
