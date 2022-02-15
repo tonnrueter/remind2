@@ -691,12 +691,6 @@ reportLCOE <- function(gdx, output.type = "both"){
 
   ### 6. retrieve fuel price
   
-  # retrieve marginal of balance equations
-  qm_pebal  <- readGDX(gdx,name=c("q_balPe"),field="m",format="first_found")[,ttot_from2005,]
-  qm_sebal  <- readGDX(gdx,name=c("q_balSe"),field="m",format="first_found")[,ttot_from2005,]
-  qm_budget <- readGDX(gdx,name=c("qm_budget"),field="m",format="first_found")[,ttot_from2005,]
-  qm_sebal.seel <- readGDX(gdx,name="q32_balSe",types="equations",field="m",format="first_found")[,ttot_from2005,]
-  
   # retrieve capacity distribution over lifetime (fraction of capacity still standing in that year of plant lifetime)
   p_omeg  <- readGDX(gdx,c("pm_omeg","p_omeg"),format="first_found") 
   
@@ -705,14 +699,12 @@ reportLCOE <- function(gdx, output.type = "both"){
              "seel","seliqbio", "seliqfos","seliqsyn", "sesobio","sesofos","seh2","segabio" ,
               "segafos","segasyn","sehe")
   
-  # Primary Energy Price, convert from tr USD 2005/TWa to USD2015/MWh
-  Pe.Price <- qm_pebal[,ttot_from2005,unique(pe2se$all_enty)] / (qm_budget+1e-10)*1e12/s_twa2mwh*1.2
-  # Secondary Energy Electricity Price (for se2se and se2fe conversions), convert from tr USD 2005/TWa to USD2015/MWh
-  Se.Seel.Price <- qm_sebal.seel[,,"seel"]/(qm_budget+1e-10)*1e12/s_twa2mwh*1.2
-  # Secondary Energy Price (for se2se and se2fe conversions), convert from tr USD 2005/TWa to USD2015/MWh
-  Se.Price <- qm_sebal[,,as.vector(entySe)[as.vector(entySe) != "seel"]]/(qm_budget+1e-10)*1e12/s_twa2mwh*1.2 
+
   
-  Fuel.Price <- mbind(Pe.Price,Se.Seel.Price, Se.Price )[,,fuels]
+  pm_PEPrice <- readGDX(gdx, "pm_PEPrice", restore_zeros = F)
+  pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = F)
+  # bind PE and SE prices and convert from tr USD 2005/TWa to USD2015/MWh
+  Fuel.Price <- mbind(pm_PEPrice,pm_SEPrice )[,,fuels]*1e12/s_twa2mwh*1.2 
   
   
   # Fuel price
