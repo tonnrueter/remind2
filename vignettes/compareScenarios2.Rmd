@@ -1,8 +1,11 @@
 ---
 title: "compareScenarios2"
 author: "Christof Schötz"
-date: "2022-01-10"
-output: rmarkdown::html_vignette
+date: "2022-02-08"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{compareScenarios2}
   %\VignetteEngine{knitr::rmarkdown}
@@ -17,7 +20,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Structure and Main Features
 
 The function `compareScenarios2()` of the `remind2` package can be used to visually compare the results of multiple runs of the IAM REMIND. 
 
@@ -25,11 +27,11 @@ The function reads the results from the output-mif-files (in the remind folder a
 
 Internally, `compareScenarios2()` calls `rmarkdown::render()` on certain Rmarkdown-files (Rmd-files). Rmd-files may contain R-code (e.g., for creating plots) as well as descriptive text (in this case, mostly section titles). The Rmd-files to be rendered are part of the remind2-package. In the development state of the package, they can be found in the folder `inst/markdown/compareScenarios2/`. 
 To be more precises, `rmarkdown::render()` is called on `cs2_main.Rmd` in this folder, which includes other Rmd-files - one for each section of the output document.
-The loading and preprocessing of data happens in `cs2_main.Rmd`; the section Rmd-files mostly call plot-functions. The plot-functions are contained in `cs2_plot_functions.R`.
+The loading and preprocessing of data happens in `cs2_main.Rmd`; the section Rmd-files mostly call plot functions.
 
 Aside from HTML- and PDF-documents as output, `compareScenarios2()` also allows to obtain a copy of the Rmd-files needed to create these outputs (by setting the argument `outputFormat = "Rmd"`). Rendering the resulting Rmd-files to PDF or HTML yields the same documents as calls to `compareScenarios2()` with `outputFormat = "PDF"` or `"HTML"`. The advantage of being able to access these Rmd-files is the possibility to change the plotting code without changing the code of the `remind2`-package. Moreover, Rmd-files can be used interactively in RStudio: 
 
-## Interactive Use of the Rmd-files
+# Interactive Use of the Rmd-files
 
 The code in these files is structured in chunks and each chunk can be run separately by clicking on its play-button. Typically, one would call `compareScenarios2()` with `outputFormat = "Rmd"`, then open the file `cs2_main.Rmd`. At the end of the file, there is a chunk
 ````
@@ -39,84 +41,76 @@ The code in these files is structured in chunks and each chunk can be run separa
 ```` 
 Clicking on the *triangle above bar*-button on the right executes all chunks above and by that loads and prepares the data for plotting. After that one can open any section-Rmd-file and execute a chunk to create the respective plots. The plots should appear in RStudio inside the Rmd-file below the chunk.
 
+# Workflow for Changing Content of CompareScenarios2
+
+1. Call `remind2::compareScenarios2(outputFormat="Rmd", ...)` on some mif-files for testing to obtain a copy of the Rmd files. 
+2. At the bottom of `cs2_main.Rmd` in RStudio, click "Run all chunks above".
+3. Make changes in the section Rmd-files, e.g., `cs2_03_emissions.Rmd`. You can test the changes by running the respective chunks in RStudio.
+4. Copy the changed copies of the section Rmd-files (but **not** `cs2_main.Rmd`) to the package folder `inst/markdown/compareScenarios2`. Beware: The "copy" of `cs2_main.Rmd` obtained by `compareScenarios2(outputFormat="Rmd", ...)` is not the same as the package file `inst/markdown/compareScenarios2/cs2_main.Rmd`, as the YAML-header is adapted to the arguments of the function call. 
+5. It is recommended to install or `devtools::load_all()` the changed version of `remind2` and test your changes again for PDF- as well as for HTML-output. You may want to restrict the output generation to the sections you have changed by using the argument `sections` of `compareScenarios2()`, see section *YAML Parameters* in the documentation of the function.
+
+
+# cs2_main.Rmd
+
+This file loads the data from the mif-files, preprocesses the data, and includes the section-Rmd-files at the very end (and optionally further Rmd-files provided by the user, see YAML-parameter `userSectionPath`).
+
 ## YAML-header
 
-The file `cs2_main.Rmd` starts with a YAML header marked by `---`. This header declares some basic information of the report, like its title and the output format. Furthermore, it contains a list `params`, which parameterizes the report. Among others, such parameters are the paths to the mif-files and certain properties that are shared for all plots in the report. Each such parameter can be changed by a respective argument in the call of `compareScenarios2()`.
+The file `cs2_main.Rmd` starts with a YAML header marked by `---`. This header declares some basic information of the report, like its title and the output format. Furthermore, it contains a list `params`, which parameterizes the report. Among others, such parameters are the paths to the mif-files and certain properties that are shared for all plots in the report. Each such parameter can be changed by a respective argument in the call of `compareScenarios2()`, see section *YAML Parameters* in the documentation of the function.
 
-## cs2_main.Rmd
+## Loading
 
-This file loads the data from the mif-files, preprocesses the data, and at the very end includes the section-Rmd-files (and optionally further Rmd-files provided by the user).
+The mif-files are loaded using `quitte::read.quitte()`. This function names the global region `"World"` (not `"GLO"` as `magclass::read.report()`). For each file, we obtain one data-frame with columns `model, scenario, region, variable, unit, period, value`. During preprocessing the data-frames are concatenated into one quitte object named `data`. In the sections, `data` is used to provide the data necessary for the plots.
 
-
-### Loading
-
-The mif-files are loaded using `quitte::read.quitte()`. This function names the global region `"World"` (not `"GLO"` as `magclass::read.report()`). For each file, we obtain one data-frame with columns `model, scenario, region, variable, unit, period, value`. During preprocessing the data-frames are concatenated into one with variable name `data`. Furthermore, a column `gdp` is added during preprocessing to make it easier to create plots with GDP per capita on the horizontal axis.
-In the sections, `data` is used to provide the data necessary for the plots.
-
-### Preprocessing
+## Preprocessing
 
 * Scenarios are renamed if the user specifies new names (using a named vector for the argument `mifScen` of `compareScenarios2()` or by setting the parameter `mifScenNames` in the Rmd-files).
 * The columns `period` (years) and `region` are filtered according to the parameters `yearsScen`, `yearsHist`, and `reg`.
-* `|+|, |++|, |+++|, ...` are removed from variable names.
+* `|+|, |++|, |+++|, ...` are removed from variable names. An additional column `varplus` is added to the data frame, which retains the original name including `+`. This column is used by `mip::showAreaAndBarPlotsPlus()`.
 * For a specified list of variables, a new per-capita-variable is created with the name `"<OLD_NAME> pCap"`.
-* `"GDP|PPP pCap"` is added as a new column `gdp` of `data` to make it easier to create plots with GDP per capita on the horizontal axis.
 * For a specified list of variables, a new per-GDP-variable is created with the name `"<OLD_NAME> pGDP"`. As the denominator, the value of `GDP|PPP pCap` is used.
 
-### Global Variables 
+## Global Variables 
 
 Global variables are created in `cs2_main.Rmd` and are intended to be used in the plot functions of the section-Rmd-files.
 
-* `data`: a data-frame with columns `model, scenario, region, variable, unit, period, value, gdp` that provides all data that may be plotted.
-* `variables`: a character vector containing the set of all variables in `data`.
-* `regions`: a character vector containing the set of all regions in `data`.
-* `mainReg`: a single character string with the name of the main region, which is shown in larger plots for some plot functions. Usually `"World"`.
-* `yearsBarPlot`: a numeric vector containing the years to be plotted in bar plots.
+The quitte-object (data frame) `data` with columns `model, scenario, region, variable, unit, period, value, varplus` provides all data that may be plotted.
+It has mostly factor-columns. Thus, a vector of all available regions can be obtained by `levels(data$region)`.
 
-## cs2_plot_functions.R
+Some arguments of the `mip::show...()` plot functions use the functionality provided by the base-R functions `options()` and `getOption()`. In `cs2_main.Rmd` there are calls to `options()`, setting values of the global options `mip.mainReg`, `mip.yearsBarPlot`, and `mip.histRefModel`. The plotting functions may have an argument, e.g., `mainReg` with default value `getOption("mip.mainReg")`. Thus, this argument does not have to be stated for each call of the plot function (assuming the respective call of `options()` sets it to the right value).
 
-This R-script is sourced in `cs2_main.Rmd` and contains functions that make it simple to create the standard plots regularly used in the compareScenarios-output.
-
-Again, these functions are not functions of the package, but a sourced R-script. This has the effect, that the functions can refer to the 'global variables' mentioned above. Furthermore, the `cs2_plot_functions.R` is copied when calling `compareScenarios2()` with `outputFormat="Rmd"`, which makes is easier for users to modify.
-
-The plot functions do not return a plot object, but draw the plot or multiple plots directly.
-
-To modify plots, it is recommended to copy the body of the respective plot function (e.g., to a new chunk) and modify this code.
-
-## Section-Rmd-files
+# Section-Rmd-files
 
 The section-Rmd-files follow the naming pattern `cs2_NN_XXXX.Rmd`, where `NN` is replaced by a two digit number and `XXXX` is replaced by a short name of the section. If the YAML-parameter `sections` is set to `"all"`, the default, all sections of this naming pattern are included in `cs2_main.Rmd`. Alternatively, `sections` can be set to a vector of individual sections in the form of `"NN_XXXX"` to only render these sections.
 
-The section-Rmd-files consist of section and sub-section titles, marked by `#`, `##`, `###`, ..., and R-code chunks which create plots, usually by calling one of the plot-functions of `cs2_plot_functions.R`.
-
-
-# Further Notes
-
-## Ordering in the Plots
-
-By default the variables in area-plots are ordered by average area, such that the variable with the largest average area is at the bottom.
-This is done by a call of the following form inside the respective plot functions before the call of `mipArea(d)`.
-
-```{r}
-data %>% 
-  mutate(variable = fct_reorder(variable, value, mean, na.rm=TRUE)) ->
-  d
-```
-
-Other possibilities are:
-
-```{r}
-# order as given in items
-data %>% 
-  mutate(variable = fct_relevel(variable, items)) -> 
-  d
-
-# order by value in first year
-data %>% 
-  mutate(variable = fct_reorder2(variable, period, value, first2, .desc=FALSE)) -> 
-  d
-```
+The section-Rmd-files consist of section and sub-section titles, marked by `#`, `##`, `###`, ..., and R-code chunks which create plots, usually by calling one of the `show...()`-functions in the `mip` package.
 
 ## userSectionPath
 
 The user can provide one or more additional Rmd-files that are appended after the sections provided by the package. Setting `sections` to `NULL` and `userSectionPath` to a character-vector of paths to Rmd-files creates a fully user-defined report.
+
+
+# Plot Functions
+
+The section Rmd-files mostly consist of simple calls of a `show...()`-function from the the [mip](https://github.com/pik-piam/mip) package. These functions are designed to make the creation of re-occurring kinds of plots in comapreSceanrios2 simple. Alternatively, one can build custom plots using `ggplot2`.
+
+The `mip`-package contains following default plot functions for comapareScenarios2: 
+
+* `showAreaAndBarPlots()`
+* `showAreaAndBarPlotsPlus()`
+* `showLinePlots()`
+* `showLinePlotsWithTarget()`
+* `showMultiLinePlots`
+* `showMultiLinePlotsByVariable()`
+* `showRegiLinePlots()`
+
+All but `showLinePlotsWithTarget()` can use the global option `mip.mainReg`.
+`showAreaAndBarPlots()` and `showAreaAndBarPlotsPlus()` can use `mip.yearsBarPlot`.
+`showMultiLinePlotsByVariable()` uses `mip.histRefModel`.
+
+See the respective function documentation for more information and example plots.
+
+## Ordering in the Area-Plots
+
+By default the variables in area-plots are ordered by average area, such that the variable with the largest average area is at the bottom.
 

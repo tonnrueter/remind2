@@ -68,7 +68,7 @@
 #'   outputFile = "CompareScenarios2Example1",
 #'   userSectionPath = "path/to/myPlots.Rmd")
 #' compareScenarios2(
-#'   mifScen = c(ScenarioName1="path/to/scen1.mif", ScenarioName2="path/to/scen2.mif"),
+#'   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
 #'   mifHist = "path/to/historical.mif",
 #'   outputFile = "CompareScenarios2Example2",
 #'   figWidth = 18, figHeight = 10)
@@ -89,7 +89,7 @@ compareScenarios2 <- function(
     list(...))
 
   # convert relative to absolute paths
-  if ('userSectionPath' %in% names(yamlParams)) {
+  if ("userSectionPath" %in% names(yamlParams)) {
     yamlParams$userSectionPath <- normalizePath(yamlParams$userSectionPath,
                                                 mustWork = TRUE)
   }
@@ -113,12 +113,12 @@ compareScenarios2 <- function(
 # Copies the CompareScenarios2-Rmds to the specified location and modifies
 # their YAML header according to \code{yamlParams}.
 .compareScenarios2Rmd <- function(yamlParams, outputDir, outputFile) {
-  # TODO: read_rmd() is not exported from ymlthis.
-  readRmd <- utils::getFromNamespace("read_rmd", "ymlthis")
-  rmd <- readRmd(
-    system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"))
+  pathMain <- system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2")
+  linesMain <- readLines(pathMain)
+  delimiters <- grep("^(---|\\.\\.\\.)\\s*$", linesMain)
+  headerMain <- linesMain[(delimiters[1]):(delimiters[2])]
   yml <- yaml::yaml.load(
-    rmd,
+    headerMain,
     handlers = list(r = function(x) ymlthis::yml_params_code(!!rlang::parse_expr(x))))
   baseYaml <- ymlthis::as_yml(yml)
   newYamlParams <- baseYaml$params
@@ -136,7 +136,7 @@ compareScenarios2 <- function(
     system.file("markdown/compareScenarios2", package = "remind2"),
     full.names = TRUE)
   rmdDirFiles <- grep(
-    dirFiles, 
+    dirFiles,
     pattern = "cs2_main\\.Rmd$",
     invert = TRUE, value = TRUE)
   file.copy(rmdDirFiles, pathDir)
