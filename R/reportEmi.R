@@ -479,6 +479,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # reporting if FE per industry subsector o37_demFeIndSub exists
   if (!is.null(o37_demFeIndSub)) {
+    
+    ### calculate FE per industry subsector w/o Non-energy Use
+    o37_demFeIndSub_woNonEn <- o37_demFeIndSub
+    sefe.chem.feedstock <- intersect(getNames(collapseDim(o37_demFeIndSub_woNonEn[,,"chemicals.ETS"])), getNames(collapseDim(vm_demFENonEnergySector[,,"indst"])))
+    o37_demFeIndSub_woNonEn[,,"chemicals"][,,sefe.chem.feedstock] <- o37_demFeIndSub_woNonEn[,,"chemicals"][,,sefe.chem.feedstock] - collapseDim(vm_demFENonEnergySector[,,"indst"][,,sefe.chem.feedstock])
 
     # relabel industry energy CC from CCS sectors to industry sectors
     emiInd37 <- NULL
@@ -487,7 +492,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
     # calculate captured CO2 per subsector and FE carrier by multiplying subsectoral share of fesos, fehos, fegas in total FE from fesos, fehos and fegas with the captured CO2 by subsector
-    vm_emiIndCCS_Sub <- vm_emiIndCCS_Mapped * dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.4)) / dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.4))
+    vm_emiIndCCS_Sub <- vm_emiIndCCS_Mapped * dimSums(mselect(o37_demFeIndSub_woNonEn, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.4)) / dimSums(mselect(o37_demFeIndSub_woNonEn, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.4))
     vm_emiIndCCS_Sub[is.na(vm_emiIndCCS_Sub)] <- 0
     getSets(vm_emiIndCCS_Sub)[c(3, 4)] <- c("secInd37", "all_enty1")
 
@@ -496,12 +501,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
     # calculate industry emissions by subsector (before industry CO2 Capture)
     sel_pm_emifac_co2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
-                            mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub, dim = 2), emiAll = "co2")
+                            mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub_woNonEn, dim = 2), emiAll = "co2")
                           } else {
-                            mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub, dim = 2), all_enty2 = "co2")
+                            mselect(pm_emifac, all_enty1 = getNames(o37_demFeIndSub_woNonEn, dim = 2), all_enty2 = "co2")
                           }
     pm_emifac.fe.indst <- dimSums(sel_pm_emifac_co2, dim = c(3.3, 3.4))
-    EmiIndSubSec <- pm_emifac.fe.indst * o37_demFeIndSub[, , getNames(pm_emifac.fe.indst)]
+    EmiIndSubSec <- pm_emifac.fe.indst * o37_demFeIndSub_woNonEn[, , getNames(pm_emifac.fe.indst)]
 
 
 
@@ -1638,7 +1643,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                   # add captured CO2 from cement process which is not stored 
                   # (EmiMACEq for co2cement_process contains cement process emissions - captured cement co2 process emissions)
                   + vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2
-                 + dimSums(mselect(EmiMACEq[, , "ETS"], sector = "indst"), dim = 3),
+                 + dimSums(mselect(EmiMACEq[, , "ETS"], sector = "indst"), dim = 3)
+                 # add chemical process emissions to ETS
+                 + dimSums(EmiProcess_Feedstocks, dim = 3) * GtC_2_MtCO2,
                  "Emi|GHG|ETS|+|Industry (Mt CO2eq/yr)"),
                setNames(
                  # demand-side co2 emissions (before industry CCS)
