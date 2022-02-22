@@ -49,13 +49,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
   sector2emiMkt <- readGDX(gdx, "sector2emiMkt")
   
+  entyFe2sector2emiMkt_NonEn <- readGDX(gdx, "entyFe2sector2emiMkt_NonEn", react = "silent")
+  
   demFemapping <- entyFe2Sector %>% 
     full_join(sector2emiMkt, by = 'emi_sectors') %>% 
     # rename such that all_enty1 always signifies the FE carrier like in 
     # vm_demFeSector
     rename(all_enty1 = all_enty) %>% 
     left_join(se2fe, by = 'all_enty1') %>% 
-    select(-all_te)
+    select(-all_te) 
   
   #sety <- readGDX(gdx,c("entySe","sety"),format="first_found")
   
@@ -69,6 +71,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   #vm_prodFe  <- vm_prodFe[se2fe]
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
+  # FE non-energy use 
+  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l", restore_zeros = T, react = "silent")[,t,]*TWa_2_EJ
+  if (length(vm_demFENonEnergySector) == 0) {
+    vm_demFENonEnergySector <- NULL
+  }
   
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
   vm_demFeSector <- vm_demFeSector[demFemapping]
@@ -116,7 +123,26 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   cdr_mod  = find_real_module(module2realisation,"CDR")
   CCU_mod  = find_real_module(module2realisation,"CCU")
   
-  # ---- FE total production ------
+  
+  
+  # Preliminary Calculations ----
+  
+
+  # calculate FE non-energy use and FE without non-energy use
+  if (!is.null(vm_demFENonEnergySector)) {
+    vm_demFENonEnergySector <-  mselect(vm_demFENonEnergySector[demFemapping], 
+                                        all_enty1 = entyFe2sector2emiMkt_NonEn$all_enty,
+                                        emi_sectors = entyFe2sector2emiMkt_NonEn$emi_sectors,
+                                        all_emiMkt = entyFe2sector2emiMkt_NonEn$all_emiMkt)
+    
+    # calculate FE without non-energy use
+    vm_demFeSector_woNonEn <- vm_demFeSector
+    vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector )]-vm_demFENonEnergySector 
+  }
+  
+  
+  
+  # ---- FE total production (incl. non-energy use) ------
   out <- mbind(out,
                
     #total
@@ -1333,227 +1359,144 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   )
   
   
-  ### temporary (!) industry non-energy use reporting
-  # note: only for REMIND-EU SSP2
+  #### Non-energy Use Reporting ----
   
-  if (module2realisation["industry",2]=="fixed_shares") {
+  
+  if (!is.null(vm_demFENonEnergySector)) {
     
-    if ("DEU" %in% getRegions(vm_prodFe)) {
-      
-      # some initializations required for building library with dplyr operations below
-      encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
-      
-      
-      
-      # read in FE industry non-energy use trajectories from industry subsectors run
-      df.fe_nechem <- read.csv(system.file("extdata","pm_fe_nechem.cs4r",package = "remind2"),
-                               sep = ",", skip = 4, header = F)
-      
-      # df.fe_nechem <- read.csv("./inst/extdata/pm_fe_nechem.cs4r",
-      #                          sep = ",", skip = 4, header = F)
-      
-      colnames(df.fe_nechem) <- c("period", "region","SSP","encar","value_subsectors")
-      vars.nechem <- c("FE|Industry|+|Liquids (EJ/yr)",
-                       "FE|Industry|+|Gases (EJ/yr)",
-                       "FE|Industry|+|Solids (EJ/yr)")
-      
-      map.vars.nechem <- c("FE|Industry|+|Liquids (EJ/yr)" = "fehoi_nechem",
-                           "FE|Industry|+|Gases (EJ/yr)" = "fegai_nechem",
-                           "FE|Industry|+|Solids (EJ/yr)" = "fesoi_nechem")
-      
-      map.nonen.vars <- c("fehoi_nechem" = "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)",
-                          "fegai_nechem" = "FE|Non-energy Use|Industry|+|Gases (EJ/yr)",
-                          "fesoi_nechem" = "FE|Non-energy Use|Industry|+|Solids (EJ/yr)")
-      
-      
-      # non-energy use of solids/liquids/gases: min(fehoi,fehoi_nechem),
-      # where fehoi would be the liquids of the current run and 
-      # fehoi_nechem the non-energy use liquids of the reference industry subsectors run
-      df.out.nechem <- suppressWarnings(as.quitte(out[,,vars.nechem])) %>% 
-                        rename( encar = data) %>% 
-                        # join current FE|Industry|Liquids etc. with non-energy use subsectors data
-                        revalue.levels(encar = map.vars.nechem) %>% 
-                        left_join(df.fe_nechem) %>% 
-                        mutate( Value_NonEn = ifelse(value >= value_subsectors, value_subsectors, value)) %>% 
-                        filter( SSP == "SSP2") %>% 
-                        # map to non-energy use variable names
-                        revalue.levels(encar= map.nonen.vars) %>% 
-                        select(region, period, encar, Value_NonEn)
-      
-      out.nechem <- suppressWarnings(as.magpie(df.out.nechem, spatial=1, temporal=2, datacol=4))
-      out.nechem <- out.nechem[getRegions(out), getYears(out),]
-      
-      # set NAs to zero
-      out.nechem[is.na( out.nechem)] <- 0
-      
-      
-      # bind FE non-energy use to output object
-      out <- mbind(out, out.nechem)
-      
+    
+    # FE non-energy use variables 
+    out <- mbind(out,
+                  setNames(dimSums(vm_demFENonEnergySector, dim=3),
+                           "FE|Non-energy Use (EJ/yr)"),
+                 
+                 
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst"), dim=3),
+                           "FE|Non-energy Use|+|Industry (EJ/yr)"),
+                  
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fesos"), dim=3),
+                           "FE|Non-energy Use|Industry|+|Solids (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fehos"), dim=3),
+                           "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas"), dim=3),
+                          "FE|Non-energy Use|Industry|+|Gases (EJ/yr)")
+                  )
+    
+    
+    # FE non-energy use per SE origin
+    out <- mbind(out,
 
-      
-      # add further FE variables needed in ARIADNE
-      out <- mbind(out,
-                    setNames(out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"]
-                              + out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"]
-                              + out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
-                             "FE|Non-energy Use|Industry (EJ/yr)"))
-   
-      out <- mbind(out,
-                 setNames(out[,,"FE (EJ/yr)"] 
-                          - out[,,"FE|Transport|Bunkers (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry (EJ/yr)"], 
-                          "FE|w/o Non-energy Use w/o Bunkers (EJ/yr)"),
-                 setNames(out[,,"FE|++|Industry (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry (EJ/yr)"),
-                 setNames(out[,,"FE|Industry|+|Liquids (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
-                 setNames(out[,,"FE|Industry|+|Gases (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
-                 setNames(out[,,"FE|Industry|+|Solids (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)") )
-      
-      
-      # energy carrier split in FE energy use variables
-      out <- mbind(out,
-                   # FE industry (without feedstocks) liquids: from fossils, biomass, hydrogen
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Hydrogen (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Biomass (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Fossil (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
-                   # FE industry (without feedstocks) gases: from fossils, biomass, hydrogen
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-                              out[,,"FE|Industry|Gases|+|Hydrogen (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-                              out[,,"FE|Industry|Gases|+|Biomass (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-                              out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"))
-      
-      
-      # energy carrier split in FE non-energy use variables
-      out <- mbind(out,
-                  # split of non-energy use variables to fossil, bio, synfuels
-                  # liquids
-                   setNames(out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Hydrogen (EJ/yr)"] /  
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"] *
-                             out[,,"FE|Industry|Liquids|+|Biomass (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                           "FE|Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"] *
-                             out[,,"FE|Industry|Liquids|+|Fossil (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                           "FE|Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
                   
-                  # gases
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"] *
-                             out[,,"FE|Industry|Gases|+|Hydrogen (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                           "FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"] *
-                             out[,,"FE|Industry|Gases|+|Biomass (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                           "FE|Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"] *
-                             out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                           "FE|Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"),
-                  
-                  # solids
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"] *
-                             out[,,"FE|Industry|Solids|+|Biomass (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Solids (EJ/yr)"],
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fesos", all_enty = "sesofos"), dim=3),
+                           "FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fesos", all_enty = "sesobio"), dim=3),
                            "FE|Non-energy Use|Industry|Solids|+|Biomass (EJ/yr)"),
-                  setNames(out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"] *
-                             out[,,"FE|Industry|Solids|+|Fossil (EJ/yr)"] /  
-                             out[,,"FE|Industry|+|Solids (EJ/yr)"],
-                           "FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"))
-      
-      
-      # total FE variables per energy carrier without bunkers and without non-energy use
-      
-      out <- mbind(out,
-                   # liquids
-                   setNames(out[,,"FE|+|Liquids (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|+|Liquids (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Liquids (EJ/yr)"),
-                   # biomass liquids
-                   setNames(out[,,"FE|Liquids|+|Biomass (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|Liquids|+|Biomass (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Biomass (EJ/yr)"),
-                   # fossil liquids
-                   setNames(out[,,"FE|Liquids|+|Fossil (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|Liquids|+|Fossil (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Fossil (EJ/yr)"),
-                   # synthetic liquids
-                   setNames(out[,,"FE|Liquids|+|Hydrogen (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|Liquids|+|Hydrogen (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Hydrogen (EJ/yr)"),
-                   
-                   # gases
-                   setNames(out[,,"FE|+|Gases (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|+|Gases (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Gases (EJ/yr)"),
-                   # biomass Gases
-                   setNames(out[,,"FE|Gases|+|Biomass (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|Gases|+|Biomass (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Gases|Biomass (EJ/yr)"),
-                   # fossil Gases
-                   setNames(out[,,"FE|Gases|+|Fossil (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|Gases|+|Fossil (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Gases|Fossil (EJ/yr)"),
-                   # synthetic Gases
-                   setNames(out[,,"FE|Gases|+|Hydrogen (EJ/yr)"] -
-                              out[,,"FE|Transport|Bunkers|Gases|+|Hydrogen (EJ/yr)"] -  
-                              out[,,"FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Gases|Hydrogen (EJ/yr)"),
-                   
-                   # solids
-                   setNames(out[,,"FE|+|Solids (EJ/yr)"] -
-                              out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Solids (EJ/yr)"),
-                   # biomass Solids
-                   setNames(out[,,"FE|Solids|+|Biomass (EJ/yr)"] -
-                              out[,,"FE|Non-energy Use|Industry|Solids|+|Biomass (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Solids|Biomass (EJ/yr)"),
-                   # fossil Solids
-                   setNames(out[,,"FE|Solids|+|Fossil (EJ/yr)"] -
-                              out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
-                            "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
+                  
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fehos", all_enty = "seliqfos"), dim=3),
+                           "FE|Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fehos", all_enty = "seliqbio"), dim=3),
+                           "FE|Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fehos", all_enty = "seliqsyn"), dim=3),
+                           "FE|Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
                   
                   
-          
-                            
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segafos"), dim=3),
+                           "FE|Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segabio"), dim=3),
+                           "FE|Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
+                  setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segasyn"), dim=3),
+                           "FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)")
+                  
+    )
     
+    
+    ### FE without non-energy use
+    out <- mbind(out,
+                 
+                 #total
+                 setNames(dimSums(vm_demFeSector_woNonEn,dim=3), 
+                          "FE|w/o Non-energy Use (EJ/yr)"),
+                 
+                 #Liquids    
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,c("fepet","fedie","fehos")],dim=3),                                                "FE|w/o Non-energy Use|Liquids (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"seliqbio"],dim=3),                                                       "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"seliqfos"],dim=3),                                                       "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"seliqsyn"] ,dim=3),                                                      "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)"),
+                 
+                 # Gases    
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,c("fegas","fegat")],dim=3),                                       "FE|w/o Non-energy Use|Gases (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"segabio"],dim=3),                                                       "FE|w/o Non-energy Use|Gases|+|Biomass (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"segafos"],dim=3),                                                       "FE|w/o Non-energy Use|Gases|+|Fossil (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"segasyn"] ,dim=3),                                                      "FE|w/o Non-energy Use|Gases|+|Hydrogen (EJ/yr)"),
 
-    }
+                 # Solids    
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"fesos"],dim=3),                                                         "FE|w/o Non-energy Use|Solids (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"sesobio"],dim=3),                                                       "FE|w/o Non-energy Use|Solids|+|Biomass (EJ/yr)"),
+                 setNames(dimSums(vm_demFeSector_woNonEn[,,"sesofos"],dim=3),                                                       "FE|w/o Non-energy Use|Solids|+|Fossil (EJ/yr)")
+    )
+                 
+                 
+              
+
+    #FE per sector and per emission market (ETS and ESR)
+    out <- mbind(out,
+                 
+                 #industry
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,emi_sectors="indst")  ,dim=3,na.rm=T)),                                      "FE|w/o Non-energy Use|Industry (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)),                     "FE|w/o Non-energy Use|Industry|ESR (EJ/yr)"),    
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,emi_sectors="indst", all_emiMkt="ETS")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|ETS (EJ/yr)"),  
+                 
+                 # industry liquids
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",emi_sectors="indst")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqbio",emi_sectors="indst")  ,dim=3,na.rm=T)),"FE|w/o Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqfos",emi_sectors="indst")  ,dim=3,na.rm=T)),"FE|w/o Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqsyn",emi_sectors="indst")  ,dim=3,na.rm=T)),"FE|w/o Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)),                     "FE|w/o Non-energy Use|Industry|ESR|Liquids (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqbio",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Liquids|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqfos",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Liquids|+|Fossil (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqsyn",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Liquids|+|Hydrogen (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",emi_sectors="indst", all_emiMkt="ETS")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|ETS|Liquids (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqbio",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Liquids|+|Biomass (EJ/yr)"),    
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqfos",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Liquids|+|Fossil (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fehos",all_enty="seliqsyn",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Liquids|+|Hydrogen (EJ/yr)"),
+                 
+                 # industry solids
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",emi_sectors="indst")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",all_enty="sesobio",emi_sectors="indst")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|Solids|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",all_enty="sesofos",emi_sectors="indst")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|ESR|Solids (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",all_enty="sesobio",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Solids|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",all_enty="sesofos",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Solids|+|Fossil (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",emi_sectors="indst", all_emiMkt="ETS")  ,dim=3,na.rm=T)),                   "FE|w/o Non-energy Use|Industry|ETS|Solids (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",all_enty="sesobio",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Solids|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fesos",all_enty="sesofos",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Solids|+|Fossil (EJ/yr)"),
+                 
+                 # industry gases
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",emi_sectors="indst")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segabio",emi_sectors="indst"),dim=3,na.rm=T)),  "FE|w/o Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segafos",emi_sectors="indst") ,dim=3,na.rm=T)),  "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segasyn",emi_sectors="indst") ,dim=3,na.rm=T)),  "FE|w/o Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)),                    "FE|w/o Non-energy Use|Industry|ESR|Gases (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segabio",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Gases|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segafos",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Gases|+|Fossil (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segasyn",emi_sectors="indst", all_emiMkt="ES")  ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ESR|Gases|+|Hydrogen (EJ/yr)"),
+                 
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",emi_sectors="indst", all_emiMkt="ETS")  ,dim=3,na.rm=T)),                  "FE|w/o Non-energy Use|Industry|ETS|Gases (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segabio",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Gases|+|Biomass (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segafos",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Gases|+|Fossil (EJ/yr)"),
+                 setNames((dimSums(mselect(vm_demFeSector_woNonEn,all_enty1="fegas",all_enty="segasyn",emi_sectors="indst", all_emiMkt="ETS") ,dim=3,na.rm=T)), "FE|w/o Non-energy Use|Industry|ETS|Gases|+|Hydrogen (EJ/yr)")
+                 
+                
+    )
+    
+    
+    
   }
   
 
