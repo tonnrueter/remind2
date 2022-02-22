@@ -1,5 +1,5 @@
 #' Computes the employment values (jobs) across different sectors
-#' @param mif A mif file putput from a REMIND run
+#' @param pathToMIF A mif file putput from a REMIND run
 #' @param improvements Either "None", "CEEW", "Dias", "Rutovitz_aus","Solar_found" or "All". Use "All" for all improvements.
 #' @param subtype Subtype for how shares of solar rooftop, wind offshore, and small hydro are assumed in the future. Options "current", "irena", and "expert". See calcDspvShare for more information.
 #' @param share_manf Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.
@@ -11,13 +11,18 @@
 #' @examples
 #' \dontrun{
 
-#' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
+#' runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems
 #' @export
 
-reportEmployment <- function(mif, improvements, multiplier, subtype, share_manf, decline) {
+reportEmployment <- function(pathToMIF, improvements, multiplier, subtype, share_manf, decline) {
+  
+  input_mif <- remind2::readReportingMIF(pathToMIF = "") # read as data frame
+  input_mif_mp <- as.magpie(input_mif) # convert to magpie object
+  input_mif_mp <- collapseDim(input_mif_mp) # remove dimensions with same values, i.e., "model" and "scenario"
+  input_mif_mp <- collapseDim(input_mif_mp,dim = 3.2) # remove "unit" dimension
   
   # use setConfig(forcecache=T) to make the code run faster
   # employment factors
@@ -29,10 +34,7 @@ reportEmployment <- function(mif, improvements, multiplier, subtype, share_manf,
   ## DECLINE FACTORS------------------------
   if (decline == "capcosts") {
     
-    input_mif <- remind2::readReportingMIF(pathToMIF = "~/PROJECTS/Employment_model_opensource/REMIND_generic_SSP2EU-PkBudg1150.mif") # read as data frame
-    input_mif_mp <- as.magpie(input_mif) # convert to magpie object
-    input_mif_mp <- collapseDim(input_mif_mp) # remove dimensions with same values, i.e., "model" and "scenario"
-    input_mif_mp <- collapseDim(input_mif_mp,dim = 3.2) # remove "unit" dimension
+
     # capital costs and OM fixed costs evolution over time for different techs, used to calculated the decline factor
    # report_tech <- reportTechnology(gdx)
     #report_tech <- collapseNames(report_tech)
@@ -296,6 +298,7 @@ reportEmployment <- function(mif, improvements, multiplier, subtype, share_manf,
   
   jobs <- mbind(jobs_ci, jobs_om, jobs_prod, jobs_manf)
   
+  jobs <- as.data.frame(jobs)
   return (jobs)
   
 }
