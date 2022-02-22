@@ -525,9 +525,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     setNames(out[,,"FE|Transport|++|ESR (EJ/yr)"], "FE|Transport|w/o Bunkers (EJ/yr)"),
     setNames(out[,,"FE|Transport|++|Outside ETS and ESR (EJ/yr)"], "FE|Transport|Bunkers (EJ/yr)")
   )
-  out <- mbind(out,
-               setNames(out[,,"FE (EJ/yr)"] - out[,,"FE|Transport|Bunkers (EJ/yr)"], "FE|w/o Bunkers (EJ/yr)")
-  )
+
   
 
   
@@ -1500,9 +1498,53 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   }
   
 
+  ### FE variables without bunkers ----
   
   
   
+  
+  
+  
+  ### variables for which version without bunkers should be calculated
+
+  fe.vars.woBunkers <- c(
+    
+    "FE (EJ/yr)",
+    "FE|++|Transport (EJ/yr)",
+    "FE|Transport|+|Liquids (EJ/yr)")
+  
+  
+  
+  # add FE w/o non-energy use variables if available
+  if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
+    
+    
+    fe.vars.woBunkers <- c(fe.vars.woBunkers,
+                          "FE|w/o Non-energy Use (EJ/yr)",
+                          "FE|w/o Non-energy Use|Liquids (EJ/yr)")
+    
+  }
+  
+  
+  # variable names for FE variables without bunkers
+  names.woBunkers <- fe.vars.woBunkers
+  names.woBunkers <- gsub("FE", "FE|w/o Bunkers", names.woBunkers)
+  
+  
+  # calculate FE w/o Bunkers
+  out.woBunkers <- setNames(out[, , fe.vars.woBunkers], names.woBunkers)
+  out.woBunkers[, , names.woBunkers] <-  out.woBunkers[,,names.woBunkers] - out[, , "FE|Transport|Bunkers (EJ/yr)"]
+  
+  # remove all pluses from variables of bunker correction
+  getNames(out.woBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers))
+  getNames(out.woBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers))
+  
+  
+  
+  out <- mbind(out,  out.woBunkers)
+  
+  
+  ### Aggregation to global values ----
   
   # add global values
   out <- mbind(out,dimSums(out,dim=1))
@@ -1511,6 +1553,12 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
   
   
+  
+    
+  ### Further Variable Calculations ----
+  
+  
+ 
   # add per sector electricity share (for SDG targets)
   out <- mbind(out,
     setNames(out[,,'FE|Buildings|+|Electricity (EJ/yr)'] / out[,,'FE|++|Buildings (EJ/yr)'] * 100, 'FE|Buildings|Electricity|Share (%)'),
