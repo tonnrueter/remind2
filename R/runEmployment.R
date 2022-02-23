@@ -20,9 +20,9 @@
 runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareManf, decline) {
 
   inputMif <- remind2::readReportingMIF(pathToMIF = "") # read as data frame
-  inputMif_mp <- as.magpie(inputMif) # convert to magpie object
-  inputMif_mp <- collapseDim(inputMif_mp) # remove dimensions with same values, i.e., "model" and "scenario"
-  inputMif_mp <- collapseDim(inputMif_mp, dim = 3.2) # remove "unit" dimension
+  inputMifMp <- as.magpie(inputMif) # convert to magpie object
+  inputMifMp <- collapseDim(inputMifMp) # remove dimensions with same values, i.e., "model" and "scenario"
+  inputMifMp <- collapseDim(inputMifMp, dim = 3.2) # remove "unit" dimension
 
   # use setConfig(forcecache=TRUE) to make the code run faster
   # employment factors
@@ -36,9 +36,6 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
 
 
     # capital costs and OM fixed costs evolution over time for different techs, used to calculated the decline factor
-   # reportTech <- reportTechnology(gdx)
-    # reportTech <- collapseNames(reportTech)
-
     # variables needed - capital and fixed costs of technologies
     var <- c("Tech|Electricity|Coal|Pulverised Coal w/o CC|Capital Costs",
              "Tech|Electricity|Gas|Combined Cycle w/o CC|Capital Costs",
@@ -68,8 +65,8 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
              NULL
     )
     # only capital costs
-    reportTech <- inputMif_mp[, , var]
-    capCosts <- reportTech[getRegions(x), seq(2015, 2050, 5), "Capital Costs", pmatch = TRUE] # selecting years until 2050 and removing "World" region
+    reportTech <- inputMifMp[, , var]
+    capCosts <- reportTech[getItems(x, dim = 1), seq(2015, 2050, 5), "Capital Costs", pmatch = TRUE] # selecting years until 2050 and removing "World" region
 
     capCosts <- capCosts[, , ] / setYears(capCosts[, "y2020", ], NULL) # costs relative to 2020
 
@@ -81,14 +78,14 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
     varComb <- paste(varInX, varInRem, sep = ".") # concatenating the two for looping to work
 
     for (i in varComb) {
-      x[getRegions(x), , sub("\\..*", "", i)][, , c("CI", "Manf")] <- x[getRegions(x), , sub("\\..*", "", i)][, , c("CI", "Manf")] * setNames(capCosts[getRegions(x), getYears(x), sub(".*\\.", "", i), pmatch = TRUE], NULL)
+      x[getItems(x, dim = 1), , sub("\\..*", "", i)][, , c("CI", "Manf")] <- x[getItems(x, dim = 1), , sub("\\..*", "", i)][, , c("CI", "Manf")] * setNames(capCosts[getItems(x, dim = 1), getYears(x), sub(".*\\.", "", i), pmatch = TRUE], NULL)
     }
     # OM fixed costs used to calculate  decline factors for O&M employment factors
-    fixedCosts <- reportTech[getRegions(x), seq(2015, 2050, 5), "fixed", pmatch = TRUE] # selecting years until 2050 and removing "World" region
+    fixedCosts <- reportTech[getItems(x, dim = 1), seq(2015, 2050, 5), "fixed", pmatch = TRUE] # selecting years until 2050 and removing "World" region
 
     fixedCosts <- fixedCosts[, , ] / setYears(fixedCosts[, "y2020", ], NULL) # costs relative to 2020
     for (i in varComb) {
-      x[getRegions(x), , sub("\\..*", "", i)][, , "OM"] <- x[getRegions(x), , sub("\\..*", "", i)][, , "OM"] * setNames(fixedCosts[getRegions(x), getYears(x), sub(".*\\.", "", i), pmatch = TRUE], NULL)
+      x[getItems(x, dim = 1), , sub("\\..*", "", i)][, , "OM"] <- x[getItems(x, dim = 1), , sub("\\..*", "", i)][, , "OM"] * setNames(fixedCosts[getItems(x, dim = 1), getYears(x), sub(".*\\.", "", i), pmatch = TRUE], NULL)
     }
 
     # decline factors for coal fuel supply until 2050 are projected depending on
@@ -115,7 +112,7 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
   # filtering required capacity variables i.e., only new and existing coal capacities
 
   # selecting variables only related to power or electricity
-  remFilter <- inputMif_mp[, , c("Cap|Electricity"), pmatch = TRUE]
+  remFilter <- inputMifMp[, , c("Cap|Electricity"), pmatch = TRUE]
   remFilter <- remFilter[, , c("Cumulative", "Idle", "Total Cap", "CC", "Hydrogen",
                                     "Estimated", "Non-Biomass", "For Wind", "For PV", "GT"), pmatch = TRUE, invert = TRUE] # removing cumulative and idle variables in capacity
 
@@ -164,9 +161,9 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
                                "New Cap|Electricity|Solar|PV", "Cap|Electricity|Solar|PV"), invert = TRUE]
 
   # added/installed capacity from REMIND, for years > 2010
-  addedCap <- remFilter[getRegions(x), getYears(remFilter) > 2010, "New Cap", pmatch = TRUE] # only new capacities
+  addedCap <- remFilter[getItems(x, dim = 1), getYears(remFilter) > 2010, "New Cap", pmatch = TRUE] # only new capacities
 
-  addedCap_sum <- dimSums(addedCap, dim = 1) # Total World added capacity for each tech
+  addedCapSum <- dimSums(addedCap, dim = 1) # Total World added capacity for each tech
 
   # existing/operating capacity from REMIND
   capTot <- remFilter[, , "New Cap", invert = TRUE, pmatch = TRUE]
@@ -183,8 +180,8 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
   prodShare <- prodShare[, , c("spv", "wind"), invert = TRUE]
 
   # share of world capacity addition by region
-  shrGLOAdd <- addedCap[, , colsToAdd, pmatch = TRUE] / addedCap_sum[, , colsToAdd, pmatch = TRUE]
-  prodShareTmp <- new.magpie(regions, c(2015, 2020, 2050), names = c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore"))
+  shrGLOAdd <- addedCap[, , colsToAdd, pmatch = TRUE] / addedCapSum[, , colsToAdd, pmatch = TRUE]
+  prodShareTmp <- new.magpie(getItems(x, dim = 1), c(2015, 2020, 2050), names = c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore"))
 
   if (shareManf == "local" || shareManf == "current") {
     ## prod shares calculate local manufacture of wind and solar components in 2050. Change is linear.
@@ -199,23 +196,20 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
     }
   }
   # Obtaining fuel supply variables
-#  remindProd <- reportExtraction(gdx)["GLO", , , invert = TRUE] # remove GLO
   vars <- c("PE|Production|Biomass",
             "PE|Production|Gross|Coal",
             "PE|Production|Gross|Oil",
             "PE|Production|Gross|Gas",
             "PE|Production|Gross|Uranium [Energy]"
   )
-  remindProd <- inputMif_mp[getRegions(x), getYears(x), vars] # period >2010 and only select variables
+  remindProd <- inputMifMp[getItems(x, dim = 1), getYears(x), vars] # period >2010 and only select variables
 
-  peTrad <- inputMif_mp[getRegions(x), getYears(x), "PE|Biomass|Traditional"]
+  peTrad <- inputMifMp[getItems(x, dim = 1), getYears(x), "PE|Biomass|Traditional"]
 
   # removing the traditional biomass component, where biomass isn't sold, thus no employment
   # in conventional sense
   remindProd[, , "PE|Production|Biomass"] <-  remindProd[, , "PE|Production|Biomass"] - setNames(peTrad[, , ], NULL)
 
-  # getNames(remindProd) <- gsub(pattern = "\\[Energy\\]",replacement = "",x = getNames(remindProd))
- # getNames(remindProd) <- gsub(pattern = "  \\(EJ\\/yr\\)", replacement = " \\(EJ\\/yr\\)", x = getNames(remindProd)) # removing space
   getNames(remindProd) <- gsub(pattern = "Uranium \\[Energy\\]", replacement = "Nuclear", x = getNames(remindProd)) # removing space
 
   ## Calculating jobs--------------------------------
@@ -223,24 +217,18 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
              "Wind|Offshore", "Wind|Onshore", "Coal", "Biomass", "Gas", "Storage", "Oil", "Nuclear", "Geothermal", "Solar|CSP")
   techsExp <-  c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore") # technologies with export component
 
-  # cons <- new.magpie(getRegions(x),names = techs)
-  # average construction time for different technologies
-  # cons[] <- rep(c(1,1,4,3,4,2,5,2,2,1,2,10,2,2),each=12)
-
   # 1. Manufacturing jobs for techs with export component.
 
   # 1a) Total manf jobs (per region) for these techs are equal to total world addition X share of
   # world exports (for that region)
 
-  jobsManf <- new.magpie(getRegions(x), getYears(x), techs, fill = 0)
+  jobsManf <- new.magpie(getItems(x, dim = 1), getYears(x), techs, fill = 0)
   for (i in techsExp) {
-    # manf <- paste0(i,".","Manf")
-    jobsManf[, , i] <- addedCap_sum[, getYears(x), i, pmatch = TRUE] * 1000
+    jobsManf[, , i] <- addedCapSum[, getYears(x), i, pmatch = TRUE] * 1000
     jobsManf[, getYears(x), i] <-  (jobsManf[, getYears(x), i] * setNames(x[, , i][, , "Manf"], NULL) * prodShare[, , i])
   }
 
   for (i in setdiff(techs, techsExp)) {
-    # manf <- paste0(i,".","Manf")
     jobsManf[, , i] <- addedCap[, getYears(x), i, pmatch = TRUE] * 1000
     jobsManf[, getYears(x), i] <- (jobsManf[, getYears(x), i] *  setNames(x[, getYears(x), i, pmatch = TRUE][, , "Manf"], NULL))
   }
@@ -249,13 +237,11 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
   getSets(jobsManf) <- c("region", "year", "variable", "type")
 
   # 2. Construction and Installation jobs
-  jobsCi <- new.magpie(getRegions(x), getYears(x), techs, fill = 0)
+  jobsCi <- new.magpie(getItems(x, dim = 1), getYears(x), techs, fill = 0)
 
 
   for (i in techs) {
-    # inst <- paste0(i,".","CI")
     jobsCi[, , i] <- addedCap[, getYears(x), i, pmatch = TRUE] * 1000
-    # jobsCi[,,i] <-  (jobsCi[,getYears(x),i] *  setNames(x[,,i,pmatch=TRUE][,,"CI"],NULL))
     jobsCi[, , i] <-  jobsCi[, getYears(x), i] *  setNames(x[, , i, pmatch = TRUE][, , "CI"], nm = NULL)
 
   }
@@ -266,9 +252,8 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
 
   ## 3. Jobs in O & M
   # jobs = existing capacity per tech * emp factor per tech
-  jobsOm <- new.magpie(getRegions(x), getYears(x), techs)
+  jobsOm <- new.magpie(getItems(x, dim = 1), getYears(x), techs)
   for (i in techs) {
-    # inst <- paste0(i,".","OM")
     jobsOm[, , i] <- capTot[, getYears(x), i, pmatch = TRUE] * 1000
     jobsOm[, , i] <-  jobsOm[, , i] *  setNames(x[, , i, pmatch = TRUE][, , "OM"], NULL)
   }
@@ -278,9 +263,8 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
   ## 4. Jobs in Fuel supply
   # jobs = total production (in EJ/yr) per fuel * employment factor per fuel (Jobs/PJ)
   fuels <- c("Coal", "Gas", "Biomass", "Oil")
-  jobsProd <- new.magpie(getRegions(x), getYears(x), techs, fill = 0)
+  jobsProd <- new.magpie(getItems(x, dim = 1), getYears(x), techs, fill = 0)
   for (i in fuels) {
-    # fs <- paste0(i,".","Fuel_supply")
     jobsProd[, , i] <- remindProd[, getYears(x), i, pmatch = TRUE] * 1000
     jobsProd[, , i] <-  jobsProd[, , i] * setNames(x[, , i][, , "Fuel_supply"], NULL)
   }
@@ -288,8 +272,7 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
   getSets(jobsProd) <- c("region", "year", "variable", "type")
 
   ## Jobs in Fuel supply, nuclear which are given in terms of SE
-#  remSeNuc <- reportSE(gdx)[regions, getYears(x), "Nuclear", pmatch = TRUE] * 277777.778 # EJ to GWh
-  remSeNuc <- inputMif_mp[getRegions(x), , "SE|Electricity|+|Nuclear"] * 277777.778 # EJ to GWh
+  remSeNuc <- inputMifMp[getItems(x, dim = 1), , "SE|Electricity|+|Nuclear"] * 277777.778 # EJ to GWh
 
   jobsProd[, , "Nuclear.Fuel_supply"] <- setNames(remSeNuc[, getYears(x), ], NULL) * x[, getYears(x), "Nuclear.Fuel_supply"]
 
@@ -298,6 +281,6 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
   jobs <- mbind(jobsCi, jobsOm, jobsProd, jobsManf)
 
   jobs <- as.data.frame(jobs)
-  return (jobs)
+  return(jobs)
 
 }
