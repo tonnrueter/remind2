@@ -11,7 +11,8 @@
 #' @examples
 #' \dontrun{
 #'
-#' runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert", shareManf = "local", decline = "capcosts")
+#' runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert",
+#'  shareManf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems
@@ -19,7 +20,7 @@
 
 runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareManf, decline) {
 
-  inputMif <- remind2::readReportingMIF(pathToMIF = "") # read as data frame
+  inputMif <- remind2::readReportingMIF(pathToMIF) # read as data frame
   inputMifMp <- as.magpie(inputMif) # convert to magpie object
   inputMifMp <- collapseDim(inputMifMp) # remove dimensions with same values, i.e., "model" and "scenario"
   inputMifMp <- collapseDim(inputMifMp, dim = 3.2) # remove "unit" dimension
@@ -33,8 +34,6 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
 
   ## DECLINE FACTORS------------------------
   if (decline == "capcosts") {
-
-
     # capital costs and OM fixed costs evolution over time for different techs, used to calculated the decline factor
     # variables needed - capital and fixed costs of technologies
     var <- c("Tech|Electricity|Coal|Pulverised Coal w/o CC|Capital Costs",
@@ -282,5 +281,4 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareMan
 
   jobs <- as.data.frame(jobs)
   return(jobs)
-
 }

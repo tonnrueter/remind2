@@ -40,43 +40,42 @@ reportEmployment <- function(gdx, improvements, multiplier, subtype, shareManf, 
     # capital costs and OM fixed costs evolution over time for different techs, used to calculated the decline factor
     reportTech <- reportTechnology(gdx)
     reportTech <- collapseNames(reportTech)
-    var <- c("Tech|Electricity|Coal|Pulverised Coal w/o CC|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Gas|Combined Cycle w/o CC|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Hydro|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Nuclear|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Solar|PV|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Solar|CSP|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Wind|Onshore|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Wind|Offshore|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Biomass|Combined Heat and Power w/o CC|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Storage|Battery|For PV|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Oil|DOT|Capital Costs (US$2005/kW)",
-             "Tech|Electricity|Geothermal|Capital Costs (US$2005/kW)",
-
-             "Tech|Electricity|Coal|Pulverised Coal w/o CC|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Gas|Combined Cycle w/o CC|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Hydro|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Nuclear|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Solar|PV|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Solar|CSP|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Wind|Onshore|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Wind|Offshore|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Biomass|Combined Heat and Power w/o CC|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Oil|DOT|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Geothermal|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed (US$2005/kW/yr)",
-             NULL
+    var <- c(
+     "Tech|Electricity|Coal|Pulverised Coal w/o CC|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Gas|Combined Cycle w/o CC|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Hydro|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Nuclear|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Solar|PV|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Solar|CSP|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Wind|Onshore|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Wind|Offshore|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Biomass|Combined Heat and Power w/o CC|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Storage|Battery|For PV|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Oil|DOT|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Geothermal|Capital Costs (US$2005/kW)",
+     "Tech|Electricity|Coal|Pulverised Coal w/o CC|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Gas|Combined Cycle w/o CC|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Hydro|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Nuclear|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Solar|PV|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Solar|CSP|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Wind|Onshore|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Wind|Offshore|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Biomass|Combined Heat and Power w/o CC|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Oil|DOT|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Geothermal|OM Cost|fixed (US$2005/kW/yr)",
+     "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed (US$2005/kW/yr)",
+     NULL
     )
     # only capital costs
-    capCosts <- reportTech[, seq(2015, 2050, 5), grep(x = var, pattern = "Capital", value = TRUE)]
-    capCosts <- capCosts["GLO", , invert = TRUE] # removing GLO
-
+    reportTech <- reportTech[, , var]
+    capCosts <- reportTech[getItems(x, dim = 1), seq(2015, 2050, 5), "Capital Costs", pmatch = TRUE]
     capCosts <- capCosts[, , ] / setYears(capCosts[, "y2020", ], NULL) # costs relative to 2015
 
     # the job intensity decreases with capital costs for techs, relative to 2015
     varInX <- getItems(x, dim = 3.1) # variables from employment factor magpie object
-    varInRem <- c("Coal", "Gas", "Nuclear", "Biomass", "Hydro", "Hydro", "Wind|Onshore", "Wind|Offshore", "Solar|PV",
-                  "Geothermal", "Solar|CSP", "Oil", "Solar|PV", "Storage") # variables from remind (order matters)
+    varInRem <- c("Coal", "Gas", "Nuclear", "Biomass", "Hydro", "Hydro", "Wind|Onshore",        "Wind|Offshore", "Solar|PV",
+     "Geothermal", "Solar|CSP", "Oil", "Solar|PV", "Storage") # variables from remind (order matters)
     varComb <- paste(varInX, varInRem, sep = ".") # concatenating the two for looping to work
 
     for (i in varComb) {
@@ -100,15 +99,6 @@ reportEmployment <- function(gdx, improvements, multiplier, subtype, shareManf, 
   ## --------------------------------------------------------
 
   ## Other external parameters--------------------------
-  #  share of exports to world installed capacity
-  prodShare <- calcOutput("ProdShares")
-  prodShare <- prodShare[, "y2019", ] # use 2019 as 2018 values have NAs for important countries
-  colsToAdd <- c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore")
-  prodShare  <- add_columns(prodShare, addnm = colsToAdd, dim = 3.1)
-  prodShare[, , c("Solar|PV-utility", "Solar|PV-rooftop")] <- prodShare[, , "spv"]
-  prodShare[, , c("Wind|Offshore", "Wind|Onshore")] <- prodShare[, , "wind"]
-  prodShare <- prodShare[, , c("spv", "wind"), invert = TRUE]
-
   # share of rooftop in total spv, wind offshore in total wind, and hydro small in total hydro
   share <- calcOutput("DspvShare")
 
@@ -159,6 +149,14 @@ remFilter <- remFilter[, , c("New Cap|Electricity|Hydro", "Cap|Electricity|Hydro
   # existing/operating capacity from REMIND
   capTot <- remFilter[, , "New Cap", invert = TRUE, pmatch = TRUE] # only existing capacities
 
+  #  share of exports to world installed capacity
+  prodShare <- calcOutput("ProdShares")
+  prodShare <- prodShare[, "y2019", ] # use 2019 as 2018 values have NAs for important countries
+  colsToAdd <- c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore")
+  prodShare  <- add_columns(prodShare, addnm = colsToAdd, dim = 3.1)
+  prodShare[, , c("Solar|PV-utility", "Solar|PV-rooftop")] <- prodShare[, , "spv"]
+  prodShare[, , c("Wind|Offshore", "Wind|Onshore")] <- prodShare[, , "wind"]
+  prodShare <- prodShare[, , c("spv", "wind"), invert = TRUE]
   ## -----------------------------------------------------
 
   # share of world capacity addition by region
@@ -267,5 +265,4 @@ remFilter <- remFilter[, , c("New Cap|Electricity|Hydro", "Cap|Electricity|Hydro
   jobs <- mbind(jobsCi, jobsOm, jobsProd, jobsManf)
 
   return(jobs)
-
 }
