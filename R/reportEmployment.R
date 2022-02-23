@@ -1,35 +1,44 @@
 #' Computes the employment values (jobs) across different sectors
 #' @param gdx A gdx file output from a REMIND run
-#' @param improvements Either "None", "CEEW", "Dias", "Rutovitz_aus","Solar_found" or "All". Use "All" for all improvements.
-#' @param subtype Subtype for how shares of solar rooftop, wind offshore, and small hydro are assumed in the future. Options "current", "irena", and "expert". See calcDspvShare for more information.
-#' @param share_manf Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.
-#' @param multiplier controls how the regional multiplier for non-oecd countries changes with time.
-#' @param decline How should the employment factors change over time? "capcosts" means according to capital costs. "static" means it doesn't change
-#' @description This function returns a magpie object containing the reporting the jobs for different technologies
+#' @param improvements Either "None", "CEEW", "Dias", "Rutovitz_aus",
+#' "Solar_found" or "All". Use "All" for all improvements.
+#' @param subtype Subtype for how shares of solar rooftop, wind offshore,
+#' and small hydro are assumed in the future. Options "current", "irena", and
+#' "expert". See calcDspvShare for more information.
+#' @param shareManf Either "current" or "local". Current implies current shares
+#' of world manufacture remain same until 2050, current means that in 2050 all 
+#' countries manufacture required components locally.
+#' @param multiplier controls how the regional multiplier for non-oecd countries
+#' changes with time.
+#' @param decline How should the employment factors change over time? "capcosts"
+#' means according to capital costs. "static" means it doesn't change
+#' @description This function returns a magpie object containing the reporting
+#' the jobs for different technologies
 #' @return A magpie object
 #' @author Aman Malik
 #' @examples
 #' \dontrun{
-
-#' reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
+#' reportEmployment(gdx, improvements = "All", multiplier = "own",
+#' subtype = "expert", shareManf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems
 #' @export
 
-reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf, decline) {
+reportEmployment <- function(gdx, improvements, multiplier, subtype, shareManf, decline){
 
-  # use setConfig(forcecache=T) to make the code run faster
-  # employment factors
-  x <- madrat::calcOutput("Employmentfactors", improvements = improvements, multiplier = multiplier)
-  x <- x[, , "HP", pmatch = T, invert = T] # excluding (at the moment) jobs in combined heat and power plants
+  # Employment factors from mrremind
+  x <- madrat::calcOutput("Employmentfactors", improvements = improvements,
+                          multiplier = multiplier)
+  x <- x[, , "HP", pmatch = TRUE, invert = TRUE] # excluding (at the moment) jobs in
+  #combined heat and power plants
 
   ## DECLINE FACTORS------------------------
   if (decline == "capcosts") {
     # capital costs and OM fixed costs evolution over time for different techs, used to calculated the decline factor
-    report_tech <- reportTechnology(gdx)
-    report_tech <- collapseNames(report_tech)
-
+    reportTech <- reportTechnology(gdx)
+    reportTech <- collapseNames(reportTech)
+    
     var <- c("Tech|Electricity|Coal|PC|w/o CCS|Capital Costs (US$2005/kW)",
              "Tech|Electricity|Gas|CC|w/o CCS|Capital Costs (US$2005/kW)",
              "Tech|Electricity|Hydro|Capital Costs (US$2005/kW)",
@@ -52,306 +61,227 @@ reportEmployment <- function(gdx, improvements, multiplier, subtype, share_manf,
              "Tech|Electricity|Biomass|IGCC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
              "Tech|Electricity|Oil|DOT|OM Cost|fixed (US$2005/kW/yr)",
              "Tech|Electricity|Geothermal|OM Cost|fixed (US$2005/kW/yr)",
-             "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed (US$2005/kW/yr)", NULL
+             "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed (US$2005/kW/yr)",
+             NULL
     )
     # only capital costs
-    cap_costs <- report_tech[, seq(2015, 2050, 5), grep(x = var, pattern = "Capital", value = T)]
-    cap_costs <- cap_costs["GLO", , invert = T] # removing GLO
+    capCosts <- reportTech[, seq(2015, 2050, 5), grep(x = var, pattern = "Capital", value = TRUE)]
+    capCosts <- capCosts["GLO", , invert = TRUE] # removing GLO
 
-    cap_costs <- cap_costs[, , ] / setYears(cap_costs[, "y2020", ], NULL) # costs relative to 2015
+    capCosts <- capCosts[, , ] / setYears(capCosts[, "y2020", ], NULL) # costs relative to 2015
 
     # the job intensity decreases with capital costs for techs, relative to 2015
-    var_in_x <- getItems(x, dim = 3.1) # variables from EF magpie object
-    var_in_rem <- c("Coal", "Gas", "Nuclear", "Biomass", "Hydro", "Hydro", "Wind", "Wind", "Solar|PV",
+    varInX <- getItems(x, dim = 3.1) # variables from EF magpie object
+    varInRem <- c("Coal", "Gas", "Nuclear", "Biomass", "Hydro", "Hydro", "Wind", "Wind", "Solar|PV",
                     "Geothermal", "Solar|CSP", "Oil", "Solar|PV", "Storage") # variables from remind
-    var_com <- paste(var_in_x, var_in_rem, sep = ".") # concatenating the two for looping to work
+    varCom <- paste(varInX, varInRem, sep = ".") # concatenating the two for looping to work
 
-    for (i in var_com) {
-      x[, , sub("\\..*", "", i)][, , c("CI", "Manf")] <- x[, , sub("\\..*", "", i)][, , c("CI", "Manf")] * setNames(cap_costs[, getYears(x), sub(".*\\.", "", i), pmatch = T], NULL)
+    for (i in varCom) {
+      x[, , sub("\\..*", "", i)][, , c("CI", "Manf")] <-
+      x[, , sub("\\..*", "", i)][, , c("CI", "Manf")] * 
+      setNames(capCosts[, getYears(x), sub(".*\\.", "", i), pmatch = TRUE], NULL)
     }
     # OM fixed costs used to calculate  decline factors for O&M employment factors
-    fixed_costs <- report_tech[, seq(2015, 2050, 5), grep(x = var, pattern = "fixed", value = T)]
-    fixed_costs <- fixed_costs["GLO", , invert = T] # removing GLO
+    fixedCosts <- reportTech[, seq(2015, 2050, 5), grep(x = var, pattern = "fixed", value = TRUE)]
+    fixedCosts <- fixedCosts["GLO", , invert = TRUE] # removing GLO
 
-    fixed_costs <- fixed_costs[, , ] / setYears(fixed_costs[, "y2020", ], NULL) # costs relative to 2015
-    for (i in var_com) {
-      x[, , sub("\\..*", "", i)][, , "OM"] <- x[, , sub("\\..*", "", i)][, , "OM"] * setNames(fixed_costs[, getYears(x), sub(".*\\.", "", i), pmatch = T], NULL)
+    fixedCosts <- fixedCosts[, , ] / setYears(fixedCosts[, "y2020", ], NULL) # costs relative to 2015
+    for (i in varCom) {
+      x[, , sub("\\..*", "", i)][, , "OM"] <- x[, , sub("\\..*", "", i)][, , "OM"] * setNames(fixedCosts[, getYears(x), sub(".*\\.", "", i), pmatch = TRUE], NULL)
     }
-
-
-
-    # decline factors for coal fuel supply until 2050 are projected depending on
-    # historical patterns and convergence between some countries.
-    # See calcLabourProductivity for more information.
-    coal_ef <- calcOutput("CoalLabourProductivity", subtype = "Employment_factor")
-    coal_ef <- coal_ef / setYears(coal_ef[, 2020, ], NULL)
-    coal_ef[which(coal_ef == "NaN")] <- 0
-    x[, getYears(x), "Coal.Fuel_supply"] <- x[, getYears(x), "Coal.Fuel_supply"] * setNames(coal_ef[, getYears(x), ], NULL)
-  }
-  # if (decline=="capcosts_50"){
-  #   report_tech <- reportTechnology(gdx)
-  #   report_tech <- collapseNames(report_tech)
-  #
-  #   var <- c("Tech|Electricity|Coal|PC|w/o CCS|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Gas|CC|w/o CCS|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Hydro|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Nuclear|Capital Costs (US$2005/kW)" ,
-  #            "Tech|Electricity|Solar|PV|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Solar|CSP|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Wind|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Biomass|IGCC|w/o CCS|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Storage|Battery|For PV|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Oil|DOT|Capital Costs (US$2005/kW)",
-  #            "Tech|Electricity|Geothermal|Capital Costs (US$2005/kW)",
-  #
-  #            "Tech|Electricity|Coal|PC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Gas|CC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Hydro|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Nuclear|OM Cost|fixed (US$2005/kW/yr)" ,
-  #            "Tech|Electricity|Solar|PV|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Solar|CSP|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Wind|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Biomass|IGCC|w/o CCS|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Oil|DOT|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Geothermal|OM Cost|fixed (US$2005/kW/yr)",
-  #            "Tech|Electricity|Storage|Battery|For PV|OM Cost|fixed (US$2005/kW/yr)",NULL
-  #   )
-  #   # only capital costs
-  #   cap_costs <- report_tech[,seq(2015,2050,5),grep(x = var,pattern = "Capital",value = T)]
-  #   cap_costs <- cap_costs["GLO",,invert=T]# removing GLO
-  #
-  #   cap_costs <- cap_costs[,,]/setYears(cap_costs[,"y2020",],NULL)# costs relative to 2020
-  #   cap_costs[,seq(2025,2050,5),] <- cap_costs[,seq(2025,2050,5),]*1.50
-  #
-  #   # the job intensity decreases with capital costs for techs, relative to 2020
-  #   var_in_x <- getItems(x,dim=3.1) # variables from EF magpie object
-  #   var_in_rem <- c("Coal","Gas","Nuclear","Biomass","Hydro","Hydro","Wind","Wind","Solar|PV",
-  #                   "Geothermal","Solar|CSP","Oil","Solar|PV","Storage") # variables from remind
-  #   var_com <- paste(var_in_x,var_in_rem,sep = ".") # concatenating the two for looping to work
-  #
-  #   for (i in var_com){
-  #     x[,,sub("\\..*", "", i)][,,c("CI","Manf")] <- x[,,sub("\\..*", "", i)][,,c("CI","Manf")]*setNames(cap_costs[,getYears(x),sub(".*\\.", "", i),pmatch=T],NULL)
-  #   }
-  #   # OM fixed costs used to calculate  decline factors for O&M employment factors
-  #   fixed_costs <- report_tech[,seq(2015,2050,5),grep(x = var,pattern = "fixed",value = T)]
-  #   fixed_costs <- fixed_costs["GLO",,invert=T]# removing GLO
-  #
-  #   fixed_costs <- fixed_costs[,,]/setYears(fixed_costs[,"y2020",],NULL)# costs relative to 2015
-  #   for (i in var_com){
-  #     x[,,sub("\\..*", "", i)][,,"OM"] <- x[,,sub("\\..*", "", i)][,,"OM"]*setNames(fixed_costs[,getYears(x),sub(".*\\.", "", i),pmatch=T],NULL)
-  #   }
-  #
-  #
-  #
-  #   # decline factors for coal fuel supply
-  #   coal_ef <- calcOutput("CoalLabourProductivity",subtype = "Employment_factor")
-  #   coal_ef <- coal_ef/setYears(coal_ef[,2020,],NULL)
-  #   coal_ef[which(coal_ef=="NaN")] <- 0
-  #   x[,getYears(coal_ef),"Coal.Fuel_supply"] <- x[,getYears(coal_ef),"Coal.Fuel_supply"]*setNames(coal_ef[,,],NULL)
-  #
-  #
-  # }
-  #  }
+}
   if (decline == "static") {
     # do nothing, as employment factors have already been read
   }
 
-  # the above loops are based on the expanded code below (2 shown for example)-
-
-  # x[,,"Coal"][,,c("CI","Manf")] <- x[,,"Coal"][,,c("CI","Manf")]*setNames(cap_costs[,getYears(x),"Coal",pmatch=T],NULL)
-  # x[,,"Gas"][,,c("CI","Manf")] <- x[,,"Gas"][,,c("CI","Manf")]*setNames(cap_costs[,getYears(x),"Gas",pmatch=T],NULL)
   ## --------------------------------------------------------
 
   ## Other external parameters--------------------------
   #  share of exports to world installed capacity
-  prod_share <- calcOutput("ProdShares")
-  prod_share <- prod_share[, "y2019", ] # use 2019 as 2018 values have NAs for important countries
-  cols_to_add <- c("Solar|PV-utility", "Solar|PV-rooftop", "Wind offshore", "Wind onshore")
-  prod_share  <- add_columns(prod_share, addnm = cols_to_add, dim = 3.1)
-  prod_share[, , c("Solar|PV-utility", "Solar|PV-rooftop")] <- prod_share[, , "spv"]
-  prod_share[, , c("Wind offshore", "Wind onshore")] <- prod_share[, , "wind"]
+  prodShare <- calcOutput("ProdShares")
+  prodShare <- prodShare[, "y2019", ] # use 2019 as 2018 values have NAs for important countries
+  colsToAdd <- c("Solar|PV-utility", "Solar|PV-rooftop", "Wind offshore", "Wind onshore")
+  prodShare  <- add_columns(prodShare, addnm = colsToAdd, dim = 3.1)
+  prodShare[, , c("Solar|PV-utility", "Solar|PV-rooftop")] <- prodShare[, , "spv"]
+  prodShare[, , c("Wind offshore", "Wind onshore")] <- prodShare[, , "wind"]
 
   # share of rooftop in total spv, wind offshore in total wind, and hydro small in total hydro
   share <- calcOutput("DspvShare")
 
-  ## ----------------------------------------------
-
   ## New and Absolute capacity from REMIND---------------------------------
   # filtering required capacity variables i.e., only new and existing coal capacities
-  remind_output <- reportCapacity(gdx)
-  rem_filter <- remind_output[, , c("Cumulative", "Idle", "Total Cap", "CC", "Hydrogen", "Liquids",
-                                  "Estimated", "Non-Biomass", "For Wind", "For PV", "GT"), pmatch = T, invert = T] # removing cumulative and idle variables in capacity
-  rem_filter <- rem_filter[, , c("Cap|Electricity (GW)", # total sum of all techs and not needed
-                               "New Cap|Electricity (GW)",
-                               "Cap|Electricity|Solar (GW)", # is sum of pv and csp and not needed
-                               "New Cap|Electricity|Solar (GW)"), invert = T]
+  remindOutput <- reportCapacity(gdx)
+  remFilter <- remindOutput[, , c("Cumulative", "Idle", "Total Cap", "CC", "Hydrogen", "Liquids",
+                                  "Estimated", "Non-Biomass", "For Wind", "For PV", "GT"), pmatch = TRUE, invert = TRUE] # removing cumulative and idle variables in capacity
+  remFilter <- remFilter[, , c("Cap|Electricity (GW)", # total sum of all techs and not needed
+              "New Cap|Electricity (GW)",
+              "Cap|Electricity|Solar (GW)", # is sum of pv and csp and not needed
+              "New Cap|Electricity|Solar (GW)"), invert = TRUE]
   # selecting variables only related to power or electricity
-  rem_filter <- rem_filter[, , ][, , "Electricity", pmatch = T]
+  remFilter <- remFilter[, , ][, , "Electricity", pmatch = TRUE]
 
   # filtering required regions
-  regions <- setdiff(getRegions(remind_output), "GLO") # all regions except world
-  rem_filter <- rem_filter[regions, seq(2015, 2050, 5), ]
+  regions <- setdiff(getItems(remindOutput,dim=1), "GLO") # all regions except world
+  remFilter <- remFilter[regions, seq(2015, 2050, 5), ]
 
   ## disaggregating certain variables/adding new variables
-  cols_to_add <- c("Solar|PV-utility", "Solar|PV-rooftop", "Hydro-large", "Hydro-small",
+  colsToAdd <- c("Solar|PV-utility", "Solar|PV-rooftop", "Hydro-large", "Hydro-small",
                    "Wind offshore", "Wind onshore")
-  for (j in cols_to_add) {
-    rem_filter <- add_columns(rem_filter, addnm = paste0("New Cap|Electricity|", j, " (GW/yr)"), dim = 3.1)
-    rem_filter <- add_columns(rem_filter, addnm = paste0("Cap|Electricity|", j, " (GW)"), dim = 3.1)
+  for (j in colsToAdd) {
+    remFilter <- add_columns(remFilter, addnm = paste0("New Cap|Electricity|", j, " (GW/yr)"), dim = 3.1)
+    remFilter <- add_columns(remFilter, addnm = paste0("Cap|Electricity|", j, " (GW)"), dim = 3.1)
   }
 
   # adding values to the new variables
-rem_filter[, , "New Cap|Electricity|Solar|PV-rooftop (GW/yr)"] <- rem_filter[, , "New Cap|Electricity|Solar|PV (GW/yr)"] * share[, , "spv"]
-rem_filter[, , "New Cap|Electricity|Solar|PV-utility (GW/yr)"] <-   rem_filter[, , "New Cap|Electricity|Solar (GW/yr)"] * (1 - share[, , "spv"])
+remFilter[, , "New Cap|Electricity|Solar|PV-rooftop (GW/yr)"] <- 
+  remFilter[, , "New Cap|Electricity|Solar|PV (GW/yr)"] * share[, , "spv"]
+remFilter[, , "New Cap|Electricity|Solar|PV-utility (GW/yr)"] <- 
+  remFilter[, , "New Cap|Electricity|Solar (GW/yr)"] * (1 - share[, , "spv"])
 
-rem_filter[, , "Cap|Electricity|Solar|PV-rooftop (GW)"] <- rem_filter[, , "Cap|Electricity|Solar|PV (GW)"] * share[, , "spv"]
-rem_filter[, , "Cap|Electricity|Solar|PV-utility (GW)"] <- rem_filter[, , "Cap|Electricity|Solar|PV (GW)"] * (1 - share[, , "spv"])
+remFilter[, , "Cap|Electricity|Solar|PV-rooftop (GW)"] <- 
+  remFilter[, , "Cap|Electricity|Solar|PV (GW)"] * share[, , "spv"]
+remFilter[, , "Cap|Electricity|Solar|PV-utility (GW)"] <- 
+  remFilter[, , "Cap|Electricity|Solar|PV (GW)"] * (1 - share[, , "spv"])
 
-rem_filter[, , "New Cap|Electricity|Hydro-small (GW/yr)"] <- rem_filter[, , "New Cap|Electricity|Hydro (GW/yr)"] * share[, , "hydro"]
-rem_filter[, , "New Cap|Electricity|Hydro-large (GW/yr)"] <-   rem_filter[, , "New Cap|Electricity|Hydro (GW/yr)"] * (1 - share[, , "hydro"])
+remFilter[, , "New Cap|Electricity|Hydro-small (GW/yr)"] <- 
+  remFilter[, , "New Cap|Electricity|Hydro (GW/yr)"] * share[, , "hydro"]
+remFilter[, , "New Cap|Electricity|Hydro-large (GW/yr)"] <- 
+  remFilter[, , "New Cap|Electricity|Hydro (GW/yr)"] * (1 - share[, , "hydro"])
 
-rem_filter[, , "Cap|Electricity|Hydro-small (GW)"] <- rem_filter[, , "Cap|Electricity|Hydro (GW)"] * share[, , "hydro"]
-rem_filter[, , "Cap|Electricity|Hydro-large (GW)"] <-   rem_filter[, , "Cap|Electricity|Hydro (GW)"] * (1 - share[, , "hydro"])
+remFilter[, , "Cap|Electricity|Hydro-small (GW)"] <-
+  remFilter[, , "Cap|Electricity|Hydro (GW)"] * share[, , "hydro"]
+remFilter[, , "Cap|Electricity|Hydro-large (GW)"] <- 
+  remFilter[, , "Cap|Electricity|Hydro (GW)"] * (1 - share[, , "hydro"])
 
-rem_filter[, , "New Cap|Electricity|Wind offshore (GW/yr)"] <- rem_filter[, , "New Cap|Electricity|Wind (GW/yr)"] * share[, , "wind"]
-rem_filter[, , "New Cap|Electricity|Wind onshore (GW/yr)"] <-   rem_filter[, , "New Cap|Electricity|Wind (GW/yr)"] * (1 - share[, , "wind"])
+remFilter[, , "New Cap|Electricity|Wind offshore (GW/yr)"] <-
+  remFilter[, , "New Cap|Electricity|Wind (GW/yr)"] * share[, , "wind"]
+remFilter[, , "New Cap|Electricity|Wind onshore (GW/yr)"] <- 
+  remFilter[, , "New Cap|Electricity|Wind (GW/yr)"] * (1 - share[, , "wind"])
 
-rem_filter[, , "Cap|Electricity|Wind offshore (GW)"] <- rem_filter[, , "Cap|Electricity|Wind (GW)"] * share[, , "wind"]
-rem_filter[, , "Cap|Electricity|Wind onshore (GW)"] <-   rem_filter[, , "Cap|Electricity|Wind (GW)"] * (1 - share[, , "wind"])
-
-# for (p in c("New Cap|Electricity|","Cap|Electricity|")){
-#     rem_filter[,,paste0(p,"Solar|PV-rooftop"," (GW)")] <- rem_filter[,,paste0(p,"Solar|PV"," (GW)")]*share[,,"spv"]
-#     rem_filter[,,paste0(p,"Solar|PV-utility"," (GW)")] <- rem_filter[,,paste0(p,"Solar|PV"," (GW)")]*(1-share[,,"spv"])
-#     rem_filter[,,paste0(p,"Hydro-small"," (GW)")] <- rem_filter[,,paste0(p,"Hydro"," (GW)")]*share[,,"hydro"]
-#     rem_filter[,,paste0(p,"Hydro-large"," (GW)")] <- rem_filter[,,paste0(p,"Hydro"," (GW)")]*(1-share[,,"hydro"])
-#     rem_filter[,,paste0(p,"Wind offshore"," (GW)")] <-   rem_filter[,,paste0(p,"Wind"," (GW)")]*share[,,"wind"]
-#     rem_filter[,,paste0(p,"Wind onshore"," (GW)")] <-   rem_filter[,,paste0(p,"Wind"," (GW)")]*(1-share[,,"wind"])
-#
-#   }
-
+remFilter[, , "Cap|Electricity|Wind offshore (GW)"] <- 
+  remFilter[, , "Cap|Electricity|Wind (GW)"] * share[, , "wind"]
+remFilter[, , "Cap|Electricity|Wind onshore (GW)"] <-  
+  remFilter[, , "Cap|Electricity|Wind (GW)"] * (1 - share[, , "wind"])
 
   # added/installed capacity from REMIND, for years > 2010
-  added_cap <- rem_filter[regions, getYears(rem_filter) > 2010, "New Cap", pmatch = T] # only new capacities
+  addedCap <- remFilter[regions, getYears(remFilter) > 2010, "New Cap", pmatch = TRUE] # only new capacities
 
-  added_cap_sum <- dimSums(added_cap, dim = 1) # world added capacity for each tech
+  addedCap_sum <- dimSums(addedCap, dim = 1) # world added capacity for each tech
 
   # existing/operating capacity from REMIND
-  cap_tot <- rem_filter[, , "New Cap", invert = T, pmatch = T] # only existing capacities
+  capTot <- remFilter[, , "New Cap", invert = TRUE, pmatch = TRUE] # only existing capacities
 
   ## -----------------------------------------------------
 
   # share of world capacity addition by region
-  shr_GLO_add <- added_cap[, , cols_to_add, pmatch = T] / added_cap_sum[, , cols_to_add, pmatch = T]
-  prod_share_tmp <- new.magpie(regions, c(2015, 2020, 2050), names = c("Solar|PV-utility", "Solar|PV-rooftop", "Wind offshore", "Wind onshore"))
+  shrGLOAdd <- addedCap[, , colsToAdd, pmatch = TRUE] / addedCap_sum[, , colsToAdd, pmatch = TRUE]
+  prodShareTmp <- new.magpie(regions, c(2015, 2020, 2050), names = c("Solar|PV-utility", "Solar|PV-rooftop", "Wind offshore", "Wind onshore"))
 
-  if (share_manf == "local" || share_manf == "current") {
+  if (shareManf == "local" || shareManf == "current") {
     ## prod shares complete local manufacture of wind and solar components in 2050. Change is linear.
     # assigning 2050 regional share values as prod shares
-    prod_share_tmp[, "y2050", ] <- as.numeric(shr_GLO_add[, "y2050", getNames(prod_share_tmp), pmatch = T])
+    prodShareTmp[, "y2050", ] <- as.numeric(shrGLOAdd[, "y2050", getNames(prodShareTmp), pmatch = TRUE])
     # 2015 and 2020 values same as 2019 values
-    prod_share_tmp[, c(2015, 2020), ] <- prod_share[, , getNames(prod_share_tmp)]
+    prodShareTmp[, c(2015, 2020), ] <- prodShare[, , getNames(prodShareTmp)]
     # from 2020 to 2050, linearly interpolate
-    prod_share <- time_interpolate(prod_share_tmp, seq(2025, 2045, 5), integrate_interpolated_years = T)
-    if (share_manf == "current") {
-      prod_share[, , ] <- prod_share[, 2020, ] # shares remain same throughout = 2020
+    prodShare <- time_interpolate(prodShareTmp, seq(2025, 2045, 5), integrate_interpolated_years = TRUE)
+    if (shareManf == "current") {
+      prodShare[, , ] <- prodShare[, 2020, ] # shares remain same throughout = 2020
     }
   }
   # Obtaining fuel supply variables
-  remind_prod <- reportExtraction(gdx)["GLO", , , invert = T] # remove GLO
+  remindProd <- reportExtraction(gdx)["GLO", , , invert = TRUE] # remove GLO
   vars <- c("PE|Production|Biomass (EJ/yr)",
             "PE|Production|Gross|Coal (EJ/yr)",
             "PE|Production|Gross|Oil (EJ/yr)",
             "PE|Production|Gross|Gas (EJ/yr)",
             "PE|Production|Gross|Uranium [Energy] (EJ/yr)"
   )
-  remind_prod <- remind_prod[regions, getYears(x), vars] # period >2010 and only select variables
+  remindProd <- remindProd[regions, getYears(x), vars] # period >2010 and only select variables
 
   pe <- reportPE(gdx)[regions, getYears(x), "PE|Biomass|Traditional (EJ/yr)"]
 
   # removing the traditional biomass component, where biomass isn't sold, thus no employment
   # in conventional sense
-  remind_prod[, , "PE|Production|Biomass (EJ/yr)"] <-  remind_prod[, , "PE|Production|Biomass (EJ/yr)"] - setNames(pe[, , ], NULL)
+  remindProd[, , "PE|Production|Biomass (EJ/yr)"] <-
+  remindProd[, , "PE|Production|Biomass (EJ/yr)"] - setNames(pe[, , ], NULL)
 
-  # getNames(remind_prod) <- gsub(pattern = "\\[Energy\\]",replacement = "",x = getNames(remind_prod))
-  getNames(remind_prod) <- gsub(pattern = "  \\(EJ\\/yr\\)", replacement = " \\(EJ\\/yr\\)", x = getNames(remind_prod)) # removing space
-  getNames(remind_prod) <- gsub(pattern = "Uranium", replacement = "Nuclear", x = getNames(remind_prod)) # removing space
+  # getNames(remindProd) <- gsub(pattern = "\\[Energy\\]",replacement = "",x = getNames(remindProd))
+  getNames(remindProd) <- gsub(pattern = "  \\(EJ\\/yr\\)", replacement = " \\(EJ\\/yr\\)", x = getNames(remindProd)) # removing space
+  getNames(remindProd) <- gsub(pattern = "Uranium", replacement = "Nuclear", x = getNames(remindProd)) # removing space
 
   ## Calculating jobs--------------------------------
   techs <- c("Solar|PV-utility", "Solar|PV-rooftop", "Hydro-large", "Hydro-small",
              "Wind offshore", "Wind onshore", "Coal", "Biomass", "Gas", "Storage", "Oil", "Nuclear", "Geothermal", "Solar|CSP")
-  techs_exp <-  c("Solar|PV-utility", "Solar|PV-rooftop", "Wind offshore", "Wind onshore") # technologies with export component
-
-  # cons <- new.magpie(getRegions(x),names = techs)
-  # average construction time for different technologies
-  # cons[] <- rep(c(1,1,4,3,4,2,5,2,2,1,2,10,2,2),each=12)
+  techsExp <-  c("Solar|PV-utility", "Solar|PV-rooftop", "Wind offshore", "Wind onshore") # technologies with export component
 
   # 1. Manufacturing jobs for techs with export component.
 
   # 1a) Total manf jobs (per region) for these techs are equal to total world addition X share of
   # world exports (for that region)
 
-    jobs_manf <- new.magpie(regions, getYears(x), techs, fill = 0)
-    for (i in techs_exp) {
+    jobsManf <- new.magpie(regions, getYears(x), techs, fill = 0)
+    for (i in techsExp) {
       # manf <- paste0(i,".","Manf")
-      jobs_manf[, , i] <- added_cap_sum[, getYears(x), i, pmatch = T] * 1000
-      jobs_manf[, getYears(x), i] <-  (jobs_manf[, getYears(x), i] * setNames(x[, , i][, , "Manf"], NULL) * prod_share[, , i])
+      jobsManf[, , i] <- addedCap_sum[, getYears(x), i, pmatch = TRUE] * 1000
+      jobsManf[, getYears(x), i] <-  (jobsManf[, getYears(x), i] * setNames(x[, , i][, , "Manf"], NULL) * prodShare[, , i])
     }
 
-    for (i in setdiff(techs, techs_exp)) {
+    for (i in setdiff(techs, techsExp)) {
       # manf <- paste0(i,".","Manf")
-      jobs_manf[, , i] <- added_cap[, getYears(x), i, pmatch = T] * 1000
-      jobs_manf[, getYears(x), i] <- (jobs_manf[, getYears(x), i] *  setNames(x[, getYears(x), i, pmatch = T][, , "Manf"], NULL))
+      jobsManf[, , i] <- addedCap[, getYears(x), i, pmatch = TRUE] * 1000
+      jobsManf[, getYears(x), i] <- (jobsManf[, getYears(x), i] *  
+            setNames(x[, getYears(x), i, pmatch = TRUE][, , "Manf"], NULL))
     }
 
-    jobs_manf <- add_dimension(jobs_manf, dim = 3.2, add = "type", nm = "Manf")
-    getSets(jobs_manf) <- c("region", "year", "variable", "type")
+    jobsManf <- add_dimension(jobsManf, dim = 3.2, add = "type", nm = "Manf")
+    getSets(jobsManf) <- c("region", "year", "variable", "type")
 
     # 2. Construction and Installation jobs
-    jobs_ci <- new.magpie(regions, getYears(x), techs, fill = 0)
+    jobsCi <- new.magpie(regions, getYears(x), techs, fill = 0)
 
 
     for (i in techs) {
       # inst <- paste0(i,".","CI")
-      jobs_ci[, , i] <- added_cap[, getYears(x), i, pmatch = T] * 1000
-      # jobs_ci[,,i] <-  (jobs_ci[,getYears(x),i] *  setNames(x[,,i,pmatch=T][,,"CI"],NULL))
-      jobs_ci[, , i] <-  jobs_ci[, getYears(x), i] *  setNames(x[, , i, pmatch = T][, , "CI"], nm = NULL)
+      jobsCi[, , i] <- addedCap[, getYears(x), i, pmatch = TRUE] * 1000
+      jobsCi[, , i] <-  jobsCi[, getYears(x), i] *
+        setNames(x[, , i, pmatch = TRUE][, , "CI"], nm = NULL)
 
     }
 
-    jobs_ci <- add_dimension(jobs_ci, dim = 3.2, add = "type", nm = "CI")
-    getSets(jobs_ci) <- c("region", "year", "variable", "type")
+    jobsCi <- add_dimension(jobsCi, dim = 3.2, add = "type", nm = "CI")
+    getSets(jobsCi) <- c("region", "year", "variable", "type")
 
 
   ## 3. Jobs in O & M
   # jobs = existing capacity per tech * emp factor per tech
-  jobs_om <- new.magpie(regions, getYears(x), techs)
+  jobsOm <- new.magpie(regions, getYears(x), techs)
   for (i in techs) {
     # inst <- paste0(i,".","OM")
-    jobs_om[, , i] <- cap_tot[, getYears(x), i, pmatch = T] * 1000
-    jobs_om[, , i] <-  jobs_om[, , i] *  setNames(x[, , i, pmatch = T][, , "OM"], NULL)
+    jobsOm[, , i] <- capTot[, getYears(x), i, pmatch = TRUE] * 1000
+    jobsOm[, , i] <-  jobsOm[, , i] *  setNames(x[, , i, pmatch = TRUE][, , "OM"], NULL)
   }
-  jobs_om <- add_dimension(jobs_om, dim = 3.2, add = "type", nm = "OM")
-  getSets(jobs_om) <- c("region", "year", "variable", "type")
+  jobsOm <- add_dimension(jobsOm, dim = 3.2, add = "type", nm = "OM")
+  getSets(jobsOm) <- c("region", "year", "variable", "type")
 
   ## 4. Jobs in Fuel supply
   # jobs = total production (in EJ/yr) per fuel * employment factor per fuel (Jobs/PJ)
   fuels <- c("Coal", "Gas", "Biomass", "Oil")
-  jobs_prod <- new.magpie(regions, getYears(x), techs, fill = 0)
+  jobsProd <- new.magpie(regions, getYears(x), techs, fill = 0)
   for (i in fuels) {
-    # fs <- paste0(i,".","Fuel_supply")
-    jobs_prod[, , i] <- remind_prod[, getYears(x), i, pmatch = T] * 1000
-    jobs_prod[, , i] <-  jobs_prod[, , i] * setNames(x[, , i][, , "Fuel_supply"], NULL)
+    jobsProd[, , i] <- remindProd[, getYears(x), i, pmatch = TRUE] * 1000
+    jobsProd[, , i] <-  jobsProd[, , i] * setNames(x[, , i][, , "Fuel_supply"], NULL)
   }
-  jobs_prod <- add_dimension(jobs_prod, dim = 3.2, add = "type", nm = "Fuel_supply")
-  getSets(jobs_prod) <- c("region", "year", "variable", "type")
+  jobsProd <- add_dimension(jobsProd, dim = 3.2, add = "type", nm = "Fuel_supply")
+  getSets(jobsProd) <- c("region", "year", "variable", "type")
 
-  ## JObs in Fuel supply, nuclear which are given in terms of SE
-  rem_se_nuc <- reportSE(gdx)[regions, getYears(x), "Nuclear", pmatch = T] * 277777.778 # EJ to GWh
-  jobs_prod[, , "Nuclear.Fuel_supply"] <- setNames(rem_se_nuc[, , ], NULL) * setNames(x[, , "Nuclear.Fuel_supply"], NULL)
+  ## Jobs in Fuel supply, nuclear which are given in terms of SE
+  remSeNuc <- reportSE(gdx)[regions, getYears(x), "Nuclear", pmatch = TRUE] * 277777.778 # EJ to GWh
+  jobsProd[, , "Nuclear.Fuel_supply"] <- setNames(remSeNuc[, , ], NULL) * setNames(x[, , "Nuclear.Fuel_supply"], NULL)
 
   ####### put all together #############
 
-  jobs <- mbind(jobs_ci, jobs_om, jobs_prod, jobs_manf)
+  jobs <- mbind(jobsCi, jobsOm, jobsProd, jobsManf)
 
   return (jobs)
 
