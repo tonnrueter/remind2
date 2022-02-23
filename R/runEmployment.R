@@ -2,7 +2,7 @@
 #' @param pathToMIF A mif file putput from a REMIND run
 #' @param improvements Either "None", "CEEW", "Dias", "Rutovitz_aus","Solar_found" or "All". Use "All" for all improvements.
 #' @param subtype Subtype for how shares of solar rooftop, wind offshore, and small hydro are assumed in the future. Options "current", "irena", and "expert". See calcDspvShare for more information.
-#' @param share_manf Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.
+#' @param shareManf Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.
 #' @param multiplier controls how the regional multiplier for non-oecd countries changes with time.
 #' @param decline How should the employment factors change over time? "capcosts" means according to capital costs. "static" means it doesn't change
 #' @description This function returns a magpie object containing the reporting the jobs for different technologies
@@ -11,13 +11,13 @@
 #' @examples
 #' \dontrun{
 #'
-#' runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert", share_manf = "local", decline = "capcosts")
+#' runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert", shareManf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems
 #' @export
 
-runEmployment <- function(pathToMIF, improvements, multiplier, subtype, share_manf, decline) {
+runEmployment <- function(pathToMIF, improvements, multiplier, subtype, shareManf, decline) {
 
   inputMif <- remind2::readReportingMIF(pathToMIF = "") # read as data frame
   inputMif_mp <- as.magpie(inputMif) # convert to magpie object
@@ -113,7 +113,6 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, share_ma
 
   ## New and Absolute capacity from REMIND---------------------------------
   # filtering required capacity variables i.e., only new and existing coal capacities
-#  remindOutput <- reportCapacity(gdx)
 
   # selecting variables only related to power or electricity
   remFilter <- inputMif_mp[, , c("Cap|Electricity"), pmatch = TRUE]
@@ -183,19 +182,19 @@ runEmployment <- function(pathToMIF, improvements, multiplier, subtype, share_ma
   prodShare[, , c("Wind|Offshore", "Wind|Onshore")] <- prodShare[, , "wind"]
   prodShare <- prodShare[, , c("spv", "wind"), invert = TRUE]
 
-  # share of world capacity addition by region, only for solar and PV
-  shrGLOAdd <- addedCap[, , c("Solar|PV", "Wind"), pmatch = TRUE] / addedCap_sum[, , c("Solar|PV", "Wind"), pmatch = TRUE]
-  prodShare_tmp <- new.magpie(getRegions(x), c(2015, 2020, 2050), names = c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore"))
+  # share of world capacity addition by region
+  shrGLOAdd <- addedCap[, , colsToAdd, pmatch = TRUE] / addedCap_sum[, , colsToAdd, pmatch = TRUE]
+  prodShareTmp <- new.magpie(regions, c(2015, 2020, 2050), names = c("Solar|PV-utility", "Solar|PV-rooftop", "Wind|Offshore", "Wind|Onshore"))
 
-  if (share_manf == "local" || share_manf == "current") {
+  if (shareManf == "local" || shareManf == "current") {
     ## prod shares calculate local manufacture of wind and solar components in 2050. Change is linear.
     # assigning 2050 regional share values as prod shares
-    prodShare_tmp[, "y2050", ] <- as.numeric(shrGLOAdd[, "y2050", getNames(prodShare_tmp), pmatch = TRUE])
+    prodShareTmp[, "y2050", ] <- as.numeric(shrGLOAdd[, "y2050", getNames(prodShareTmp), pmatch = TRUE])
     # 2015 and 2020 values same as 2019 values
-    prodShare_tmp[, c(2015, 2020), ] <- prodShare[, , getNames(prodShare_tmp)]
+    prodShareTmp[, c(2015, 2020), ] <- prodShare[, , getNames(prodShareTmp)]
     # from 2020 to 2050, linearly interpolate
-    prodShare <- time_interpolate(prodShare_tmp, seq(2025, 2045, 5), integrate_interpolated_years = TRUE)
-    if (share_manf == "current") {
+    prodShare <- time_interpolate(prodShareTmp, seq(2025, 2045, 5), integrate_interpolated_years = TRUE)
+    if (shareManf == "current") {
       prodShare[, , ] <- prodShare[, 2020, ] # shares remain same throughout = 2020
     }
   }
