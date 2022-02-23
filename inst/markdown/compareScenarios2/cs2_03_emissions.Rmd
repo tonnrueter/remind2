@@ -234,6 +234,24 @@ items <- c(
 showLinePlots(data, items)
 ```
 
+
+### Process Emissions Cement
+
+```{r}
+items <- c(
+  "Emi|CO2|Industrial Processes|Cement") 
+showLinePlots(data, items)
+```
+
+
+### Process Emissions Chemicals
+
+```{r}
+items <- c(
+  "Emi|CO2|Industrial Processes|Chemicals") 
+showLinePlots(data, items)
+```
+
 ### Land-Use Change
 
 ```{r}

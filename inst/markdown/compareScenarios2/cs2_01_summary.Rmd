@@ -138,7 +138,7 @@ items <- c(
 showAreaAndBarPlots(data, items)
 ```
 
-## FE Industry by carrier
+## FE Industry by carrier (incl. non-energy use)
 
 ```{r FE Industry by carrier}
 items <- c(
@@ -164,7 +164,7 @@ items <- c(
 showAreaAndBarPlots(data, items)
 ```
 
-## FE Transport by carrier
+## FE Transport by carrier (incl. international bunkers)
 
 ```{r FE Transport by carrier}
 items <- c(
@@ -184,6 +184,17 @@ items <- c(
   "FE|CDR|Gases",
   "FE|CDR|Hydrogen",
   "FE|CDR|Electricity")
+showAreaAndBarPlots(data, items)
+```
+
+
+## FE Non-energy Use by carrier
+
+```{r FE Non-energy Use by carrier}
+items <- c(
+  "FE|Non-energy Use|Industry|Solids",
+  "FE|Non-energy Use|Industry|Liquids",
+  "FE|Non-energy Use|Industry|Gases")
 showAreaAndBarPlots(data, items)
 ```
 

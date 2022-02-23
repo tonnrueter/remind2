@@ -130,6 +130,25 @@ showLinePlots(data, "FE|Industry|Chemicals")
 showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 ```
 
+
+### FE|Non-energy Use|Industry per carrier and SE origin
+
+```{r}
+tot <- "FE|Non-energy Use|Industry"
+items <- c(
+  "FE|Non-energy Use|Industry|Solids|Fossil",
+  "FE|Non-energy Use|Industry|Solids|Biomass",
+  "FE|Non-energy Use|Industry|Liquids|Fossil",
+  "FE|Non-energy Use|Industry|Liquids|Biomass",
+  "FE|Non-energy Use|Industry|Liquids|Hydrogen",
+  "FE|Non-energy Use|Industry|Gases|Fossil",
+  "FE|Non-energy Use|Industry|Gases|Biomass",
+  "FE|Non-energy Use|Industry|Gases|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+```
+
+
+
 ### Specific Energy Consumption
 
 ```{r}
