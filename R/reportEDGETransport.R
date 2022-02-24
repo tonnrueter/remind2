@@ -17,6 +17,7 @@
 #' @importFrom rmndt approx_dt readMIF writeMIF
 #' @importFrom gdxdt readgdx
 #' @importFrom data.table fread fwrite rbindlist copy CJ
+#' @importFrom dplyr %>%
 #' @export
 
 reportEDGETransport <- function(output_folder=".",
@@ -288,6 +289,97 @@ reportEDGETransport <- function(output_folder=".",
                     "EJ/yr", "V1", "det_veh")))
 
     }
+   
+    ####################################
+    
+    df <- rbind(
+      datatable[!is.na(aggr_mode), sum(demand_EJ, na.rm = T),
+        by = c("region", "year", "aggr_mode", "remind_rep")
+      ][, variable := paste0(aggr_mode, "|", remind_rep)][,c("region", "year", "variable", "V1")],
+      datatable[!is.na(aggr_veh), sum(demand_EJ, na.rm = T),
+        by = c("region", "year", "aggr_veh", "remind_rep")
+      ][, variable := paste0(aggr_veh, "|", remind_rep)][,c("region", "year", "variable", "V1")]
+    )
+    
+    .split_liquids <- function(df) {
+      demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)
+
+      bioShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqbio", emi_sectors = "trans"), dim = 3) /
+        dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3)
+
+      synShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqsyn", emi_sectors = "trans"), dim = 3) /
+        dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3)
+
+      # LDV
+      demFeSectorLdv <- mselect(demFeSector,
+        all_enty = c("seliqfos", "seliqbio", "seliqsyn"),
+        all_enty1 = "fepet", emi_sectors = "trans"
+      )
+
+      feShareLdvLiqFos <- dimSums(demFeSectorLdv[, , "seliqfos.fepet"], dim = 3) / dimSums(demFeSectorLdv, dim = 3)
+      feShareLdvLiqBio <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * bioShareTrans / dimSums(demFeSectorLdv, dim = 3)
+      feShareLdvLiqSyn <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * synShareTrans / dimSums(demFeSectorLdv, dim = 3)
+
+      # Trucks, Domestic Aviation etc.
+      demFeSectorNonLdv <- mselect(demFeSector,
+        all_enty = c("seliqfos", "seliqbio", "seliqsyn"),
+        all_enty1 = "fedie", emi_sectors = "trans", all_emiMkt = "ES"
+      )
+
+      feShareNonLdvLiqFos <- demFeSectorNonLdv[, , "seliqfos.fedie"] / dimSums(demFeSectorNonLdv, dim = 3)
+      feShareNonLdvLiqBio <- dimSums(mselect(demFeSectorNonLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * bioShareTrans / dimSums(demFeSectorNonLdv, dim = 3)
+      feShareNonLdvLiqSyn <- dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * synShareTrans / dimSums(demFeSectorNonLdv, dim = 3)
+
+      # Bunkers
+      demFeSectorBunkers <- mselect(demFeSector,
+        all_enty = c("seliqfos", "seliqbio", "seliqsyn"),
+        all_enty1 = "fedie", emi_sectors = "trans", all_emiMkt = "other"
+      )
+
+      feShareBunkersLiqFos <- demFeSectorBunkers[, , "seliqfos.fedie"] / dimSums(demFeSectorBunkers, dim = 3)
+      feShareBunkersLiqBio <- dimSums(mselect(demFeSectorBunkers, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * bioShareTrans / dimSums(demFeSectorBunkers, dim = 3)
+      feShareBunkersLiqSyn <- dimSums(mselect(demFeSectorBunkers, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * synShareTrans / dimSums(demFeSectorBunkers, dim = 3)
+
+      m <- as.magpie(df)
+      y <- intersect(getItems(m, dim = 2), getItems(demFeSector, dim = 2))
+      tmp <- mbind(
+        setNames(m[, y, "Pass|Road|LDV|Liquids"] * feShareLdvLiqFos[, y, ], "Pass|Road|LDV|Liquids|Fossil"),
+        setNames(m[, y, "Pass|Road|LDV|Liquids"] * feShareLdvLiqBio[, y, ], "Pass|Road|LDV|Liquids|Biomass"),
+        setNames(m[, y, "Pass|Road|LDV|Liquids"] * feShareLdvLiqSyn[, y, ], "Pass|Road|LDV|Liquids|Hydrogen"),
+        setNames(m[, y, "Freight|Road|Liquids"] * feShareNonLdvLiqFos[, y, ], "Freight|Road|Liquids|Fossil"),
+        setNames(m[, y, "Freight|Road|Liquids"] * feShareNonLdvLiqBio[, y, ], "Freight|Road|Liquids|Biomass"),
+        setNames(m[, y, "Freight|Road|Liquids"] * feShareNonLdvLiqSyn[, y, ], "Freight|Road|Liquids|Hydrogen"),
+        setNames(m[, y, "Pass|Road|Bus|Liquids"] * feShareNonLdvLiqFos[, y, ], "Pass|Road|Bus|Liquids|Fossil"),
+        setNames(m[, y, "Pass|Road|Bus|Liquids"] * feShareNonLdvLiqBio[, y, ], "Pass|Road|Bus|Liquids|Biomass"),
+        setNames(m[, y, "Pass|Road|Bus|Liquids"] * feShareNonLdvLiqSyn[, y, ], "Pass|Road|Bus|Liquids|Hydrogen"),
+        setNames(m[, y, "Freight|Rail|Liquids"] * feShareNonLdvLiqFos[, y, ], "Freight|Rail|Liquids|Fossil"),
+        setNames(m[, y, "Freight|Rail|Liquids"] * feShareNonLdvLiqBio[, y, ], "Freight|Rail|Liquids|Biomass"),
+        setNames(m[, y, "Freight|Rail|Liquids"] * feShareNonLdvLiqSyn[, y, ], "Freight|Rail|Liquids|Hydrogen"),
+        setNames(m[, y, "Pass|Rail|Liquids"] * feShareNonLdvLiqFos[, y, ], "Pass|Rail|Liquids|Fossil"),
+        setNames(m[, y, "Pass|Rail|Liquids"] * feShareNonLdvLiqBio[, y, ], "Pass|Rail|Liquids|Biomass"),
+        setNames(m[, y, "Pass|Rail|Liquids"] * feShareNonLdvLiqSyn[, y, ], "Pass|Rail|Liquids|Hydrogen"),
+        setNames(m[, y, "Pass|Aviation|Domestic|Liquids"] * feShareNonLdvLiqFos[, y, ], "Pass|Aviation|Domestic|Liquids|Fossil"),
+        setNames(m[, y, "Pass|Aviation|Domestic|Liquids"] * feShareNonLdvLiqBio[, y, ], "Pass|Aviation|Domestic|Liquids|Biomass"),
+        setNames(m[, y, "Pass|Aviation|Domestic|Liquids"] * feShareNonLdvLiqSyn[, y, ], "Pass|Aviation|Domestic|Liquids|Hydrogen"),
+        setNames(m[, y, "Freight|Navigation|Liquids"] * feShareNonLdvLiqFos[, y, ], "Freight|Navigation|Liquids|Fossil"),
+        setNames(m[, y, "Freight|Navigation|Liquids"] * feShareNonLdvLiqBio[, y, ], "Freight|Navigation|Liquids|Biomass"),
+        setNames(m[, y, "Freight|Navigation|Liquids"] * feShareNonLdvLiqSyn[, y, ], "Freight|Navigation|Liquids|Hydrogen"),
+        setNames(m[, y, "Pass|Aviation|International|Liquids"] * feShareBunkersLiqFos[, y, ], "Pass|Aviation|International|Liquids|Fossil"),
+        setNames(m[, y, "Pass|Aviation|International|Liquids"] * feShareBunkersLiqBio[, y, ], "Pass|Aviation|International|Liquids|Biomass"),
+        setNames(m[, y, "Pass|Aviation|International|Liquids"] * feShareBunkersLiqSyn[, y, ], "Pass|Aviation|International|Liquids|Hydrogen"),
+        setNames(m[, y, "Freight|International Shipping|Liquids"] * feShareBunkersLiqFos[, y, ], "Freight|International Shipping|Liquids|Fossil"),
+        setNames(m[, y, "Freight|International Shipping|Liquids"] * feShareBunkersLiqBio[, y, ], "Freight|International Shipping|Liquids|Biomass"),
+        setNames(m[, y, "Freight|International Shipping|Liquids"] * feShareBunkersLiqSyn[, y, ], "Freight|International Shipping|Liquids|Hydrogen")
+      )
+
+      as.data.frame(tmp, rev = 2) %>%
+        as.data.table() %>%
+        prepare4MIF("EJ/yr", ".value", "variable") %>%
+        return()
+    }
+      
+    report_liquids_split <- .split_liquids(df)
+
     ## add World
     report_w = report[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
     report = rbind(report, report_w)
@@ -295,8 +387,11 @@ reportEDGETransport <- function(output_folder=".",
     report_tech_w = report_tech[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
     report_tech = rbind(report_tech, report_tech_w)
 
+    report_liquids_split_w <- report_liquids_split[,.(value = sum(value), region = "World"), by = .(model, scenario, variable, unit, period)]
+    report_liquids_split <- rbind(report_liquids_split, report_liquids_split_w)
+    
     ## in case the aggregation features EU sub-regions, include also the aggregated versions
-    return(rbindlist(list(report, report_tech)))
+    return(rbindlist(list(report, report_tech, report_liquids_split)))
   }
 
 
@@ -450,6 +545,7 @@ reportEDGETransport <- function(output_folder=".",
   repFE <- reportingESandFE(
     demand_ej,
     mode ="FE")
+  
   repVKM <- reportingESandFE(
     datatable=demand_vkm,
     mode="VKM")
