@@ -12,7 +12,7 @@
 #' \dontrun{
 #'
 #' runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert",
-#'  shareManf = "local", decline = "capcosts")
+#' shareManf = "local", decline = "capcosts")
 #' }
 #' @importFrom madrat calcOutput
 #' @importFrom magclass getNames add_columns getItems

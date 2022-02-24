@@ -28,7 +28,8 @@ This function returns a magpie object containing the reporting the jobs for diff
 \examples{
 \dontrun{
 
-runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert", shareManf = "local", decline = "capcosts")
+runEmployment(pathToMIF, improvements = "All", multiplier = "own", subtype = "expert",
+shareManf = "local", decline = "capcosts")
 }
 }
 \author{
