@@ -4,41 +4,39 @@
 \alias{reportEmployment}
 \title{Computes the employment values (jobs) across different sectors}
 \usage{
-reportEmployment(
-  gdx,
-  improvements,
-  multiplier,
-  subtype,
-  share_manf,
-  decline,
-  type
-)
+reportEmployment(gdx, improvements, multiplier, subtype, shareManf, decline)
 }
 \arguments{
 \item{gdx}{A gdx file output from a REMIND run}
 
-\item{improvements}{Either "None", "CEEW", "Dias", "Rutovitz_aus","Solar_found" or "All". Use "All" for all improvements.}
+\item{improvements}{Either "None", "CEEW", "Dias", "Rutovitz_aus",
+"Solar_found" or "All". Use "All" for all improvements.}
 
-\item{multiplier}{controls how the regional multiplier for non-oecd countries changes with time.}
+\item{multiplier}{controls how the regional multiplier for non-oecd countries
+changes with time.}
 
-\item{subtype}{Subtype for how shares of solar rooftop, wind offshore, and small hydro are assumed in the future. Options "current", "irena", and "expert". See calcDspvShare for more information.}
+\item{subtype}{Subtype for how shares of solar rooftop, wind offshore,
+and small hydro are assumed in the future. Options "current", "irena", and
+"expert". See calcDspvShare for more information.}
 
-\item{share_manf}{Either "current" or "local". Current implies current shares of world manufacture remain same until 2050, current means that in 2050 all countries manufacture required components locally.}
+\item{shareManf}{Either "current" or "local". Current implies current shares
+of world manufacture remain same until 2050, current means that in 2050 all
+countries manufacture required components locally.}
 
-\item{decline}{How should the employment factors change over time? "capcosts" means according to capital costs. "static" means it doesn't change}
-
-\item{type}{either "created" or "per_year". The former outputs jobs created in that year whereas the latter outputs total jobs in that year}
+\item{decline}{How should the employment factors change over time? "capcosts"
+means according to capital costs. "static" means it doesn't change}
 }
 \value{
 A magpie object
 }
 \description{
-This function returns a magpie object containing the reporting the jobs for different technologies
+This function returns a magpie object containing the reporting
+the jobs for different technologies
 }
 \examples{
 \dontrun{
-reportEmployment(gdx, improvements = "All", multiplier = "own", subtype = "expert", 
-share_manf = "local", decline = "capcosts",type="per_year")
+reportEmployment(gdx, improvements = "All", multiplier = "own",
+subtype = "expert", shareManf = "local", decline = "capcosts")
 }
 }
 \author{
