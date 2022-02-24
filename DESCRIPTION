@@ -53,6 +53,7 @@ Suggests:
     sr15data,
     covr,
     tidyverse,
-    gridExtra
+    gridExtra,
+    kableExtra
 VignetteBuilder: knitr
 URL: https://github.com/pik-piam/remind2

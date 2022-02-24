@@ -1,0 +1,9 @@
+## File Reference Table
+
+```{r}
+fileReference %>%
+  select(fileid, newScenarioName, scenario, path) %>% 
+  kbl(col.names = c("ID", "Name Used Here", "Original Name", "Path")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"))
+```
+

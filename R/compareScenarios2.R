@@ -39,7 +39,7 @@
 #'     \code{character(n)}.
 #'     Default: \code{"all"}.
 #'     Names of sections to include. A subset of
-#'     \code{c("01_summary", "02_macro", "03_emissions", "04_energy_supply",
+#'     \code{c("00_info", "01_summary", "02_macro", "03_emissions", "04_energy_supply",
 #'     "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}
 #'     or \code{"all"} for all available sections.}
 #'   \item{\code{userSectionPath}}{

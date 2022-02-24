@@ -70,28 +70,66 @@ if (interactive()) {
 library(gridExtra)
 options(tidyverse.quiet = TRUE)
 library(tidyverse)
+library(kableExtra)
 library(quitte)
 library(mip)
 ```
 
 
-```{r read mifs}
-# Read *.mif-files.
+```{r read scenario mifs}
+# Read *.mif-files as nested tibble.
 tibble(path = unname(params$mifScen)) %>% 
-  mutate(
-    newScenarioName = params$mifScenNames,
-    data = map(path, read.quitte, factors=FALSE)) %>% 
-  unnest(cols = data) ->
-  dataScen
-if ('newScenarioName' %in% colnames(dataScen)) {
-  dataScen %>% 
-    mutate(scenario = newScenarioName) ->
-    dataScen
-} 
-dataScen %>% 
+  rowid_to_column("fileid") %>% 
+  mutate(data = map(path, read.quitte, factors=FALSE)) %>% 
+  unnest(data) %>% 
+  nest(-c(fileid, path, scenario)) ->
+  dataScenNested
+# Add column newScenarioName either with contents of params$mifScenNames or copy names from column scenario.
+if (is.null(params$mifScenNames)) {
+  dataScenNested %>% 
+    mutate(newScenarioName = scenario) ->
+    dataScenNested
+} else {
+  dataScenNested %>% 
+    left_join(
+      tibble(
+        fileid = seq_along(params$mifScen),
+        newScenarioName = params$mifScenNames),
+      by = "fileid") ->
+    dataScenNested
+}
+# Add suffixes "_1", "_2", ... in case of duplicated scenario names.
+# Side note: In the unlikly case, one has scenario names
+#   scenA, scenA, scenA_1, scenB,
+# they will be renamed to
+#   scenA_1, scenA_2, scenA_1, scenB
+# in the first iteration of the following loop. After the second iteration we get
+#   scenA_1_1, scenA_2, scenA_1_2, scenB.
+while(anyDuplicated(dataScenNested$newScenarioName)) {
+  warning("There are dupicated scenario names. They will be renamed.")
+  dataScenNested %>% 
+    group_by(newScenarioName) %>% 
+    mutate(newScenarioName = 
+      if (n() == 1) newScenarioName else paste(newScenarioName, 1:n(), sep="_")
+    ) %>% 
+    ungroup() -> 
+    dataScenNested
+}
+# Retrieve data for reference table to be shown at the beginning of the document.
+dataScenNested %>% 
+  select(fileid, path, scenario, newScenarioName) ->
+  fileReference
+
+# Apply renaming of scenario, unnest, and select only relevant columns.
+dataScenNested %>% 
+  mutate(scenario = newScenarioName) %>% 
+  unnest(data) %>% 
   select(model, scenario, region, variable, unit, period, value) ->
   dataScen
+```
 
+
+```{r read historical mif}
 params$mifHist %>% 
   read.quitte(factors=FALSE) ->
   dataHist
