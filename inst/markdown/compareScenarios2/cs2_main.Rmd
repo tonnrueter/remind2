@@ -106,7 +106,7 @@ if (is.null(params$mifScenNames)) {
 # in the first iteration of the following loop. After the second iteration we get
 #   scenA_1_1, scenA_2, scenA_1_2, scenB.
 while (anyDuplicated(dataScenNested$newScenarioName)) {
-  warning("There are dupicated scenario names. They will be renamed.")
+  warning("There are duplicated scenario names. They will be renamed.")
   dataScenNested %>%
     group_by(newScenarioName) %>%
     mutate(newScenarioName =
