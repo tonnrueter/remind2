@@ -10,6 +10,7 @@ compareScenarios2(
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
   outputFormat = "PDF",
+  envir = new.env(),
   ...
 )
 }
@@ -28,6 +29,12 @@ output document to be created.}
 
 \item{outputFormat}{\code{character(1)}, not case-sensitive. \code{"html"},
 \code{"pdf"}, or \code{"rmd"}.}
+
+\item{envir}{\code{environment}. The environment in which the code chunks are
+to be evaluated. See the argument of the same name in
+\code{\link[rmarkdown:render]{rmarkdown::render()}}.
+Set this to \code{globalenv()} and \code{sections} to \code{NULL} to load
+an preprocess data in your global environment during development.}
 
 \item{...}{YAML parameters, see below.}
 }
@@ -60,12 +67,14 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
     Default: \code{NULL}.
     Regions to show. \code{NULL} means all.}
   \item{\code{sections}}{
-    \code{character(n)}.
+    \code{character(n) or numeric(n) or NULL}.
     Default: \code{"all"}.
-    Names of sections to include. A subset of
-    \code{c("01_summary", "02_macro", "03_emissions", "04_energy_supply",
-    "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}
-    or \code{"all"} for all available sections.}
+    Names or numbers of sections to include. For names subset of
+    \code{c("00_info", "01_summary", "02_macro", "03_emissions", "04_energy_supply",
+    "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}.
+    Use \code{"all"} to include all available sections.
+    Use \code{NULL} to not include any section
+    (useful in combination with parameter \code{envir}).}
   \item{\code{userSectionPath}}{
     \code{NULL} or \code{character(n)}.
     Default: \code{NULL}.
@@ -87,16 +96,28 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
 
 \examples{
 \dontrun{
+# Simple use. Creates PDF:
 compareScenarios2(
   mifScen = c("path/to/Base.mif", "path/to/NDC.mif"),
   mifHist = "path/to/historical.mif",
-  outputFile = "CompareScenarios2Example1",
-  userSectionPath = "path/to/myPlots.Rmd")
+  outputFile = "CompareScenarios2Example")
+# More complex use. Creates folder with Rmds:
 compareScenarios2(
   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
-  outputFile = "CompareScenarios2Example2",
-  figWidth = 18, figHeight = 10)
+  outputDir = "path/to/output",
+  outputFormat = "Rmd",
+  outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
+  warning = FALSE,
+  sections = c(2, 3, 6),
+  userSectionPath = "path/to/myPlots.Rmd")
+# Use in development. Load data into global environment:
+compareScenarios2(
+  mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"),
+  mifHist = "path/to/historical.mif",
+  outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
+  sections = NULL,
+  envir = globalenv())
 }
 }
 \author{
