@@ -237,24 +237,6 @@ compareScenarios <- function(mif, hist,
   histData <- read.report(hist,as.list=FALSE)
   y_hist <- intersect(y_hist, getYears(histData, as.integer=TRUE))
   
-  # remove regional and global data from WEO 2021 source due to lack of accuracy
-  if (any(grepl("IEA WEO 2021", getNames(histData)))) {
-    
-    histData.WEO <- histData[,,"IEA WEO 2021", pmatch = T]
-    histData.WEO[histData.WEO == 0] <- NA
-    
-    histData.WEO[setdiff(getRegions(histData.WEO), "GLO"), ,
-      c("IEA WEO 2021 APS GLO", "IEA WEO 2021 Net2050 GLO", "IEA WEO 2021 SDS GLO", "IEA WEO 2021 SPS GLO"),
-      pmatch = T
-    ] <- NA
-    histData.WEO["GLO", ,
-      c("IEA WEO 2021 APS regional", "IEA WEO 2021 SDS regional", "IEA WEO 2021 SPS regional"),
-      pmatch = T
-    ] <- NA
-    histData[,,"IEA WEO 2021", pmatch = T] <- histData.WEO
-    
-  }
-  
   if(all(getRegions(data) %in% getRegions(histData))) {
     histData = histData[getRegions(data),,]
     if ( any(grepl("EDGE_SSP2",getNames(histData)))){

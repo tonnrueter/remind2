@@ -289,9 +289,7 @@ reportEDGETransport <- function(output_folder=".",
                     "EJ/yr", "V1", "det_veh")))
 
     }
-   
-    ####################################
-    
+
     df <- rbind(
       datatable[!is.na(aggr_mode), sum(demand_EJ, na.rm = T),
         by = c("region", "year", "aggr_mode", "remind_rep")
@@ -301,12 +299,15 @@ reportEDGETransport <- function(output_folder=".",
       ][, variable := paste0(aggr_veh, "|", remind_rep)][,c("region", "year", "variable", "V1")]
     )
     
+    # splits Liquids variables into Biomass, Fossil and Hydrogen according to FE demand shares
     .split_liquids <- function(df) {
       demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)
 
+      # biomass share in transport sector
       bioShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqbio", emi_sectors = "trans"), dim = 3) /
         dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3)
 
+      # hydrogen share in transport sector
       synShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqsyn", emi_sectors = "trans"), dim = 3) /
         dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3)
 
