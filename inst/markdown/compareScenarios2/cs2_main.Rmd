@@ -36,13 +36,13 @@ knitr::opts_chunk$set(
   error = TRUE,
   message = FALSE,
   warning = params$warning,
-  fig.width = params$figWidth, 
+  fig.width = params$figWidth,
   fig.height = params$figHeight)
 ```
 
 
 ```{r fix interactive plot size}
-# Hack to use the same fig.width and fig.height as described in previous chunk 
+# Hack to use the same fig.width and fig.height as described in previous chunk
 # for chunks in RStudio Notebook mode.
 if (interactive()) {
   insertExprAtStartOfFun <- function(fun, funName, env, expr) {
@@ -50,7 +50,7 @@ if (interactive()) {
   }
   fn <- ".rs.setNotebookGraphicsOption"
   envToolsRstudio <- as.environment("tools:rstudio")
-  if (!exists(".old.rs.setNotebookGraphicsOption")) 
+  if (!exists(".old.rs.setNotebookGraphicsOption"))
     old.rs.setNotebookGraphicsOption <- envToolsRstudio[[fn]]
   insertExprAtStartOfFun(
     old.rs.setNotebookGraphicsOption,
@@ -78,19 +78,19 @@ library(mip)
 
 ```{r read scenario mifs}
 # Read *.mif-files as nested tibble.
-tibble(path = unname(params$mifScen)) %>% 
-  rowid_to_column("fileid") %>% 
-  mutate(data = map(path, read.quitte, factors=FALSE)) %>% 
-  unnest(data) %>% 
+tibble(path = unname(params$mifScen)) %>%
+  rowid_to_column("fileid") %>%
+  mutate(data = map(path, read.quitte, factors = FALSE)) %>%
+  unnest(data) %>%
   nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
 # Add column newScenarioName either with contents of params$mifScenNames or copy names from column scenario.
 if (is.null(params$mifScenNames)) {
-  dataScenNested %>% 
+  dataScenNested %>%
     mutate(newScenarioName = scenario) ->
     dataScenNested
 } else {
-  dataScenNested %>% 
+  dataScenNested %>%
     left_join(
       tibble(
         fileid = seq_along(params$mifScen),
@@ -105,43 +105,43 @@ if (is.null(params$mifScenNames)) {
 #   scenA_1, scenA_2, scenA_1, scenB
 # in the first iteration of the following loop. After the second iteration we get
 #   scenA_1_1, scenA_2, scenA_1_2, scenB.
-while(anyDuplicated(dataScenNested$newScenarioName)) {
+while (anyDuplicated(dataScenNested$newScenarioName)) {
   warning("There are dupicated scenario names. They will be renamed.")
-  dataScenNested %>% 
-    group_by(newScenarioName) %>% 
-    mutate(newScenarioName = 
-      if (n() == 1) newScenarioName else paste(newScenarioName, 1:n(), sep="_")
-    ) %>% 
-    ungroup() -> 
+  dataScenNested %>%
+    group_by(newScenarioName) %>%
+    mutate(newScenarioName =
+      if (n() == 1) newScenarioName else paste(newScenarioName, 1:n(), sep = "_")
+    ) %>%
+    ungroup() ->
     dataScenNested
 }
 # Retrieve data for reference table to be shown at the beginning of the document.
-dataScenNested %>% 
+dataScenNested %>%
   select(fileid, path, scenario, newScenarioName) ->
   fileReference
 
 # Apply renaming of scenario, unnest, and select only relevant columns.
-dataScenNested %>% 
-  mutate(scenario = newScenarioName) %>% 
-  unnest(data) %>% 
+dataScenNested %>%
+  mutate(scenario = newScenarioName) %>%
+  unnest(data) %>%
   select(model, scenario, region, variable, unit, period, value) ->
   dataScen
 ```
 
 
 ```{r read historical mif}
-params$mifHist %>% 
-  read.quitte(factors=FALSE) ->
+params$mifHist %>%
+  read.quitte(factors = FALSE) ->
   dataHist
 ```
 
 
 ```{r preprocess}
 # Filter years and NA.
-dataScen %>% 
+dataScen %>%
   filter(period %in% params$yearsScen) ->
   dataScen
-dataHist %>% 
+dataHist %>%
   filter(period %in% params$yearsHist, !is.na(value)) ->
   dataHist
 
@@ -150,7 +150,7 @@ data <- bind_rows(dataScen, dataHist)
 rm(dataScen, dataHist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
-data %>% 
+data %>%
   mutate(
     varplus = variable,
     variable = remind2::deletePlus(variable)) ->
@@ -158,7 +158,7 @@ data %>%
 
 # Filter regions.
 if (!is.null(params$reg)) {
-  data %>% 
+  data %>%
     filter(region %in% params$reg) ->
     data
 }
@@ -172,8 +172,8 @@ if (!is.null(params$reg)) {
 # Relevant for ARIADNE historical EUR GDP|PPP.
 bind_rows(
   data %>% filter(unit != "million US$2005/yr"),
-  data %>% 
-    filter(unit == "million US$2005/yr") %>% 
+  data %>%
+    filter(unit == "million US$2005/yr") %>%
     mutate(
       unit = "billion US$2005/yr",
       value = value / 1000)) ->
@@ -182,7 +182,7 @@ bind_rows(
 
 
 ```{r reference models for historical}
-# Sometimes it is necessary to choose a single model for the historical data, 
+# Sometimes it is necessary to choose a single model for the historical data,
 # e.g., calculating per capita variables. These reference models are defined here.
 histRefModel <- c(
   "Population" = "WDI",
@@ -193,8 +193,8 @@ histRefModel <- c(
 ```{r calcuate pCap variables}
 # For all variables in following table, add a new variable to data with the name
 # "OldName pCap". Calculate its value by
-#     OldValue * conversionFactor 
-# and set its unit to newUnit. 
+#     OldValue * conversionFactor
+# and set its unit to newUnit.
 # The new variable "OldName pCap" will be available in the plot sections.
 pCapVariables <- tribble(
   ~variable, ~newUnit, ~conversionFactor,
@@ -223,18 +223,18 @@ pCapVariables <- tribble(
   "ES|Transport|Freight|Road|Gases", "tkm/yr", 1e9,
   "ES|Transport|Freight|Road|Liquids", "tkm/yr", 1e9)
 
-data %>% 
+data %>%
   filter(variable == "Population") %>%
-  filter(scenario != "historical" | model == histRefModel["Population"]) %>% 
-  select(scenario, region, period, value) %>% 
+  filter(scenario != "historical" | model == histRefModel["Population"]) %>%
+  select(scenario, region, period, value) %>%
   mutate(
     population = value * 1e6, # unit originally is million, now is 1
-    value = NULL) -> 
+    value = NULL) ->
   dataPop
 
-data %>% 
-  inner_join(pCapVariables, 'variable') %>% 
-  left_join(dataPop, c('scenario', 'region', 'period')) %>% 
+data %>%
+  inner_join(pCapVariables, "variable") %>%
+  left_join(dataPop, c("scenario", "region", "period")) %>%
   mutate(
     value = value / population * conversionFactor,
     variable = paste0(variable, " pCap"),
@@ -242,24 +242,24 @@ data %>%
     newUnit = NULL, conversionFactor = NULL, population = NULL) ->
   dataPCap
 
-data %>% 
+data %>%
   bind_rows(dataPCap) ->
   data
 ```
 
 
 ```{r calcuate pGDP variables}
-data %>% 
-  filter(variable == "GDP|PPP pCap") %>% 
-  filter(scenario != "historical" | model == histRefModel["GDP|PPP pCap"]) %>% 
-  select(scenario, region, period, value) %>% 
-  rename(gdp = value) ->   
+data %>%
+  filter(variable == "GDP|PPP pCap") %>%
+  filter(scenario != "historical" | model == histRefModel["GDP|PPP pCap"]) %>%
+  select(scenario, region, period, value) %>%
+  rename(gdp = value) ->
   dataGDP
 
 # For all variables in following table, add a new variable to data with the name
-# "OldName pGDP". Calculate its value by 
-#     OldValue / (GDP|PPP pCap) * conversionFactor 
-# and set its unit to newUnit. 
+# "OldName pGDP". Calculate its value by
+#     OldValue / (GDP|PPP pCap) * conversionFactor
+# and set its unit to newUnit.
 # The new variable "OldName pGDP" will be available in the plot sections.
 pGdpVariables <- tribble(
   ~variable, ~newUnit, ~conversionFactor,
@@ -269,9 +269,9 @@ pGdpVariables <- tribble(
   "FE|Buildings", "MJ/US$2005", 1e3,
   "FE|Industry", "MJ/US$2005", 1e3)
 
-data %>% 
-  inner_join(pGdpVariables, 'variable') %>% 
-  left_join(dataGDP, c('scenario', 'region', 'period')) %>% 
+data %>%
+  inner_join(pGdpVariables, "variable") %>%
+  left_join(dataGDP, c("scenario", "region", "period")) %>%
   mutate(
     value = value / gdp * conversionFactor,
     variable = paste0(variable, " pGDP"),
@@ -279,7 +279,7 @@ data %>%
     newUnit = NULL, conversionFactor = NULL, gdp = NULL) ->
   dataPGdp
 
-data %>% 
+data %>%
   bind_rows(dataPGdp) ->
   data
 ```
@@ -291,7 +291,7 @@ data <- as.quitte(data)
 
 
 ```{r global variables}
-# Set global variables for use in plotting. 
+# Set global variables for use in plotting.
 options(mip.mainReg = params$mainReg)
 options(mip.yearsBarPlot = params$yearsBarPlot)
 options(mip.histRefModel = histRefModel)
@@ -300,21 +300,21 @@ options(mip.histRefModel = histRefModel)
 
 
 ```{r sectionPaths}
-dir() %>% 
+dir() %>%
   str_match("^cs2_([0-9]+).+\\.Rmd$") ->
   matches
 tibble(
-  files = matches[,1],
-  nums = as.numeric(matches[,2])) %>% 
-  drop_na() %>% 
+  files = matches[, 1],
+  nums = as.numeric(matches[, 2])) %>%
+  drop_na() %>%
   arrange(files) ->
   availableSections
 if (length(params$sections) == 1 && params$sections == "all") {
   sectionPaths <- availableSections$files
 } else if (is.numeric(params$sections)) {
-  tibble(nums = params$sections) %>% 
-    left_join(availableSections, by="nums") %>% 
-    drop_na() %>% 
+  tibble(nums = params$sections) %>%
+    left_join(availableSections, by = "nums") %>%
+    drop_na() %>%
     pull(files) ->
     sectionPaths
 } else {

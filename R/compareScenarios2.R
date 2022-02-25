@@ -17,7 +17,7 @@
 #'   \code{"pdf"}, or \code{"rmd"}.
 #' @param envir \code{environment}. The environment in which the code chunks are
 #'   to be evaluated. See the argument of the same name in
-#'   \code{\link[rmarkdown:render]{rmarkdown::render()}}. 
+#'   \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 #'   Set this to \code{globalenv()} and \code{sections} to \code{NULL} to load
 #'   an preprocess data in your global environment during development.
 #' @param ... YAML parameters, see below.
@@ -47,7 +47,7 @@
 #'     \code{c("00_info", "01_summary", "02_macro", "03_emissions", "04_energy_supply",
 #'     "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}.
 #'     Use \code{"all"} to include all available sections.
-#'     Use \code{NULL} to not include any section 
+#'     Use \code{NULL} to not include any section
 #'     (useful in combination with parameter \code{envir}).}
 #'   \item{\code{userSectionPath}}{
 #'     \code{NULL} or \code{character(n)}.
@@ -82,7 +82,7 @@
 #'   outputFormat = "Rmd",
 #'   outputFile = format(Sys.time(), "compScen_%Y%m%d-%H%M%S"),
 #'   warning = FALSE,
-#'   sections = c(2,3,6),
+#'   sections = c(2, 3, 6),
 #'   userSectionPath = "path/to/myPlots.Rmd")
 #' # Use in development. Load data into global environment:
 #' compareScenarios2(
@@ -121,7 +121,7 @@ compareScenarios2 <- function(
     outputFormat <- "html_document"
   } else if (outputFormat == "rmd") {
     return(.compareScenarios2Rmd(yamlParams, outputDir, outputFile))
-  } 
+  }
   rmarkdown::render(
     system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"),
     intermediates_dir = outputDir,

@@ -2,10 +2,10 @@
 
 ```{r}
 fileReference %>%
-  select(fileid, newScenarioName, scenario, path) %>% 
+  select(fileid, newScenarioName, scenario, path) %>%
   # WORKAROUND:
   # Windows file paths may contain backslashes.
-  # But knitr::kable(x, "html"), which will be called by kbl() below, 
+  # But knitr::kable(x, "html"), which will be called by kbl() below,
   # does not handle backslashes well. => Replace them with forward slashes.
   mutate(path = str_replace_all(path, fixed("\\"), "/")) %>%
   kbl(
