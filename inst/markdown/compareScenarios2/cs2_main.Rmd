@@ -82,7 +82,7 @@ tibble(path = unname(params$mifScen)) %>%
   rowid_to_column("fileid") %>% 
   mutate(data = map(path, read.quitte, factors=FALSE)) %>% 
   unnest(data) %>% 
-  nest(-c(fileid, path, scenario)) ->
+  nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
 # Add column newScenarioName either with contents of params$mifScenNames or copy names from column scenario.
 if (is.null(params$mifScenNames)) {
@@ -299,11 +299,23 @@ options(mip.histRefModel = histRefModel)
 
 
 
-```{r sectionPaths, include=FALSE}
+```{r sectionPaths}
+dir() %>% 
+  str_match("^cs2_([0-9]+).+\\.Rmd$") ->
+  matches
+tibble(
+  files = matches[,1],
+  nums = as.numeric(matches[,2])) %>% 
+  drop_na() %>% 
+  arrange(files) ->
+  availableSections
 if (length(params$sections) == 1 && params$sections == "all") {
-  dir() %>% 
-    str_subset("^cs2_[0-9]{2}.+\\.Rmd$") %>% 
-    sort() ->
+  sectionPaths <- availableSections$files
+} else if (is.numeric(params$sections)) {
+  tibble(nums = params$sections) %>% 
+    left_join(availableSections, by="nums") %>% 
+    drop_na() %>% 
+    pull(files) ->
     sectionPaths
 } else {
   if (length(params$sections) > 0) {

@@ -36,12 +36,12 @@
 #'     Default: \code{NULL}.
 #'     Regions to show. \code{NULL} means all.}
 #'   \item{\code{sections}}{
-#'     \code{character(n)}.
+#'     \code{character(n) or numeric(n)}.
 #'     Default: \code{"all"}.
-#'     Names of sections to include. A subset of
+#'     Names or numbers of sections to include. For names subset of
 #'     \code{c("00_info", "01_summary", "02_macro", "03_emissions", "04_energy_supply",
-#'     "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}
-#'     or \code{"all"} for all available sections.}
+#'     "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}.
+#'     Use \code{"all"} to include all available sections.}
 #'   \item{\code{userSectionPath}}{
 #'     \code{NULL} or \code{character(n)}.
 #'     Default: \code{NULL}.
@@ -65,13 +65,16 @@
 #' compareScenarios2(
 #'   mifScen = c("path/to/Base.mif", "path/to/NDC.mif"),
 #'   mifHist = "path/to/historical.mif",
-#'   outputFile = "CompareScenarios2Example1",
-#'   userSectionPath = "path/to/myPlots.Rmd")
+#'   outputFile = "CompareScenarios2Example")
 #' compareScenarios2(
 #'   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
 #'   mifHist = "path/to/historical.mif",
-#'   outputFile = "CompareScenarios2Example2",
-#'   figWidth = 18, figHeight = 10)
+#'   outputDir = "path/to/output",
+#'   outputFormat = "Rmd",
+#'   outputFile = format(Sys.time(), "compScen_%Y%m%d-%H%M%S"),
+#'   warning = FALSE,
+#'   sections = c(2,3,6),
+#'   userSectionPath = "path/to/myPlots.Rmd")
 #' }
 #' @export
 compareScenarios2 <- function(
