@@ -304,12 +304,12 @@ reportEDGETransport <- function(output_folder=".",
       demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)
 
       # biomass share in transport sector
-      bioShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqbio", emi_sectors = "trans"), dim = 3) /
-        dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3)
+      bioShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqbio", emi_sectors = "trans"), dim = 3, na.rm = T) /
+        dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3, na.rm = T)
 
       # hydrogen share in transport sector
-      synShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqsyn", emi_sectors = "trans"), dim = 3) /
-        dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3)
+      synShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqsyn", emi_sectors = "trans"), dim = 3, na.rm = T) /
+        dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3, na.rm = T)
 
       # LDV
       demFeSectorLdv <- mselect(demFeSector,
@@ -317,9 +317,9 @@ reportEDGETransport <- function(output_folder=".",
         all_enty1 = "fepet", emi_sectors = "trans"
       )
 
-      feShareLdvLiqFos <- dimSums(demFeSectorLdv[, , "seliqfos.fepet"], dim = 3) / dimSums(demFeSectorLdv, dim = 3)
-      feShareLdvLiqBio <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * bioShareTrans / dimSums(demFeSectorLdv, dim = 3)
-      feShareLdvLiqSyn <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * synShareTrans / dimSums(demFeSectorLdv, dim = 3)
+      feShareLdvLiqFos <- dimSums(demFeSectorLdv[, , "seliqfos.fepet"], dim = 3, na.rm = T) / dimSums(demFeSectorLdv, dim = 3, na.rm = T)
+      feShareLdvLiqBio <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * bioShareTrans / dimSums(demFeSectorLdv, dim = 3, na.rm = T)
+      feShareLdvLiqSyn <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * synShareTrans / dimSums(demFeSectorLdv, dim = 3, na.rm = T)
 
       # Trucks, Domestic Aviation etc.
       demFeSectorNonLdv <- mselect(demFeSector,
@@ -327,9 +327,9 @@ reportEDGETransport <- function(output_folder=".",
         all_enty1 = "fedie", emi_sectors = "trans", all_emiMkt = "ES"
       )
 
-      feShareNonLdvLiqFos <- demFeSectorNonLdv[, , "seliqfos.fedie"] / dimSums(demFeSectorNonLdv, dim = 3)
-      feShareNonLdvLiqBio <- dimSums(mselect(demFeSectorNonLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * bioShareTrans / dimSums(demFeSectorNonLdv, dim = 3)
-      feShareNonLdvLiqSyn <- dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * synShareTrans / dimSums(demFeSectorNonLdv, dim = 3)
+      feShareNonLdvLiqFos <- demFeSectorNonLdv[, , "seliqfos.fedie"] / dimSums(demFeSectorNonLdv, dim = 3, na.rm = T)
+      feShareNonLdvLiqBio <- dimSums(mselect(demFeSectorNonLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * bioShareTrans / dimSums(demFeSectorNonLdv, dim = 3, na.rm = T)
+      feShareNonLdvLiqSyn <- dimSums(mselect(demFeSectorNonLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * synShareTrans / dimSums(demFeSectorNonLdv, dim = 3, na.rm = T)
 
       # Bunkers
       demFeSectorBunkers <- mselect(demFeSector,
@@ -337,9 +337,9 @@ reportEDGETransport <- function(output_folder=".",
         all_enty1 = "fedie", emi_sectors = "trans", all_emiMkt = "other"
       )
 
-      feShareBunkersLiqFos <- demFeSectorBunkers[, , "seliqfos.fedie"] / dimSums(demFeSectorBunkers, dim = 3)
-      feShareBunkersLiqBio <- dimSums(mselect(demFeSectorBunkers, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * bioShareTrans / dimSums(demFeSectorBunkers, dim = 3)
-      feShareBunkersLiqSyn <- dimSums(mselect(demFeSectorBunkers, all_enty = c("seliqbio", "seliqsyn")), dim = 3) * synShareTrans / dimSums(demFeSectorBunkers, dim = 3)
+      feShareBunkersLiqFos <- demFeSectorBunkers[, , "seliqfos.fedie"] / dimSums(demFeSectorBunkers, dim = 3, na.rm = T)
+      feShareBunkersLiqBio <- dimSums(mselect(demFeSectorBunkers, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * bioShareTrans / dimSums(demFeSectorBunkers, dim = 3, na.rm = T)
+      feShareBunkersLiqSyn <- dimSums(mselect(demFeSectorBunkers, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * synShareTrans / dimSums(demFeSectorBunkers, dim = 3, na.rm = T)
 
       m <- as.magpie(df)
       y <- intersect(getItems(m, dim = 2), getItems(demFeSector, dim = 2))
