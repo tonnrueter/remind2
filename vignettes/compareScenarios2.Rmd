@@ -1,7 +1,7 @@
 ---
 title: "compareScenarios2"
 author: "Christof Schötz"
-date: "2022-02-08"
+date: "2022-02-28"
 output: 
   rmarkdown::html_vignette:
     toc: true
@@ -29,11 +29,79 @@ Internally, `compareScenarios2()` calls `rmarkdown::render()` on certain Rmarkdo
 To be more precises, `rmarkdown::render()` is called on `cs2_main.Rmd` in this folder, which includes other Rmd-files - one for each section of the output document.
 The loading and preprocessing of data happens in `cs2_main.Rmd`; the section Rmd-files mostly call plot functions.
 
-Aside from HTML- and PDF-documents as output, `compareScenarios2()` also allows to obtain a copy of the Rmd-files needed to create these outputs (by setting the argument `outputFormat = "Rmd"`). Rendering the resulting Rmd-files to PDF or HTML yields the same documents as calls to `compareScenarios2()` with `outputFormat = "PDF"` or `"HTML"`. The advantage of being able to access these Rmd-files is the possibility to change the plotting code without changing the code of the `remind2`-package. Moreover, Rmd-files can be used interactively in RStudio: 
+Aside from HTML- and PDF-documents as output, `compareScenarios2()` also allows to obtain a copy of the Rmd-files needed to create these outputs (by setting the argument `outputFormat = "Rmd"`). Rendering the resulting Rmd-files to PDF or HTML yields the same documents as calls to `compareScenarios2()` with `outputFormat = "PDF"` or `"HTML"`. The advantage of being able to access these Rmd-files is the possibility to change the plotting code without changing the code of the `remind2`-package. Moreover, Rmd-files can be used interactively in RStudio.
+
+# Local Use and mif-Files
+
+`compareScenarios2()` with default settings can be called automatically after a bundle of runs on the cluster has finished or manually via `Rscript output.R`. It can also be called directly as a function of the R-package `remind2`, e.g.,
+
+```{r}
+library(remind2)
+compareScenarios2(
+  mifScen = c("path/to/Base.mif", "path/to/NDC.mif"),
+  mifHist = "path/to/historical.mif",
+  outputFile = "CompareScenarios2Example")
+```
+
+To do this locally on our own computer, we need some mif files. One possiblity is to adapt and execute the following script to download the newest *modeltest* files.
+
+```{r eval=FALSE}
+library(tidyverse)
+library(ssh)
+
+# TODO: Adapt the following three lines!
+keyfile <- "path/to/ssh/private/key/.ssh/id_rsa"
+username <- "username"
+out_path <- "path/to/where/mifs/will/be/downloaded/"
+
+# path on the cluster where to search for mifs:
+path <- "/p/projects/remind/modeltests/output/" 
+
+# Connect to the cluster and get the file names of the newest modeltest mifs.
+session <- ssh_connect(paste0(username, "@cluster.pik-potsdam.de"), keyfile=keyfile)
+out <- ssh_exec_internal(session, paste("ls", path))
+out$stdout %>%
+  rawToChar() %>%
+  str_split("\n", simplify = TRUE) %>%
+  str_subset("^[a-zA-Z0-9-]+_\\d{4}-\\d{2}-\\d{2}_\\d{2}\\.\\d{2}\\.\\d{2}$") ->
+  filenames
+filenames %>%
+  str_split("_", simplify = TRUE) %>%
+  matrix(ncol=3, dimnames=list(NULL, c("name", "date", "time"))) %>%
+  as_tibble() %>%
+  bind_cols(filename = filenames) %>%
+  mutate(date = as.Date(date)) %>%
+  filter(date >= max(date)-2) ->
+  new_file_data
+
+new_files <- paste0(path, new_file_data$filename, "/REMIND_generic_", new_file_data$name, ".mif")
+walk(new_files, scp_download, session = session, to = out_path) # download scenario mifs
+
+hist_path <- paste0(path, new_file_data$filename[1], "/historical.mif") 
+scp_download(session = session, hist_path, to = out_path) # download historical.mif
+
+ssh_disconnect(session)
+```
+
 
 # Interactive Use of the Rmd-files
 
-The code in these files is structured in chunks and each chunk can be run separately by clicking on its play-button. Typically, one would call `compareScenarios2()` with `outputFormat = "Rmd"`, then open the file `cs2_main.Rmd`. At the end of the file, there is a chunk
+In this section, we assume that we do not want to change the package `remind2`. But we may want to make changes to the compareScenarios output locally.
+
+We call `remind2::compareScenarios2()` with `outputFormat = "Rmd"` to obtain a (modified) copy of the Rmd-files.
+
+```{r eval=FALSE}
+library(remind2)
+compareScenarios2(
+  mifScen = c("path/to/scen1.mif", "path/to/scen2.mif", "path/to/scen3.mif"), # TODO.
+  mifHist = "path/to/historical.mif", # TODO.
+  outputDir = "path/to/where/rmds/should/be/copied/to", # TODO.
+  outputFormat = "Rmd",
+  # Add current time as output name to not overwrite other things:
+  outputFile = format(Sys.time(), "CompScen2-%Y%m%d-%H%M%S")) 
+```
+
+The code in these Rmd-files is structured in chunks and each chunk can be run separately by clicking on its play-button. We first open `cs2_main.Rmd`. At the end of the file, there is a chunk
 ````
 ```{r prepare mark}
 # CLICK "RUN ALL CHUNKS ABOVE" HERE TO PREPARE THE ENVIRONMENT
@@ -41,14 +109,45 @@ The code in these files is structured in chunks and each chunk can be run separa
 ```` 
 Clicking on the *triangle above bar*-button on the right executes all chunks above and by that loads and prepares the data for plotting. After that one can open any section-Rmd-file and execute a chunk to create the respective plots. The plots should appear in RStudio inside the Rmd-file below the chunk.
 
-# Workflow for Changing Content of CompareScenarios2
+# Workflow for Adding a new Plot to CompareScenarios2
 
-1. Call `remind2::compareScenarios2(outputFormat="Rmd", ...)` on some mif-files for testing to obtain a copy of the Rmd files. 
-2. At the bottom of `cs2_main.Rmd` in RStudio, click "Run all chunks above".
-3. Make changes in the section Rmd-files, e.g., `cs2_03_emissions.Rmd`. You can test the changes by running the respective chunks in RStudio.
-4. Copy the changed copies of the section Rmd-files (but **not** `cs2_main.Rmd`) to the package folder `inst/markdown/compareScenarios2`. Beware: The "copy" of `cs2_main.Rmd` obtained by `compareScenarios2(outputFormat="Rmd", ...)` is not the same as the package file `inst/markdown/compareScenarios2/cs2_main.Rmd`, as the YAML-header is adapted to the arguments of the function call. 
-5. It is recommended to install or `devtools::load_all()` the changed version of `remind2` and test your changes again for PDF- as well as for HTML-output. You may want to restrict the output generation to the sections you have changed by using the argument `sections` of `compareScenarios2()`, see section *YAML Parameters* in the documentation of the function.
+1. If not done already, fork <https://github.com/pik-piam/remind2>.
+2. In your personal github remind2 repository, create a new branch.
+3. Clone the repository and switch to the newly created branch to get your local copy.
+4. In your local copy, open `remind2.Rproj` in RStudio.
+5. Press `CTRL+SHIFT+L` to call `devtools::load_all(".")`, which loads `remind2` from your local copy.
+6. Assuming you have some mifs available for testing, call
 
+```{r eval=FALSE}
+compareScenarios2(
+  mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"), # TODO.
+  mifHist = "path/to/historical.mif", # TODO.
+  outputFile = format(Sys.time(), "CompScen2-%Y%m%d-%H%M%S"),
+  sections = NULL,
+  envir = globalenv())
+```
+
+This executes the code in `cs2_main.Rmd` without creating any plots. This will take some seconds, but it should not take minutes. Type `data` into the RStudio console and hit enter. This should show you the first rows of a table that contains all the loaded data.
+
+7. Open the section file in which you want to add the plot. The files are in the folder `inst/markdown/compareScenarios2/` and have names of the form `c2_NN_XXXX.Rmd`, where `NN` is a two digit number and `XXXX` is resembles the section title.
+8. You should be able to execute any chunk in the section Rmd by clicking the play button in its top right corner.
+9. Insert a new chunk by copying an old one or by pressing `CTRK+ALT+I`.
+10. Add a new plot inside the chunk, e.g., `showLinePlots(data, "Your|Variable|Name")`. See the section *Plot Functions* below.
+11. Run your newly created chunk to see the plot.
+12. Run the following code to see your new plot in a PDF.
+
+```{r eval=FALSE}
+compareScenarios2(
+  mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"), # TODO.
+  mifHist = "path/to/historical.mif", # TODO.
+  outputFile = format(Sys.time(), "CompScen2-%Y%m%d-%H%M%S"),
+  outputFormat = "PDF", # PDF is the default, so you can leave that line out. Or change it to html to get a html-version.
+  sections = <NN>) # TODO: Replace <NN> by the number of the section you changed (or by "all" to build the whole compare scenarios file, which will take a while)
+```
+
+13. Save the file. Commit your changes. In the commit message, you may use the shorthand `cs2` to indicate that you made a change to compareScenarios2, e.g., `cs2: added plot of My|Variable`.
+14. Make sure you fetched and pulled all recent changes to remind2. Then, call `lucode2::buildLibrary()`. Commit again with the commit message `` `lucode2::buildLibrary()` ``. Push your commits to github.
+15. Create a pull request.
 
 # cs2_main.Rmd
 
