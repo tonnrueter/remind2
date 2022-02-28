@@ -44,8 +44,8 @@
 #'     \code{character(n) or numeric(n) or NULL}.
 #'     Default: \code{"all"}.
 #'     Names or numbers of sections to include. For names subset of
-#'     \code{c("00_info", "01_summary", "02_macro", "03_emissions", 
-#'     "04_energy_supply", "05_energy_demand", "06_energy_services", 
+#'     \code{c("00_info", "01_summary", "02_macro", "03_emissions",
+#'     "04_energy_supply", "05_energy_demand", "06_energy_services",
 #'     "07_climate", "08_sdp", "09_carbon_management")}.
 #'     Use \code{"all"} to include all available sections.
 #'     Use \code{NULL} to not include any section
