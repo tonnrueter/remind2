@@ -311,17 +311,23 @@ reportEDGETransport <- function(output_folder=".",
       synShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqsyn", emi_sectors = "trans"), dim = 3, na.rm = T) /
         dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3, na.rm = T)
 
-      # LDV
+      # calculate LDV share ----
+      
+      # liquids for LDVs
       demFeSectorLdv <- mselect(demFeSector,
         all_enty = c("seliqfos", "seliqbio", "seliqsyn"),
         all_enty1 = "fepet", emi_sectors = "trans"
       )
 
       feShareLdvLiqFos <- dimSums(demFeSectorLdv[, , "seliqfos.fepet"], dim = 3, na.rm = T) / dimSums(demFeSectorLdv, dim = 3, na.rm = T)
+
+      # for non-fossil liquids we apply the share of the transport sector to the subsector
       feShareLdvLiqBio <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * bioShareTrans / dimSums(demFeSectorLdv, dim = 3, na.rm = T)
       feShareLdvLiqSyn <- dimSums(mselect(demFeSectorLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * synShareTrans / dimSums(demFeSectorLdv, dim = 3, na.rm = T)
 
-      # Trucks, Domestic Aviation etc.
+      # calculate share for Non-LDV (Trucks, Domestic Aviation etc.) ----
+      
+      # liquids for Non-LDVs
       demFeSectorNonLdv <- mselect(demFeSector,
         all_enty = c("seliqfos", "seliqbio", "seliqsyn"),
         all_enty1 = "fedie", emi_sectors = "trans", all_emiMkt = "ES"
@@ -331,7 +337,9 @@ reportEDGETransport <- function(output_folder=".",
       feShareNonLdvLiqBio <- dimSums(mselect(demFeSectorNonLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * bioShareTrans / dimSums(demFeSectorNonLdv, dim = 3, na.rm = T)
       feShareNonLdvLiqSyn <- dimSums(mselect(demFeSectorNonLdv, all_enty = c("seliqbio", "seliqsyn")), dim = 3, na.rm = T) * synShareTrans / dimSums(demFeSectorNonLdv, dim = 3, na.rm = T)
 
-      # Bunkers
+      # calculate share for Bunkers ----
+      
+      # liquids for bunkers
       demFeSectorBunkers <- mselect(demFeSector,
         all_enty = c("seliqfos", "seliqbio", "seliqsyn"),
         all_enty1 = "fedie", emi_sectors = "trans", all_emiMkt = "other"
