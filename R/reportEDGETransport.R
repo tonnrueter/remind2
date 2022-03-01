@@ -303,11 +303,11 @@ reportEDGETransport <- function(output_folder=".",
     .split_liquids <- function(df) {
       demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)
 
-      # biomass share in transport sector
+      # biomass share in biomass+hydrogen liquids in total transport sector
       bioShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqbio", emi_sectors = "trans"), dim = 3, na.rm = T) /
         dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3, na.rm = T)
 
-      # hydrogen share in transport sector
+      # hydrogen share in biomass+hydrogen liquids in total transport sector
       synShareTrans <- dimSums(mselect(demFeSector, all_enty = "seliqsyn", emi_sectors = "trans"), dim = 3, na.rm = T) /
         dimSums(mselect(demFeSector, all_enty = c("seliqbio", "seliqsyn"), emi_sectors = "trans"), dim = 3, na.rm = T)
 
