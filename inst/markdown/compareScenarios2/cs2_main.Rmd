@@ -88,7 +88,7 @@ library(mip)
 # Read *.mif-files as nested tibble.
 tibble(path = unname(params$mifScen)) %>%
   rowid_to_column("fileid") %>%
-  mutate(data = map(path, read.quitte, factors = FALSE)) %>%
+  mutate(data = map(path, read.quitte, factors = TRUE)) %>%
   unnest(data) %>%
   nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
@@ -106,21 +106,11 @@ if (is.null(params$mifScenNames)) {
       by = "fileid") ->
     dataScenNested
 }
-# Add suffixes "_1", "_2", ... in case of duplicated scenario names.
-# Side note: In the unlikly case, one has scenario names
-#   scenA, scenA, scenA_1, scenB,
-# they will be renamed to
-#   scenA_1, scenA_2, scenA_1, scenB
-# in the first iteration of the following loop. After the second iteration we get
-#   scenA_1_1, scenA_2, scenA_1_2, scenB.
-while (anyDuplicated(dataScenNested$newScenarioName)) {
+# Check for duplicated scenario names.
+if (anyDuplicated(dataScenNested$newScenarioName)) {
   warning("There are duplicated scenario names. They will be renamed.")
   dataScenNested %>%
-    group_by(newScenarioName) %>%
-    mutate(newScenarioName =
-      if (n() == 1) newScenarioName else paste(newScenarioName, 1:n(), sep = "_")
-    ) %>%
-    ungroup() ->
+    mutate(newScenarioName = make.unique(newScenarioName)) ->
     dataScenNested
 }
 # Retrieve data for reference table to be shown at the beginning of the document.
@@ -139,7 +129,7 @@ dataScenNested %>%
 
 ```{r read historical mif}
 params$mifHist %>%
-  read.quitte(factors = FALSE) ->
+  read.quitte(factors = TRUE) ->
   dataHist
 ```
 
@@ -155,7 +145,7 @@ dataHist %>%
 
 # Combine into one data frame and remove old.
 data <- bind_rows(dataScen, dataHist)
-rm(dataScen, dataHist)
+rm(dataScen, dataScenNested, dataHist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>%
