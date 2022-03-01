@@ -6,6 +6,7 @@ output:
     toc: yes
     number_sections: yes
     toc_depth: 6
+    keep_tex: false
     includes: 
       in_header: cs2_pdf_header_include.tex
   html_document:
@@ -67,6 +68,13 @@ if (interactive()) {
 
 
 ```{r libraries, include=FALSE}
+# kableExtra must not be loaded before the call of library(kableExtra) below,
+# as its .onLoad() function must be called to tell knitr about add necessary
+# LaTeX libraries needed for tables.
+# If the following line is not included, successive calls to compareScenarios2()
+# may cause "Undefined control sequence" errors in LaTeX.
+try(unloadNamespace("kableExtra"), silent=TRUE)
+
 library(gridExtra)
 options(tidyverse.quiet = TRUE)
 library(tidyverse)
