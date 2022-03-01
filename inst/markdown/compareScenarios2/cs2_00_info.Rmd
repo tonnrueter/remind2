@@ -18,4 +18,61 @@ fileReference %>%
   column_spec(4, width = "15cm")
 ```
 
+
+```{r results='asis'}
+if (exists("cfgTopLevel") && !is.null(cfgTopLevel)) {
+  
+  cat("## Descriptions\n\n")
+  
+  for (i in 1:max(fileReference$fileid)) {
+    cat("### ", as.character(fileReference$newScenarioName[i]), "\n\n")
+    
+    cfgTopLevel %>% 
+      filter(fileid == i, name == "description") %>% 
+      pull(value) %>% 
+      pluck(1) ->
+      description
+    cat(description, "\n\n")
+  }
+}
+```
+
+
+```{r results='asis'}
+if (exists("cfgGms") && !is.null(cfgGms)) {
+  
+  cat ("## GMS cfg Differences\n\n")
+  
+  cfgGms %>% 
+    left_join(fileReference %>% select(fileid, newScenarioName), by = "fileid") %>%
+    select(-path, -fileid) %>% 
+    rename(scenario = newScenarioName) %>% 
+    pivot_wider(names_from = name, values_from = value) %>% 
+    mutate(across(-scenario, unlist)) %>% 
+    select(-where(~length(unique(.)) == 1)) %>% 
+    select(scenario, everything()) ->
+    gmsCfgDifferences
+  k <- ncol(gmsCfgDifferences) - 1
+  varsPerTable <- 4
+  nTables <- ceiling(k / varsPerTable)
+  for (i in seq_len(nTables)) {
+    if (i == nTables) {
+      cols <- k %% varsPerTable
+    } else {
+      cols <- varsPerTable
+    }
+    colIdx <- 1 + 1:cols + (i-1)*varsPerTable
+    tbl <- gmsCfgDifferences[, c(1, colIdx)]
+    tbl %>% 
+      kbl(booktabs = TRUE) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "condensed"),
+        latex_options = c("striped", "hold_position")) %>%
+      column_spec(1, width = "5cm") %>%
+      column_spec(1 + 1:cols, width = "5cm") %>% 
+      cat("\n\n")
+  }
+}
+```
+
 \newpage

@@ -9,6 +9,8 @@
 #'   If the vector has names, those are used to refer to the scenarios in the
 #'   output file.
 #' @param mifHist \code{character(1)}. Path to historical mif.
+#' @param configFiles \code{character(n)}. Paths to config.RData files
+#'   containing the \code{cfg} object for each scenario.
 #' @param outputFile \code{character(1)}. File name (without extension) of the
 #'   output document to be created.
 #' @param outputDir \code{character(1)}. The directory where the output document
@@ -79,6 +81,7 @@
 #' compareScenarios2(
 #'   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
 #'   mifHist = "path/to/historical.mif",
+#'   configFiles = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
 #'   outputDir = "path/to/output",
 #'   outputFormat = "Rmd",
 #'   outputFile = format(Sys.time(), "compScen_%Y%m%d-%H%M%S"),
@@ -96,6 +99,7 @@
 #' @export
 compareScenarios2 <- function(
   mifScen, mifHist,
+  configFiles = NULL,
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
   outputFormat = "PDF",
@@ -108,11 +112,14 @@ compareScenarios2 <- function(
       mifScenNames = names(mifScen),
       mifHist = normalizePath(mifHist, mustWork = TRUE)),
     list(...))
-
+  if (!is.null(configFiles)) {
+    yamlParams$configFiles <- normalizePath(configFiles, mustWork = TRUE)
+  }
+  
   # convert relative to absolute paths
-  if ("userSectionPath" %in% names(yamlParams)) {
-    yamlParams$userSectionPath <- normalizePath(yamlParams$userSectionPath,
-                                                mustWork = TRUE)
+  if (!is.null(yamlParams[["userSectionPath"]])) {
+    yamlParams$userSectionPath <- 
+      normalizePath(yamlParams$userSectionPath, mustWork = TRUE)
   }
 
   outputFormat <- tolower(outputFormat)[[1]]
