@@ -13,6 +13,9 @@ fileReference %>%
     col.names = c("ID", "Name Used Here", "Original Name", "Path")) %>%
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position"))
+    latex_options = c("striped", "hold_position")) %>%
+  column_spec(2:3, width = "5cm") %>%
+  column_spec(4, width = "15cm")
 ```
 
+\newpage
