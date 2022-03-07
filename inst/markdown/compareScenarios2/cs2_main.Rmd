@@ -121,7 +121,7 @@ dataScenNested %>%
 
 # Apply renaming of scenario, unnest, and select only relevant columns.
 dataScenNested %>%
-  mutate(scenario = factor(newScenarioName, levels=newScenarioName)) %>%
+  mutate(scenario = factor(newScenarioName, levels = newScenarioName)) %>%
   unnest(data) %>%
   select(model, scenario, region, variable, unit, period, value) ->
   dataScen
@@ -332,6 +332,7 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r include sections, child = sectionPaths}
+
 ```
 
 
