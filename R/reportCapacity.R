@@ -36,7 +36,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000
   v_earlyreti <- readGDX(gdx, name = c("vm_capEarlyReti", "v_capEarlyReti", "v_earlyreti"), field = "l", format = "first_found")
 
-  module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
 
   # data preparation
   ttot <- as.numeric(as.vector(ttot))
