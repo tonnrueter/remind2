@@ -1521,7 +1521,10 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     
     fe.vars.woBunkers <- c(fe.vars.woBunkers,
                           "FE|w/o Non-energy Use (EJ/yr)",
-                          "FE|w/o Non-energy Use|Liquids (EJ/yr)")
+                          "FE|w/o Non-energy Use|Liquids (EJ/yr)",
+                          "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)",
+                          "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)",
+                          "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)")
     
   }
   
