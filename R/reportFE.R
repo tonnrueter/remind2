@@ -525,6 +525,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     setNames(out[,,"FE|Transport|++|ESR (EJ/yr)"], "FE|Transport|w/o Bunkers (EJ/yr)"),
     setNames(out[,,"FE|Transport|++|Outside ETS and ESR (EJ/yr)"], "FE|Transport|Bunkers (EJ/yr)")
   )
+  
+
 
   
 
@@ -537,8 +539,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   pm_cesdata <- readGDX(gdx,"pm_cesdata")[,t,]
   
   # ---- variables
-  if((buil_mod %in% c("services_putty", "services_with_capital"))||(tran_mod == "edge_esm") )
+  if((buil_mod %in% c("services_putty", "services_with_capital"))||(tran_mod == "edge_esm") ) {
     vm_demFeForEs <- readGDX(gdx,name = c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found",react = "silent")[,t,]*TWa_2_EJ
+  }
   #vm_demFeForEs = vm_demFeForEs[fe2es]
   # CES nodes, convert from TWa to EJ
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
@@ -1514,6 +1517,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     "FE|Transport|+|Liquids (EJ/yr)")
   
   
+
+  
   
   # add FE w/o non-energy use variables if available
   if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
@@ -1521,30 +1526,68 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     
     fe.vars.woBunkers <- c(fe.vars.woBunkers,
                           "FE|w/o Non-energy Use (EJ/yr)",
-                          "FE|w/o Non-energy Use|Liquids (EJ/yr)",
-                          "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)",
-                          "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)",
-                          "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)")
+                          "FE|w/o Non-energy Use|Liquids (EJ/yr)")
     
   }
+  
+  # bunker correction for distinction of fossil, biomass, hydrogen-based liquids
+  fe.vars.woBunkers.fos <- c(  "FE|Liquids|+|Fossil (EJ/yr)",
+                               "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)",
+                               "FE|Transport|Liquids|+|Fossil (EJ/yr)")
+  
+  fe.vars.woBunkers.bio <- c(  "FE|Liquids|+|Biomass (EJ/yr)",
+                               "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)",
+                               "FE|Transport|Liquids|+|Biomass (EJ/yr)")
+  
+  fe.vars.woBunkers.syn <- c(  "FE|Liquids|+|Hydrogen (EJ/yr)",
+                               "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)",
+                               "FE|Transport|Liquids|+|Hydrogen (EJ/yr)")
+  
   
   
   # variable names for FE variables without bunkers
   names.woBunkers <- fe.vars.woBunkers
   names.woBunkers <- gsub("FE", "FE|w/o Bunkers", names.woBunkers)
   
+  names.woBunkers.fos <- fe.vars.woBunkers.fos
+  names.woBunkers.fos <- gsub("FE", "FE|w/o Bunkers", names.woBunkers.fos)
   
-  # calculate FE w/o Bunkers
+  names.woBunkers.bio <- fe.vars.woBunkers.bio
+  names.woBunkers.bio <- gsub("FE", "FE|w/o Bunkers", names.woBunkers.bio)
+  
+  names.woBunkers.syn <- fe.vars.woBunkers.syn
+  names.woBunkers.syn <- gsub("FE", "FE|w/o Bunkers", names.woBunkers.syn)
+  
+  
+  # calculate FE w/o Bunkers (for now we only have liquids energy use in bunkers)
   out.woBunkers <- setNames(out[, , fe.vars.woBunkers], names.woBunkers)
   out.woBunkers[, , names.woBunkers] <-  out.woBunkers[,,names.woBunkers] - out[, , "FE|Transport|Bunkers (EJ/yr)"]
+  
+  out.woBunkers.fos <- setNames(out[, , fe.vars.woBunkers.fos], names.woBunkers.fos)
+  out.woBunkers.fos[, , names.woBunkers.fos] <-  out.woBunkers.fos[,,names.woBunkers.fos] - out[, , "FE|Transport|Bunkers|Liquids|+|Fossil (EJ/yr)"]
+
+  out.woBunkers.bio <- setNames(out[, , fe.vars.woBunkers.bio], names.woBunkers.bio)
+  out.woBunkers.bio[, , names.woBunkers.bio] <- out.woBunkers.bio[,,names.woBunkers.bio] - out[, , "FE|Transport|Bunkers|Liquids|+|Biomass (EJ/yr)"]
+
+  out.woBunkers.syn <- setNames(out[, , fe.vars.woBunkers.syn], names.woBunkers.syn)
+  out.woBunkers.syn[, , names.woBunkers.syn] <-  out.woBunkers.syn[,,names.woBunkers.syn] - out[, , "FE|Transport|Bunkers|Liquids|+|Hydrogen (EJ/yr)"]
   
   # remove all pluses from variables of bunker correction
   getNames(out.woBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers))
   getNames(out.woBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers))
   
+  getNames(out.woBunkers.fos) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers.fos))
+  getNames(out.woBunkers.fos) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.fos))
+  
+  getNames(out.woBunkers.bio) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers.bio))
+  getNames(out.woBunkers.bio) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.bio))
+  
+  getNames(out.woBunkers.syn) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers.syn))
+  getNames(out.woBunkers.syn) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.syn))
   
   
-  out <- mbind(out,  out.woBunkers)
+  
+  out <- mbind(out,  out.woBunkers, out.woBunkers.fos, out.woBunkers.bio, out.woBunkers.syn)
   
   
   ### Aggregation to global values ----
