@@ -122,10 +122,11 @@ tibble(path = unname(params$mifScen)) %>%
   unnest(data) %>%
   nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
-# Add column newScenarioName either with contents of params$mifScenNames or copy names from column scenario.
+# Add column character column "newScenarioName",
+# either with contents of params$mifScenNames or copy names from column scenario.
 if (is.null(params$mifScenNames)) {
   dataScenNested %>%
-    mutate(newScenarioName = scenario) ->
+    mutate(newScenarioName = as.character(scenario)) ->
     dataScenNested
 } else {
   dataScenNested %>%
@@ -150,7 +151,7 @@ dataScenNested %>%
 
 # Apply renaming of scenario, unnest, and select only relevant columns.
 dataScenNested %>%
-  mutate(scenario = newScenarioName) %>%
+  mutate(scenario = factor(newScenarioName, levels = newScenarioName)) %>%
   unnest(data) %>%
   select(model, scenario, region, variable, unit, period, value) ->
   dataScen
@@ -361,6 +362,7 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r include sections, child = sectionPaths}
+
 ```
 
 

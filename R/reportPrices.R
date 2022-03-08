@@ -362,19 +362,19 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   # report GHG tax revenues
   out <- mbind(out,
                setNames(out[, , "Price|Carbon|Demand|Buildings (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Buildings (Mt CO2eq/yr)"],
-                          "Revenue|Price|Carbon|+|Demand|Buildings (US$2005/yr)"),
+                          "Revenue|Government|Tax|Carbon|+|Demand|Buildings (US$2005/yr)"),
                setNames(out[, , "Price|Carbon|Demand|Transport (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)"],
-                          "Revenue|Price|Carbon|+|Demand|Transport (US$2005/yr)"),
+                          "Revenue|Government|Tax|Carbon|+|Demand|Transport (US$2005/yr)"),
                setNames(out[, , "Price|Carbon|Demand|Industry (US$2005/t CO2)"]  * (Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)"] + Emi_data_regi[, ,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]),
-                          "Revenue|Price|Carbon|+|Demand|Industry (US$2005/yr)"),
+                          "Revenue|Government|Tax|Carbon|+|Demand|Industry (US$2005/yr)"),
                setNames(out[, , "Price|Carbon|Supply (US$2005/t CO2)"]           *  Emi_data_regi[, , "Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"],
-                          "Revenue|Price|Carbon|+|Supply (US$2005/yr)")
+                          "Revenue|Government|Tax|Carbon|+|Supply (US$2005/yr)")
                )
-  out <- mbind(out, setNames(out[, , "Revenue|Price|Carbon|+|Demand|Buildings (US$2005/yr)"]
-                           + out[, , "Revenue|Price|Carbon|+|Demand|Transport (US$2005/yr)"]
-                           + out[, , "Revenue|Price|Carbon|+|Demand|Industry (US$2005/yr)"]
-                           + out[, , "Revenue|Price|Carbon|+|Supply (US$2005/yr)"],
-                        "Revenue|Price|Carbon (US$2005/yr)")
+  out <- mbind(out, setNames(out[, , "Revenue|Government|Tax|Carbon|+|Demand|Buildings (US$2005/yr)"]
+                           + out[, , "Revenue|Government|Tax|Carbon|+|Demand|Transport (US$2005/yr)"]
+                           + out[, , "Revenue|Government|Tax|Carbon|+|Demand|Industry (US$2005/yr)"]
+                           + out[, , "Revenue|Government|Tax|Carbon|+|Supply (US$2005/yr)"],
+                        "Revenue|Government|Tax|Carbon (US$2005/yr)")
                )
 
   #
