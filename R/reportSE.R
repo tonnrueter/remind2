@@ -406,11 +406,11 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
         dimSums(CoeffOwnConsSeel[, , "ccsinje"] * vm_co2CCS[, , "ccsinje"], dim = 3,  na.rm = T)),
     "SE|Input|Electricity|Self Consumption Energy System (EJ/yr)"))
 
-  # electricity for decentral ground heat pumps
+  # electricity for central ground heat pumps
   tmp1 <- mbind(tmp1, setNames(
     -pm_conv_TWa_EJ *
       (dimSums(CoeffOwnConsSeel_woCCS[, , "geohe"] * prodOwnCons[, , "geohe"], dim = 3)),
-    "SE|Input|Electricity|Self Consumption Energy System|Decentral Ground Heat Pumps (EJ/yr)"))
+    "SE|Input|Electricity|Self Consumption Energy System|Central Ground Heat Pumps (EJ/yr)"))
   
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[, , "SE|Hydrogen|+|Electricity (EJ/yr)"] / tmp1[, , "SE|Hydrogen (EJ/yr)"])
