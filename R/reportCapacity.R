@@ -36,7 +36,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000
   v_earlyreti <- readGDX(gdx, name = c("vm_capEarlyReti", "v_capEarlyReti", "v_earlyreti"), field = "l", format = "first_found")
 
-  module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
 
   # data preparation
   ttot <- as.numeric(as.vector(ttot))
@@ -188,43 +187,31 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
 
 
 
-  # Newly built capacities liquids, if CCU on
-  if (module2realisation[23, 2] == "on") {
+
 
 
 
     # Newly built capacities liquids
-    if ("MeOH" %in% getNames(vm_deltaCap, dim = 1)) {
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec", "bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl", "MeOH")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec", "bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl", "MeOH")], dim = 3),
         "New Cap|Liquids (GW/yr)"))
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec")], dim = 3),
         "New Cap|Liquids|Fossil (GW/yr)"))
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl")], dim = 3),
         "New Cap|Liquids|Biomass (GW/yr)"))
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("MeOH")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("MeOH")], dim = 3),
         "New Cap|Liquids|Hydrogen (GW/yr)"))
-    } else {
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec", "bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl")], dim = 3),
-        "New Cap|Liquids (GW/yr)"))
-	  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , refineries], dim = 3),
-        "New Cap|Liquids|Oil (GW/yr)"))
-    }
+
 
     # Newly built capacities gases
-    if ("h22ch4" %in% getNames(vm_deltaCap, dim = 1)) {
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas", "biogas", "h22ch4")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas", "biogas", "h22ch4")], dim = 3),
         "New Cap|Gases (GW/yr)"))
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas")], dim = 3),
         "New Cap|Gases|Fossil (GW/yr)"))
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biogas")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biogas")], dim = 3),
         "New Cap|Gases|Biomass (GW/yr)"))
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h22ch4")], dim = 3),
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h22ch4")], dim = 3),
         "New Cap|Gases|Hydrogen (GW/yr)"))
-    } else {
-      tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas", "biogas")], dim = 3),
-        "New Cap|Gases (GW/yr)"))
-    }
-  }
+
 
 
   # add terms calculated from previously calculated capacity values
