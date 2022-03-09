@@ -1,0 +1,33 @@
+# Carbon Management
+
+## Carbon Capture
+
+```{r carbon capture}
+showLinePlots(data, "Carbon Management|Carbon Capture")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Biomass|Pe2Se")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Fossil|Pe2Se")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Industry Energy")
+```
+
+## Storage
+
+```{r storage}
+showLinePlots(data, "Carbon Management|Storage")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Storage")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Storage|Industry Energy")
+```
+
+## Usage
+
+```{r usage}
+showLinePlots(data, "Carbon Management|Usage")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Usage")
+```
+
+## Share
+
+```{r share}
+showLinePlots(data, "Carbon Management|Share of Stored CO2 from Captured CO2")
+```
+

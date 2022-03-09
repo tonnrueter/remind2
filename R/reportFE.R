@@ -121,7 +121,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   indu_mod = find_real_module(module2realisation,"industry")
   buil_mod = find_real_module(module2realisation,"buildings")
   cdr_mod  = find_real_module(module2realisation,"CDR")
-  CCU_mod  = find_real_module(module2realisation,"CCU")
+
   
   
   

@@ -6,8 +6,8 @@
 #' "plus-notation".
 #'
 #' @param mif A path to a mif-file (might be created by confGDX2MIF), a magpie
-#'   object containing reporting, a quitte object, or a character vector of
-#'   variable names.
+#'   object containing reporting, a quitte object, or a character vector or
+#'   factor of variable names.
 #' @param writemif A single truth value. Only used when mif is a file path.
 #'   Should the new mif with the adjusted names be saved? If yes the new name
 #'   will have the suffix "_withoutPlus.mif".
@@ -61,6 +61,10 @@ deletePlus <- function(mif, writemif = FALSE) {
     }
     if (quitte::is.quitte(mif)) {
       levels(mif$variable) <- .deletePlusString(levels(mif$variable))
+      return(mif)
+    }
+    if (is.factor(mif)) {
+      levels(mif) <- .deletePlusString(levels(mif))
       return(mif)
     }
     if (is.character(mif)) {
