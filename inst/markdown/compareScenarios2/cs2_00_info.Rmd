@@ -1,6 +1,15 @@
 ## File Reference Table
 
 ```{r}
+scenarioColors <- plotstyle(fileReference$newScenarioName)
+lightenColor <- function(clr, by) {
+  colRGB <- colorRamp(c(clr, "white"))(by)
+  rgb(colRGB[1], colRGB[2], colRGB[3], maxColorValue=255)
+}
+bkgndColors <- sapply(scenarioColors, lightenColor, by=0.5)
+```
+
+```{r}
 fileReference %>%
   select(fileid, newScenarioName, scenario, path) %>%
   # WORKAROUND:
@@ -12,10 +21,11 @@ fileReference %>%
     booktabs = TRUE,
     col.names = c("ID", "Name Used Here", "Original Name", "Path")) %>%
   kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    latex_options = c("striped", "hold_position")) %>%
+    bootstrap_options = c("condensed"),
+    latex_options = c("hold_position")) %>%
   column_spec(2:3, width = "5cm") %>%
-  column_spec(4, width = "15cm")
+  column_spec(4, width = "15cm") %>% 
+  column_spec(1:4, background = bkgndColors)
 ```
 
 
@@ -39,9 +49,16 @@ if (exists("cfgTopLevel") && !is.null(cfgTopLevel)) {
 
 
 ```{r results='asis'}
+# If paths to config files are provided in the parameter configFiles, their
+# content is written to the objects cfgGms and cfgTopLevel in cs2main.Rmd. Here
+# relevant parts of these configs are displayed.
 if (exists("cfgGms") && !is.null(cfgGms)) {
+  varsPerTable <- 5 # Number of variable columns in table.
+  firstColumnWidth <- 50 # in mm; first column shows the scenario title.
+  pageTextWidth <- 297-2*5 # in mm; DIN A4 landscape minus margins.
+  cellMargin <- 5 # in mm
   
-  cat ("## GMS cfg Differences\n\n")
+  cat ("## GAMS Config Differences\n\n")
   
   cfgGms %>% 
     left_join(fileReference %>% select(fileid, newScenarioName), by = "fileid") %>%
@@ -53,10 +70,9 @@ if (exists("cfgGms") && !is.null(cfgGms)) {
     select(scenario, everything()) ->
     gmsCfgDifferences
   k <- ncol(gmsCfgDifferences) - 1
-  varsPerTable <- 4
   nTables <- ceiling(k / varsPerTable)
   for (i in seq_len(nTables)) {
-    if (i == nTables) {
+    if (i == nTables && k %% varsPerTable != 0) {
       cols <- k %% varsPerTable
     } else {
       cols <- varsPerTable
@@ -64,12 +80,29 @@ if (exists("cfgGms") && !is.null(cfgGms)) {
     colIdx <- 1 + 1:cols + (i-1)*varsPerTable
     tbl <- gmsCfgDifferences[, c(1, colIdx)]
     tbl %>% 
-      kbl(booktabs = TRUE) %>%
+      kbl(booktabs = TRUE, align="c") %>%
+      column_spec(
+        1:(cols+1), 
+        background = bkgndColors
+      ) %>%  
       kable_styling(
-        bootstrap_options = c("striped", "condensed"),
-        latex_options = c("striped", "hold_position")) %>%
-      column_spec(1, width = "5cm") %>%
-      column_spec(1 + 1:cols, width = "5cm") %>% 
+        bootstrap_options = c("condensed"),
+        latex_options = c("hold_position")
+      ) %>%
+      column_spec(
+        1, 
+        width = paste0(firstColumnWidth, "mm"),
+        bold = TRUE,
+      ) %>%
+      column_spec(
+        1 + 1:cols, 
+        width = paste0((pageTextWidth-firstColumnWidth)/varsPerTable-cellMargin, "mm"),
+      ) %>% 
+      row_spec(
+        0,
+        monospace = TRUE,
+        bold = TRUE
+      ) %>% 
       cat("\n\n")
   }
 }
