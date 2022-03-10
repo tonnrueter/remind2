@@ -361,13 +361,13 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   # report GHG tax revenues
   out <- mbind(out,
-               setNames(out[, , "Price|Carbon|Demand|Buildings (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Buildings (Mt CO2eq/yr)"] / 1000,
+               setNames(out[, , "Price|Carbon|Demand|Buildings (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Energy|Demand|+|Buildings (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Demand|Buildings (billion US$2005/yr)"),
-               setNames(out[, , "Price|Carbon|Demand|Transport (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)"] / 1000,
+               setNames(out[, , "Price|Carbon|Demand|Transport (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Demand|Transport (billion US$2005/yr)"),
-               setNames(out[, , "Price|Carbon|Demand|Industry (US$2005/t CO2)"]  * (Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)"] + Emi_data_regi[, ,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]) / 1000,
+               setNames(out[, , "Price|Carbon|Demand|Industry (US$2005/t CO2)"]  * (Emi_data_regi[, , "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"] + Emi_data_regi[, ,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]) / 1000,
                           "Revenue|Government|Tax|Carbon|+|Demand|Industry (billion US$2005/yr)"),
-               setNames(out[, , "Price|Carbon|Supply (US$2005/t CO2)"]           *  Emi_data_regi[, , "Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"] / 1000,
+               setNames(out[, , "Price|Carbon|Supply (US$2005/t CO2)"]           *  Emi_data_regi[, , "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Supply (billion US$2005/yr)")
                )
   out <- mbind(out, setNames(out[, , "Revenue|Government|Tax|Carbon|+|Demand|Buildings (billion US$2005/yr)"]
