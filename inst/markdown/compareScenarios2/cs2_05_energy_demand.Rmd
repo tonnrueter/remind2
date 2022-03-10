@@ -134,12 +134,58 @@ showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 
 ```{r}
 items <- c(
-  "FE|Industry|Specific Energy Consumption|Cement",
   "FE|Industry|Specific Energy Consumption|Chemicals",
-  "FE|Industry|Specific Energy Consumption|Other Industry",
-  "FE|Industry|Specific Energy Consumption|Primary Steel",
-  "FE|Industry|Specific Energy Consumption|Secondary Steel")
+  "FE|Industry|Specific Energy Consumption|Other Industry")
 walk(items, showLinePlots, data=data)
+```
+
+### Specific Energy Consumption with thermodynamic limits
+```{r}
+#!!!self reminder: try this out for new scenario runs from validation process
+#then start corresponding PR
+
+#Cement and other non-metallic minerals
+var1 <- "FE|Industry|Specific Energy Consumption|Cement" # Your variable name here.
+test1<- data %>% 
+  filter(variable == var1) %>% 
+  bind_rows(
+    expand.grid(
+      model = "Thermodynamic limit for cement", # Your description here.
+      scenario = "historical", 
+      region = levels(.$region), 
+      period = range(.$period), 
+      variable = var1, 
+      value = 1.8)) %>% # GJ/t.
+  showLinePlots(var1)
+
+#Primary steel
+var2 <- "FE|Industry|Specific Energy Consumption|Primary Steel"
+data %>% 
+  filter(variable == var2) %>% 
+  bind_rows(
+    expand.grid(
+      model = "Thermodynamic limit for primary steel", 
+      scenario = "historical", 
+      region = levels(.$region), 
+      period = range(.$period), 
+      variable = var2, 
+      value = 8.2)) %>% # GJ/t.
+  showLinePlots(var2)
+
+#Secondary steel
+var3 <- "FE|Industry|Specific Energy Consumption|Secondary Steel"
+data %>% 
+  filter(variable == var3) %>% 
+  bind_rows(
+    expand.grid(
+      model = "Thermodynamic limit for secondary steel",
+      scenario = "historical", 
+      region = levels(.$region), 
+      period = range(.$period), 
+      variable = var3, 
+      value = 1.6)) %>% # GJ/t.
+  showLinePlots(var3)
+
 ```
 
 
