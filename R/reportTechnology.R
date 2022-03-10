@@ -39,11 +39,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   ## Check realisations
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   tran_mod <- module2realisation[module2realisation$modules == "transport", 2]
-  if ("CCU" %in% module2realisation[, 1]) {
-    CCU_mod <- module2realisation[module2realisation$modules == "CCU", 2]
-  } else {
-    CCU_mod <- "off"
-  }
 
   CDR_mod <- module2realisation[module2realisation$modules == "CDR", 2]
 
@@ -157,10 +152,10 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     carmap <- c()
   }
 
-  if (CCU_mod == "on") {
-    techmap <- append(techmap, c("MeOH" = "Liquids|Hydrogen",
-      "h22ch4" = "Gases|Hydrogen"))
-  }
+  # add synfuel technologies
+  techmap <- append(techmap, c("MeOH" = "Liquids|Hydrogen",
+                               "h22ch4" = "Gases|Hydrogen"))
+  
 
   if (CDR_mod != "off") {
     cdrmap <- c("dac" = "DAC",
