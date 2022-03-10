@@ -4,9 +4,9 @@
 scenarioColors <- plotstyle(fileReference$newScenarioName)
 lightenColor <- function(clr, by) {
   colRGB <- colorRamp(c(clr, "white"))(by)
-  rgb(colRGB[1], colRGB[2], colRGB[3], maxColorValue=255)
+  rgb(colRGB[1], colRGB[2], colRGB[3], maxColorValue = 255)
 }
-bkgndColors <- sapply(scenarioColors, lightenColor, by=0.5)
+bkgndColors <- sapply(scenarioColors, lightenColor, by = 0.5)
 ```
 
 ```{r}
@@ -24,22 +24,27 @@ fileReference %>%
     bootstrap_options = c("condensed"),
     latex_options = c("hold_position")) %>%
   column_spec(2:3, width = "5cm") %>%
-  column_spec(4, width = "15cm") %>% 
+  column_spec(4, width = "15cm") %>%
   column_spec(1:4, background = bkgndColors)
 ```
 
 
 ```{r results='asis'}
+# If paths to config files are provided in the parameter cfgScen, their
+# content is written to the objects cfgGms and cfgTopLevel in cs2main.Rmd. Here
+# and in the next chunks, relevant parts of these configs are displayed.
+
+# Show cfgTopLevel$description (originally cfg$description).
 if (exists("cfgTopLevel") && !is.null(cfgTopLevel)) {
-  
+
   cat("## Descriptions\n\n")
-  
+
   for (i in 1:max(fileReference$fileid)) {
     cat("### ", as.character(fileReference$newScenarioName[i]), "\n\n")
-    
-    cfgTopLevel %>% 
-      filter(fileid == i, name == "description") %>% 
-      pull(value) %>% 
+
+    cfgTopLevel %>%
+      filter(fileid == i, name == "description") %>%
+      pull(value) %>%
       pluck(1) ->
       description
     cat(description, "\n\n")
@@ -47,64 +52,134 @@ if (exists("cfgTopLevel") && !is.null(cfgTopLevel)) {
 }
 ```
 
-
-```{r results='asis'}
-# If paths to config files are provided in the parameter configFiles, their
-# content is written to the objects cfgGms and cfgTopLevel in cs2main.Rmd. Here
-# relevant parts of these configs are displayed.
-if (exists("cfgGms") && !is.null(cfgGms)) {
-  varsPerTable <- 5 # Number of variable columns in table.
-  firstColumnWidth <- 50 # in mm; first column shows the scenario title.
-  pageTextWidth <- 297-2*5 # in mm; DIN A4 landscape minus margins.
-  cellMargin <- 5 # in mm
-  
-  cat ("## GAMS Config Differences\n\n")
-  
-  cfgGms %>% 
-    left_join(fileReference %>% select(fileid, newScenarioName), by = "fileid") %>%
-    select(-path, -fileid) %>% 
-    rename(scenario = newScenarioName) %>% 
-    pivot_wider(names_from = name, values_from = value) %>% 
-    mutate(across(-scenario, unlist)) %>% 
-    select(-where(~length(unique(.)) == 1)) %>% 
-    select(scenario, everything()) ->
-    gmsCfgDifferences
-  k <- ncol(gmsCfgDifferences) - 1
-  nTables <- ceiling(k / varsPerTable)
+```{r}
+# varsPerTable # Number of variable columns in table.
+# firstColumnWidth  # in mm; first column shows the scenario title.
+# pageTextWidth <- # in mm; DIN A4 landscape minus margins.
+# cellMargin # i
+showInTables <- function(
+  data, 
+  background = NULL, 
+  varsPerTable = 5, 
+  firstColumnWidth = 50, 
+  pageTextWidth = 287, 
+  cellMargin = 5
+) {
+  nDiffVars <- ncol(data) - 1 # number of different variables without title
+  nTables <- ceiling(nDiffVars / varsPerTable)
   for (i in seq_len(nTables)) {
-    if (i == nTables && k %% varsPerTable != 0) {
-      cols <- k %% varsPerTable
+    # number of variable columns (i.e., without title column) in current table
+    if (i == nTables && nDiffVars %% varsPerTable != 0) {
+      nVarCols <- nDiffVars %% varsPerTable
     } else {
-      cols <- varsPerTable
+      nVarCols <- varsPerTable
     }
-    colIdx <- 1 + 1:cols + (i-1)*varsPerTable
-    tbl <- gmsCfgDifferences[, c(1, colIdx)]
-    tbl %>% 
-      kbl(booktabs = TRUE, align="c") %>%
+    colIdx <- 1 + 1:nVarCols + (i - 1) * varsPerTable
+    tbl <- data[, c(1, colIdx)]
+    tbl %>%
+      kbl(booktabs = TRUE, align = "c") ->
+      out
+    if (is.null(background)) {
+      out %>%
+        kable_styling(
+          bootstrap_options = c("striped", "condensed"),
+          latex_options = c("striped", "hold_position")
+        ) -> 
+        out
+    } else {
+      out %>%
+        column_spec(
+          1:(nVarCols + 1),
+          background = background
+        ) %>%
+        kable_styling(
+          bootstrap_options = c("condensed"),
+          latex_options = c("hold_position")
+        ) -> 
+        out
+    }
+    out %>%
       column_spec(
-        1:(cols+1), 
-        background = bkgndColors
-      ) %>%  
-      kable_styling(
-        bootstrap_options = c("condensed"),
-        latex_options = c("hold_position")
-      ) %>%
-      column_spec(
-        1, 
+        1,
         width = paste0(firstColumnWidth, "mm"),
         bold = TRUE,
       ) %>%
       column_spec(
-        1 + 1:cols, 
-        width = paste0((pageTextWidth-firstColumnWidth)/varsPerTable-cellMargin, "mm"),
-      ) %>% 
+        1 + 1:nVarCols,
+        width = paste0((pageTextWidth - firstColumnWidth) / varsPerTable - cellMargin, "mm"),
+      ) %>%
       row_spec(
         0,
         monospace = TRUE,
         bold = TRUE
-      ) %>% 
+      ) ->
+      out
+    out %>%
       cat("\n\n")
   }
+}
+```
+
+```{r}
+# Get config options where scenarios differ and where all scenarios are the same.
+if (exists("cfgGms") && !is.null(cfgGms)) {
+  cfgGms %>%
+    left_join(fileReference %>% select(fileid, newScenarioName), by = "fileid") %>%
+    select(-path, -fileid) %>%
+    rename(scenario = newScenarioName) %>%
+    pivot_wider(names_from = name, values_from = value) %>%
+    mutate(across(-scenario, unlist)) ->
+    cfgGmsWide
+  cfgGmsWide %>%
+    select(-where(~ length(unique(.)) == 1)) %>%
+    select(scenario, everything()) ->
+    cfgGmsWideDiff
+  cfgGmsWide %>%
+    select(where(~ length(unique(.)) == 1)) %>% 
+    distinct() ->
+    cfgGmsWideSame
+}
+```
+
+
+```{r results='asis'}
+# Show all gms config option that is the same in all scenarios but differs from the default.
+if (exists("cfgDefault") && !is.null(cfgDefault) &&
+    exists("cfgGmsWideSame") && !is.null(cfgGmsWideSame)) {
+  colNames <- intersect(names(cfgGmsWideSame), names(cfgDefault$gms))
+  # the types may differ between the two lists, so convert to character
+  isSameAsDefault <- sapply(colNames, function(nm) identical(as.character(cfgDefault$gms[[nm]]), as.character(unname(cfgGmsWideSame[[nm]]))))
+  bind_rows(
+    lapply(cfgGmsWideSame[colNames[!isSameAsDefault]], as.character),
+    lapply(cfgDefault$gms[colNames[!isSameAsDefault]], as.character)) ->
+    cfgGmsWideSameDiffDefault
+  
+  cat("## GAMS Config Non-Default\n\n")
+
+  cat("Following GAMS settings are the same in all sceanrios but different from the default settings.\n\n")
+  
+  bind_cols(
+    Source = c("Scenarios", "Default"),
+    cfgGmsWideSameDiffDefault
+  ) %>% 
+    showInTables()
+  
+  cat(
+    "Following GAMS settings are the same in all sceanrios and not present in the default file:\n\n")
+  
+  showInTables(cfgGmsWideSame[setdiff(names(cfgGmsWideSame), names(cfgDefault$gms))])
+}
+```
+
+
+```{r results='asis'}
+# Show all gms config options that differ between scenarios.
+if (exists("cfgGmsWideDiff") && !is.null(cfgGmsWideDiff)) {
+  cat("## GAMS Config Differences\n\n")
+  
+  cat("Following GAMS settings are different among the sceanrios:\n\n")
+
+  showInTables(cfgGmsWideDiff, bkgndColors)
 }
 ```
 

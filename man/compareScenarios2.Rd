@@ -7,6 +7,7 @@
 compareScenarios2(
   mifScen,
   mifHist,
+  configFiles = NULL,
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
   outputFormat = "PDF",
@@ -20,6 +21,9 @@ If the vector has names, those are used to refer to the scenarios in the
 output file.}
 
 \item{mifHist}{\code{character(1)}. Path to historical mif.}
+
+\item{configFiles}{\code{character(n)}. Paths to config.RData files
+containing the \code{cfg} object for each scenario.}
 
 \item{outputDir}{\code{character(1)}. The directory where the output document
 and intermediary files are created.}
@@ -106,6 +110,7 @@ compareScenarios2(
 compareScenarios2(
   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
+  configFiles = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
   outputDir = "path/to/output",
   outputFormat = "Rmd",
   outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),

@@ -19,7 +19,8 @@ geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footn
 params:
   mifScen: ""
   mifScenNames: null
-  configFiles: null
+  cfgScen: null
+  cfgDefault: null
   mifHist: ""
   yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
@@ -87,30 +88,35 @@ library(mip)
 
 
 ```{r read config files}
-if (!is.null(params$configFiles)) {
+if (!is.null(params$cfgScen)) {
   loadCfg <- function(path) {
     env <- new.env()
-    load(path, envir=env)
+    load(path, envir = env)
     return(env$cfg)
   }
-  tibble(path = unname(params$configFiles)) %>%
+  tibble(path = unname(params$cfgScen)) %>%
     rowid_to_column("fileid") %>%
-    mutate(cfg = map(path, loadCfg)) %>% 
-    unnest(cfg) %>% 
+    mutate(cfg = map(path, loadCfg)) %>%
+    unnest(cfg) %>%
     mutate(
       name = names(cfg),
       value = unname(cfg),
       cfg = NULL) ->
     cfgs
-  cfgs %>% 
-    filter(name == "gms") %>% 
-    unnest(value) %>% 
+  cfgs %>%
+    filter(name == "gms") %>%
+    unnest(value) %>%
     mutate(name = names(value)) ->
     cfgGms
-  cfgs %>% 
-    filter(name != "gms") -> 
+  cfgs %>%
+    filter(name != "gms") ->
     cfgTopLevel
   rm(cfgs)
+}
+if (!is.null(params$cfgDefault)) {
+  env <- new.env()
+  source(params$cfgDefault, local=env, echo=FALSE)
+  cfgDefault <- env$cfg
 }
 ```
 
@@ -363,7 +369,6 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r include sections, child = sectionPaths}
-
 ```
 
 
