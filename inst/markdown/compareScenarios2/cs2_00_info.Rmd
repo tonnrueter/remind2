@@ -58,11 +58,11 @@ if (exists("cfgTopLevel") && !is.null(cfgTopLevel)) {
 # pageTextWidth <- # in mm; DIN A4 landscape minus margins.
 # cellMargin # i
 showInTables <- function(
-  data, 
-  background = NULL, 
-  varsPerTable = 5, 
-  firstColumnWidth = 50, 
-  pageTextWidth = 287, 
+  data,
+  background = NULL,
+  varsPerTable = 5,
+  firstColumnWidth = 50,
+  pageTextWidth = 287,
   cellMargin = 5
 ) {
   nDiffVars <- ncol(data) - 1 # number of different variables without title
@@ -84,7 +84,7 @@ showInTables <- function(
         kable_styling(
           bootstrap_options = c("striped", "condensed"),
           latex_options = c("striped", "hold_position")
-        ) -> 
+        ) ->
         out
     } else {
       out %>%
@@ -95,7 +95,7 @@ showInTables <- function(
         kable_styling(
           bootstrap_options = c("condensed"),
           latex_options = c("hold_position")
-        ) -> 
+        ) ->
         out
     }
     out %>%
@@ -124,7 +124,7 @@ showInTables <- function(
 # Get config options where scenarios differ and where all scenarios are the same.
 if (exists("cfgGms") && !is.null(cfgGms)) {
   cfgGms %>%
-    left_join(fileReference %>% select(fileid, newScenarioName), by = "fileid") %>%
+    left_join(select(fileReference, fileid, newScenarioName), by = "fileid") %>%
     select(-path, -fileid) %>%
     rename(scenario = newScenarioName) %>%
     pivot_wider(names_from = name, values_from = value) %>%
@@ -135,7 +135,7 @@ if (exists("cfgGms") && !is.null(cfgGms)) {
     select(scenario, everything()) ->
     cfgGmsWideDiff
   cfgGmsWide %>%
-    select(where(~ length(unique(.)) == 1)) %>% 
+    select(where(~ length(unique(.)) == 1)) %>%
     distinct() ->
     cfgGmsWideSame
 }
@@ -148,25 +148,29 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
     exists("cfgGmsWideSame") && !is.null(cfgGmsWideSame)) {
   colNames <- intersect(names(cfgGmsWideSame), names(cfgDefault$gms))
   # the types may differ between the two lists, so convert to character
-  isSameAsDefault <- sapply(colNames, function(nm) identical(as.character(cfgDefault$gms[[nm]]), as.character(unname(cfgGmsWideSame[[nm]]))))
+  isSameAsDefault <- sapply(
+    colNames, 
+    function(nm) identical(
+      as.character(cfgDefault$gms[[nm]]), 
+      as.character(unname(cfgGmsWideSame[[nm]]))))
   bind_rows(
     lapply(cfgGmsWideSame[colNames[!isSameAsDefault]], as.character),
     lapply(cfgDefault$gms[colNames[!isSameAsDefault]], as.character)) ->
     cfgGmsWideSameDiffDefault
-  
+
   cat("## GAMS Config Non-Default\n\n")
 
   cat("Following GAMS settings are the same in all sceanrios but different from the default settings.\n\n")
-  
+
   bind_cols(
     Source = c("Scenarios", "Default"),
     cfgGmsWideSameDiffDefault
-  ) %>% 
+  ) %>%
     showInTables()
-  
+
   cat(
     "Following GAMS settings are the same in all sceanrios and not present in the default file:\n\n")
-  
+
   showInTables(cfgGmsWideSame[setdiff(names(cfgGmsWideSame), names(cfgDefault$gms))])
 }
 ```
@@ -176,7 +180,7 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
 # Show all gms config options that differ between scenarios.
 if (exists("cfgGmsWideDiff") && !is.null(cfgGmsWideDiff)) {
   cat("## GAMS Config Differences\n\n")
-  
+
   cat("Following GAMS settings are different among the sceanrios:\n\n")
 
   showInTables(cfgGmsWideDiff, bkgndColors)

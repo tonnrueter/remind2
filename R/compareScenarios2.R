@@ -26,7 +26,7 @@
 #' \describe{
 #'   \item{\code{cfgScen}}{
 #'     \code{character(n) or NULL}.
-#'     Paths to config.Rdata files containing the \code{cfg} object for each 
+#'     Paths to config.Rdata files containing the \code{cfg} object for each
 #'     scenario. The paths must be provided in the same order as \code{mifScen}.
 #'     If provided, some information gathered from these files is
 #'     shown at the beginning of the output document.}

@@ -115,7 +115,7 @@ if (!is.null(params$cfgScen)) {
 }
 if (!is.null(params$cfgDefault)) {
   env <- new.env()
-  source(params$cfgDefault, local=env, echo=FALSE)
+  source(params$cfgDefault, local = env, echo = FALSE)
   cfgDefault <- env$cfg
 }
 ```

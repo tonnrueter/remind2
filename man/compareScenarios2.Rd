@@ -7,7 +7,6 @@
 compareScenarios2(
   mifScen,
   mifHist,
-  configFiles = NULL,
   outputDir = getwd(),
   outputFile = "CompareScenarios2",
   outputFormat = "PDF",
@@ -21,9 +20,6 @@ If the vector has names, those are used to refer to the scenarios in the
 output file.}
 
 \item{mifHist}{\code{character(1)}. Path to historical mif.}
-
-\item{configFiles}{\code{character(n)}. Paths to config.RData files
-containing the \code{cfg} object for each scenario.}
 
 \item{outputDir}{\code{character(1)}. The directory where the output document
 and intermediary files are created.}
@@ -54,6 +50,17 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
 \section{YAML Parameters}{
 
 \describe{
+  \item{\code{cfgScen}}{
+    \code{character(n) or NULL}.
+    Paths to config.Rdata files containing the \code{cfg} object for each
+    scenario. The paths must be provided in the same order as \code{mifScen}.
+    If provided, some information gathered from these files is
+    shown at the beginning of the output document.}
+  \item{\code{cfgDefault}}{
+    \code{character(1) or NULL}.
+    Path to default.cfg, which creates a \code{cfg} object with default
+    values. If provided, some information gathered from this file is
+    shown at the beginning of the output document.}
   \item{\code{yearsScen}}{
     \code{numeric(n)}.
     Default: \code{c(seq(2005, 2060, 5), seq(2070, 2100, 10))}.
@@ -110,7 +117,8 @@ compareScenarios2(
 compareScenarios2(
   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
-  configFiles = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
+  cfgScen = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
+  cfgDefault = "path/to/default.cfg",
   outputDir = "path/to/output",
   outputFormat = "Rmd",
   outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
@@ -121,7 +129,7 @@ compareScenarios2(
 compareScenarios2(
   mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
-  outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
+  outputFile = format(Sys.time(), "cs2_load_\%Y\%m\%d-\%H\%M\%S"),
   sections = NULL,
   envir = globalenv())
 }
