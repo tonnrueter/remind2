@@ -149,9 +149,9 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
   colNames <- intersect(names(cfgGmsWideSame), names(cfgDefault$gms))
   # the types may differ between the two lists, so convert to character
   isSameAsDefault <- sapply(
-    colNames, 
+    colNames,
     function(nm) identical(
-      as.character(cfgDefault$gms[[nm]]), 
+      as.character(cfgDefault$gms[[nm]]),
       as.character(unname(cfgGmsWideSame[[nm]]))))
   bind_rows(
     lapply(cfgGmsWideSame[colNames[!isSameAsDefault]], as.character),

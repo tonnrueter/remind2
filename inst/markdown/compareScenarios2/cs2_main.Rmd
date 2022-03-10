@@ -125,7 +125,11 @@ if (!is.null(params$cfgDefault)) {
 # Read *.mif-files as nested tibble.
 tibble(path = unname(params$mifScen)) %>%
   rowid_to_column("fileid") %>%
-  mutate(data = map(path, read.quitte, factors = TRUE)) %>%
+  mutate(data = map(
+    path,
+    read.quitte,
+    factors = TRUE,
+    na.strings = c("", "NA", "N/A", "Inf", "-Inf"))) %>%
   unnest(data) %>%
   nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
