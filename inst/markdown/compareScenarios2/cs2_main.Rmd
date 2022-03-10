@@ -7,6 +7,7 @@ output:
     number_sections: yes
     toc_depth: 6
     keep_tex: false
+    template: cs2_latex_template.tex
     includes: 
       in_header: cs2_pdf_header_include.tex
   html_document:
