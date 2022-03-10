@@ -83,7 +83,7 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
     Names or numbers of sections to include. For names subset of
     \code{c("00_info", "01_summary", "02_macro", "03_emissions",
     "04_energy_supply", "05_energy_demand", "06_energy_services",
-    "07_climate", "08_sdp", "09_carbon_management")}.
+    "07_climate", "08_sdp", "09_carbon_management", "99_further_info")}.
     Use \code{"all"} to include all available sections.
     Use \code{NULL} to not include any section
     (useful in combination with parameter \code{envir}).}
@@ -123,7 +123,7 @@ compareScenarios2(
   outputFormat = "Rmd",
   outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
   warning = FALSE,
-  sections = c(2, 3, 6),
+  sections = c(0, 2, 3, 99),
   userSectionPath = "path/to/myPlots.Rmd")
 # Use in development. Load data into global environment:
 compareScenarios2(

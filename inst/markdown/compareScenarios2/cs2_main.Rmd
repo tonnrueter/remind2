@@ -168,6 +168,17 @@ dataScenNested %>%
   dataScen
 ```
 
+```{r define scenario colors}
+# Get colors of scenarios to be used, e.g., in the info sections.
+# They will coincide with the colors of the scenarios in line plots.
+scenarioColors <- plotstyle(fileReference$newScenarioName)
+lightenColor <- function(clr, by) {
+  colRGB <- colorRamp(c(clr, "white"))(by)
+  rgb(colRGB[1], colRGB[2], colRGB[3], maxColorValue = 255)
+}
+bkgndColors <- sapply(scenarioColors, lightenColor, by = 0.5)
+```
+
 
 ```{r read historical mif}
 params$mifHist %>%
