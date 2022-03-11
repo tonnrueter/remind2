@@ -12,7 +12,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #' 
-#' @author Renato Rodrigues, Christoph Bertram, Antoine Levesque
+#' @author Renato Rodrigues, Felix Schreyer
 #' @examples
 #' 
 #'   \dontrun{reportFE(gdx)}
@@ -1532,16 +1532,32 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   
   # bunker correction for distinction of fossil, biomass, hydrogen-based liquids
   fe.vars.woBunkers.fos <- c(  "FE|Liquids|+|Fossil (EJ/yr)",
-                               "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)",
                                "FE|Transport|Liquids|+|Fossil (EJ/yr)")
   
   fe.vars.woBunkers.bio <- c(  "FE|Liquids|+|Biomass (EJ/yr)",
-                               "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)",
                                "FE|Transport|Liquids|+|Biomass (EJ/yr)")
   
   fe.vars.woBunkers.syn <- c(  "FE|Liquids|+|Hydrogen (EJ/yr)",
-                               "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)",
                                "FE|Transport|Liquids|+|Hydrogen (EJ/yr)")
+  
+  
+  # add FE w/o non-energy use variables if available
+  if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
+    
+    
+    # bunker correction for distinction of fossil, biomass, hydrogen-based liquids
+    fe.vars.woBunkers.fos <- c(   fe.vars.woBunkers.fos,
+                                 "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)")
+    
+    fe.vars.woBunkers.bio <- c(   fe.vars.woBunkers.bio,
+                                  "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)")
+    
+    fe.vars.woBunkers.syn <- c(   fe.vars.woBunkers.syn,
+                                  "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)")
+    
+
+    
+  }
   
   
   
