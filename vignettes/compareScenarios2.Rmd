@@ -1,7 +1,7 @@
 ---
 title: "compareScenarios2"
 author: "Christof Schötz"
-date: "2022-02-28"
+date: "2022-03-11"
 output: 
   rmarkdown::html_vignette:
     toc: true
@@ -21,9 +21,11 @@ knitr::opts_chunk$set(
 ```
 
 
-The function `compareScenarios2()` of the `remind2` package can be used to visually compare the results of multiple runs of the IAM REMIND. 
+The function `compareScenarios2()` of the `remind2` package can be used to visually compare the results of multiple runs of the IAM [REMIND](https://github.com/remindmodel/remind) 
 
-The function reads the results from the output-mif-files (in the remind folder after runs are completed, the files `output/<scenario_folder>/REMIND_generic_<scenario>.mif`). Additionally it reads historical data from a `historical.mif` in one of the scenario output folders. Using this data, a report containing many plots is created and written as a PDF- or HTML-file. See `?remind2::compareScenarios2` for information on how to call the function with the appropriate arguments.
+It can be called via the [output.R](https://github.com/remindmodel/remind/blob/develop/output.R) script in the [REMIND repository](https://github.com/remindmodel/remind): Execute `Rscript output.R` in the REMIND folder, select `Comparison across runs` and then `compareScenarios2`.
+
+The function reads the results from the output-mif-files (in the remind folder after runs are completed, i.e., the files `output/<scenario_folder>/REMIND_generic_<scenario>.mif`). Additionally it reads historical data from a `historical.mif` in one of the scenario output folders. Using this data, a document containing many plots is created and written as a PDF- or HTML-file. See `?remind2::compareScenarios2` for information on how to call the function with the appropriate arguments.
 
 Internally, `compareScenarios2()` calls `rmarkdown::render()` on certain Rmarkdown-files (Rmd-files). Rmd-files may contain R-code (e.g., for creating plots) as well as descriptive text (in this case, mostly section titles). The Rmd-files to be rendered are part of the remind2-package. In the development state of the package, they can be found in the folder `inst/markdown/compareScenarios2/`. 
 To be more precises, `rmarkdown::render()` is called on `cs2_main.Rmd` in this folder, which includes other Rmd-files - one for each section of the output document.
@@ -43,7 +45,7 @@ compareScenarios2(
   outputFile = "CompareScenarios2Example")
 ```
 
-To do this locally on our own computer, we need some mif files. One possiblity is to adapt and execute the following script to download the newest *modeltest* files.
+To do this locally on our computer, we need some mif files to compare. One possibility is to adapt and execute the following script to download the newest *modeltest* files.
 
 ```{r eval=FALSE}
 library(tidyverse)
@@ -127,12 +129,12 @@ compareScenarios2(
   envir = globalenv())
 ```
 
-This executes the code in `cs2_main.Rmd` without creating any plots. This will take some seconds, but it should not take minutes. Type `data` into the RStudio console and hit enter. This should show you the first rows of a table that contains all the loaded data.
+This executes the code in `cs2_main.Rmd` without creating any plots (a mostly empty PDF-file will still be created). This will take some seconds, but it should not take minutes. Type `data` into the RStudio console and hit enter. This should show you the first rows of a table that contains all the loaded data.
 
-7. Open the section file in which you want to add the plot. The files are in the folder `inst/markdown/compareScenarios2/` and have names of the form `c2_NN_XXXX.Rmd`, where `NN` is a two digit number and `XXXX` is resembles the section title.
+7. Open the section file in which you want to add the plot. The files are in the folder `inst/markdown/compareScenarios2/` and have names of the form `c2_NN_XXXX.Rmd`, where `NN` is a two digit number and `XXXX` resembles the section title.
 8. You should be able to execute any chunk in the section Rmd by clicking the play button in its top right corner.
-9. Insert a new chunk by copying an old one or by pressing `CTRK+ALT+I`.
-10. Add a new plot inside the chunk, e.g., `showLinePlots(data, "Your|Variable|Name")`. See the section *Plot Functions* below.
+9. Insert a new chunk by copying an old one or by pressing `CTRL+ALT+I`.
+10. Add a new plot inside the chunk, e.g., `showLinePlots(data, "Your|Variable|Name")`. See [Plot Functions] below.
 11. Run your newly created chunk to see the plot.
 12. Run the following code to see your new plot in a PDF.
 
@@ -161,9 +163,11 @@ The file `cs2_main.Rmd` starts with a YAML header marked by `---`. This header d
 
 The mif-files are loaded using `quitte::read.quitte()`. This function names the global region `"World"` (not `"GLO"` as `magclass::read.report()`). For each file, we obtain one data-frame with columns `model, scenario, region, variable, unit, period, value`. During preprocessing the data-frames are concatenated into one quitte object named `data`. In the sections, `data` is used to provide the data necessary for the plots.
 
+If provided, also config files are loaded.
+
 ## Preprocessing
 
-* Scenarios are renamed if the user specifies new names (using a named vector for the argument `mifScen` of `compareScenarios2()` or by setting the parameter `mifScenNames` in the Rmd-files).
+* Scenarios are renamed if the user specifies new names (using a named vector for the argument `mifScen` of `compareScenarios2()` or by setting the parameter `mifScenNames` in the Rmd-files) or if scenario names are duplicate.
 * The columns `period` (years) and `region` are filtered according to the parameters `yearsScen`, `yearsHist`, and `reg`.
 * `|+|, |++|, |+++|, ...` are removed from variable names. An additional column `varplus` is added to the data frame, which retains the original name including `+`. This column is used by `mip::showAreaAndBarPlotsPlus()`.
 * For a specified list of variables, a new per-capita-variable is created with the name `"<OLD_NAME> pCap"`.
@@ -188,6 +192,37 @@ The section-Rmd-files consist of section and sub-section titles, marked by `#`, 
 
 The user can provide one or more additional Rmd-files that are appended after the sections provided by the package. Setting `sections` to `NULL` and `userSectionPath` to a character-vector of paths to Rmd-files creates a fully user-defined report.
 
+## Special Sections
+
+There is a first section (section number 0) and a last section in the files `cs2_00_info.Rmd` and `cs2_99_further_info.Rmd`, respectively. 
+
+### 0 Info
+
+This section contains a file reference table with scenario names and the paths to the respective mif files. It also show if a scenario is renamed. Renaming can be forced by the user by using a named character vector as argument `mifScen` where the names indicate the new scenario name, e.g.,
+
+```{r}
+compareScenarios2(
+  mifScen = c(newName1 = "path/to/scen1.mif", newName2 = "path/to/scen2.mif"),
+  ...)
+```
+
+Or, if two scenarios have the same name, they are renamed automatically.
+
+Furthermore, this section displays a description of each scenario. This requires the YAML-parameter `cfgScen` to be set (see also [99 Further Info]). The description can be set in the `secenario_config*.csv`-file via a column `description`.
+
+
+### 99 Further Info
+
+If `compareScenarios2()` is provided with paths to the `config.Rdata` files of the scenarios via the YAML-parameter `cfgScen` and the path to `default.cfg` ([this](https://github.com/remindmodel/remind/tree/develop/config/default.cfg) file) via `cfgDefault` an analysis of the configurations of the scenarios is shown.
+
+```{r}
+compareScenarios2(
+  mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"),
+  cfgScen = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
+  cfgDefault = "path/to/default.cfg"
+  ...)
+```
+
 
 # Plot Functions
 
@@ -208,8 +243,3 @@ All but `showLinePlotsWithTarget()` can use the global option `mip.mainReg`.
 `showMultiLinePlotsByVariable()` uses `mip.histRefModel`.
 
 See the respective function documentation for more information and example plots.
-
-## Ordering in the Area-Plots
-
-By default the variables in area-plots are ordered by average area, such that the variable with the largest average area is at the bottom.
-
