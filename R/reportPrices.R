@@ -13,7 +13,7 @@
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #'
 #' @return MAgPIE object - contains the price variables
-#' @author Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues
+#' @author Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues, Falk Benke
 #' @seealso \code{\link{convGDX2MIF}}
 #' @examples
 #'
@@ -450,7 +450,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   ### Total LCOE ----
   
   .calcLCOE <- function(out, var) {
-    return(setNames(dimSums(out[, , var, pmatch = T], dim = 3, na.rm = T), paste0(var, "|Total LCOE (US$2005/GJ)")))
+    return(setNames(dimSums(out[, , paste0(var,"|"), pmatch = T], dim = 3, na.rm = T), paste0(var, "|Total LCOE (US$2005/GJ)")))
   }
   
   out <- mbind(
