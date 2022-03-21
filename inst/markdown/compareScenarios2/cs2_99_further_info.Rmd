@@ -120,7 +120,11 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
   cat(
     "Following GAMS settings are the same in all scenarios and not present in the default file:\n\n")
 
-  showInTables(cfgGmsWideSame[setdiff(names(cfgGmsWideSame), names(cfgDefault$gms))])
+  bind_cols(
+    Source = "Scenarios",
+    cfgGmsWideSame[setdiff(names(cfgGmsWideSame), names(cfgDefault$gms))]
+  ) %>%
+  showInTables()
 }
 ```
 
