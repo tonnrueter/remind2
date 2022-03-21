@@ -222,7 +222,7 @@ if (!is.null(params$reg)) {
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
 bind_rows(
-  data %>% filter(unit != "million US$2005/yr"),
+  data %>% filter(! unit %in% c("million US$2005/yr")),
   data %>%
     filter(unit == "million US$2005/yr") %>%
     mutate(
