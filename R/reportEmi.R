@@ -1368,7 +1368,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         "Emi|GHG|+++|Waste (Mt CO2eq/yr)"))
 
   # F-Gases
-  # report as extra category outside of sectors as this is exogenuous to REMIND
+  # report as extra category outside of sectors as this is exogenous to REMIND
   # choose a slightly different name as variable to avoid that duplicates occur in scripts where pluses are removed
   out <- mbind(out,
                setNames(out[, , "Emi|GHG|+|F-Gases (Mt CO2eq/yr)"],
@@ -1486,9 +1486,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         "Emi|GHG|AFOLU (Mt CO2eq/yr)"))
 
 
-
-
-
+  ### 5.3 PFCs ----
+  out <- mbind(out,
+               setNames(vm_emiFgas[, , "emiFgasCF4"],   "Emi|CF4 (kt CF4/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasC2F6"],  "Emi|C2F6 (kt C2F6/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasC6F14"], "Emi|C6F14 (kt C6F14/yr)"))
 
 
 
