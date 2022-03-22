@@ -75,6 +75,7 @@ if (exists("cfgGms") && !is.null(cfgGms)) {
     left_join(select(fileReference, fileid, newScenarioName), by = "fileid") %>%
     select(-path, -fileid) %>%
     rename(scenario = newScenarioName) %>%
+    filter(! name %in% c("c_expname" , "c_description")) %>% 
     pivot_wider(names_from = name, values_from = value) %>%
     mutate(across(-scenario, unlist)) ->
     cfgGmsWide
@@ -108,7 +109,7 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
 
   cat("## GAMS Config Non-Default\n\n")
 
-  cat("Following GAMS settings are the same in all sceanrios but different from the default settings.\n\n")
+  cat("Following GAMS settings are the same in all scenarios but different from the default settings.\n\n")
 
   bind_cols(
     Source = c("Scenarios", "Default"),
@@ -117,9 +118,13 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
     showInTables()
 
   cat(
-    "Following GAMS settings are the same in all sceanrios and not present in the default file:\n\n")
+    "Following GAMS settings are the same in all scenarios and not present in the default file:\n\n")
 
-  showInTables(cfgGmsWideSame[setdiff(names(cfgGmsWideSame), names(cfgDefault$gms))])
+  bind_cols(
+    Source = "Scenarios",
+    cfgGmsWideSame[setdiff(names(cfgGmsWideSame), names(cfgDefault$gms))]
+  ) %>%
+  showInTables()
 }
 ```
 
