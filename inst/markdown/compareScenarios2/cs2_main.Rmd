@@ -129,7 +129,8 @@ tibble(path = unname(params$mifScen)) %>%
     path,
     read.quitte,
     factors = TRUE,
-    na.strings = c("", "NA", "N/A", "Inf", "-Inf"))) %>%
+    # read.quitte() default NA-strings and Inf, -Inf
+    na.strings = c("UNDF", "NA", "N/A", "n_a", "Inf", "-Inf"))) %>%
   unnest(data) %>%
   nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
@@ -222,7 +223,7 @@ if (!is.null(params$reg)) {
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
 bind_rows(
-  data %>% filter(unit != "million US$2005/yr"),
+  data %>% filter(! unit %in% c("million US$2005/yr")),
   data %>%
     filter(unit == "million US$2005/yr") %>%
     mutate(
