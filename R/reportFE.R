@@ -1336,10 +1336,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   ### temporary (!) industry non-energy use reporting
   # note: only for REMIND-EU SSP2
   
-  if (module2realisation["industry",2]=="fixed_shares") {
+  if (module2realisation["industry",2] == "fixed_shares" & "DEU" %in% getRegions(vm_prodFe)) {
     
-    if ("DEU" %in% getRegions(vm_prodFe)) {
-      
       # some initializations required for building library with dplyr operations below
       encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
       
@@ -1547,19 +1545,12 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                    setNames(out[,,"FE|Solids|+|Fossil (EJ/yr)"] -
                               out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
-                  
-                  
-          
-                            
-    
 
-    }
+  } else {
+    # TODO: correct once feedstocks are calculated within the model
+    # The variable FE|w/o Non-energy Use|Industry currently contains Non-Energy Use. Non-Energy Use should be subtracted from this variable as soon as feedstocks are calculated within the model.")
+    out <- mbind(out, setNames(out[, , "FE|++|Industry (EJ/yr)"], "FE|w/o Non-energy Use|Industry (EJ/yr)"))
   }
-  
-
-  
-  
-  
   
   # add global values
   out <- mbind(out,dimSums(out,dim=1))
