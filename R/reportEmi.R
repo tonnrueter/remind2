@@ -1741,7 +1741,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # TODO: add non-energy use variables for all regionmappings and sector realizations
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
-  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)) {
+  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) && 
+      "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) && 
+      "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) && 
+      "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
 
 
     # calculate non-energy use emissions (= feedstock carbon content) as industry emissions before CCS per energy carrier * share of feedstocks in final energy
@@ -1916,7 +1919,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   # if non-energy use variables exist, also do bunker correction for variables w/o non-energy use
-  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)) {
+  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) && 
+      "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) && 
+      "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) && 
+      "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
+    
     emi.vars.wBunkers.wNonEn <- intersect(emi.vars.wBunkers, emi.vars.wNonEn)
 
     # remove all pluses from the "Emi w/o Non-energy Use" variables as they do not cover sectors in which non-energy use not relevant and checking aggregation does not make sense

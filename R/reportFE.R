@@ -1549,7 +1549,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   } else {
     # TODO: correct once feedstocks are calculated within the model
     # The variable FE|w/o Non-energy Use|Industry currently contains Non-Energy Use. Non-Energy Use should be subtracted from this variable as soon as feedstocks are calculated within the model.")
-    out <- mbind(out, setNames(out[, , "FE|++|Industry (EJ/yr)"], "FE|w/o Non-energy Use|Industry (EJ/yr)"))
+    out <- mbind(
+      out,
+      setNames(out[, , "FE|++|Industry (EJ/yr)"], "FE|w/o Non-energy Use|Industry (EJ/yr)"),
+      setNames(out[, , "FE|Industry|+|Solids (EJ/yr)"], "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"),
+      setNames(out[, , "FE|Industry|+|Gases (EJ/yr)"], "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
+      setNames(out[, , "FE|Industry|+|Liquids (EJ/yr)"], "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)")
+    )
+
+    out <- add_columns(out, addnm = "FE|Non-energy Use|Industry (EJ/yr)", dim = 3.1, fill = 0)
   }
   
   # add global values
