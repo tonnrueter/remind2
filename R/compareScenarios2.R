@@ -47,6 +47,10 @@
 #'     \code{numeric(n)}.
 #'     Default: \code{c(2010, 2030, 2050, 2100)}.
 #'     Years to show in bar plots of scenario data.}
+#'   \item{\code{yearRef}}{
+#'     \code{numeric(1)}.
+#'     Default: \code{2005}.
+#'     A reference year used to show relative values in Kaya decomposition.}
 #'   \item{\code{reg}}{
 #'     \code{NULL} or \code{character(n)}.
 #'     Default: \code{NULL}.
