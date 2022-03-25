@@ -213,7 +213,7 @@ cat("### Relative to ", ref_year, "\n")
 
 ```{r kaya plot rel}
 showMultiLinePlots(kaya_rel, kaya_vars)
-walk(kaya_vars, showRegiLinePlots, data = kaya)
+walk(kaya_vars, showRegiLinePlots, data = kaya_rel)
 ```
 
 ### Components
