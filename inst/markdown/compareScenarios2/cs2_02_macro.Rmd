@@ -219,5 +219,5 @@ walk(kaya_vars, showRegiLinePlots, data = kaya_rel)
 ### Components
 
 ```{r kaya_vars plot}
-walk(kaya_vars, showLinePlots, data = kaya_rel)
+walk(kaya_vars, showLinePlots, data = kaya)
 ```
