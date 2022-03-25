@@ -25,6 +25,7 @@ params:
   yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
+  yearRef: 2020
   reg: null
   sections: "all"
   userSectionPath: null
@@ -223,7 +224,7 @@ if (!is.null(params$reg)) {
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
 bind_rows(
-  data %>% filter(! unit %in% c("million US$2005/yr")),
+  data %>% filter(!unit %in% c("million US$2005/yr")),
   data %>%
     filter(unit == "million US$2005/yr") %>%
     mutate(
@@ -347,6 +348,9 @@ data <- as.quitte(data)
 options(mip.mainReg = params$mainReg)
 options(mip.yearsBarPlot = params$yearsBarPlot)
 options(mip.histRefModel = histRefModel)
+
+# Reference year for Kaya decomposition is params$yearRef or the first available year therafter.
+options(kaya.refYear = min(params$yearsScen[params$yearsScen >= params$yearRef]))
 ```
 
 
@@ -385,8 +389,10 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r include sections, child = sectionPaths}
+
 ```
 
 
 ```{r include user section, child = params$userSectionPath}
+
 ```
