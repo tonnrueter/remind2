@@ -75,7 +75,7 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
     Years to show in bar plots of scenario data.}
   \item{\code{yearRef}}{
     \code{numeric(1)}.
-    Default: \code{2005}.
+    Default: \code{2020}.
     A reference year used to show relative values in Kaya decomposition.}
   \item{\code{reg}}{
     \code{NULL} or \code{character(n)}.
