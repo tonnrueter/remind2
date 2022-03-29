@@ -177,6 +177,28 @@ items <- c('Production|Industry|Cement|per-capita',
 walk(items, showLinePlots, data = data, scales = 'fixed')
 ```
 
+### Steel accumulation (per capita)
+```{r}
+#initial stocks of steel. can I call this kind of mrremind stuff here???? or do I just need to hard-code the values here :(  
+# stock_t0 <- readSource(type = 'Mueller', subtype = 'stocks', convert = FALSE) %>% 
+#     madrat_mule() %>% 
+#     filter('med' == estimate)
+
+primary <- data %>% 
+  filter(variable %in% c('Production|Industry|Steel|Primary|per-capita')) %>% 
+  calc_addVariable(
+   '`Production|Industry|Steel|Primary|per-capita accumulation`' = 'cumsum(`Production|Industry|Steel|Primary|per-capita`)',
+   units = 't'
+  )
+#to do:
+#integrate over interval duration
+#add initial stocks
+
+showLinePlots(primary, 'Production|Industry|Steel|Primary|per-capita accumulation')
+
+```
+
+
 ### Subsector per-GDP Production
 ```{r plot subsector per-GDP production}
 items <- c('Production|Industry|Cement|per-GDP',
