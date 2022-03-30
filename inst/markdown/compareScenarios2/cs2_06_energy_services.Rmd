@@ -184,18 +184,33 @@ walk(items, showLinePlots, data = data, scales = 'fixed')
 #     madrat_mule() %>% 
 #     filter('med' == estimate)
 
+#extract names of available scenarios
+#scn <- data
+
 primary <- data %>% 
-  filter(variable %in% c('Production|Industry|Steel|Primary|per-capita')) %>% 
+ 
+  #delete me!---
+  filter(region %in% c('LAM')) %>%
+  filter(scenario %in% c('SSP2EU-AMT-Base','SSP2EU-AMT-PkBudg670')) %>% 
+  #-------------
+  
+  filter(variable %in% c('Production|Industry|Steel|Primary','Population')) %>% 
   calc_addVariable(
-   '`Production|Industry|Steel|Primary|per-capita accumulation`' = 'cumsum(`Production|Industry|Steel|Primary|per-capita`)',
+#   t                               #t  
+   '`Primary steel accumulation`' = 'cumsum(`Production|Industry|Steel|Primary`)',
+   units = 't'
+  )  %>% 
+  calc_addVariable(
+#   t                                          #t                             #humans 10^6 #ADD FACTOR 1e6!!!!
+   '`Primary steel accumulation per-capita`' = '`Primary steel accumulation` / `Population`',
    units = 't'
   )
-#to do:
-#integrate over interval duration
-#add initial stocks
+# to do:
+# integrate over interval duration
+# add initial stocks
 
-showLinePlots(primary, 'Production|Industry|Steel|Primary|per-capita accumulation')
-
+showLinePlots(primary, "Primary steel accumulation")
+showLinePlots(primary, "Primary steel accumulation per-capita")
 ```
 
 
