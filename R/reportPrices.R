@@ -272,25 +272,25 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                )
 
   ## detailed FE price calculations ----
-  
+
   ### Transport and Distribution Cost ----
-  
+
   tech <- c(
     "tdfospet", "tdfosdie", "tdbiopet", "tdsynpet", "tdsyngas", "tdfosgas", "tdfosgat", "tdfossos",
     "tdh2t", "tdelt", "tdels", "tdhes", "tdbiosos", "tdbiogas", "tdh2s", "tdfoshos", "tdsyngat"
   )
-  
+
   vm_costTeCapital <- readGDX(gdx, "vm_costTeCapital", field = "l", restore_zeros = F)[, YearsFrom2005, tech] # [tr USD2005/TWh]
   p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)[, , tech]
   vm_capFac <- readGDX(gdx, "vm_capFac", field = "l", restore_zeros = F)[, YearsFrom2005, tech] * 8760
   pm_data_omf <- readGDX(gdx, "pm_data", restore_zeros = F)[, , "omf"][, , tech]
-  
+
   price.investment <- vm_costTeCapital * p_teAnnuity / vm_capFac
   price.omf <- pm_data_omf * vm_costTeCapital / vm_capFac
   price.td <- collapseDim(price.investment + price.omf)  * 1e6 / 3.6 # [tr USD2005/TWh] -> [USD2005/GJ]
-  
+
   out <- mbind(
-    out, 
+    out,
     setNames(price.td[, , "tdfospet"], "Price|Final Energy|Transport|Liquids|Petroleum|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdfosdie"], "Price|Final Energy|Transport|Liquids|Diesel|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdbiopet"], "Price|Final Energy|Transport|Liquids|Biomass|Transport and Distribution (US$2005/GJ)"),
@@ -299,7 +299,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.td[, , "tdfosgat"], "Price|Final Energy|Transport|Gases|Natural Gas|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdh2t"], "Price|Final Energy|Transport|Hydrogen|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdelt"], "Price|Final Energy|Transport|Electricity|Transport and Distribution (US$2005/GJ)"),
-    
+
     setNames(price.td[, , "tdfoshos"], "Price|Final Energy|Buildings|Liquids|Oil|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdfosgas"], "Price|Final Energy|Buildings|Gases|Natural Gas|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdhes"], "Price|Final Energy|Buildings|Heat|Transport and Distribution (US$2005/GJ)"),
@@ -310,7 +310,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.td[, , "tdsyngas"], "Price|Final Energy|Buildings|Gases|Efuel|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdh2s"], "Price|Final Energy|Buildings|Hydrogen|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdels"], "Price|Final Energy|Buildings|Electricity|Transport and Distribution (US$2005/GJ)"),
-    
+
     setNames(price.td[, , "tdfoshos"], "Price|Final Energy|Industry|Liquids|Oil|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdfossos"], "Price|Final Energy|Industry|Solids|Coal|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdfosgas"], "Price|Final Energy|Industry|Gases|Natural Gas|Transport and Distribution (US$2005/GJ)"),
@@ -323,39 +323,40 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.td[, , "tdh2s"], "Price|Final Energy|Industry|Hydrogen|Transport and Distribution (US$2005/GJ)"),
     setNames(price.td[, , "tdels"], "Price|Final Energy|Industry|Electricity|Transport and Distribution (US$2005/GJ)")
   )
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
   ### Carbon Price Component ----
-  
+
   tech.fossil <- c("tdfospet", "tdfosdie", "tdfosgas", "tdfoshos", "tdfossos")
   pm_emifac <- readGDX(gdx, "pm_emifac", field = "l", restore_zeros = F)[, YearsFrom2005, "co2"][, , tech.fossil] # [GtC CO2/TWa]
   pm_emifac <- pm_emifac * 1e9 / s_twa2mwh / 3.6 # [GtC CO2/TWa] -> [tC CO2/GJ]
-  
+
   pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F) # [USD2005/tC CO2]
   pm_priceCO2 <- add_columns(pm_priceCO2, addnm = setdiff(YearsFrom2005, getYears(pm_priceCO2)), dim = 2, fill = NA)
-  
+  pm_priceCO2 <- add_columns(pm_priceCO2, addnm = setdiff(getRegions(pm_emifac), getRegions(pm_priceCO2)), dim = 1, fill = NA)
+
   price.carbon <- collapseDim(pm_emifac * pm_priceCO2) # [USD2005/GJ]
-  
+
   out <- mbind(
-    out, 
+    out,
     setNames(price.carbon[, , "tdfospet"], "Price|Final Energy|Transport|Liquids|Petroleum|Carbon Price Component (US$2005/GJ)"),
     setNames(price.carbon[, , "tdfosdie"], "Price|Final Energy|Transport|Liquids|Diesel|Carbon Price Component (US$2005/GJ)"),
     setNames(price.carbon[, , "tdfosgas"], "Price|Final Energy|Transport|Gases|Natural Gas|Carbon Price Component (US$2005/GJ)"),
-    
+
     setNames(price.carbon[, , "tdfoshos"], "Price|Final Energy|Buildings|Liquids|Oil|Carbon Price Component (US$2005/GJ)"),
     setNames(price.carbon[, , "tdfosgas"], "Price|Final Energy|Buildings|Gases|Natural Gas|Carbon Price Component (US$2005/GJ)"),
-    
+
     setNames(price.carbon[, , "tdfoshos"], "Price|Final Energy|Industry|Liquids|Oil|Carbon Price Component (US$2005/GJ)"),
     setNames(price.carbon[, , "tdfossos"], "Price|Final Energy|Industry|Solids|Coal|Carbon Price Component (US$2005/GJ)"),
     setNames(price.carbon[, , "tdfosgas"], "Price|Final Energy|Industry|Gases|Natural Gas|Carbon Price Component (US$2005/GJ)")
   )
-  
-  
-  
+
+
+
   ### Tax Component ----
   entyFe2Sector <- c(
     "trans.fepet", "trans.fedie", "trans.feelt", "trans.feh2t", "trans.fegat",
@@ -366,9 +367,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pm_tau_fe_tax <- readGDX(gdx, "pm_tau_fe_tax")[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
   pm_tau_fe_sub <- readGDX(gdx, "pm_tau_fe_sub")[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
   price.tax <- (pm_tau_fe_tax + pm_tau_fe_sub) / s_twa2mwh / 3.6 * 1e12 # [USD2005/GJ]
-  
+
   out <- mbind(
-    out, 
+    out,
     setNames(price.tax[, , "trans.fepet"], "Price|Final Energy|Transport|Liquids|Petroleum|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "trans.fedie"], "Price|Final Energy|Transport|Liquids|Diesel|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "trans.fegat"], "Price|Final Energy|Transport|Gases|Natural Gas|Other Taxes (US$2005/GJ)"),
@@ -377,7 +378,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.tax[, , "trans.fegat"], "Price|Final Energy|Transport|Gases|Efuel|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "trans.feh2t"], "Price|Final Energy|Transport|Hydrogen|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "trans.feelt"], "Price|Final Energy|Transport|Electricity|Other Taxes (US$2005/GJ)"),
-    
+
     setNames(price.tax[, , "build.fehos"], "Price|Final Energy|Buildings|Liquids|Oil|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "build.fegas"], "Price|Final Energy|Buildings|Gases|Natural Gas|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "build.fehos"], "Price|Final Energy|Buildings|Heat|Other Taxes (US$2005/GJ)"),
@@ -388,7 +389,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.tax[, , "build.fegas"], "Price|Final Energy|Buildings|Gases|Efuel|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "build.feh2s"], "Price|Final Energy|Buildings|Hydrogen|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "build.feels"], "Price|Final Energy|Buildings|Electricity|Other Taxes (US$2005/GJ)"),
-    
+
     setNames(price.tax[, , "indst.fehos"], "Price|Final Energy|Industry|Liquids|Oil|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "indst.fesos"], "Price|Final Energy|Industry|Solids|Coal|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "indst.fegas"], "Price|Final Energy|Industry|Gases|Natural Gas|Other Taxes (US$2005/GJ)"),
@@ -401,16 +402,16 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.tax[, , "indst.feh2s"], "Price|Final Energy|Industry|Hydrogen|Other Taxes (US$2005/GJ)"),
     setNames(price.tax[, , "indst.feels"], "Price|Final Energy|Industry|Electricity|Other Taxes (US$2005/GJ)")
   )
-  
-  
-  
+
+
+
   ### Fuel Cost Component ----
-  
+
   se <- c("seliqfos", "segafos", "seliqbio", "segabio", "seliqsyn", "segasyn", "seh2", "seel", "sesofos", "sehe", "sesobio")
   pm_SEPrice <- readGDX(gdx, "pm_SEPrice")[, YearsFrom2005, se] / s_twa2mwh / 3.6 * 1e12 # [tr USD2005/TWa] -> [USD2005/GJ]
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", restore_zeros = F)[, YearsFrom2005, tech]
   price.fuel <- pm_SEPrice / pm_eta_conv
-  
+
   out <- mbind(
     out,
     setNames(price.fuel[,,"seliqfos.tdfospet"], "Price|Final Energy|Transport|Liquids|Petroleum|Fuel Cost (US$2005/GJ)"),
@@ -421,7 +422,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.fuel[,,"segasyn.tdsyngat"], "Price|Final Energy|Transport|Gases|Efuel|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"seh2.tdh2t"], "Price|Final Energy|Transport|Hydrogen|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"seel.tdelt"], "Price|Final Energy|Transport|Electricity|Fuel Cost (US$2005/GJ)"),
-    
+
     setNames(price.fuel[,,"seliqfos.tdfoshos"], "Price|Final Energy|Buildings|Liquids|Oil|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"segafos.tdfosgas"], "Price|Final Energy|Buildings|Gases|Natural Gas|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"sehe.tdhes"], "Price|Final Energy|Buildings|Heat|Fuel Cost (US$2005/GJ)"),
@@ -432,7 +433,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.fuel[,,"segasyn.tdsyngas"], "Price|Final Energy|Buildings|Gases|Efuel|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"seh2.tdh2s"], "Price|Final Energy|Buildings|Hydrogen|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"seel.tdels"], "Price|Final Energy|Buildings|Electricity|Fuel Cost (US$2005/GJ)"),
-    
+
     setNames(price.fuel[,,"seliqfos.tdfoshos"], "Price|Final Energy|Industry|Liquids|Oil|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"sesofos.tdfossos"], "Price|Final Energy|Industry|Solids|Coal|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"segafos.tdfosgas"], "Price|Final Energy|Industry|Gases|Natural Gas|Fuel Cost (US$2005/GJ)"),
@@ -441,18 +442,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(price.fuel[,,"segabio.tdbiogas"], "Price|Final Energy|Industry|Gases|Biomass|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"seliqsyn.tdsynpet"], "Price|Final Energy|Industry|Liquids|Efuel|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"segasyn.tdsyngas"], "Price|Final Energy|Industry|Gases|Efuel|Fuel Cost (US$2005/GJ)"),
-    
+
     setNames(price.fuel[,,"seel.tdels"], "Price|Final Energy|Industry|Electricity|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"seh2.tdh2s"], "Price|Final Energy|Industry|Hydrogen|Fuel Cost (US$2005/GJ)"),
     setNames(price.fuel[,,"sehe.tdhes"], "Price|Final Energy|Industry|Heat|Fuel Cost (US$2005/GJ)")
   )
-  
+
   ### Total LCOE ----
-  
+
   .calcLCOE <- function(out, var) {
     return(setNames(dimSums(out[, , paste0(var,"|"), pmatch = T], dim = 3, na.rm = T), paste0(var, "|Total LCOE (US$2005/GJ)")))
   }
-  
+
   out <- mbind(
     out,
     .calcLCOE(out, "Price|Final Energy|Transport|Liquids|Petroleum"),
@@ -463,7 +464,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Transport|Gases|Efuel"),
     .calcLCOE(out, "Price|Final Energy|Transport|Hydrogen"),
     .calcLCOE(out, "Price|Final Energy|Transport|Electricity"),
-    
+
     .calcLCOE(out, "Price|Final Energy|Buildings|Liquids|Oil"),
     .calcLCOE(out, "Price|Final Energy|Buildings|Gases|Natural Gas"),
     .calcLCOE(out, "Price|Final Energy|Buildings|Heat"),
@@ -474,7 +475,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Buildings|Gases|Efuel"),
     .calcLCOE(out, "Price|Final Energy|Buildings|Hydrogen"),
     .calcLCOE(out, "Price|Final Energy|Buildings|Electricity"),
-    
+
     .calcLCOE(out, "Price|Final Energy|Industry|Liquids|Oil"),
     .calcLCOE(out, "Price|Final Energy|Industry|Solids|Coal"),
     .calcLCOE(out, "Price|Final Energy|Industry|Gases|Natural Gas"),
@@ -487,7 +488,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Industry|Hydrogen"),
     .calcLCOE(out, "Price|Final Energy|Industry|Heat")
   )
-  
+
   ## apply lowpass filter to receive moving average prices ----
   out.lowpass <- lowpass(out)
   ## add "Moving Avg" to variable name
