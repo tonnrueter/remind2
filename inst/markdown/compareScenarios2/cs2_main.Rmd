@@ -205,7 +205,7 @@ rm(dataScen, dataScenNested, dataHist)
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>%
   mutate(
-    varplus = variable,
+    varplus = as.character(variable),
     variable = remind2::deletePlus(variable)) ->
   data
 
