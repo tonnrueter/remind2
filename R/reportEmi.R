@@ -1178,7 +1178,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
                # total EW
                # total co2 captured by EW
-               setNames(-v33_emiEW * GtC_2_MtCO2,
+               setNames(v33_emiEW * GtC_2_MtCO2,
                         "Emi|CO2|CDR|EW (Mt CO2/yr)"))
   
   out <- mbind(out,
