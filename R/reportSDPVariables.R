@@ -20,7 +20,11 @@
 
 
 
-reportSDPVariables <- function(gdx,output=NULL) {
+reportSDPVariables <- function(
+  gdx, 
+  output=NULL, 
+  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)
+) {
   
   # Define current realisation for the different modules
   module2realisation <- readGDX(gdx, "module2realisation")

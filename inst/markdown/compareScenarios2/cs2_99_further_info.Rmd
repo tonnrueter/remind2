@@ -140,4 +140,3 @@ if (exists("cfgGmsWideDiff") && !is.null(cfgGmsWideDiff)) {
 }
 ```
 
-\newpage

@@ -100,7 +100,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   
   # reporting of SDP variables
   message("running reportSDPVariables...")
-  tmp <- try(reportSDPVariables(gdx,output))  # test whether reportSDPVariables works
+  tmp <- try(reportSDPVariables(gdx,output,t))  # test whether reportSDPVariables works
   if(class(tmp)!="try-error") {
     if(!is.null(tmp)) output <- tmp
   } else {
