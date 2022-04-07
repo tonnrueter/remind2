@@ -401,5 +401,3 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
 
   return(out)
 }
-
-

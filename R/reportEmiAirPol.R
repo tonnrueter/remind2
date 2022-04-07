@@ -620,4 +620,3 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
 
   return(out)
 }
-
