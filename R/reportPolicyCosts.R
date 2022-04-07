@@ -97,4 +97,3 @@ reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL,t=c(seq(2005,206
   
   return(tmp)
 }
-

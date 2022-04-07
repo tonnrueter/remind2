@@ -1544,4 +1544,3 @@ reportLCOE <- function(gdx, output.type = "both"){
   
   
  
-

@@ -195,4 +195,3 @@ items <- c(
   "FE|Transport|w/o Bunkers")
 showAreaAndBarPlots(data, items, tot)
 ```
-
