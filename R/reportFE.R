@@ -1272,7 +1272,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   #--- CDR ---
   
   if(cdr_mod != "off"){
-    
+    vm_otherFEdemand  <- readGDX(gdx,name=c("vm_otherFEdemand"),field="l",format="first_found")[,t,]*TWa_2_EJ
+
     s33_rockgrind_fedem <- readGDX(gdx,"s33_rockgrind_fedem", react = "silent")
     if (is.null(s33_rockgrind_fedem)){
       s33_rockgrind_fedem  <- new.magpie("GLO",NULL,fill=0)
@@ -1281,9 +1282,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     if (is.null(v33_grindrock_onfield)){
       v33_grindrock_onfield  <- new.magpie(getRegions(vm_otherFEdemand),getYears(vm_otherFEdemand),fill=0)
     }
-    
-    vm_otherFEdemand  <- readGDX(gdx,name=c("vm_otherFEdemand"),field="l",format="first_found")[,t,]*TWa_2_EJ
-    
+
     out <- mbind(out,
                  setNames(vm_otherFEdemand[,,"feh2s"],        "FE|CDR|DAC|+|Hydrogen (EJ/yr)"),
                  setNames(vm_otherFEdemand[,,"fegas"],        "FE|CDR|DAC|+|Gases (EJ/yr)"),
