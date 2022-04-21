@@ -597,7 +597,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     esty_build <-  readGDX(gdx,c("esty_dyn36"),format="first_found", react = "silent")
     
     #var
-    v_prodEs <- readGDX(gdx,name = c("v_prodEs"), field="l",restore_zeros = F, format = "first_found", react = "silent")[,t,]* TWa_2_EJ
+    v_prodEs <- readGDX(gdx,name = c("vm_prodEs","v_prodEs"), field="l",restore_zeros = F, format = "first_found", react = "silent")[,t,]* TWa_2_EJ
     
     ces_elec = c(grep("elb$", ppfen_build, value = T),grep("hpb$", ppfen_build, value = T))
     es_elec = c(grep("elb$", esty_build, value = T),grep("hpb$", esty_build, value = T))
