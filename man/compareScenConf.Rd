@@ -8,6 +8,7 @@ comparing it to a default.cfg}
 compareScenConf(
   fileList = "",
   configfile = "default.cfg",
+  row.names = 1,
   renamedColumns = NULL,
   renamedRows = NULL,
   printit = TRUE
@@ -17,6 +18,8 @@ compareScenConf(
 \item{fileList}{vector containing two csv file paths. If empty, user can select}
 
 \item{configfile}{path to configfile. If empty, uses './default.cfg'}
+
+\item{row.names}{column in csv used for row.names. Use NULL for mapping files}
 
 \item{renamedColumns}{vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))}
 

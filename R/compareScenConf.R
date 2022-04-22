@@ -3,6 +3,7 @@
 #'
 #' @param fileList vector containing two csv file paths. If empty, user can select
 #' @param configfile path to configfile. If empty, uses './default.cfg'
+#' @param row.names column in csv used for row.names. Use NULL for mapping files
 #' @param renamedColumns vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))
 #' @param renamedRows vector with old and new row names such as c("old3" = "new3", "old4" = "new4"))
 #' @param printit boolean switch (default: TRUE) whether function prints its output
@@ -19,7 +20,7 @@
 #' @return list with $allwarnings and $out
 #' @importFrom utils read.csv2
 #' @export
-compareScenConf <- function(fileList = "", configfile = "default.cfg",
+compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names = 1,
                             renamedColumns = NULL, renamedRows = NULL, printit = TRUE) {
   m <- c()
   folder <- getwd()
@@ -63,9 +64,9 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg",
     try(cfg$gms[["inputRevision"]] <- cfg$inputRevision)
   }
 
-  settings1 <- read.csv2(fileList[[1]], stringsAsFactors = FALSE, row.names = 1,
+  settings1 <- read.csv2(fileList[[1]], stringsAsFactors = FALSE, row.names = row.names,
                          comment.char = "#", na.strings = "", dec = ".")
-  settings2 <- read.csv2(fileList[[2]], stringsAsFactors = FALSE, row.names = 1,
+  settings2 <- read.csv2(fileList[[2]], stringsAsFactors = FALSE, row.names = row.names,
                          comment.char = "#", na.strings = "", dec = ".")
 
   # rename columns and rows in old file to new names after some checks
@@ -85,13 +86,15 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg",
   for (s in scenarios) {
     if (s %in% rownames(settings1) & s %in% rownames(settings2)) {
       # scenario name, oldname -> newname if renamed
-      m <- c(m, paste0(ifelse(s %in% renamedRows, paste(names(which(renamedRows == s)), "-> "), ""), s, ":"))
-      for (c in intersect(names(settings1), names(settings2))) {
-        # print only if different, if description was changed print only this fact
-        if (! identical(toString(settings1[s, c]), toString(settings2[s, c]))) {
-          m <- c(m, paste0("  ", ifelse(c %in% renamedColumns, paste(names(which(renamedColumns == c)), "-> "), ""),
-                  c, ": ", ifelse(c == "description", "was changed", paste0(settings1[s, c], " -> ", settings2[s, c])),
-                  ifelse(isFALSE(configfile), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
+      if (! all(identical(toString(settings1[s, ]), toString(settings2[s, ])))) {
+        m <- c(m, paste0(ifelse(s %in% renamedRows, paste(names(which(renamedRows == s)), "-> "), ""), s, ":"))
+        for (c in intersect(names(settings1), names(settings2))) {
+          # print only if different, if description was changed print only this fact
+          if (! identical(toString(settings1[s, c]), toString(settings2[s, c]))) {
+            m <- c(m, paste0("  ", ifelse(c %in% renamedColumns, paste(names(which(renamedColumns == c)), "-> "), ""),
+                   c, ": ", ifelse(c == "description", "was changed", paste0(settings1[s, c], " -> ", settings2[s, c])),
+                   ifelse(isFALSE(configfile), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
+          }
         }
       }
     } else {
