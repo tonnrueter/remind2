@@ -29,12 +29,12 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   
   # Cost calculation requires information from other reportings
   if(is.null(output)){
-      cat("Executing reportExtraction\n")
-      output <- mbind(output,reportExtraction(gdx,regionSubsetList,t))
-      cat("Executing reportPrices\n")
-      output <- mbind(output,reportPrices(gdx,regionSubsetList=regionSubsetList,t))
-      cat("Executing reportEnergyInvestments\n")
-      output <- mbind(output,reportEnergyInvestment(gdx,regionSubsetList,t)[,getYears(output),])
+    message("reportCosts executes reportExtraction ", appendLF = FALSE)
+    output <- mbind(output, reportExtraction(gdx, regionSubsetList, t))
+    message("- reportPrices ", appendLF = FALSE)
+    output <- mbind(output, reportPrices(gdx, regionSubsetList=regionSubsetList, t))
+    message("- reportEnergyInvestments")
+    output <- mbind(output, reportEnergyInvestment(gdx, regionSubsetList, t)[, getYears(output), ])
   }
   
   ########################################################################################

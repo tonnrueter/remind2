@@ -39,8 +39,6 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList,t)[,t,])
   message("running reportTrade...")
   output <- mbind(output,reportTrade(gdx,regionSubsetList,t)[,t,])
-  message("running reportTax...")
-  output <- mbind(output,reportTax(gdx,regionSubsetList,t)[,t,])
   message("running reportPE...")   
   output <- mbind(output,reportPE(gdx,regionSubsetList,t)[,t,])
   message("running reportSE...")
@@ -73,6 +71,8 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportPrices(gdx,output,regionSubsetList,t)[,t,]) # needs output from reportSE, reportFE, reportEmi, reportExtraction, reportMacroEconomy  
   message("running reportCosts...")
   output <- mbind(output,reportCosts(gdx,output,regionSubsetList,t)[,t,])  # needs output from reportEnergyInvestment, reportPrices, reportEnergyInvestments
+  message("running reportTax...")
+  output <- mbind(output,reportTax(gdx,output,regionSubsetList,t)[,t,])
 
   # reporting of cross variables ----
   # needs variables from different other report* functions

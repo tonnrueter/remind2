@@ -32,6 +32,28 @@
 reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                          t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
 
+  ## bind to output object
+  if(is.null(output)){
+    message("reportPrices executes reportPE ", appendLF = FALSE)
+    output <- reportPE(gdx, regionSubsetList = regionSubsetList, t = t)
+    message("- reportSE ", appendLF = FALSE)
+    output <- mbind(output, reportSE(gdx, regionSubsetList = regionSubsetList, t = t))
+    message("- reportFE ", appendLF = FALSE)
+    output <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
+    message("- reportEmi ", appendLF = FALSE)
+    output <- mbind(output, reportEmi(gdx, regionSubsetList = regionSubsetList, t = t))
+    message("- reportExtraction ", appendLF = FALSE)
+    output <- mbind(output, reportExtraction(gdx,regionSubsetList = regionSubsetList, t = t))
+    message("- reportMacroEconomy")
+    output <- mbind(output, reportMacroEconomy(gdx,regionSubsetList = regionSubsetList, t = t)[, getYears(output), ])
+  }
+  output[is.na(output)] <- 0     # substitute na by 0
+  output <- deletePlus(output)   # delete "+" and "++" from variable names
+
+  # get rid of GLO from output
+  all_regi_wo_GLO <- getItems(output, dim = "all_regi")[! getItems(output, dim = "all_regi") %in% c("GLO")]
+  output_wo_GLO   <- output[all_regi_wo_GLO, , ]
+
   ####### get realisations #########
   realisation <- readGDX(gdx, "module2realisation")
 
@@ -121,7 +143,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   sector <- emi_sectors <- emiMkt <- all_emiMkt <- NULL
   fe.entries <- entyFe2Sector %>%
-                  left_join(sector2emiMkt) %>%
+                  left_join(sector2emiMkt, by = "emi_sectors") %>%
                   rename( sector = emi_sectors, emiMkt = all_emiMkt) %>%
                   filter( sector != "CDR")
 
@@ -535,11 +557,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       setNames(abs(esm2macro.m[,,name_trsp[1]]/(budget.m+1e-10)) * tdptwyr2dpgj , "Price|Energy Service|Transport LDV (US$2005/GJ)"))
   }
 
-  FE_data   <- reportFE(gdx, regionSubsetList = regionSubsetList, t = t)
-  Emi_data <- reportEmi(gdx, regionSubsetList = regionSubsetList, t = t)
-  FE_data_regi  <-  FE_data[getItems(pm_pvpRegi, dim = "all_regi"), , ] # get rid of GLO
-  Emi_data_regi <- Emi_data[getItems(pm_pvpRegi, dim = "all_regi"), , ]
-
   # report GHG taxes, differentiated by sector
   if (all(p21_CO2TaxSectorMarkup == 0)) { # then all are identical
     out <- mbind(out, setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
@@ -561,39 +578,21 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                 )
     pm_pvpRegi_FE <- pm_pvpRegi * (1 +
                                     (
-                                       p21_CO2TaxSectorMarkup[, , "build"] * FE_data_regi[, , "FE|++|Buildings (EJ/yr)"]
-                                     + p21_CO2TaxSectorMarkup[, , "trans"] * FE_data_regi[, , "FE|++|Transport (EJ/yr)"]
-                                    ) / FE_data_regi[, , "FE (EJ/yr)"]
+                                       p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "FE|++|Buildings (EJ/yr)"]
+                                     + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "FE|++|Transport (EJ/yr)"]
+                                    ) / output_wo_GLO[, , "FE (EJ/yr)"]
     )
     pm_pvpRegi_Emi <- pm_pvpRegi * (1 +
                                      (
-                                         p21_CO2TaxSectorMarkup[, , "build"] * Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Buildings (Mt CO2eq/yr)"]
-                                       + p21_CO2TaxSectorMarkup[, , "trans"] * Emi_data_regi[, , "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)"]
-                                     ) / Emi_data_regi[, , "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"]
+                                         p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|+|Buildings (Mt CO2eq/yr)"]
+                                       + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)"]
+                                     ) / output_wo_GLO[, , "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"]
     )
     out <- mbind(out, setNames(abs(pm_pvpRegi_FE  / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
                                 "Price|Carbon (US$2005/t CO2)")) # AggregatedbyFE
     out <- mbind(out, setNames(abs(pm_pvpRegi_Emi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
                                 "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)")) # AggregatedByEmiGHGGross
   }
-
-  # report GHG tax revenues
-  out <- mbind(out,
-               setNames(out[, , "Price|Carbon|Demand|Buildings (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Energy|Demand|+|Buildings (Mt CO2eq/yr)"] / 1000,
-                          "Revenue|Government|Tax|Carbon|+|Demand|Buildings (billion US$2005/yr)"),
-               setNames(out[, , "Price|Carbon|Demand|Transport (US$2005/t CO2)"] *  Emi_data_regi[, , "Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)"] / 1000,
-                          "Revenue|Government|Tax|Carbon|+|Demand|Transport (billion US$2005/yr)"),
-               setNames(out[, , "Price|Carbon|Demand|Industry (US$2005/t CO2)"]  * (Emi_data_regi[, , "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"] + Emi_data_regi[, ,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]) / 1000,
-                          "Revenue|Government|Tax|Carbon|+|Demand|Industry (billion US$2005/yr)"),
-               setNames(out[, , "Price|Carbon|Supply (US$2005/t CO2)"]           *  Emi_data_regi[, , "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"] / 1000,
-                          "Revenue|Government|Tax|Carbon|+|Supply (billion US$2005/yr)")
-               )
-  out <- mbind(out, setNames(out[, , "Revenue|Government|Tax|Carbon|+|Demand|Buildings (billion US$2005/yr)"]
-                           + out[, , "Revenue|Government|Tax|Carbon|+|Demand|Transport (billion US$2005/yr)"]
-                           + out[, , "Revenue|Government|Tax|Carbon|+|Demand|Industry (billion US$2005/yr)"]
-                           + out[, , "Revenue|Government|Tax|Carbon|+|Supply (billion US$2005/yr)"],
-                        "Revenue|Government|Tax|Carbon (billion US$2005/yr)")
-               )
 
   #
   out <- mbind(out,setNames(abs(pm_taxCO2eq) * 1000 * 12/44, "Price|Carbon|Guardrail (US$2005/t CO2)"))
@@ -746,29 +745,10 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   avgs <- setdiff(avgs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", avgs, value = TRUE))
   int2ext <- c(int2ext, stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs))
 
-  ## bind to output object
-  if(is.null(output)){
-    output <- reportPE(gdx,regionSubsetList = regionSubsetList,t = t)
-    output <- mbind(output,reportSE(gdx,regionSubsetList = regionSubsetList,t = t))
-    output <- mbind(output,FE_data)
-    output <- mbind(output,Emi_data)
-    output <- mbind(output,reportExtraction(gdx,regionSubsetList = regionSubsetList,t = t))
-    output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList = regionSubsetList,t = t)[,getYears(output),])
-  }
 
-  output[is.na(output)] <- 0  # substitute na by 0
-
-  ## delete "+" and "++" from variable names
-  output <- deletePlus(output)
-
-
-  # # ---- internal price variables used for modelg diagnostics -----
+  # # ---- internal price variables used for model diagnostics -----
 
   # # CES prices and CES markup cost
-
-
-
-
 
   o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = T, react = "silent")
 
