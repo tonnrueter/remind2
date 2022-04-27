@@ -9,7 +9,7 @@ compareScenConf(
   fileList = "",
   configfile = "default.cfg",
   row.names = 1,
-  renamedColumns = NULL,
+  renamedCols = NULL,
   renamedRows = NULL,
   printit = TRUE
 )
@@ -21,7 +21,7 @@ compareScenConf(
 
 \item{row.names}{column in csv used for row.names. Use NULL for mapping files}
 
-\item{renamedColumns}{vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))}
+\item{renamedCols}{vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))}
 
 \item{renamedRows}{vector with old and new row names such as c("old3" = "new3", "old4" = "new4"))}
 
@@ -39,8 +39,8 @@ comparing it to a default.cfg
  \dontrun{
     compareScenConf(fileList = c("scenario_config1.csv", "scenario_config2.csv"),
     configfile = "default.cfg",
-    renamedColumns = c("old1" = "new1", "old2" = "new2"),
-    renamedRows = c("old3" = "new3", "old3" = "new4"))
+    renamedCols = c("old1" = "new1", "old2" = "new2"),
+    renamedRows = c("old3" = "new3", "old4" = "new4"))
   }
 
 }
