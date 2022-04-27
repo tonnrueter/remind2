@@ -263,7 +263,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  grid_factor_tech <- new.magpie(names=te2grid$all_te, fill=1)
  getSets(grid_factor_tech)[3] <- "all_te"
  grid_factor_tech[,,"wind"] <- 1.5
-
+ grid_factor_tech[,,"windoff"] <- 3.0
+ 
  te_annual_grid_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,magclass::getNames(te_inv_annuity), fill=0)
  vm_VRE_prodSe_grid <- dimSums(grid_factor_tech*vm_prodSe[,,te2grid$all_te])
  
