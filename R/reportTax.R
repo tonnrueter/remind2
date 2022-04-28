@@ -34,7 +34,7 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
   }
 
   # get rid of GLO from output
-  all_regi_wo_GLO <- getItems(output, dim = "all_regi")[! getItems(output, dim = "all_regi") %in% c("GLO")]
+  all_regi_wo_GLO <- getItems(output, dim = "all_regi")[! getItems(output, dim = "all_regi") %in% c("GLO", names(regionSubsetList))]
   output_wo_GLO   <- output[all_regi_wo_GLO, , ]
 
   ### conversion factors
