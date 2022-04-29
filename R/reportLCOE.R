@@ -559,7 +559,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   te_LCOE <- c(pe2se$all_te, se2se$all_te,se2fe$all_te)
   
   # all technologies to calculate investment and O&M LCOE for (needed for CCS, storage, grid cost)
-  te_LCOE_Inv <- c(te_LCOE, as.vector(teStor), as.vector(teGrid), ccs2te$all_te, "dac")
+  te_LCOE_Inv <- c(te_LCOE, as.vector(teStor), as.vector(teGrid), ccs2te$all_te, te[te %in% c("dac")])
  
   # technologies to produce SE
   te_SE_gen <- c(pe2se$all_te, se2se$all_te)
@@ -887,27 +887,29 @@ reportLCOE <- function(gdx, output.type = "both"){
   ### DAC: calculate Levelized Cost of CO2 from direct air capture
   # DAC energy demand per unit captured CO2 (EJ/GtC)
   
-  
-  p33_dac_fedem_el <- readGDX(gdx, "p33_dac_fedem_el", restore_zeros = F)
-  p33_dac_fedem_heat <- readGDX(gdx, "p33_dac_fedem_heat", restore_zeros = F)
-  
-  if (is.null(p33_dac_fedem_el) | is.null(p33_dac_fedem_heat)) {
-    p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
-    
-    p33_dac_fedem_el <- p33_dac_fedem[,,"feels"]
-    p33_dac_fedem_heat <- p33_dac_fedem[,,"fehes"]
+  LCOD <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital),
+                     c("Investment Cost","OMF Cost","Electricity Cost","Heat Cost","Total LCOE"), fill = 0)
+
+  if ("dac" %in% te) {
+    p33_dac_fedem_el <- readGDX(gdx, "p33_dac_fedem_el", restore_zeros = F)
+    p33_dac_fedem_heat <- readGDX(gdx, "p33_dac_fedem_heat", restore_zeros = F)
+
+    if (is.null(p33_dac_fedem_el) | is.null(p33_dac_fedem_heat)) {
+      p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
+
+      p33_dac_fedem_el <- p33_dac_fedem[,,"feels"]
+      p33_dac_fedem_heat <- p33_dac_fedem[,,"fehes"]
+    }
+
+    # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
+    LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"] * p_teAnnuity[,,"dac"]*1e3
+    LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
+    # elecitricty cost (convert DAC FE demand to GJ/tCO2 and fuel price to USD/GJ)
+    LCOD[,,"Electricity Cost"] <-  p33_dac_fedem_el[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
+    # TODO: adapt to FE prices and new CDR FE structure, temporary: conversion as above, assume for now that heat is always supplied by district heat
+    LCOD[,,"Heat Cost"] <- p33_dac_fedem_heat[,,"fehes"] / 3.66 * Fuel.Price[,,"sehe"]  / 3.66
+    LCOD[,,"Total LCOE"] <- LCOD[,,"Investment Cost"]+LCOD[,,"OMF Cost"]+LCOD[,,"Electricity Cost"]+LCOD[,,"Heat Cost"]
   }
-  
-  LCOD <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital), 
-                     c("Investment Cost","OMF Cost","Electricity Cost","Heat Cost","Total LCOE"))
-  # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
-  LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*p_teAnnuity[,,"dac"]*1e3
-  LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
-  # elecitricty cost (convert DAC FE demand to GJ/tCO2 and fuel price to USD/GJ)
-  LCOD[,,"Electricity Cost"] <-  p33_dac_fedem_el[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
-  # TODO: adapt to FE prices and new CDR FE structure, temporary: conversion as above, assume for now that heat is always supplied by district heat
-  LCOD[,,"Heat Cost"] <- p33_dac_fedem_heat[,,"fehes"] / 3.66 * Fuel.Price[,,"sehe"]  / 3.66
-  LCOD[,,"Total LCOE"] <- LCOD[,,"Investment Cost"]+LCOD[,,"OMF Cost"]+LCOD[,,"Electricity Cost"]+LCOD[,,"Heat Cost"]
   
   getSets(LCOD)[3] <- "cost"
   
