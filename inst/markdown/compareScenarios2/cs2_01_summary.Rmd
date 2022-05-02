@@ -310,4 +310,3 @@ showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumpt
 ```{r Policy Cost-GDP Loss}
 showLinePlots(data, "Policy Cost|GDP Loss")
 ```
-

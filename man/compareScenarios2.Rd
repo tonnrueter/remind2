@@ -50,6 +50,17 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
 \section{YAML Parameters}{
 
 \describe{
+  \item{\code{cfgScen}}{
+    \code{character(n) or NULL}.
+    Paths to config.Rdata files containing the \code{cfg} object for each
+    scenario. The paths must be provided in the same order as \code{mifScen}.
+    If provided, some information gathered from these files is
+    shown at the beginning of the output document.}
+  \item{\code{cfgDefault}}{
+    \code{character(1) or NULL}.
+    Path to default.cfg, which creates a \code{cfg} object with default
+    values. If provided, some information gathered from this file is
+    shown at the beginning of the output document.}
   \item{\code{yearsScen}}{
     \code{numeric(n)}.
     Default: \code{c(seq(2005, 2060, 5), seq(2070, 2100, 10))}.
@@ -62,6 +73,10 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
     \code{numeric(n)}.
     Default: \code{c(2010, 2030, 2050, 2100)}.
     Years to show in bar plots of scenario data.}
+  \item{\code{yearRef}}{
+    \code{numeric(1)}.
+    Default: \code{2020}.
+    A reference year used to show relative values in Kaya decomposition.}
   \item{\code{reg}}{
     \code{NULL} or \code{character(n)}.
     Default: \code{NULL}.
@@ -70,8 +85,9 @@ choose Rmd as output format and obtain a copy of the *.Rmd-files.
     \code{character(n) or numeric(n) or NULL}.
     Default: \code{"all"}.
     Names or numbers of sections to include. For names subset of
-    \code{c("00_info", "01_summary", "02_macro", "03_emissions", "04_energy_supply",
-    "05_energy_demand", "06_energy_services", "07_climate", "08_sdp")}.
+    \code{c("00_info", "01_summary", "02_macro", "03_emissions",
+    "04_energy_supply", "05_energy_demand", "06_energy_services",
+    "07_climate", "08_sdp", "09_carbon_management", "99_further_info")}.
     Use \code{"all"} to include all available sections.
     Use \code{NULL} to not include any section
     (useful in combination with parameter \code{envir}).}
@@ -105,17 +121,19 @@ compareScenarios2(
 compareScenarios2(
   mifScen = c(ScenarioName1 = "path/to/scen1.mif", ScenarioName2 = "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
+  cfgScen = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
+  cfgDefault = "path/to/default.cfg",
   outputDir = "path/to/output",
   outputFormat = "Rmd",
   outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
   warning = FALSE,
-  sections = c(2, 3, 6),
+  sections = c(0, 2, 3, 99),
   userSectionPath = "path/to/myPlots.Rmd")
 # Use in development. Load data into global environment:
 compareScenarios2(
   mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"),
   mifHist = "path/to/historical.mif",
-  outputFile = format(Sys.time(), "compScen_\%Y\%m\%d-\%H\%M\%S"),
+  outputFile = format(Sys.time(), "cs2_load_\%Y\%m\%d-\%H\%M\%S"),
   sections = NULL,
   envir = globalenv())
 }

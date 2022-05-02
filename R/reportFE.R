@@ -114,7 +114,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   indu_mod = find_real_module(module2realisation,"industry")
   buil_mod = find_real_module(module2realisation,"buildings")
   cdr_mod  = find_real_module(module2realisation,"CDR")
-  CCU_mod  = find_real_module(module2realisation,"CCU")
+
   
   # ---- FE total production ------
   out <- mbind(out,
@@ -597,7 +597,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     esty_build <-  readGDX(gdx,c("esty_dyn36"),format="first_found", react = "silent")
     
     #var
-    v_prodEs <- readGDX(gdx,name = c("v_prodEs"), field="l",restore_zeros = F, format = "first_found", react = "silent")[,t,]* TWa_2_EJ
+    v_prodEs <- readGDX(gdx,name = c("vm_prodEs","v_prodEs"), field="l",restore_zeros = F, format = "first_found", react = "silent")[,t,]* TWa_2_EJ
     
     ces_elec = c(grep("elb$", ppfen_build, value = T),grep("hpb$", ppfen_build, value = T))
     es_elec = c(grep("elb$", esty_build, value = T),grep("hpb$", esty_build, value = T))
@@ -1272,7 +1272,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   #--- CDR ---
   
   if(cdr_mod != "off"){
-    
+    vm_otherFEdemand  <- readGDX(gdx,name=c("vm_otherFEdemand"),field="l",format="first_found")[,t,]*TWa_2_EJ
+
     s33_rockgrind_fedem <- readGDX(gdx,"s33_rockgrind_fedem", react = "silent")
     if (is.null(s33_rockgrind_fedem)){
       s33_rockgrind_fedem  <- new.magpie("GLO",NULL,fill=0)
@@ -1281,9 +1282,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     if (is.null(v33_grindrock_onfield)){
       v33_grindrock_onfield  <- new.magpie(getRegions(vm_otherFEdemand),getYears(vm_otherFEdemand),fill=0)
     }
-    
-    vm_otherFEdemand  <- readGDX(gdx,name=c("vm_otherFEdemand"),field="l",format="first_found")[,t,]*TWa_2_EJ
-    
+
     out <- mbind(out,
                  setNames(vm_otherFEdemand[,,"feh2s"],        "FE|CDR|DAC|+|Hydrogen (EJ/yr)"),
                  setNames(vm_otherFEdemand[,,"fegas"],        "FE|CDR|DAC|+|Gases (EJ/yr)"),
@@ -1336,10 +1335,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   ### temporary (!) industry non-energy use reporting
   # note: only for REMIND-EU SSP2
   
-  if (module2realisation["industry",2]=="fixed_shares") {
+  if (module2realisation["industry",2] == "fixed_shares" & "DEU" %in% getRegions(vm_prodFe)) {
     
-    if ("DEU" %in% getRegions(vm_prodFe)) {
-      
       # some initializations required for building library with dplyr operations below
       encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
       
@@ -1547,19 +1544,20 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                    setNames(out[,,"FE|Solids|+|Fossil (EJ/yr)"] -
                               out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
-                  
-                  
-          
-                            
-    
 
-    }
+  } else {
+    # TODO: correct once feedstocks are calculated within the model
+    # The variable FE|w/o Non-energy Use|Industry currently contains Non-Energy Use. Non-Energy Use should be subtracted from this variable as soon as feedstocks are calculated within the model.")
+    out <- mbind(
+      out,
+      setNames(out[, , "FE|++|Industry (EJ/yr)"], "FE|w/o Non-energy Use|Industry (EJ/yr)"),
+      setNames(out[, , "FE|Industry|+|Solids (EJ/yr)"], "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"),
+      setNames(out[, , "FE|Industry|+|Gases (EJ/yr)"], "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
+      setNames(out[, , "FE|Industry|+|Liquids (EJ/yr)"], "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)")
+    )
+
+    out <- add_columns(out, addnm = "FE|Non-energy Use|Industry (EJ/yr)", dim = 3.1, fill = 0)
   }
-  
-
-  
-  
-  
   
   # add global values
   out <- mbind(out,dimSums(out,dim=1))

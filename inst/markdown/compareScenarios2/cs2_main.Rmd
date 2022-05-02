@@ -6,6 +6,8 @@ output:
     toc: yes
     number_sections: yes
     toc_depth: 6
+    keep_tex: false
+    template: cs2_latex_template.tex
     includes: 
       in_header: cs2_pdf_header_include.tex
   html_document:
@@ -17,10 +19,13 @@ geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footn
 params:
   mifScen: ""
   mifScenNames: null
+  cfgScen: null
+  cfgDefault: null
   mifHist: ""
   yearsScen: !r c(seq(2005, 2060, 5), seq(2070, 2100, 10))
   yearsHist: !r c(seq(1960, 2020, 1), seq(2025, 2100, 5))
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
+  yearRef: 2020
   reg: null
   sections: "all"
   userSectionPath: null
@@ -67,6 +72,13 @@ if (interactive()) {
 
 
 ```{r libraries, include=FALSE}
+# kableExtra must not be loaded before the call of library(kableExtra) below,
+# as its .onLoad() function must be called to tell knitr about add necessary
+# LaTeX libraries needed for tables.
+# If the following line is not included, successive calls to compareScenarios2()
+# may cause "Undefined control sequence" errors in LaTeX.
+try(unloadNamespace("kableExtra"), silent = TRUE)
+
 library(gridExtra)
 options(tidyverse.quiet = TRUE)
 library(tidyverse)
@@ -76,18 +88,58 @@ library(mip)
 ```
 
 
+```{r read config files}
+if (!is.null(params$cfgScen)) {
+  loadCfg <- function(path) {
+    env <- new.env()
+    load(path, envir = env)
+    return(env$cfg)
+  }
+  tibble(path = unname(params$cfgScen)) %>%
+    rowid_to_column("fileid") %>%
+    mutate(cfg = map(path, loadCfg)) %>%
+    unnest(cfg) %>%
+    mutate(
+      name = names(cfg),
+      value = unname(cfg),
+      cfg = NULL) ->
+    cfgs
+  cfgs %>%
+    filter(name == "gms") %>%
+    unnest(value) %>%
+    mutate(name = names(value)) ->
+    cfgGms
+  cfgs %>%
+    filter(name != "gms") ->
+    cfgTopLevel
+  rm(cfgs)
+}
+if (!is.null(params$cfgDefault)) {
+  env <- new.env()
+  source(params$cfgDefault, local = env, echo = FALSE)
+  cfgDefault <- env$cfg
+}
+```
+
+
 ```{r read scenario mifs}
 # Read *.mif-files as nested tibble.
 tibble(path = unname(params$mifScen)) %>%
   rowid_to_column("fileid") %>%
-  mutate(data = map(path, read.quitte, factors = FALSE)) %>%
+  mutate(data = map(
+    path,
+    read.quitte,
+    factors = TRUE,
+    # read.quitte() default NA-strings and Inf, -Inf
+    na.strings = c("UNDF", "NA", "N/A", "n_a", "Inf", "-Inf"))) %>%
   unnest(data) %>%
   nest(data = -c(fileid, path, scenario)) ->
   dataScenNested
-# Add column newScenarioName either with contents of params$mifScenNames or copy names from column scenario.
+# Add column character column "newScenarioName",
+# either with contents of params$mifScenNames or copy names from column scenario.
 if (is.null(params$mifScenNames)) {
   dataScenNested %>%
-    mutate(newScenarioName = scenario) ->
+    mutate(newScenarioName = as.character(scenario)) ->
     dataScenNested
 } else {
   dataScenNested %>%
@@ -98,21 +150,11 @@ if (is.null(params$mifScenNames)) {
       by = "fileid") ->
     dataScenNested
 }
-# Add suffixes "_1", "_2", ... in case of duplicated scenario names.
-# Side note: In the unlikly case, one has scenario names
-#   scenA, scenA, scenA_1, scenB,
-# they will be renamed to
-#   scenA_1, scenA_2, scenA_1, scenB
-# in the first iteration of the following loop. After the second iteration we get
-#   scenA_1_1, scenA_2, scenA_1_2, scenB.
-while (anyDuplicated(dataScenNested$newScenarioName)) {
+# Check for duplicated scenario names.
+if (anyDuplicated(dataScenNested$newScenarioName)) {
   warning("There are duplicated scenario names. They will be renamed.")
   dataScenNested %>%
-    group_by(newScenarioName) %>%
-    mutate(newScenarioName =
-      if (n() == 1) newScenarioName else paste(newScenarioName, 1:n(), sep = "_")
-    ) %>%
-    ungroup() ->
+    mutate(newScenarioName = make.unique(newScenarioName)) ->
     dataScenNested
 }
 # Retrieve data for reference table to be shown at the beginning of the document.
@@ -122,16 +164,27 @@ dataScenNested %>%
 
 # Apply renaming of scenario, unnest, and select only relevant columns.
 dataScenNested %>%
-  mutate(scenario = newScenarioName) %>%
+  mutate(scenario = factor(newScenarioName, levels = newScenarioName)) %>%
   unnest(data) %>%
   select(model, scenario, region, variable, unit, period, value) ->
   dataScen
 ```
 
+```{r define scenario colors}
+# Get colors of scenarios to be used, e.g., in the info sections.
+# They will coincide with the colors of the scenarios in line plots.
+scenarioColors <- plotstyle(fileReference$newScenarioName)
+lightenColor <- function(clr, by) {
+  colRGB <- colorRamp(c(clr, "white"))(by)
+  rgb(colRGB[1], colRGB[2], colRGB[3], maxColorValue = 255)
+}
+bkgndColors <- sapply(scenarioColors, lightenColor, by = 0.5)
+```
+
 
 ```{r read historical mif}
 params$mifHist %>%
-  read.quitte(factors = FALSE) ->
+  read.quitte(factors = TRUE) ->
   dataHist
 ```
 
@@ -147,12 +200,12 @@ dataHist %>%
 
 # Combine into one data frame and remove old.
 data <- bind_rows(dataScen, dataHist)
-rm(dataScen, dataHist)
+rm(dataScen, dataScenNested, dataHist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>%
   mutate(
-    varplus = variable,
+    varplus = as.character(variable),
     variable = remind2::deletePlus(variable)) ->
   data
 
@@ -171,7 +224,7 @@ if (!is.null(params$reg)) {
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
 bind_rows(
-  data %>% filter(unit != "million US$2005/yr"),
+  data %>% filter(!unit %in% c("million US$2005/yr")),
   data %>%
     filter(unit == "million US$2005/yr") %>%
     mutate(
@@ -295,6 +348,9 @@ data <- as.quitte(data)
 options(mip.mainReg = params$mainReg)
 options(mip.yearsBarPlot = params$yearsBarPlot)
 options(mip.histRefModel = histRefModel)
+
+# Reference year for Kaya decomposition is params$yearRef or the first available year therafter.
+options(kaya.refYear = min(params$yearsScen[params$yearsScen >= params$yearRef]))
 ```
 
 
@@ -333,8 +389,10 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r include sections, child = sectionPaths}
+
 ```
 
 
 ```{r include user section, child = params$userSectionPath}
+
 ```

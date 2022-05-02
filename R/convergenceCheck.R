@@ -19,6 +19,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom luplot magpie2ggplot2
 #' @importFrom grDevices colorRampPalette
+#' @importFrom knitr knit
 
 
 convergenceCheck <- function(gdx,y=c(seq(2005,2060,5),seq(2070,2100,10)),file="convergenceCheck.pdf") {

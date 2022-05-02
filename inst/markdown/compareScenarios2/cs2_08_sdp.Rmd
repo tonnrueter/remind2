@@ -206,4 +206,3 @@ items <- c(
   "Policy Cost|GDP Loss|Relative to Reference GDP")
 walk(items, showLinePlots, data=data)
 ```
-

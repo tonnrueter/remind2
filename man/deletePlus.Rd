@@ -9,8 +9,8 @@ deletePlus(mif, writemif = FALSE)
 }
 \arguments{
 \item{mif}{A path to a mif-file (might be created by confGDX2MIF), a magpie
-object containing reporting, a quitte object, or a character vector of
-variable names.}
+object containing reporting, a quitte object, or a character vector or
+factor of variable names.}
 
 \item{writemif}{A single truth value. Only used when mif is a file path.
 Should the new mif with the adjusted names be saved? If yes the new name
