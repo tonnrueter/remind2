@@ -104,8 +104,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   vm_emiTeMkt <- readGDX(gdx, "vm_emiTeMkt", field = "l", restore_zeros = F)[, t, ]
   # emissions from MAC curves (non-energy emissions)
   vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)[, t, ]
-  # negative emissions from (non-BECCS) CDR (DAC, EW), BECCS is part of (net) energy emissions
-  vm_emiCdr <- readGDX(gdx, "vm_emiCdr", field = "l", restore_zeros = F)[, t, ]
   # exogenous emissions (SO2, BC, OC)
   pm_emiExog <- readGDX(gdx, "pm_emiExog", field = "l", restore_zeros = F)
   # F-Gases
@@ -683,9 +681,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(
                  # vm_emiTeMkt is variable in REMIND closest to energy co2 emissions
                  (dimSums(sel_vm_emiTeMkt_co2, dim = 3)
-                  # deduce vm_emiTeMkt by CCU CO2 from vm_emiCdr
-                  # (which is only deduced from vm_emiAll, the total CO2 emissions, in REMIND)
-                  - (1 - p_share_CCS) * mselect(-vm_emiCdr, all_enty = "co2")
+                  # subtract non-BECCS CCU CO2 (i.e., non-CCS part of DAC)
+                  - (1 - p_share_CCS) * (-v33_emiDAC)
                   # deduce co2 captured by industrial processes which is not stored but used for CCU
                   # -> gets accounted in industrial process emissions
                   - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
@@ -710,9 +707,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2,
                         "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
                # negative emissions from (non-BECCS) CDR (DACCS, EW)
-               setNames((dimSums(vm_emiCdr[, , "co2"], dim = 3) +
-                           # add CO2 which is not stored
-                           +(1 - p_share_CCS) * mselect(-vm_emiCdr, all_enty = "co2")) * GtC_2_MtCO2,
+               setNames((v33_emiEW + v33_emiDAC * p_share_CCS) * GtC_2_MtCO2,
                         "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
   )
 
@@ -1613,9 +1608,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                  # CDR energy-related emissions
                  (dimSums(mselect(EmiFeCarrier[, , "ETS"], emi_sectors = "CDR"), dim = 3)
                   # Captured CO2 by non-BECCS capture technologies
-                  + dimSums(vm_emiCdr[, , "co2"], dim = 3)
-                  # add CO2 which is not stored
-                  + (1 - p_share_CCS) * mselect(-vm_emiCdr, all_enty = "co2")) * GtC_2_MtCO2,
+                  + (v33_emiEW + v33_emiDAC * p_share_CCS)) * GtC_2_MtCO2,
                  "Emi|GHG|ETS|+|non-BECCS CDR (Mt CO2eq/yr)"),
 
                # Extraction
