@@ -67,11 +67,11 @@ reportEDGETransport <- function(output_folder=".",
 
   demand_ej <- readRDS(datapath(fname = "demandF_plot_EJ.RDS")) ## detailed final energy demand, EJ
 
-  name_mif = list.files(output_folder, pattern = "REMIND_generic", full.names = F)
-  name_mif = file.path(output_folder, name_mif[!grepl("withoutPlu", name_mif)])
+  name_mif <- list.files(output_folder, pattern = "REMIND_generic", full.names = F) %>%
+    .[!grepl("withoutPlu|adjustedPolicy", .)]
+  stopifnot(!is.na(name_mif) && length(name_mif) == 1)
 
-  stopifnot(typeof(name_mif) == "character")
-  miffile <- readMIF(name_mif)
+  name_mif <- file.path(output_folder, name_mif)
 
   ## ES and FE Demand
 
