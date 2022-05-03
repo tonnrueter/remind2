@@ -29,7 +29,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # emissions calculation requires information from other reporting functions
   if (is.null(output)) {
-    cat("Executing reportFE\n")
+    message("reportEmi executes reportFE")
     output <- mbind(output, reportFE(gdx, regionSubsetList, t))
   }
 
@@ -258,8 +258,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # only retain combinations of vm_demFeSector subdimensions which are in entyFe2Sector and sector2emiMkt
   emi.map.fe <- data.frame(all_enty = getItems(pm_emifac.co2.fe, dim = "all_enty",  full = T),
                            all_enty1 = getItems(pm_emifac.co2.fe, dim = "all_enty1",  full = T)) %>%
-    left_join(entyFe2Sector) %>%
-    left_join(sector2emiMkt) %>%
+    left_join(entyFe2Sector, by = "all_enty1") %>%
+    left_join(sector2emiMkt, by = "emi_sectors") %>%
     mutate(name = paste(all_enty, all_enty1, emi_sectors, all_emiMkt, sep = "."))
 
 
@@ -1192,7 +1192,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   # join mac mapping of sectors and markets
-  mac.map <- right_join(emiMac2sector, macSector2emiMkt)
+  mac.map <- right_join(emiMac2sector, macSector2emiMkt, by = "all_enty")
 
   # create magpie array with MAC emissions per sector, market and gas
   # MAC emissions comprise non-energy CO2, CH4, N2O emissions
@@ -1485,7 +1485,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   out <- mbind(out,
                setNames(vm_emiFgas[, , "emiFgasCF4"],   "Emi|CF4 (kt CF4/yr)"),
                setNames(vm_emiFgas[, , "emiFgasC2F6"],  "Emi|C2F6 (kt C2F6/yr)"),
-               setNames(vm_emiFgas[, , "emiFgasC6F14"], "Emi|C6F14 (kt C6F14/yr)"))
+               setNames(vm_emiFgas[, , "emiFgasC6F14"], "Emi|C6F14 (kt C6F14/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC"],   "Emi|HFC (kt HFC134a-equiv/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasSF6"],   "Emi|SF6 (kt SF6/yr)"))
 
 
 

@@ -59,7 +59,8 @@ colorScenConf <- function(fileList = "", configfile = "default.cfg") {
     for (switchname in intersect(names(cfg$gms), names(settings))) {
       settings[1, switchname] <- cfg$gms[[switchname]]
     }
-    colnamesNeverInDefault <- c("path_gdx", "path_gdx_ref", "path_gdx_bau", "start", "path_gdx_carbonprice")
+    colnamesNeverInDefault <- c("path_gdx", "path_gdx_ref", "path_gdx_bau",
+      "path_gdx_carbonprice", "path_gdx_refpolicycost", "start", "slurmConfig", "description")
     settings[1, intersect(names(settings), colnamesNeverInDefault)] <- ""
     row.names(settings)[1] <- paste0("# ", configfile, " on ", Sys.time())
 
@@ -91,19 +92,4 @@ colorScenConf <- function(fileList = "", configfile = "default.cfg") {
   cat("  They may be deleted if you always want to use the default in the future.\n\n")
   cat("Note: opening the xlsx, excel may complain that numbers are saved as text.\n")
   cat("After saving as csv this should disappear and work, but please check.\n\n")
-}
-
-getLine <- function() {
-  # gets characters (line) from the terminal or from a connection
-  # and returns it
-  if (interactive()) {
-    s <- readline()
-  } else {
-    con <- file("stdin")
-    defer({
-      close(con)
-    })
-    s <- readLines(con, 1, warn = FALSE)
-  }
-  return(s)
 }
