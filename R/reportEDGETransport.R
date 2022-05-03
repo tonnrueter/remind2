@@ -19,6 +19,7 @@
 #' @importFrom gdxdt readgdx
 #' @importFrom data.table fread fwrite rbindlist copy CJ
 #' @importFrom dplyr %>%
+#' @importFrom quitte as.quitte
 #' @export
 
 reportEDGETransport <- function(output_folder=".",
