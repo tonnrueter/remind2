@@ -141,16 +141,15 @@ walk(items, showLinePlots, data=data)
 
 ### Specific Energy Consumption with thermodynamic limits
 ```{r}
-#!!!self reminder: try this out for new scenario runs from validation process
-#then start corresponding PR
+#estimated values for thermodynamic limits are hardcoded here. Could be improved
 
 #Cement and other non-metallic minerals
-var1 <- "FE|Industry|Specific Energy Consumption|Cement" # Your variable name here.
+var1 <- "FE|Industry|Specific Energy Consumption|Cement"
 test1<- data %>% 
   filter(variable == var1) %>% 
   bind_rows(
     expand.grid(
-      model = "Thermodynamic limit for cement", # Your description here.
+      model = "Thermodynamic limit for cement",
       scenario = "historical", 
       region = levels(.$region), 
       period = range(.$period), 
