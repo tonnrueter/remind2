@@ -578,14 +578,14 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                 )
     pm_pvpRegi_FE <- pm_pvpRegi * (1 +
                                     (
-                                       p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "FE|++|Buildings (EJ/yr)"]
-                                     + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "FE|++|Transport (EJ/yr)"]
+                                       p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "FE|Buildings (EJ/yr)"]
+                                     + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "FE|Transport (EJ/yr)"]
                                     ) / output_wo_GLO[, , "FE (EJ/yr)"]
     )
     pm_pvpRegi_Emi <- pm_pvpRegi * (1 +
                                      (
-                                         p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|+|Buildings (Mt CO2eq/yr)"]
-                                       + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|+|Transport (Mt CO2eq/yr)"]
+                                         p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|Buildings (Mt CO2eq/yr)"]
+                                       + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|Transport (Mt CO2eq/yr)"]
                                      ) / output_wo_GLO[, , "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"]
     )
     out <- mbind(out, setNames(abs(pm_pvpRegi_FE  / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
