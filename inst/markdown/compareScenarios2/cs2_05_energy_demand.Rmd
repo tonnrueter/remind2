@@ -145,7 +145,7 @@ walk(items, showLinePlots, data=data)
 
 #Cement and other non-metallic minerals
 var1 <- "FE|Industry|Specific Energy Consumption|Cement"
-test1<- data %>% 
+data %>% 
   filter(variable == var1) %>% 
   bind_rows(
     expand.grid(
@@ -182,7 +182,7 @@ data %>%
       region = levels(.$region), 
       period = range(.$period), 
       variable = var3, 
-      value = 1.6)) %>% # GJ/t.
+      value = 1.3)) %>% # GJ/t.
   showLinePlots(var3)
 
 ```
