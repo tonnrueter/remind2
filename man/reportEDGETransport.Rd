@@ -4,12 +4,14 @@
 \alias{reportEDGETransport}
 \title{Reporting for the coupled EDGE-T Transport Sector Model (REMIND Module edge_esm)}
 \usage{
-reportEDGETransport(output_folder = ".", remind_root = NULL)
+reportEDGETransport(output_folder = ".", remind_root = NULL, append = TRUE)
 }
 \arguments{
 \item{output_folder}{path to the output folder, default is current folder.}
 
 \item{remind_root}{path to the REMIND root directory, defaults to two levels up from output_folder.}
+
+\item{append}{try to find the REMIND output file in the output folder and append to it. If FALSE, the function returns a quitte object with the reporting variables.}
 }
 \description{
 Data is loaded from the EDGE-T subfolder in the output folder.

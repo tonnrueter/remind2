@@ -12,16 +12,19 @@
 #'
 #' @param output_folder path to the output folder, default is current folder.
 #' @param remind_root path to the REMIND root directory, defaults to two levels up from output_folder.
+#' @param append try to find the REMIND output file in the output folder and append to it. If FALSE, the function returns a quitte object with the reporting variables.
 #' @author Alois Dirnaichner Marianna Rottoli
 #'
 #' @importFrom rmndt approx_dt readMIF writeMIF
 #' @importFrom gdxdt readgdx
 #' @importFrom data.table fread fwrite rbindlist copy CJ
 #' @importFrom dplyr %>%
+#' @importFrom quitte as.quitte
 #' @export
 
 reportEDGETransport <- function(output_folder=".",
-                                remind_root=NULL) {
+                                remind_root=NULL,
+                                append=TRUE) {
 
   if(is.null(remind_root)){
     remind_root <- file.path(output_folder, "../..")
@@ -66,12 +69,6 @@ reportEDGETransport <- function(output_folder=".",
   demand_vkm[, demand_VKM := demand_F/loadFactor] ## billion vkm
 
   demand_ej <- readRDS(datapath(fname = "demandF_plot_EJ.RDS")) ## detailed final energy demand, EJ
-
-  name_mif = list.files(output_folder, pattern = "REMIND_generic", full.names = F)
-  name_mif = file.path(output_folder, name_mif[!grepl("withoutPlu", name_mif)])
-
-  stopifnot(typeof(name_mif) == "character")
-  miffile <- readMIF(name_mif)
 
   ## ES and FE Demand
 
@@ -659,6 +656,17 @@ reportEDGETransport <- function(output_folder=".",
   toMIF <- data.table::dcast(toMIF, ... ~ period, value.var="value")
   setnames(toMIF, colnames(toMIF)[1:5], c("Model", "Scenario", "Region", "Variable", "Unit"))
 
-  writeMIF(toMIF, name_mif, append=T)
-  deletePlus(name_mif, writemif=T)
+  if(append){
+    name_mif <- list.files(output_folder, pattern = "REMIND_generic", full.names = F) %>%
+      .[!grepl("withoutPlu|adjustedPolicy", .)]
+    stopifnot(!is.na(name_mif) && length(name_mif) == 1)
+
+    name_mif <- file.path(output_folder, name_mif)
+
+
+    writeMIF(toMIF, name_mif, append=T)
+    deletePlus(name_mif, writemif=T)
+  }else{
+    return(as.quitte(toMIF))
+  }
 }
