@@ -151,8 +151,8 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   tmp <- mbind(tmp, setNames(inv_se(ie = "seh2", oe = se2fe$all_enty1, se2fe, adjte, v_directteinv, v_adjustteinv, te = se2fe$all_te),           "Energy Investments|Hydrogen|Transmission and Distribution (billion US$2005/yr)"))
 
   # Liquids
-  tmp <- mbind(tmp, setNames(inv_se(ie = pe2se$all_enty, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv
-  + inv_se(ie = se2se$all_enty, oe = se_Liq, se2se, adjte, v_directteinv, v_adjustteinv, te = se2se$all_te)  ),                          "Energy Investments|Liquids (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames((inv_se(ie = pe2se$all_enty, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv)
+  + inv_se(ie = se2se$all_enty, oe = se_Liq, se2se, adjte, v_directteinv, v_adjustteinv, te = se2se$all_te)  ),                             "Energy Investments|Liquids (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "peoil", oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),                                 "Energy Investments|Liquids|Oil Ref (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = petyf, oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv),                                   "Energy Investments|Liquids|Fossil (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pecoal", oe = se_Liq, pe2se, adjte, v_directteinv, v_adjustteinv)
