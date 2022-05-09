@@ -69,6 +69,12 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
   settings2 <- read.csv2(fileList[[2]], stringsAsFactors = FALSE, row.names = row.names,
                          comment.char = "#", na.strings = "", dec = ".")
 
+  # for mapping files
+  if (is.null(row.names)) {
+    rownames(settings1) <- make.unique(paste0(settings1[, 1], ": ", settings1[, 2]))
+    rownames(settings2) <- make.unique(paste0(settings2[, 1], ": ", settings2[, 2]))
+  }
+
   # rename columns and rows in old file to new names after some checks
   allwarnings <- checkRowsCols(settings1, settings2, renamedCols, renamedRows)
   names(settings1)[names(settings1) %in% names(renamedCols)] <-
