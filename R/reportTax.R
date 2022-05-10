@@ -268,6 +268,30 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
                                          "Revenue|Government|Tax|Carbon (billion US$2005/yr)")
                   )
 
+  # reporting subsidy or tax rate necessary to reach implicit set energy bounds
+  p47_implEnergyBoundTax <- readGDX(gdx, "p47_implEnergyBoundTax", format= "first_found", react = "silent")
+  if (!(is.null(p47_implEnergyBoundTax))) {
+    p47_implEnergyBoundTax <- p47_implEnergyBoundTax[,t,] * tdptwyr2dpgj
+    energyCarrierLevel = c(
+        "PE"="PE",
+        "SE"="SE",
+        "FE"="FE",
+        "FE_wo_b"="FE",       
+        "FE_wo_n_e"="FE",     
+        "FE_wo_b_wo_n_e"="FE" 
+    )
+    for (carrier in names(energyCarrierLevel)){
+      for (energyType in getNames(p47_implEnergyBoundTax,dim=2)){
+        if(!(all(p47_implEnergyBoundTax[,,carrier][,,energyType]==0))){
+          if(all(p47_implEnergyBoundTax[,,carrier][,,energyType]>=0))
+            out <- mbind(out, setNames(p47_implEnergyBoundTax[,,carrier][,,energyType],paste0("Tax Rate|Implicit Energy Bounds|",energyCarrierLevel[carrier],"|",energyType, " (US$2005/GJ)")))
+          else
+            out <- mbind(out, setNames(p47_implEnergyBoundTax[,,carrier][,,energyType],paste0("Subsidy Rate|Implicit Energy Bounds|",energyCarrierLevel[carrier],"|",energyType, " (US$2005/GJ)")))
+        }
+      }
+    }
+  }
+
   # add global values
   out <- mbind(out, setItems(dimSums(out, dim = 1), dim = 1, "GLO"))
   # add other region aggregations
