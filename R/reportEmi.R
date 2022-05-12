@@ -911,7 +911,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           pm_IndstCO2Captured[,,c("sesobio", "seliqbio", "segabio")][,,'cement'],
           dim = 3)
         * GtC_2_MtCO2,
-        'Carbon Management|Carbon Capture|Industry Energy|++|Cement|+|Biomass (Mt CO2/yr)'
+        'Carbon Management|Carbon Capture|Industry Energy|Cement|+|Biomass (Mt CO2/yr)'
       ),
 
       setNames(
@@ -919,7 +919,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           pm_IndstCO2Captured[,,c("sesobio", "seliqbio", "segabio")][,,'chemicals'],
           dim = 3)
         * GtC_2_MtCO2,
-        'Carbon Management|Carbon Capture|Industry Energy|++|Chemicals|+|Biomass (Mt CO2/yr)'
+        'Carbon Management|Carbon Capture|Industry Energy|Chemicals|+|Biomass (Mt CO2/yr)'
       ),
 
       setNames(
@@ -927,7 +927,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           pm_IndstCO2Captured[,,c("sesobio", "seliqbio", "segabio")][,,'steel'],
           dim = 3)
         * GtC_2_MtCO2,
-        'Carbon Management|Carbon Capture|Industry Energy|++|Steel|+|Biomass (Mt CO2/yr)'
+        'Carbon Management|Carbon Capture|Industry Energy|Steel|+|Biomass (Mt CO2/yr)'
       ),
 
       #### industry captured carbon from synthetic fuels ----
@@ -942,21 +942,21 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
         dimSums(pm_IndstCO2Captured[,,c("seliqsyn", "segasyn")][,,'cement'],
                 dim = 3)
         * GtC_2_MtCO2,
-        "Carbon Management|Carbon Capture|Industry Energy|++|Cement|+|Synfuel (Mt CO2/yr)"
+        "Carbon Management|Carbon Capture|Industry Energy|Cement|+|Synfuel (Mt CO2/yr)"
       ),
 
       setNames(
         dimSums(pm_IndstCO2Captured[,,c("seliqsyn", "segasyn")][,,'chemicals'],
                 dim = 3)
         * GtC_2_MtCO2,
-        "Carbon Management|Carbon Capture|Industry Energy|++|Chemicals|+|Synfuel (Mt CO2/yr)"
+        "Carbon Management|Carbon Capture|Industry Energy|Chemicals|+|Synfuel (Mt CO2/yr)"
       ),
 
       setNames(
         dimSums(pm_IndstCO2Captured[,,c("seliqsyn", "segasyn")][,,'steel'],
                 dim = 3)
         * GtC_2_MtCO2,
-        "Carbon Management|Carbon Capture|Industry Energy|++|Steel|+|Synfuel (Mt CO2/yr)"
+        "Carbon Management|Carbon Capture|Industry Energy|Steel|+|Synfuel (Mt CO2/yr)"
       ),
 
       #### industry captured carbon from fossil fuels ----
@@ -971,21 +971,40 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
         dimSums(pm_IndstCO2Captured[,,c("sesofos", "seliqfos", "segafos")][,,'cement'],
                 dim = 3)
         * GtC_2_MtCO2,
-        "Carbon Management|Carbon Capture|Industry Energy|++|Cement|+|Fossil (Mt CO2/yr)"
+        "Carbon Management|Carbon Capture|Industry Energy|Cement|+|Fossil (Mt CO2/yr)"
       ),
 
       setNames(
         dimSums(pm_IndstCO2Captured[,,c("sesofos", "seliqfos", "segafos")][,,'chemicals'],
                 dim = 3)
         * GtC_2_MtCO2,
-        "Carbon Management|Carbon Capture|Industry Energy|++|Chemicals|+|Fossil (Mt CO2/yr)"
+        "Carbon Management|Carbon Capture|Industry Energy|Chemicals|+|Fossil (Mt CO2/yr)"
       ),
 
       setNames(
         dimSums(pm_IndstCO2Captured[,,c("sesofos", "seliqfos", "segafos")][,,'steel'],
                 dim = 3)
         * GtC_2_MtCO2,
-        "Carbon Management|Carbon Capture|Industry Energy|++|Steel|+|Fossil (Mt CO2/yr)"
+        "Carbon Management|Carbon Capture|Industry Energy|Steel|+|Fossil (Mt CO2/yr)"
+      ),
+
+      #### subsectors captured carbon ----
+      setNames(
+        dimSums(pm_IndstCO2Captured[,,'cement'], dim = 3)
+        * GtC_2_MtCO2,
+        "Carbon Management|Carbon Capture|Industry Energy|Cement (Mt CO2/yr)"
+      ),
+
+      setNames(
+        dimSums(pm_IndstCO2Captured[,,'chemicals'], dim = 3)
+        * GtC_2_MtCO2,
+        "Carbon Management|Carbon Capture|Industry Energy|Chemicals (Mt CO2/yr)"
+      ),
+
+      setNames(
+        dimSums(pm_IndstCO2Captured[,,'steel'], dim = 3)
+        * GtC_2_MtCO2,
+        "Carbon Management|Carbon Capture|Industry Energy|Steel (Mt CO2/yr)"
       )
     )
   } else {
@@ -1426,7 +1445,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   out <-  mbind(out,
                 setNames(out[, , "Emi|GHG|+|F-Gases (Mt CO2eq/yr)"],
-                         "Emi|GHG|Industrial Processes|+|F-Gases (Mt CO2eq/yr)"))                         
+                         "Emi|GHG|Industrial Processes|+|F-Gases (Mt CO2eq/yr)"))
 
   # agriculture GHG Emissions (without energy-use in agriculture) (IPCC category 3)
   out <-  mbind(out,
