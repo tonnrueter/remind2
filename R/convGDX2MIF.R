@@ -86,6 +86,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
       gdp_scen_ref <- try(readGDX(gdx_ref,"cm_GDPscen",react = "error"),silent=T)
       if(!inherits(gdp_scen,"try-error") && !inherits(gdp_scen_ref,"try-error")){
         if(gdp_scen[1]==gdp_scen_ref[1]){
+          message("running reportPolicyCosts, comparing to ", basename(dirname(gdx_ref)), "/", basename(gdx_ref), "...")
           output <- mbind(output,reportPolicyCosts(gdx,gdx_ref,regionSubsetList,t)[,t,])
         } else {
           warning(paste0("The GDP scenario differs from that of the reference run. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the 'policyCosts' output.R script."))
