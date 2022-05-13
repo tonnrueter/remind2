@@ -20,7 +20,9 @@ checkEqs <- function(dt, eqs, scope = "all", sens = 1e-8) {
 
     dt[, diff := total - get(names(eqs)[LHS])]
     if (nrow(dt[abs(diff) > sens]) > 0) {
-      fail(paste("Check on data integrity failed for", names(eqs)[LHS]))
+      fail(paste(c(paste("Check on data integrity failed for", names(eqs)[LHS]),
+                 gsub('`', '', unlist(strsplit(eqs[[LHS]], '`+`', TRUE)))),
+                 collapse = '\n' ))
     }
   }
 }
