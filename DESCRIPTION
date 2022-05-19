@@ -1,8 +1,8 @@
 Package: remind2
 Type: Package
 Title: The REMIND R package (2nd generation)
-Version: 1.86.5
-Date: 2022-05-03
+Version: 1.87.8
+Date: 2022-05-19
 Authors@R: as.person(c(
     "Renato Rodrigues <renato.rodrigues@pik-potsdam.de> [aut,cre]"))
 Description: Contains the REMIND-specific routines for data and model output manipulation.
@@ -46,7 +46,7 @@ Imports:
     ymlthis
 Encoding: UTF-8
 License: LGPL-3
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Suggests:
     covr,
     flexdashboard,
