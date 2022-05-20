@@ -169,6 +169,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   # Newly built capacities hydrogen
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioh2c", "bioh2")], dim = 3),   "New Cap|Hydrogen|Biomass (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("elh2", "elh2VRE")], dim = 3),                "New Cap|Hydrogen|Electricity (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("elh2", "elh2VRE")], dim = 3) / pm_eta_conv[, , "elh2"], "New Cap (GWel)|Hydrogen|Electricity (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gash2c", "coalh2c", "gash2", "coalh2")], dim = 3), "New Cap|Hydrogen|Fossil (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioh2c", "bioh2", "elh2", "elh2VRE", "gash2c", "coalh2c", "gash2", "coalh2")], dim = 3), "New Cap|Hydrogen (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "bioh2c"], dim = 3),              "New Cap|Hydrogen|Biomass|w/ CC (GW/yr)"))
