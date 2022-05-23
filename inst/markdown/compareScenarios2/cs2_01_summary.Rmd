@@ -30,7 +30,6 @@ items <- c(
   "Emi|GHG|Agriculture",
   "Emi|GHG|Land-Use Change",
   "Emi|GHG|Waste",
-  "Emi|GHG|F-Gas",
   "Emi|CO2|CDR|BECCS",
   "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
@@ -310,4 +309,3 @@ showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumpt
 ```{r Policy Cost-GDP Loss}
 showLinePlots(data, "Policy Cost|GDP Loss")
 ```
-

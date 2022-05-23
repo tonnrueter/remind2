@@ -342,4 +342,3 @@ plotLCOE <- function(LCOEfile, gdx, y=c(2015,2020,2030,2040,2050,2060),reg="all_
   swclose(sw)
 
 }
-

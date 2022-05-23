@@ -39,8 +39,6 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList,t)[,t,])
   message("running reportTrade...")
   output <- mbind(output,reportTrade(gdx,regionSubsetList,t)[,t,])
-  message("running reportTax...")
-  output <- mbind(output,reportTax(gdx,regionSubsetList,t)[,t,])
   message("running reportPE...")   
   output <- mbind(output,reportPE(gdx,regionSubsetList,t)[,t,])
   message("running reportSE...")
@@ -73,6 +71,8 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportPrices(gdx,output,regionSubsetList,t)[,t,]) # needs output from reportSE, reportFE, reportEmi, reportExtraction, reportMacroEconomy  
   message("running reportCosts...")
   output <- mbind(output,reportCosts(gdx,output,regionSubsetList,t)[,t,])  # needs output from reportEnergyInvestment, reportPrices, reportEnergyInvestments
+  message("running reportTax...")
+  output <- mbind(output,reportTax(gdx,output,regionSubsetList,t)[,t,])
 
   # reporting of cross variables ----
   # needs variables from different other report* functions
@@ -86,6 +86,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
       gdp_scen_ref <- try(readGDX(gdx_ref,"cm_GDPscen",react = "error"),silent=T)
       if(!inherits(gdp_scen,"try-error") && !inherits(gdp_scen_ref,"try-error")){
         if(gdp_scen[1]==gdp_scen_ref[1]){
+          message("running reportPolicyCosts, comparing to ", basename(dirname(gdx_ref)), "/", basename(gdx_ref), "...")
           output <- mbind(output,reportPolicyCosts(gdx,gdx_ref,regionSubsetList,t)[,t,])
         } else {
           warning(paste0("The GDP scenario differs from that of the reference run. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the 'policyCosts' output.R script."))
@@ -100,7 +101,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   
   # reporting of SDP variables
   message("running reportSDPVariables...")
-  tmp <- try(reportSDPVariables(gdx,output))  # test whether reportSDPVariables works
+  tmp <- try(reportSDPVariables(gdx,output,t))  # test whether reportSDPVariables works
   if(class(tmp)!="try-error") {
     if(!is.null(tmp)) output <- tmp
   } else {

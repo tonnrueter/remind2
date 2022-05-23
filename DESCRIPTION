@@ -1,8 +1,8 @@
 Package: remind2
 Type: Package
 Title: The REMIND R package (2nd generation)
-Version: 1.85.1
-Date: 2022-03-25
+Version: 1.87.9
+Date: 2022-05-20
 Authors@R: as.person(c(
     "Renato Rodrigues <renato.rodrigues@pik-potsdam.de> [aut,cre]"))
 Description: Contains the REMIND-specific routines for data and model output manipulation.
@@ -13,7 +13,6 @@ Imports:
     assertr,
     data.table,
     dplyr,
-    flexdashboard,
     gdx (>= 1.29),
     gdxdt,
     gdxrrw,
@@ -47,13 +46,14 @@ Imports:
     ymlthis
 Encoding: UTF-8
 License: LGPL-3
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Suggests:
-    testthat,
-    sr15data,
     covr,
-    tidyverse,
+    flexdashboard,
     gridExtra,
-    kableExtra
+    kableExtra,
+    sr15data,
+    testthat,
+    tidyverse
 VignetteBuilder: knitr
 URL: https://github.com/pik-piam/remind2

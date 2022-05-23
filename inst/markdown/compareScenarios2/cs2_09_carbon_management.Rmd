@@ -30,4 +30,3 @@ showAreaAndBarPlotsPlus(data, "Carbon Management|Usage")
 ```{r share}
 showLinePlots(data, "Carbon Management|Share of Stored CO2 from Captured CO2")
 ```
-

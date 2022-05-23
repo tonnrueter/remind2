@@ -59,5 +59,3 @@ getRunsMIFGDX <- function(output.folder, experiment) {
   
   print(paste0("Data were copied into ", "./data/", experiment,"/"))
 }
-
-

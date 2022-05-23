@@ -139,5 +139,3 @@ if (exists("cfgGmsWideDiff") && !is.null(cfgGmsWideDiff)) {
   showInTables(cfgGmsWideDiff, bkgndColors)
 }
 ```
-
-\newpage

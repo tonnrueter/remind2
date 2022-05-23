@@ -36,6 +36,8 @@ compareScenarios <- function(mif, hist,
                              y_bar=c(2010,2030,2050,2100),
                              reg=NULL, mainReg="GLO", fileName="CompareScenarios.pdf",
                              sr15marker_RCP=NULL) {
+  .Deprecated("compareScenarios2")
+
   lineplots_perCap <- function(data, vars, percap_factor, ylabstr,
                                global=FALSE, mainReg_plot=mainReg, per_gdp=FALSE, histdata_plot=NULL){
 
@@ -358,7 +360,6 @@ compareScenarios <- function(mif, hist,
              "Emi|GHG|Agriculture (Mt CO2eq/yr)",
              "Emi|GHG|Land-Use Change (Mt CO2eq/yr)",
              "Emi|GHG|Waste (Mt CO2eq/yr)",
-             "Emi|GHG|F-Gas (Mt CO2eq/yr)",
              "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
              "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
@@ -1625,7 +1626,6 @@ compareScenarios <- function(mif, hist,
              "Emi|GHG|Agriculture (Mt CO2eq/yr)",
              "Emi|GHG|Land-Use Change|LULUCF national accounting (Mt CO2eq/yr)",
              "Emi|GHG|Waste (Mt CO2eq/yr)",
-             "Emi|GHG|F-Gas (Mt CO2eq/yr)",
              "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
              "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
              "Emi|CO2|CDR|DACCS (Mt CO2/yr)",

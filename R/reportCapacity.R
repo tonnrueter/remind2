@@ -31,6 +31,8 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   possibleRefineries <- c("refped", "refdip", "refliq")
   refineries <- intersect(teall2rlf[, 1], possibleRefineries)
   ttot        <- readGDX(gdx, name = "ttot")
+  pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)
+
   # read variables
   vm_cap      <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found") * 1000
   vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000
@@ -76,6 +78,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2")], dim = 3),         "Cap|Hydrogen|Biomass|w/o CC (GW)"))
   tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2", "bioh2c")], dim = 3),         "Cap|Hydrogen|Biomass (GW)"))
   tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("elh2", "elh2VRE")], dim = 3),         "Cap|Hydrogen|Electricity (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("elh2", "elh2VRE")], dim = 3) / pm_eta_conv[, , "elh2"],         "Cap (GWel)|Hydrogen|Electricity (GW)"))
   tmp7 <- mbind(tmp7, setNames(dimSums(tmp7, dim = 3),                      "Cap|Hydrogen (GW)"))
 
   tmp <- NULL
@@ -93,12 +96,12 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "dot"], dim = 3),           "Cap|Electricity|Oil|w/o CC (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "spv"], dim = 3),                 "Cap|Electricity|Solar|PV (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "csp"], dim = 3),                 "Cap|Electricity|Solar|CSP (GW)"))
-  
+
   if ("windoff" %in% magclass::getNames(vm_cap, dim = 1)) {
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "wind"], dim = 3),                "Cap|Electricity|Wind|Onshore (GW)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windoff"], dim = 3),             "Cap|Electricity|Wind|Offshore (GW)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwindoff"], dim = 3) * 1.2,   "Cap|Electricity|Storage|Battery|For Wind Offshore (GW)"))
-  } 
+  }
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storspv"], dim = 3) * 4,         "Cap|Electricity|Storage|Battery|For PV (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwind"], dim = 3) * 1.2,      "Cap|Electricity|Storage|Battery|For Wind (GW)"))
 
@@ -166,6 +169,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   # Newly built capacities hydrogen
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioh2c", "bioh2")], dim = 3),   "New Cap|Hydrogen|Biomass (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("elh2", "elh2VRE")], dim = 3),                "New Cap|Hydrogen|Electricity (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("elh2", "elh2VRE")], dim = 3) / pm_eta_conv[, , "elh2"], "New Cap (GWel)|Hydrogen|Electricity (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gash2c", "coalh2c", "gash2", "coalh2")], dim = 3), "New Cap|Hydrogen|Fossil (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioh2c", "bioh2", "elh2", "elh2VRE", "gash2c", "coalh2c", "gash2", "coalh2")], dim = 3), "New Cap|Hydrogen (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "bioh2c"], dim = 3),              "New Cap|Hydrogen|Biomass|w/ CC (GW/yr)"))
