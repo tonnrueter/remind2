@@ -85,7 +85,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  temapall <- readGDX(gdx,c("en2en","temapall"),format="first_found")
  teall2rlf <- readGDX(gdx,c("te2rlf","teall2rlf"),format="first_found")
  te        <- readGDX(gdx,"te")
- te <- te[!te %in% c("lng_liq","gas_pipe", "lng_gas", "lng_ves","coal_ves")]
+ te <- te[!te %in% c("lng_liq","gas_pipe", "lng_gas", "lng_ves", "coal_ves", "pipe_gas", "termX_lng", "termM_lng", "vess_lng")]
  te2stor   <- readGDX(gdx,"VRE2teStor")
  te2grid   <- readGDX(gdx,"VRE2teGrid")
  teVRE   <- readGDX(gdx,"teVRE")
