@@ -1229,13 +1229,15 @@ reportLCOE <- function(gdx, output.type = "both"){
     df.curtShare <- as.quitte(curt_share) %>% 
                       rename(tech = all_te, curtShare = value) %>% 
                       select(region, period, tech, curtShare)
-    
-    
-  
+
+
+
     ### 17. CCS tax
     # following q21_taxrevCCS
     vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
-    sm_ccsinjecrate <- readGDX(gdx, "sm_ccsinjecrate")
+    sm_ccsinjecrate <- readGDX(gdx, c("sm_ccsinjecrate", "s_ccsinjecrate"), format = "first_found")
+    pm_ccsinjecrate <- readGDX(gdx, "pm_ccsinjecrate", react = "silent")
+    if (is.null(pm_ccsinjecrate)) pm_ccsinjecrate <- sm_ccsinjecrate
     pm_dataccs <- readGDX(gdx, "pm_dataccs", restore_zeros = F)
     
     
@@ -1250,8 +1252,8 @@ reportLCOE <- function(gdx, output.type = "both"){
     pm_eff <- mbind(pm_eta_conv, pm_dataeta[,, setdiff(getNames(pm_dataeta), getNames(pm_eta_conv)) ])
     vm_co2CCS_m <- pm_emifac_cco2/pm_eff[,,getNames(pm_emifac_cco2, dim=3)]*collapseNames(p_share_carbonCapture_stor)
     
-      # calculate CCS tax markup following q21_taxrevCCS, convert to USD2015/MWh
-    CCStax <- dimReduce(pm_data_omf[,,"ccsinje"]*vm_costTeCapital[,,"ccsinje"]*vm_co2CCS_m^2/pm_dataccs[,,"quan.1"]/sm_ccsinjecrate/s_twa2mwh*1e12*1.2)
+    # calculate CCS tax markup following q21_taxrevCCS, convert to USD2015/MWh
+    CCStax <- dimReduce(pm_data_omf[,,"ccsinje"]*vm_costTeCapital[,,"ccsinje"]*vm_co2CCS_m^2/pm_dataccs[,,"quan.1"]/pm_ccsinjecrate/s_twa2mwh*1e12*1.2)
                 
                               
     df.CCStax <- as.quitte(CCStax) %>% 
@@ -1350,7 +1352,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   ####################### LCOE calculation (New plant/marginal) ########################
   
 
-  ### create table with all parmeters needed for LCOE calculation                      
+  ### create table with all parameters needed for LCOE calculation
   df.LCOE <- df.CAPEX %>% 
     left_join(df.OMF, by = c("region", "tech")) %>%
     left_join(df.OMV, by = c("region", "tech")) %>%
