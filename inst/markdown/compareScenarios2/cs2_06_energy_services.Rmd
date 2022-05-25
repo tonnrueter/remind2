@@ -179,38 +179,56 @@ walk(items, showLinePlots, data = data, scales = 'fixed')
 
 ### Steel accumulation (per capita)
 ```{r}
-#initial stocks of steel. can I call this kind of mrremind stuff here???? or do I just need to hard-code the values here :(  
-# stock_t0 <- readSource(type = 'Mueller', subtype = 'stocks', convert = FALSE) %>% 
-#     madrat_mule() %>% 
-#     filter('med' == estimate)
+#initial stocks of steel. can I call this kind of mrremind stuff here???? or do I just need to #hard-code the values here :(  
 
-#extract names of available scenarios
-#scn <- data
+t5  <- c('2005','2010','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060')
+t10 <- c('2070','2080','2090','2100')
 
-primary <- data %>% 
- 
-  #delete me!---
-  filter(region %in% c('LAM')) %>%
-  filter(scenario %in% c('SSP2EU-AMT-Base','SSP2EU-AMT-PkBudg670')) %>% 
-  #-------------
+library(mrremind) # is it OK to do this?
+stock_t0_pc <- readSource(type = 'Mueller', subtype = 'stocks', convert = FALSE) %>% #stock per capita
+    madrat_mule() %>% 
+    filter('med' == estimate) %>% 
+    filter(year == '2005')
+#absolut stock (scale by population)
+stock_t0 <- stock_t0_pc*population
+
+#map to remind regions
+(to do)
+
+#calculate cumsum of primary steel production for each region
+#add existing stock (stock_t0)
+stock <- data %>% 
+  filter(variable %in% c('Production|Industry|Steel|Primary')) %>% 
+  group_by(model,scenario,region,variable,unit) %>% 
+  arrange(period) %>% 
+  mutate(dt = period - lag(period, order_by = period)) %>% 
+  mutate(dt = ifelse(period == min(period),1,dt)) %>% 
+                                  #this might not work
+  mutate(value = cumsum(value*dt)+stock_t0) %>% 
+  mutate(variable = 'Production|Industry|Steel|Accumulated Production') %>% 
+  ungroup()
+
+pop <- data %>% 
+  filter(variable %in% c('Population'))
+
+#calculate evolution of per capita steel stock
+stock_pc <-  bind_rows(pop,stock) %>% 
+  calc_addVariable(
+    # Mt/cap = Mt / (million * 1e-6)
+    '`Production|Industry|Steel|Stock Per Capita`' = '`Production|Industry|Steel|Accumulated Production`/(Population*1e6)',
+    units = 'Mt/cap'
+  ) %>% 
+  filter(variable %in% c('Production|Industry|Steel|Stock Per Capita'))
   
-  filter(variable %in% c('Production|Industry|Steel|Primary','Population')) %>% 
-  calc_addVariable(
-#   t                               #t  
-   '`Primary steel accumulation`' = 'cumsum(`Production|Industry|Steel|Primary`)',
-   units = 't'
-  )  %>% 
-  calc_addVariable(
-#   t                                          #t                             #humans 10^6 #ADD FACTOR 1e6!!!!
-   '`Primary steel accumulation per-capita`' = '`Primary steel accumulation` / `Population`',
-   units = 't'
-  )
-# to do:
-# integrate over interval duration
-# add initial stocks
 
-showLinePlots(primary, "Primary steel accumulation")
-showLinePlots(primary, "Primary steel accumulation per-capita")
+#Open questions:
+  # integrate assuming flat steps or linear interpolation between remind years?
+  # this is assuming that all stock destruction is balanced-out by secondary production (0 waste)
+
+  
+
+showLinePlots(stock, "Production|Industry|Steel|Accumulated Production")
+
 ```
 
 
