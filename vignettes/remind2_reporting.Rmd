@@ -21,7 +21,7 @@ The ``remind2`` library contains the routines to generate the reporting of the o
 This REMIND reporting based on a GDX-file can be created with the function ``convGDX2MIF()``
 
 
-```{r}
+```{r, eval = FALSE}
 gdx <- "fulldata.gdx"
 testReport <- convGDX2MIF(gdx)
 ```
@@ -30,7 +30,7 @@ testReport <- convGDX2MIF(gdx)
 The calculation of the REMIND variables as reported in the ``mif-file`` is separated into different functions per variable category. For example, ``SE|...`` variables (i.e. Secondary Energy) are calculated in reportSE.R, ``Emi|...`` variables (i.e. Emissions) in reportEmi.R etc. If you only want to check the calculation of a specific group of REMIND variables, you can call those functions directly:
 
 
-```{r}
+```{r, eval = FALSE}
 gdx <- "fulldata.gdx"
 testFE <- reportFE(gdx)
 ```
@@ -44,7 +44,7 @@ testFE <- reportFE(gdx)
 When developing the remind2 library, please test your changes on a recent ``fulldata.gdx`` file from REMIND by running the ``convGDX2MIF()`` function. Make sure the ``fulldata.gdx`` file is suitable for testing the change you did. For example, check that the relevant GAMS variables and parameters are available and non-zero in the GDX you are testing. Different REMIND runs come with different module realization and switches where certain sets, parameters or variables are not existing such that your change may not be tested by an unsuitable GDX. Moreover, when adapting or adding variables with "+" notation, please run a summation check on a suitable GDX by running the ``checkIntegrity()`` found [here](https://github.com/pik-piam/remind2/blob/1a80cc607db663a211f98cabb3c7408cd08bf713/tests/testthat/test-convGDX2mif.R#L31) on your reporting output:
 
 
-```{r}
+```{r, eval = FALSE}
 checkIntegrity(testReport)
 ```
 
@@ -81,7 +81,7 @@ FE = FE|++|Buildings + FE|++|Industry + FE|++|Transport ...
 
 You can check out the different summation groups of variables with "+" by running the function ``extractVariableGroups()`` from the [mip-package](https://github.com/pik-piam/mip#readme). The argument to the function is a vector of variable names. For example:
 
-```{r}
+```{r, eval = FALSE}
 mip::extractVariableGroups(getNames(testReport, dim=3))
 ```
 
