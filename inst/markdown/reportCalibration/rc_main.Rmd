@@ -1,0 +1,190 @@
+---
+title: "Report Calibration"
+date: "`r format(Sys.Date())`"
+output:
+  pdf_document:
+    toc: yes
+    number_sections: yes
+    keep_tex: false
+geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footnotesep=0.0cm,footskip=0.1cm"
+params:
+  gdx: ''
+  figWidth: 15 
+  figHeight: 10
+  warning: no
+  message: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  error = TRUE,
+  message = FALSE,
+  warning = params$warning,
+  fig.width = params$figWidth,
+  fig.height = params$figHeight
+)
+```
+
+
+
+```{r libraries, include=FALSE}
+# kableExtra must not be loaded before the call of library(kableExtra) below,
+# as its .onLoad() function must be called to tell knitr about add necessary
+# LaTeX libraries needed for tables.
+# If the following line is not included, successive calls to compareScenarios2()
+# may cause "Undefined control sequence" errors in LaTeX.
+try(unloadNamespace("kableExtra"), silent = TRUE)
+
+library(gridExtra)
+options(tidyverse.quiet = TRUE)
+library(tidyverse)
+library(kableExtra)
+library(quitte)
+library(gdx)
+library(ggplot2)
+library(dplyr)
+
+
+min.reldev <- 15
+min.absdev <- 1e-1
+```
+
+# Quantity
+
+## Deviations
+```{r quantity tables}
+
+# baseline run
+vm_cesIO <- readGDX(gdx, "vm_cesIO", restore_zeros = F)[, , "l"]
+
+# calibration data
+pm_cesdata <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"]
+
+vars <- intersect(getItems(pm_cesdata, dim = 3.1), getItems(vm_cesIO, dim = 3.1))
+vm_cesIO <- vm_cesIO[, , vars]
+pm_cesdata <- pm_cesdata[, , vars]
+
+# get deviations
+
+deviations <- left_join(
+  as.quitte(vm_cesIO) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Baseline"),
+  as.quitte(pm_cesdata) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration"),
+  by = c("region", "period", "variable"), suffix = c(".baseline", ".calibration")
+) %>%
+  filter(!is.na(value.baseline), !is.na(value.calibration)) %>%
+  mutate(
+    abs.deviation := abs(value.calibration - value.baseline),
+    rel.deviation := abs.deviation / value.calibration * 100
+  ) %>%
+  filter(rel.deviation > min.reldev, abs.deviation > min.absdev) %>%
+  select(region, variable, period)
+
+deviations <- aggregate(period ~ region + variable, data = deviations, paste, collapse = ",")
+
+kable(as.data.frame(deviations), longtable = TRUE) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"))
+```
+
+## Plots
+\newpage
+
+```{r quantity plots}
+
+regions <- intersect(getItems(pm_cesdata, dim = 1), getItems(vm_cesIO, dim = 1))
+
+for (r in regions) {
+  data <- rbind(
+    as.quitte(vm_cesIO[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Baseline"),
+    as.quitte(pm_cesdata[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration")
+  )
+  p <- ggplot() +
+    geom_line(
+      data = data,
+      aes(x = period, y = value, color = model), size = 1
+    ) +
+    facet_wrap("variable", scales = "free", ncol = 6) +
+    theme(
+      strip.text.y = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      legend.title = element_blank(),
+      legend.position = "right",
+      legend.direction = "vertical"
+    ) +
+    ggtitle(paste0("quantities ", r)) +
+    scale_color_brewer(palette = "Set1")
+  
+  print(p)
+
+}
+```
+
+# Prices
+
+## Deviations
+```{r price tables}
+
+# baseline run
+o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"]
+
+# calibration data
+pm_cesdata <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "price"]
+
+vars <- intersect(getItems(pm_cesdata, dim = 3.1), getItems(o01_CESderivatives, dim = 3.2))
+
+o01_CESderivatives <- o01_CESderivatives[, , vars]
+pm_cesdata <- pm_cesdata[, , vars]
+
+# get deviations
+
+deviations <- left_join(
+  as.quitte(o01_CESderivatives) %>% select(region, variable = all_in1, period, value) %>% mutate(model := "Baseline"),
+  as.quitte(pm_cesdata) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration"),
+  by = c("region", "period", "variable"), suffix = c(".baseline", ".calibration")
+) %>%
+  filter(!is.na(value.baseline), !is.na(value.calibration)) %>%
+  mutate(
+    abs.deviation := abs(value.calibration - value.baseline),
+    rel.deviation := abs.deviation / value.calibration * 100
+  ) %>%
+  filter(rel.deviation > min.reldev, abs.deviation > min.absdev) %>%
+  select(region, variable, period)
+
+deviations <- aggregate(period ~ region + variable, data = deviations, paste, collapse = ",")
+
+kable(as.data.frame(deviations), longtable = TRUE) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"))
+```
+
+## Plots
+\newpage
+```{r price plots}
+
+regions <- intersect(getItems(pm_cesdata, dim = 1), getItems(o01_CESderivatives, dim = 1))
+
+for (r in regions) {
+  data <- rbind(
+    as.quitte(o01_CESderivatives[r, , ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model := "Baseline"),
+    as.quitte(pm_cesdata[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration")
+  )
+  p <- ggplot() +
+    geom_line(
+      data = data,
+      aes(x = period, y = value, color = model), size = 1
+    ) +
+    facet_wrap("variable", scales = "free", ncol = 6) +
+    theme(
+      strip.text.y = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      legend.title = element_blank(),
+      legend.position = "right",
+      legend.direction = "vertical"
+    ) +
+    ggtitle(paste0("prices ", r)) +
+    scale_color_brewer(palette = "Set1")
+  print(p)
+}
+```
+
