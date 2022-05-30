@@ -16,7 +16,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 ## Function
 
-The ``remind2`` library contains the routines to generate the reporting of the output of the REMIND model and is the successor of the deprecated ``remind`` package since REMIND version 3.0. It's main function is to create the output of REMIND as a table in IAM-compatible format, the so-called ``mif-file``, from the ``fulldata.gdx`` of a run. The resulting ``mif-file`` is typically called ``REMIND_generic_NameOfYourRun.mif`` and can be found in the output folder of a run. 
+The ``remind2`` library contains the routines to generate the reporting of the output of the REMIND model and is the successor of the deprecated ``remind`` package since REMIND version 3.0. Its main function is to create the output of REMIND as a table in IAM-compatible format, the so-called ``mif-file``, from the ``fulldata.gdx`` of a run. The resulting ``mif-file`` is typically called ``REMIND_generic_NameOfYourRun.mif`` and can be found in the output folder of a run. 
 
 This REMIND reporting based on a GDX-file can be created with the function ``convGDX2MIF()``
 
