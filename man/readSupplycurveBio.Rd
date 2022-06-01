@@ -6,9 +6,7 @@
 \usage{
 readSupplycurveBio(
   outputdirs,
-  userfun = function(param, x) {
-     return(param[[1]] + param[[2]] * x)
- },
+  userfun = function(param, x) {     return(param[[1]] + param[[2]] * x) },
   mult_on = "all"
 )
 }
