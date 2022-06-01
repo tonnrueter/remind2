@@ -252,13 +252,13 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
 
   # report GHG tax revenues
   out <- mbind(out,
-               setNames(output_wo_GLO[, , "Price|Carbon|Demand|Buildings (US$2005/t CO2)"] *  output_wo_GLO[, , "Emi|GHG|Energy|Demand|+|Buildings (Mt CO2eq/yr)"] / 1000,
+               setNames(output_wo_GLO[, , "Price|Carbon|Demand|Buildings (US$2005/t CO2)"] * output_wo_GLO[, , "Emi|GHG|Energy|Demand|+|Buildings (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Demand|Buildings (billion US$2005/yr)"),
-               setNames(output_wo_GLO[, , "Price|Carbon|Demand|Transport (US$2005/t CO2)"] *  output_wo_GLO[, , "Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)"] / 1000,
+               setNames(output_wo_GLO[, , "Price|Carbon|Demand|Transport (US$2005/t CO2)"] * output_wo_GLO[, , "Emi|GHG|Energy|Demand|+|Transport (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Demand|Transport (billion US$2005/yr)"),
-               setNames(output_wo_GLO[, , "Price|Carbon|Demand|Industry (US$2005/t CO2)"]  * (output_wo_GLO[, , "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"] + output_wo_GLO[, ,"Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]) / 1000,
+               setNames(output_wo_GLO[, , "Price|Carbon|Demand|Industry (US$2005/t CO2)"]  * output_wo_GLO[, , "Emi|GHG|Industry (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Demand|Industry (billion US$2005/yr)"),
-               setNames(output_wo_GLO[, , "Price|Carbon|Supply (US$2005/t CO2)"]           *  output_wo_GLO[, , "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"] / 1000,
+               setNames(output_wo_GLO[, , "Price|Carbon|Supply (US$2005/t CO2)"]           * output_wo_GLO[, , "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"] / 1000,
                           "Revenue|Government|Tax|Carbon|+|Supply (billion US$2005/yr)")
                )
   out <- mbind(out, setNames(out[, , "Revenue|Government|Tax|Carbon|+|Demand|Buildings (billion US$2005/yr)"]
