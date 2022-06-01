@@ -186,6 +186,8 @@ population <- filter(data, period >= 2005, model == "REMIND", variable == "Popul
   interpolate_missing_periods(seq(2005, 2100, 1)) %>%
   select("period", "region", "value", "scenario")
 
+years <- c(seq(2005, 2060, 5), seq(2070, 2100, 10)) 
+
 stock <- data %>%
   filter(variable %in% c("Production|Industry|Steel|Primary"), model == "REMIND", period >= 2005) %>%
   interpolate_missing_periods(seq(2005, 2100, 1)) %>%
@@ -198,14 +200,15 @@ stock <- data %>%
   left_join(stock_t0, by = c("region")) %>%
   mutate(!!sym("value") := cumsum.value + value.y) %>%
   select("model", "scenario", "region", "variable", "unit", "period", "value") %>%
-  filter(!is.na(value))
+  filter(!is.na(value)) %>% 
+  filter(period %in% years)
 
 showLinePlots(stock, "Production|Industry|Steel|Accumulated Production", mainReg = "World")
 
 stock_pc <- left_join(stock, population, by = c("period", "region", "scenario")) %>%
   mutate(value := value.x / value.y, unit := "t per cap")
 
-showLinePlots(stock_pc, "Production|Industry|Steel|Accumulated Production", mainReg = "World")
+showLinePlots(stock_pc, "Production|Industry|Steel|Accumulated Production", scales = "fixed", mainReg = "World")
 ```
 
 ### Subsector per-GDP Production
