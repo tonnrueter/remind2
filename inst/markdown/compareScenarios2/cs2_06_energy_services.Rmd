@@ -194,11 +194,11 @@ stock <- data %>%
   group_by(model, region, scenario, variable, unit) %>%
   filter(!is.na(value)) %>%
   arrange(period) %>%
-  mutate(cumsum.value := cumsum(value)) %>%
-  mutate(!!sym("variable") := "Production|Industry|Steel|Accumulated Production", unit = "million t") %>%
+  mutate(cumsum.value = cumsum(value)) %>%
+  mutate(variable = "Production|Industry|Steel|Accumulated Production", unit = "million t") %>% 
   ungroup() %>%
   left_join(stock_t0, by = c("region")) %>%
-  mutate(!!sym("value") := cumsum.value + value.y) %>%
+  mutate(value = cumsum.value + value.y) %>%
   select("model", "scenario", "region", "variable", "unit", "period", "value") %>%
   filter(!is.na(value)) %>% 
   filter(period %in% years)
@@ -206,7 +206,7 @@ stock <- data %>%
 showLinePlots(stock, "Production|Industry|Steel|Accumulated Production", mainReg = "World")
 
 stock_pc <- left_join(stock, population, by = c("period", "region", "scenario")) %>%
-  mutate(value := value.x / value.y, unit := "t per cap")
+  mutate(value = value.x / value.y, unit = "t per cap")
 
 showLinePlots(stock_pc, "Production|Industry|Steel|Accumulated Production", scales = "fixed", mainReg = "World")
 ```
