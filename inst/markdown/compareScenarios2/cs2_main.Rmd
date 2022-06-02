@@ -196,7 +196,8 @@ dataScen %>%
   filter(period %in% params$yearsScen) ->
   dataScen
 dataHist %>%
-  filter(period %in% params$yearsHist, !(model %in% params$modelsHistExclude), !is.na(value)) ->
+  filter(period %in% params$yearsHist, !(model %in% params$modelsHistExclude), !is.na(value)) %>%
+  droplevels() ->
   dataHist
 
 # Combine into one data frame and remove old.
