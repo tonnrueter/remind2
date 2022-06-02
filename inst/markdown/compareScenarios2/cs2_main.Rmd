@@ -27,6 +27,7 @@ params:
   yearsBarPlot: !r c(2010, 2030, 2050, 2100)
   yearRef: 2020
   reg: null
+  modelsHistExclude: !r c()
   sections: "all"
   userSectionPath: null
   mainReg: "World"
@@ -195,7 +196,7 @@ dataScen %>%
   filter(period %in% params$yearsScen) ->
   dataScen
 dataHist %>%
-  filter(period %in% params$yearsHist, !is.na(value)) ->
+  filter(period %in% params$yearsHist, !(model %in% params$modelsHistExclude), !is.na(value)) ->
   dataHist
 
 # Combine into one data frame and remove old.
