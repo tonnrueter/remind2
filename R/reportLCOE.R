@@ -1023,7 +1023,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  # # is produced. Unit: MWh. Can be larger than 1!)
  #  
  #  # generation share of technology
- #  df.shSeEl <- read.gdx(gdx, "v32_shSeEl", fields = "l") %>% 
+ #  df.shSeEl <- read.gdx(gdx, c("vm_shSeEl","v32_shSeEl"), fields = "l", format= "first_found") %>% 
  #                  rename(shSeEl = value, tech = all_te, period = ttot, region = all_regi)
  #  # usable (after storage loss) SE per technology
  #  df.usableSeTe <- read.gdx(gdx, "vm_usableSeTe", fields = "l") %>% 
