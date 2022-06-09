@@ -186,7 +186,7 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
   out <- mbind(out, setNames(p21_taxrevGHG0, "Net Taxes|GHG emissions|w/o CO2 LUC (billion US$2005/yr)"))
 
   # co2luc emission tax
-  p21_taxrevCO2luc0 <- readGDX(gdx, name=c("pm_taxrevCO2luc0","p21_taxrevCO2luc0"), format= "first_found")[,t,]*1000
+  p21_taxrevCO2luc0 <- readGDX(gdx, name=c("pm_taxrevCO2LUC0","p21_taxrevCO2luc0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevCO2luc0, "Net Taxes|GHG emissions|CO2 LUC (billion US$2005/yr)"))
 
   out <- mbind(out, setNames((p21_taxrevGHG0+p21_taxrevCO2luc0),"Net Taxes|GHG emissions (billion US$2005/yr)"))
