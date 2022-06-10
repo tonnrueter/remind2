@@ -1872,10 +1872,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
     ### reattribution of a fraction of non-energy use carbon as waste emissions (plastic products that get combusted in waste incineration plants within the region)
-    # fraction of non-energy use emissions that gets reattributed as waste CO2 emissions (reporting assumption)
-    # as this analysis only used for Germany, take 50% which is current fraction of plastic waste to be incinerated
-    # https://www.umweltbundesamt.de/daten/ressourcen-abfall/verwertung-entsorgung-ausgewaehlter-abfallarten/kunststoffabfaelle#kunststoffe-produktion-verwendung-und-verwertung
-    WasteFraction <- 0.5
+    # set to zero for now to avoid inconsistencies with historic data sources on industry and power emissions
+    WasteFraction <- 0
 
     out <- mbind(out,
                  setNames(WasteFraction * out[, , "Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"],
