@@ -15,7 +15,7 @@ compareScenConf(
 )
 }
 \arguments{
-\item{fileList}{vector containing two csv file paths. If empty, user can select}
+\item{fileList}{vector containing two csv file paths as c(oldfile, newfile). If empty, user can select}
 
 \item{configfile}{path to configfile. If empty, uses './default.cfg'}
 
@@ -37,7 +37,7 @@ comparing it to a default.cfg
 \examples{
 
  \dontrun{
-    compareScenConf(fileList = c("scenario_config1.csv", "scenario_config2.csv"),
+    compareScenConf(fileList = c("scenario_config_old.csv", "scenario_config_new.csv"),
     configfile = "default.cfg",
     renamedCols = c("old1" = "new1", "old2" = "new2"),
     renamedRows = c("old3" = "new3", "old4" = "new4"))

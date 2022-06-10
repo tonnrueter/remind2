@@ -1,7 +1,7 @@
 #' take two REMIND scenario-config*.csv files and print the difference,
 #' comparing it to a default.cfg
 #'
-#' @param fileList vector containing two csv file paths. If empty, user can select
+#' @param fileList vector containing two csv file paths as c(oldfile, newfile). If empty, user can select
 #' @param configfile path to configfile. If empty, uses './default.cfg'
 #' @param row.names column in csv used for row.names. Use NULL for mapping files
 #' @param renamedCols vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))
@@ -11,7 +11,7 @@
 #' @examples
 #'
 #'  \dontrun{
-#'     compareScenConf(fileList = c("scenario_config1.csv", "scenario_config2.csv"),
+#'     compareScenConf(fileList = c("scenario_config_old.csv", "scenario_config_new.csv"),
 #'     configfile = "default.cfg",
 #'     renamedCols = c("old1" = "new1", "old2" = "new2"),
 #'     renamedRows = c("old3" = "new3", "old4" = "new4"))
@@ -33,7 +33,7 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
                   Sys.glob(file.path(paste0(folder, "/*/scenario_config*.csv"))),
                   Sys.glob(file.path(paste0(folder, "/config/*/scenario_config*.csv")))
     )
-    cat("\nPlease choose old and new file:\n")
+    cat("\nPlease choose old and new file, separated with comma:\n")
     cat(paste(seq_along(fileList), fileList, sep = ": "), sep = "\n")
     identifier <- as.numeric(strsplit(getLine(), ",")[[1]])
     if (length(identifier) < 2) stop("You must choose two files!")
@@ -107,7 +107,7 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
           if (! identical(toString(settings1[s, c]), toString(settings2[s, c]))) {
             m <- c(m, paste0("    ", ifelse(c %in% renamedCols, paste(names(which(renamedCols == c)), "-> "), ""), c,
                    ": ", ifelse(c == "description", "was changed", paste0(settings1[s, c], " -> ", settings2[s, c])),
-                   ifelse(isFALSE(configfile), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
+                   ifelse(isFALSE(configfile) || is.null(cfg$gms[[c]]), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
           }
         }
       }
