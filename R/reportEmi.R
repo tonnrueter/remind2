@@ -1885,9 +1885,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       "Emi|GHG (Mt CO2eq/yr)",
       "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
       "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
+      "Emi|GHG|++|ETS (Mt CO2eq/yr)",
 
       # CO2 Emissions
-      "Emi|CO2 (Mt CO2/yr)")
+      "Emi|CO2 (Mt CO2/yr)",
+      "Emi|CO2|++|ETS (Mt CO2/yr)")
 
 
     # add emissions variables with LULUCF national accounting
@@ -1905,6 +1907,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
       "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)",
       "Emi|GHG|Industry (Mt CO2eq/yr)",
+      "Emi|GHG|ETS|+|Industry (Mt CO2eq/yr)",
 
       # Gross GHG Emissions
       "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
@@ -1916,6 +1919,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
       "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
       "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
+      "Emi|CO2|Energy|Demand|Industry|++|Chemicals (Mt CO2/yr)",
 
 
       # Gross CO2 Emissions
