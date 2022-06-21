@@ -260,7 +260,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     factor <- 1000.
     
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, techmap)
-    int2ext <- get_global_mapping(category, unit, techmap)
+    int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
   }
   
   if (tran_mod == "complex") {
