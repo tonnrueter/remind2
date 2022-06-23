@@ -2,6 +2,8 @@
 
 ## Final Energy total
 
+### Basics
+
 ```{r}
 tot <- "FE"
 items <- c(
@@ -11,13 +13,29 @@ items <- c(
   "FE|Solids",
   "FE|Liquids",
   "FE|Hydrogen")
+```
+
+\newpage
+
+#### Area Plots
+
+```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
+```
+
+#### Line Plots
+
+```{r}
+showLinePlots(data, "FE|Electricity|Share")
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
 
 ## Buildings Final Energy
+
+### Basics
+
 ```{r}
 tot <- "FE|Buildings"
 items <- c(
@@ -27,14 +45,30 @@ items <- c(
   "FE|Buildings|Solids",
   "FE|Buildings|Liquids",
   "FE|Buildings|Hydrogen")
+```
+
+\newpage
+
+#### Area Plots
+
+```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
+```
+
+#### Line Plots
+
+```{r}
+showLinePlots(data, "FE|Buildings|Electricity|Share")
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
 
 
 ## Industry Final Energy
+
+### Basics
+
 ```{r}
 tot <- "FE|Industry"
 items <- c(
@@ -44,12 +78,24 @@ items <- c(
   "FE|Industry|Solids",
   "FE|Industry|Liquids",
   "FE|Industry|Hydrogen")
+```
+
+\newpage
+
+#### Area Plots
+
+```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
+```
+
+#### Line Plots
+
+```{r}
+showLinePlots(data, "FE|Industry|Electricity|Share")
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
-
 
 ### FE mix Steel
 ```{r}
@@ -189,6 +235,9 @@ data %>%
 
 
 ## Transport Final Energy 
+
+### Basics -- with Bunkers
+
 ```{r}
 tot <- "FE|Transport"
 items <- c(
@@ -196,13 +245,34 @@ items <- c(
   "FE|Transport|Gases",
   "FE|Transport|Liquids",
   "FE|Transport|Hydrogen")
+items2 <- c(
+  "FE|Transport|Electricity",
+  "FE|Transport|Gases",
+  "FE|Transport|Liquids|Biomass",
+  "FE|Transport|Liquids|Fossil",
+  "FE|Transport|Liquids|Hydrogen",
+  "FE|Transport|Hydrogen")
+```
+
+\newpage
+
+#### Area Plots
+
+```{r}
 showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items2, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
+```
+
+#### Line plots
+
+```{r}
+showLinePlots(data, "FE|Transport|Electricity|Share")
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
 
-### w/o Bunkers
+### Basics -- w/o Bunkers
 
 ```{r}
 tot <- "FE|Transport|w/o Bunkers"
@@ -211,12 +281,35 @@ items <- c(
   "FE|Transport|w/o Bunkers|Gases",
   "FE|Transport|w/o Bunkers|Liquids",
   "FE|Transport|w/o Bunkers|Hydrogen")
+items2 <- c(
+  "FE|Transport|w/o Bunkers|Electricity",
+  "FE|Transport|w/o Bunkers|Gases",
+  "FE|Transport|w/o Bunkers|Liquids|Biomass",
+  "FE|Transport|w/o Bunkers|Liquids|Fossil",
+  "FE|Transport|w/o Bunkers|Liquids|Hydrogen",
+  "FE|Transport|w/o Bunkers|Hydrogen")
+```
+
+\newpage
+
+#### Area Plots
+
+```{r}
 showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items2, tot)
+showAreaAndBarPlots(data, items, tot, fill=TRUE)
+```
+
+#### Line plots
+
+```{r}
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
 
+
 ### Transport per type
+
 ```{r}
 tot <- "FE|Transport"
 items <- c(

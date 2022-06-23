@@ -16,22 +16,29 @@ showLinePlots(data, "Population")
 
 ## GDP - MER
 
-```{r GDP-MER}
+```{r}
 showLinePlots(data, "GDP|MER")
 ```
 
-
 ## GDP - PPP
 
-```{r GDP-PPP}
+```{r}
 showLinePlots(data, "GDP|PPP")
+```
+
+## GDP - MER per Capita
+
+```{r}
+showLinePlots(data, "GDP|MER pCap")
 ```
 
 ## GDP - PPP per Capita
 
-```{r GDP-PPP pCap}
+```{r}
 showLinePlots(data, "GDP|PPP pCap")
 ```
+
+
 
 ## Capital Stock
 
