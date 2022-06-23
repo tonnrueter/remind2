@@ -101,7 +101,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # total energy emissions from pe2se and se2fe conversions
   v_emiTeDetailMkt <- readGDX(gdx, "v_emiTeDetailMkt", field = "l", restore_zeros = F)
   # total energy emissions in REMIND
-  vm_emiTeMkt <- readGDX(gdx, "vm_emiTeMkt", field = "l", restore_zeros = F)[, t, ]
+  vm_emiTeMkt <- readGDX(gdx, c("v_emiTeMkt","vm_emiTeMkt"), field = "l", restore_zeros = F, format="first_found")[, t, ]
   # emissions from MAC curves (non-energy emissions)
   vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)[, t, ]
   # exogenous emissions (SO2, BC, OC)
@@ -1872,10 +1872,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
     ### reattribution of a fraction of non-energy use carbon as waste emissions (plastic products that get combusted in waste incineration plants within the region)
-    # fraction of non-energy use emissions that gets reattributed as waste CO2 emissions (reporting assumption)
-    # as this analysis only used for Germany, take 50% which is current fraction of plastic waste to be incinerated
-    # https://www.umweltbundesamt.de/daten/ressourcen-abfall/verwertung-entsorgung-ausgewaehlter-abfallarten/kunststoffabfaelle#kunststoffe-produktion-verwendung-und-verwertung
-    WasteFraction <- 0.5
+    # set to zero for now to avoid inconsistencies with historic data sources on industry and power emissions
+    WasteFraction <- 0
 
     out <- mbind(out,
                  setNames(WasteFraction * out[, , "Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"],
@@ -1887,9 +1885,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       "Emi|GHG (Mt CO2eq/yr)",
       "Emi|GHG|+|CO2 (Mt CO2eq/yr)",
       "Emi|GHG|w/o Land-Use Change (Mt CO2eq/yr)",
+      "Emi|GHG|++|ETS (Mt CO2eq/yr)",
 
       # CO2 Emissions
-      "Emi|CO2 (Mt CO2/yr)")
+      "Emi|CO2 (Mt CO2/yr)",
+      "Emi|CO2|++|ETS (Mt CO2/yr)")
 
 
     # add emissions variables with LULUCF national accounting
@@ -1907,6 +1907,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)",
       "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)",
       "Emi|GHG|Industry (Mt CO2eq/yr)",
+      "Emi|GHG|ETS|+|Industry (Mt CO2eq/yr)",
 
       # Gross GHG Emissions
       "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
@@ -1918,6 +1919,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
       "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
       "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
+      "Emi|CO2|Energy|Demand|Industry|++|Chemicals (Mt CO2/yr)",
 
 
       # Gross CO2 Emissions

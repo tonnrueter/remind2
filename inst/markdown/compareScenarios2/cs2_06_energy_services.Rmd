@@ -177,6 +177,40 @@ items <- c('Production|Industry|Cement|per-capita',
 walk(items, showLinePlots, data = data, scales = 'fixed')
 ```
 
+
+### Steel accumulation
+```{r}
+stock_t0 <- filter(data, period == 2005, model == "Mueller", variable == "Steel stock") %>% select("region", "value")
+
+population <- filter(data, period >= 2005, model == "REMIND", variable == "Population") %>%
+  interpolate_missing_periods(seq(2005, 2100, 1)) %>%
+  select("period", "region", "value", "scenario")
+
+years <- c(seq(2005, 2060, 5), seq(2070, 2100, 10)) 
+
+stock <- data %>%
+  filter(variable %in% c("Production|Industry|Steel|Primary"), model == "REMIND", period >= 2005) %>%
+  interpolate_missing_periods(seq(2005, 2100, 1)) %>%
+  group_by(model, region, scenario, variable, unit) %>%
+  filter(!is.na(value)) %>%
+  arrange(period) %>%
+  mutate(cumsum.value = cumsum(value)) %>%
+  mutate(variable = "Production|Industry|Steel|Accumulated Production", unit = "million t") %>% 
+  ungroup() %>%
+  left_join(stock_t0, by = c("region")) %>%
+  mutate(value = cumsum.value + value.y) %>%
+  select("model", "scenario", "region", "variable", "unit", "period", "value") %>%
+  filter(!is.na(value)) %>% 
+  filter(period %in% years)
+
+showLinePlots(stock, "Production|Industry|Steel|Accumulated Production", mainReg = "World")
+
+stock_pc <- left_join(stock, population, by = c("period", "region", "scenario")) %>%
+  mutate(value = value.x / value.y, unit = "t per cap")
+
+showLinePlots(stock_pc, "Production|Industry|Steel|Accumulated Production", scales = "fixed", mainReg = "World")
+```
+
 ### Subsector per-GDP Production
 ```{r plot subsector per-GDP production}
 items <- c('Production|Industry|Cement|per-GDP',
