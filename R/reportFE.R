@@ -1342,7 +1342,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   ### temporary (!) industry non-energy use reporting
   # note: only for REMIND-EU SSP2
 
-  if ("DEU" %in% getRegions(vm_prodFe)) {
+  if ("DEU" %in% getRegions(vm_prodFe) & indu_mod == 'subsectors') {
 
       # some initializations required for building library with dplyr operations below
       encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
