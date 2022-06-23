@@ -6,6 +6,7 @@ output:
     toc: yes
     number_sections: yes
     keep_tex: false
+    toc_depth: 2
 geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footnotesep=0.0cm,footskip=0.1cm"
 params:
   gdx: ''
@@ -50,26 +51,48 @@ min.reldev <- 15
 min.absdev <- 1e-1
 ```
 
-# Quantity
 
-## Deviations
-```{r quantity tables}
+```{r read, include=FALSE}
 
-# baseline run
-vm_cesIO <- readGDX(gdx, "vm_cesIO", restore_zeros = F)[, , "l"]
+scen <- readGDX(gdx,"c_expname")[[1]]
 
-# calibration data
-pm_cesdata <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"]
+vars <- c(
+  readGDX(gdx, "ppf", restore_zeros = F),
+  readGDX(gdx, "industry_ue_calibration_target_dyn37", restore_zeros = F)
+)
 
-vars <- intersect(getItems(pm_cesdata, dim = 3.1), getItems(vm_cesIO, dim = 3.1))
-vm_cesIO <- vm_cesIO[, , vars]
-pm_cesdata <- pm_cesdata[, , vars]
+# baseline run quantities
+q.baseline <- readGDX(gdx, "vm_cesIO", restore_zeros = F)[, , "l"] %>% dimReduce()
+
+# calibration data quantities
+q.calibration <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"]  %>% dimReduce()
+q.baseline <- q.baseline[, , vars]
+q.calibration <- q.calibration[, , vars]
+
+# baseline run prices
+p.baseline <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"] %>% dimReduce()
+
+# calibration data prices
+p.calibration <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "price"] %>% dimReduce()
+p.baseline <- p.baseline[, , vars]
+p.calibration <- p.calibration[, , vars]
+```
+
+# Check vs CalibData
+
+This report compares how well a baseline run matches with the target data of the REMIND CES function calibration. The levels of production factors of the CES function are compared to the target values of the baseline scenario (Quantity Plots). The target values are taken from the input data to the calibration (the input files `f_fedemand.cs4r`, `f_gdp.cs3r`, `f_lab.cs3r`). If you compare a baseline run to the target values and observe significant differences, it is recommended to rerun a calibration run. You can also check out plots of the prices of each production factor in comparison to the prices reached in the respective calibration run.
+
+## Deviations of Quantities
+
+The following table lists all deviations greater 15 %.
+
+```{r quantity deviations}
 
 # get deviations
 
 deviations <- left_join(
-  as.quitte(vm_cesIO) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Baseline"),
-  as.quitte(pm_cesdata) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration"),
+  as.quitte(q.baseline) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Baseline"),
+  as.quitte(q.calibration) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration"),
   by = c("region", "period", "variable"), suffix = c(".baseline", ".calibration")
 ) %>%
   filter(!is.na(value.baseline), !is.na(value.calibration)) %>%
@@ -80,23 +103,29 @@ deviations <- left_join(
   filter(rel.deviation > min.reldev, abs.deviation > min.absdev) %>%
   select(region, variable, period)
 
-deviations <- aggregate(period ~ region + variable, data = deviations, paste, collapse = ",")
+deviations <- aggregate(period ~ region + variable, data = deviations, paste, collapse = ",") %>%
+  arrange(region)
 
 kable(as.data.frame(deviations), longtable = TRUE) %>%
   kable_styling(latex_options = c("hold_position", "repeat_header"))
 ```
 
 ## Plots
-\newpage
 
-```{r quantity plots}
+```{r plots, echo = FALSE, results='asis'}
 
-regions <- intersect(getItems(pm_cesdata, dim = 1), getItems(vm_cesIO, dim = 1))
+regions <- union(
+  union(getItems(p.baseline, dim = 1), getItems(q.baseline, dim = 1)),
+  union(getItems(p.calibration, dim = 1), getItems(q.calibration, dim = 1))
+)
 
 for (r in regions) {
+
+  # quantity plot
+
   data <- rbind(
-    as.quitte(vm_cesIO[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Baseline"),
-    as.quitte(pm_cesdata[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration")
+    as.quitte(q.baseline[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := scen),
+    as.quitte(q.calibration[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calib. Target")
   )
   p <- ggplot() +
     geom_line(
@@ -114,59 +143,16 @@ for (r in regions) {
     ) +
     ggtitle(paste0("quantities ", r)) +
     scale_color_brewer(palette = "Set1")
-  
+
   print(p)
 
-}
-```
+  cat("\n\n\\pagebreak\n")
 
-# Prices
+  # price plot
 
-## Deviations
-```{r price tables}
-
-# baseline run
-o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"]
-
-# calibration data
-pm_cesdata <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "price"]
-
-vars <- intersect(getItems(pm_cesdata, dim = 3.1), getItems(o01_CESderivatives, dim = 3.2))
-
-o01_CESderivatives <- o01_CESderivatives[, , vars]
-pm_cesdata <- pm_cesdata[, , vars]
-
-# get deviations
-
-deviations <- left_join(
-  as.quitte(o01_CESderivatives) %>% select(region, variable = all_in1, period, value) %>% mutate(model := "Baseline"),
-  as.quitte(pm_cesdata) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration"),
-  by = c("region", "period", "variable"), suffix = c(".baseline", ".calibration")
-) %>%
-  filter(!is.na(value.baseline), !is.na(value.calibration)) %>%
-  mutate(
-    abs.deviation := abs(value.calibration - value.baseline),
-    rel.deviation := abs.deviation / value.calibration * 100
-  ) %>%
-  filter(rel.deviation > min.reldev, abs.deviation > min.absdev) %>%
-  select(region, variable, period)
-
-deviations <- aggregate(period ~ region + variable, data = deviations, paste, collapse = ",")
-
-kable(as.data.frame(deviations), longtable = TRUE) %>%
-  kable_styling(latex_options = c("hold_position", "repeat_header"))
-```
-
-## Plots
-\newpage
-```{r price plots}
-
-regions <- intersect(getItems(pm_cesdata, dim = 1), getItems(o01_CESderivatives, dim = 1))
-
-for (r in regions) {
   data <- rbind(
-    as.quitte(o01_CESderivatives[r, , ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model := "Baseline"),
-    as.quitte(pm_cesdata[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration")
+    as.quitte(p.baseline[r, , ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model := scen),
+    as.quitte(p.calibration[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calib. Target")
   )
   p <- ggplot() +
     geom_line(
@@ -184,7 +170,7 @@ for (r in regions) {
     ) +
     ggtitle(paste0("prices ", r)) +
     scale_color_brewer(palette = "Set1")
+
   print(p)
 }
 ```
-
