@@ -17,19 +17,24 @@ items <- c(
 
 \newpage
 
-#### Area Plots
+#### FE|* Area Plots
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
 ```
 
-#### Line Plots
+#### FE|* Line Plots
+
+```{r}
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
+```
+
+#### FE|Electricity|Share
 
 ```{r}
 showLinePlots(data, "FE|Electricity|Share")
-showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
 ```
 
 ## Buildings Final Energy
@@ -49,19 +54,24 @@ items <- c(
 
 \newpage
 
-#### Area Plots
+#### FE|Buildings|* Area Plots
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
 ```
 
-#### Line Plots
+#### FE|Buildings|* Line Plots
+
+```{r}
+showLinePlots(data, tot)
+walk(items, showLinePlots, data=data)
+```
+
+#### FE|Buildings|Electricity|Share
 
 ```{r}
 showLinePlots(data, "FE|Buildings|Electricity|Share")
-showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
 ```
 
 
@@ -82,20 +92,26 @@ items <- c(
 
 \newpage
 
-#### Area Plots
+#### FE|Industry|* Area Plots
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
 ```
 
-#### Line Plots
+#### FE|Industry|* Line Plots
 
 ```{r}
-showLinePlots(data, "FE|Industry|Electricity|Share")
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
+
+#### FE|Industry|Electricity|Share
+
+```{r}
+showLinePlots(data, "FE|Industry|Electricity|Share")
+```
+
 
 ### FE mix Steel
 ```{r}
@@ -256,7 +272,7 @@ items2 <- c(
 
 \newpage
 
-#### Area Plots
+#### FE|Transport|* Area Plots -- with Bunkers
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
@@ -264,13 +280,19 @@ showAreaAndBarPlots(data, items2, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
 ```
 
-#### Line plots
+#### FE|Transport|* Line Plots -- with Bunkers
 
 ```{r}
-showLinePlots(data, "FE|Transport|Electricity|Share")
 showLinePlots(data, tot)
 walk(items, showLinePlots, data=data)
 ```
+
+#### FE|Transport|Electricity|Share
+
+```{r}
+showLinePlots(data, "FE|Transport|Electricity|Share")
+```
+
 
 ### Basics -- w/o Bunkers
 
@@ -292,7 +314,7 @@ items2 <- c(
 
 \newpage
 
-#### Area Plots
+#### FE|Transport|* Area Plots -- w/o Bunkers
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
@@ -300,7 +322,7 @@ showAreaAndBarPlots(data, items2, tot)
 showAreaAndBarPlots(data, items, tot, fill=TRUE)
 ```
 
-#### Line plots
+#### FE|Transport|* Line Plots -- w/o Bunkers
 
 ```{r}
 showLinePlots(data, tot)
