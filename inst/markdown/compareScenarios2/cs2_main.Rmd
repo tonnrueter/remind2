@@ -204,8 +204,11 @@ dataHist %>%
 data <- bind_rows(dataScen, dataHist)
 rm(dataScen, dataScenNested, dataHist)
 
-# In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>%
+  # In the variable names, replace `$dot$` by `.`.
+  mutate(
+    variable = remind2::substituePlaceholder(variable)) %>%
+  # In the variable names, replace `|+|`, `|++|`, `|+++|`, ... by `|`.
   mutate(
     varplus = as.character(variable),
     variable = remind2::deletePlus(variable)) ->
@@ -294,6 +297,7 @@ data %>%
   mutate(
     value = value / population * conversionFactor,
     variable = paste0(variable, " pCap"),
+    varplus = paste0(varplus, " pCap"),
     unit = newUnit,
     newUnit = NULL, conversionFactor = NULL, population = NULL) ->
   dataPCap
@@ -331,6 +335,7 @@ data %>%
   mutate(
     value = value / gdp * conversionFactor,
     variable = paste0(variable, " pGDP"),
+    varplus = paste0(varplus, " pGDP"),
     unit = newUnit,
     newUnit = NULL, conversionFactor = NULL, gdp = NULL) ->
   dataPGdp
