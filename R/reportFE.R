@@ -1577,7 +1577,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   out <- mbind(out,
     setNames(out[,,'FE|Buildings|+|Electricity (EJ/yr)'] / out[,,'FE|++|Buildings (EJ/yr)'] * 100, 'FE|Buildings|Electricity|Share (%)'),
     setNames(out[,,'FE|Industry|+|Electricity (EJ/yr)']  / out[,,'FE|++|Industry (EJ/yr)']  * 100, 'FE|Industry|Electricity|Share (%)'),
-    setNames(out[,,'FE|Transport|+|Electricity (EJ/yr)'] / out[,,'FE|++|Transport (EJ/yr)'] * 100, 'FE|Transport|Electricity|Share (%)')
+    setNames(out[,,'FE|Transport|+|Electricity (EJ/yr)'] / out[,,'FE|++|Transport (EJ/yr)'] * 100, 'FE|Transport|Electricity|Share (%)'),
+    setNames(out[,,'FE|+|Electricity (EJ/yr)'] / out[,,'FE (EJ/yr)'] * 100, 'FE|Electricity|Share (%)')
   )
   # add per sector fuel share
   out <- mbind(out,

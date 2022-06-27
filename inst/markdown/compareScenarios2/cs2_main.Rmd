@@ -253,7 +253,8 @@ histRefModel <- c(
 # The new variable "OldName pCap" will be available in the plot sections.
 pCapVariables <- tribble(
   ~variable, ~newUnit, ~conversionFactor,
-  "GDP|PPP", "kUS$2005", 1e6,
+  "GDP|PPP", "kUS$2005", 1e6, # creates "GDP|PPP pCap" which is equal to reported variable "GDP|per capita|PPP"
+  "GDP|MER", "kUS$2005", 1e6, # creates "GDP|MER pCap" which is equal to reported variable "GDP|per capita|MER"
   "FE", "GJ/yr", 1e9,
   "FE|CDR", "GJ/yr", 1e9,
   "FE|Transport", "GJ/yr", 1e9,
