@@ -82,6 +82,8 @@ substituePlaceholder <- function(
   return(s)
 }
 
+#'Modify Variable Names
+#'
 #' @param x A path to a mif-file (might be created by confGDX2MIF), a magpie
 #'   object containing reporting, a quitte object, or a character vector or
 #'   factor of variable names.
@@ -92,6 +94,7 @@ substituePlaceholder <- function(
 #' @return If \code{x} is a file path and \code{writeMifSuffix} is \code{NULL},
 #'   a MAgPIE object. If \code{x} is not a file path the result is the object
 #'   \code{x} with replaced variable names.
+#' @importFrom utils write.table
 modifyVariableNames <- function(x, modify, writeMifSuffix = NULL, ...) {
 
   # Does x refer to a file?
