@@ -1,12 +1,12 @@
 ---
-title: "Report Calibration"
+title: "Check against Calibration Data"
 date: "`r format(Sys.Date())`"
 output:
   pdf_document:
     toc: yes
     number_sections: yes
     keep_tex: false
-    toc_depth: 2
+    toc_depth: 3
 geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footnotesep=0.0cm,footskip=0.1cm"
 params:
   gdx: ''
@@ -20,7 +20,7 @@ params:
 knitr::opts_chunk$set(
   echo = FALSE,
   error = TRUE,
-  message = FALSE,
+  message = params$message,
   warning = params$warning,
   fig.width = params$figWidth,
   fig.height = params$figHeight
@@ -45,29 +45,27 @@ library(quitte)
 library(gdx)
 library(ggplot2)
 library(dplyr)
-
-
-min.reldev <- 15
-min.absdev <- 1e-1
 ```
 
 
 ```{r read, include=FALSE}
 
-scen <- readGDX(gdx,"c_expname")[[1]]
+scen <- readGDX(gdx, "c_expname")[[1]]
 
-vars <- c(
-  readGDX(gdx, "ppf", restore_zeros = F),
-  readGDX(gdx, "industry_ue_calibration_target_dyn37", restore_zeros = F)
+vars <- setdiff(
+  c(
+    readGDX(gdx, "ppf", restore_zeros = F),
+    readGDX(gdx, "industry_ue_calibration_target_dyn37", restore_zeros = F)
+  ), "lab"
 )
 
 # baseline run quantities
 q.baseline <- readGDX(gdx, "vm_cesIO", restore_zeros = F)[, , "l"] %>% dimReduce()
 
 # calibration data quantities
-q.calibration <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"]  %>% dimReduce()
-q.baseline <- q.baseline[, , vars]
-q.calibration <- q.calibration[, , vars]
+q.calibration <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"] %>% dimReduce()
+q.baseline <- q.baseline[, , c(vars, "inco")]
+q.calibration <- q.calibration[, , c(vars, "inco")]
 
 # baseline run prices
 p.baseline <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"] %>% dimReduce()
@@ -88,17 +86,20 @@ The following table lists all deviations greater 15 %.
 
 ```{r quantity deviations}
 
+min.reldev <- 15
+min.absdev <- 1e-1
+
 # get deviations
 
 deviations <- left_join(
-  as.quitte(q.baseline) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Baseline"),
-  as.quitte(q.calibration) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calibration"),
+  as.quitte(q.baseline) %>% select(region, variable = all_in, period, value) %>% mutate(model = "Baseline"),
+  as.quitte(q.calibration) %>% select(region, variable = all_in, period, value) %>% mutate(model = "Calibration"),
   by = c("region", "period", "variable"), suffix = c(".baseline", ".calibration")
 ) %>%
   filter(!is.na(value.baseline), !is.na(value.calibration)) %>%
   mutate(
-    abs.deviation := abs(value.calibration - value.baseline),
-    rel.deviation := abs.deviation / value.calibration * 100
+    abs.deviation = abs(value.calibration - value.baseline),
+    rel.deviation = abs.deviation / value.calibration * 100
   ) %>%
   filter(rel.deviation > min.reldev, abs.deviation > min.absdev) %>%
   select(region, variable, period)
@@ -119,20 +120,25 @@ regions <- union(
   union(getItems(p.calibration, dim = 1), getItems(q.calibration, dim = 1))
 )
 
+years <- intersect(getItems(p.baseline, dim = 2), getItems(q.baseline, dim = 2))
+
 for (r in regions) {
 
   # quantity plot
 
+  cat(paste0("### ", r))
+  cat("\n\n\\pagebreak\n")
+
   data <- rbind(
-    as.quitte(q.baseline[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := scen),
-    as.quitte(q.calibration[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calib. Target")
+    as.quitte(q.baseline[r, years, ]) %>% select(region, variable = all_in, period, value) %>% mutate(model = scen),
+    as.quitte(q.calibration[r, years, ]) %>% select(region, variable = all_in, period, value) %>% mutate(model = "Calib. Target")
   )
   p <- ggplot() +
     geom_line(
       data = data,
       aes(x = period, y = value, color = model), size = 1
     ) +
-    facet_wrap("variable", scales = "free", ncol = 6) +
+    facet_wrap("variable", scales = "free_y", ncol = 6) +
     theme(
       strip.text.y = element_blank(),
       axis.title.x = element_blank(),
@@ -151,15 +157,15 @@ for (r in regions) {
   # price plot
 
   data <- rbind(
-    as.quitte(p.baseline[r, , ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model := scen),
-    as.quitte(p.calibration[r, , ]) %>% select(region, variable = all_in, period, value) %>% mutate(model := "Calib. Target")
+    as.quitte(p.baseline[r, years, ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model = scen),
+    as.quitte(p.calibration[r, years, ]) %>% select(region, variable = all_in, period, value) %>% mutate(model = "Calib. Target")
   )
   p <- ggplot() +
     geom_line(
       data = data,
       aes(x = period, y = value, color = model), size = 1
     ) +
-    facet_wrap("variable", scales = "free", ncol = 6) +
+    facet_wrap("variable", scales = "free_y", ncol = 6) +
     theme(
       strip.text.y = element_blank(),
       axis.title.x = element_blank(),
@@ -172,5 +178,6 @@ for (r in regions) {
     scale_color_brewer(palette = "Set1")
 
   print(p)
+  cat("\n\n\\pagebreak\n")
 }
 ```
