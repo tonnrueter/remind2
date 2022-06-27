@@ -50,28 +50,28 @@ library(dplyr)
 
 ```{r read, include=FALSE}
 
-scen <- readGDX(gdx, "c_expname")[[1]]
+scen <- readGDX(params$gdx, "c_expname")[[1]]
 
 vars <- setdiff(
   c(
-    readGDX(gdx, "ppf", restore_zeros = F),
-    readGDX(gdx, "industry_ue_calibration_target_dyn37", restore_zeros = F)
+    readGDX(params$gdx, "ppf", restore_zeros = F),
+    readGDX(params$gdx, "industry_ue_calibration_target_dyn37", restore_zeros = F)
   ), "lab"
 )
 
 # baseline run quantities
-q.baseline <- readGDX(gdx, "vm_cesIO", restore_zeros = F)[, , "l"] %>% dimReduce()
+q.baseline <- readGDX(params$gdx, "vm_cesIO", restore_zeros = F)[, , "l"] %>% dimReduce()
 
 # calibration data quantities
-q.calibration <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"] %>% dimReduce()
+q.calibration <- readGDX(params$gdx, "pm_cesdata", restore_zeros = F)[, , "quantity"] %>% dimReduce()
 q.baseline <- q.baseline[, , c(vars, "inco")]
 q.calibration <- q.calibration[, , c(vars, "inco")]
 
 # baseline run prices
-p.baseline <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"] %>% dimReduce()
+p.baseline <- readGDX(params$gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"] %>% dimReduce()
 
 # calibration data prices
-p.calibration <- readGDX(gdx, "pm_cesdata", restore_zeros = F)[, , "price"] %>% dimReduce()
+p.calibration <- readGDX(params$gdx, "pm_cesdata", restore_zeros = F)[, , "price"] %>% dimReduce()
 p.baseline <- p.baseline[, , vars]
 p.calibration <- p.calibration[, , vars]
 ```
