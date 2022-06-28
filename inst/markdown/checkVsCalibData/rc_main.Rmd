@@ -148,7 +148,9 @@ for (r in regions) {
       legend.direction = "vertical"
     ) +
     ggtitle(paste0("quantities ", r)) +
-    scale_color_brewer(palette = "Set1")
+    scale_color_brewer(palette = "Set1") +
+    expand_limits(y = 0)
+
 
   print(p)
 
@@ -175,7 +177,8 @@ for (r in regions) {
       legend.direction = "vertical"
     ) +
     ggtitle(paste0("prices ", r)) +
-    scale_color_brewer(palette = "Set1")
+    scale_color_brewer(palette = "Set1") +
+    expand_limits(y = 0)
 
   print(p)
   cat("\n\n\\pagebreak\n")
