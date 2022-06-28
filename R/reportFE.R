@@ -73,6 +73,13 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
   vm_demFeSector <- vm_demFeSector[demFemapping]
 
+  #adding transport gas empty object to keep support to transport complex module
+  if(all(grep("fegat", getItems(vm_demFeSector,3)) == 0)){
+    extended_vm_demFeSector <- new.magpie(getItems(vm_demFeSector,1),getItems(vm_demFeSector,2),c(getItems(vm_demFeSector,3),"segabio.fegat.trans.ETS","segafos.fegat.trans.ETS","segasyn.fegat.trans.ETS","segabio.fegat.trans.ES","segafos.fegat.trans.ES","segasyn.fegat.trans.ES","segabio.fegat.trans.other","segafos.fegat.trans.other","segasyn.fegat.trans.other"),fill=0, sets=getSets(vm_demFeSector))
+    extended_vm_demFeSector[,,c(getItems(vm_demFeSector,3))] <- vm_demFeSector[,,c(getItems(vm_demFeSector,3))]
+    vm_demFeSector <- extended_vm_demFeSector
+  }
+
   # only retain combinations of SE, FE, te which actually exist in the model (qm_balFe)
   vm_prodFe <- vm_prodFe[se2fe]
 
