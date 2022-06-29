@@ -217,7 +217,8 @@ data %>%
 # Filter regions.
 if (!is.null(params$reg)) {
   data %>%
-    filter(region %in% params$reg) ->
+    filter(region %in% params$reg) %>% 
+    droplevels() ->
     data
 }
 ```
