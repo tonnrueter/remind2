@@ -119,9 +119,9 @@ readSupplycurveBio <- function(outputdirs,
   #########################################################################
   
   # demand
-  dem_mag <- readAll(gdx_path,.readpar,name="p30_pebiolc_demandmag",asList=FALSE)
+  dem_mag <- readAll(gdx_path, .readpar, name = c("pm_pebiolc_demandmag", "p30_pebiolc_demandmag"), asList=FALSE)
   # price
-  pri_mag <- readAll(gdx_path,.readvar,name="p30_pebiolc_pricemag",asList=FALSE)
+  pri_mag <- readAll(gdx_path, .readvar, name = "p30_pebiolc_pricemag",asList=FALSE)
   
   dem_mag <- add_dimension(dem_mag,dim=3.2,add="sample",nm="1")
   dem_mag <- add_dimension(dem_mag,dim=3.3,add="variable",nm="x")
