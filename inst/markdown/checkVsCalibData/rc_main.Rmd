@@ -68,11 +68,15 @@ q.baseline <- q.baseline[, , c(vars, "inco")]
 q.calibration <- q.calibration[, , c(vars, "inco")]
 
 # baseline run prices
-p.baseline <- readGDX(params$gdx, "o01_CESderivatives", restore_zeros = F)[, , "inco"] %>% dimReduce()
+
+p.baseline <- readGDX(params$gdx, "o01_CESderivatives", restore_zeros = F)
+if (!is.null(p.baseline)) {
+  p.baseline <- p.baseline[, , "inco"] %>% dimReduce()
+  p.baseline <- p.baseline[, , vars]
+}
 
 # calibration data prices
 p.calibration <- readGDX(params$gdx, "pm_cesdata", restore_zeros = F)[, , "price"] %>% dimReduce()
-p.baseline <- p.baseline[, , vars]
 p.calibration <- p.calibration[, , vars]
 ```
 
@@ -115,12 +119,17 @@ kable(as.data.frame(deviations), longtable = TRUE) %>%
 
 ```{r plots, echo = FALSE, results='asis'}
 
-regions <- union(
-  union(getItems(p.baseline, dim = 1), getItems(q.baseline, dim = 1)),
-  union(getItems(p.calibration, dim = 1), getItems(q.calibration, dim = 1))
-)
-
-years <- intersect(getItems(p.baseline, dim = 2), getItems(q.baseline, dim = 2))
+if (!is.null(p.baseline)) {
+  regions <- union(
+    union(getItems(p.baseline, dim = 1), getItems(q.baseline, dim = 1)),
+    union(getItems(p.calibration, dim = 1), getItems(q.calibration, dim = 1))
+  )
+  years <- intersect(getItems(p.baseline, dim = 2), getItems(q.baseline, dim = 2))
+  
+} else {
+  regions <- union(getItems(q.baseline, dim = 1), getItems(q.calibration, dim = 1))
+  years <- getItems(q.baseline, dim = 2)
+}
 
 for (r in regions) {
 
@@ -158,29 +167,31 @@ for (r in regions) {
 
   # price plot
 
-  data <- rbind(
-    as.quitte(p.baseline[r, years, ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model = scen),
-    as.quitte(p.calibration[r, years, ]) %>% select(region, variable = all_in, period, value) %>% mutate(model = "Calib. Target")
-  )
-  p <- ggplot() +
-    geom_line(
-      data = data,
-      aes(x = period, y = value, color = model), size = 1
-    ) +
-    facet_wrap("variable", scales = "free_y", ncol = 6) +
-    theme(
-      strip.text.y = element_blank(),
-      axis.title.x = element_blank(),
-      axis.title.y = element_blank(),
-      legend.title = element_blank(),
-      legend.position = "right",
-      legend.direction = "vertical"
-    ) +
-    ggtitle(paste0("prices ", r)) +
-    scale_color_brewer(palette = "Set1") +
-    expand_limits(y = 0)
+  if (!is.null(p.baseline)) {
+    data <- rbind(
+      as.quitte(p.baseline[r, years, ]) %>% select(region, variable = all_in1, period, value) %>% mutate(model = scen),
+      as.quitte(p.calibration[r, years, ]) %>% select(region, variable = all_in, period, value) %>% mutate(model = "Calib. Target")
+    )
+    p <- ggplot() +
+      geom_line(
+        data = data,
+        aes(x = period, y = value, color = model), size = 1
+      ) +
+      facet_wrap("variable", scales = "free_y", ncol = 6) +
+      theme(
+        strip.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "right",
+        legend.direction = "vertical"
+      ) +
+      ggtitle(paste0("prices ", r)) +
+      scale_color_brewer(palette = "Set1") +
+      expand_limits(y = 0)
 
-  print(p)
-  cat("\n\n\\pagebreak\n")
+    print(p)
+    cat("\n\n\\pagebreak\n")
+  }
 }
 ```
