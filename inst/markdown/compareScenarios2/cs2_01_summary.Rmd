@@ -37,6 +37,12 @@ items <- c(
 showAreaAndBarPlots(data, items, tot)
 ```
 
+### GHG pCap by sector
+
+```{r}
+showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"))
+```
+
 ## CO2 by sector (w/ gross emissions, excl. BECCS)
 
 ```{r CO2 by sector}
@@ -55,6 +61,15 @@ items <- c(
   "Emi|CO2|CDR|EW")
 showAreaAndBarPlots(data, items, tot)
 ```
+
+###  CO2 pCap by sector
+
+```{r}
+showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"))
+```
+
+
+###  CO2 cumulated by sector
 
 ```{r CO2 by sector cumulated}
 tot <- "Emi|CO2|Cumulated"

@@ -281,7 +281,29 @@ pCapVariables <- tribble(
   "ES|Transport|Freight|Road|Electric", "tkm/yr", 1e9,
   "ES|Transport|Freight|Road|FCEV", "tkm/yr", 1e9,
   "ES|Transport|Freight|Road|Gases", "tkm/yr", 1e9,
-  "ES|Transport|Freight|Road|Liquids", "tkm/yr", 1e9)
+  "ES|Transport|Freight|Road|Liquids", "tkm/yr", 1e9,
+  "Emi|GHG", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Gross|Energy|Supply|Electricity", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Gross|Energy|Supply|Non-electric", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Energy|Demand|Transport", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Energy|Demand|Buildings", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Gross|Energy|Demand|Industry", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Industrial Processes", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Agriculture", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Land-Use Change", "t CO2eq/yr", 1e6,
+  "Emi|GHG|Waste", "t CO2eq/yr", 1e6,
+  "Emi|CO2|CDR|BECCS", "t CO2eq/yr", 1e6,
+  "Emi|CO2|CDR|Industry CCS|Synthetic Fuels", "t CO2eq/yr", 1e6,
+  "Emi|CO2|CDR|DACCS", "t CO2eq/yr", 1e6,
+  "Emi|CO2|CDR|EW", "t CO2eq/yr", 1e6,
+  "Emi|CO2", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Land-Use Change", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Industrial Processes", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Energy|Demand|Transport", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Gross|Energy|Demand|Industry", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Energy|Demand|Buildings", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Gross|Energy|Supply|Non-electric", "t CO2eq/yr", 1e6,
+  "Emi|CO2|Gross|Energy|Supply|Electricity", "t CO2eq/yr", 1e6)
 
 data %>%
   filter(variable == "Population") %>%
