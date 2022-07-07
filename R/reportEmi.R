@@ -1319,7 +1319,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                # extraction CH4 emissions in MtCH4
                setNames(dimSums(mselect(EmiMAC, sector = "extraction", gas = "ch4"), dim = 3),
                           "Emi|CH4|+|Extraction (Mt CH4/yr)"),
-               # extraction CH4 emissions in MtCH4
+               # Agriculture CH4 emissions in MtCH4
                setNames(dimSums(mselect(EmiMAC, sector = "Agriculture", gas = "ch4"), dim = 3),
                           "Emi|CH4|+|Agriculture (Mt CH4/yr)"),
                # waste CH4 emissions in MtCH4
@@ -1332,7 +1332,39 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3),
                           "Emi|CH4|+|Energy Supply (Mt CH4/yr)"),
 
+               # CH4 Agriculture sub-categories
+               # Agriculture Rice CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4rice"),
+                          "Emi|CH4|Agriculture|+|Rice (Mt CH4/yr)"),
+               # Agriculture Enteric fermentation CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4animals"),
+                          "Emi|CH4|Agriculture|+|Enteric fermentation (Mt CH4/yr)"),
+               # Agriculture Animal waste management CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4anmlwst"),
+                          "Emi|CH4|Agriculture|+|Animal waste management (Mt CH4/yr)"),
+               # Agriculture Waste Burning CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4agwaste"),
+                          "Emi|CH4|Agriculture|+|Waste Burning (Mt CH4/yr)"),
 
+               # CH4 land-use change sub-categories
+               # land-use change Forest Burning CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4forest"),
+                          "Emi|CH4|Land-Use Change|+|Forest Burning (Mt CH4/yr)"),
+               # land-use change Savanna Burning CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4savan"),
+                          "Emi|CH4|Land-Use Change|+|Savanna Burning (Mt CH4/yr)")
+  )
+
+  if ("ch4peatland" %in% mac.map$all_enty) {
+
+    out <- mbind(out,
+               # land-use change Peatland CH4 emissions in MtCH4
+               setNames(mselect(EmiMAC, macsector = "ch4peatland"),
+                          "Emi|CH4|Land-Use Change|+|Peatland (Mt CH4/yr)")
+    )
+  }
+
+  out <- mbind(out,
                # N2O Emissions
                # total N2O emissions
                setNames((dimSums(mselect(EmiMAC, gas = "n2o"), dim = 3)
@@ -1355,8 +1387,49 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Emi|N2O|+|Industry (kt N2O/yr)"),
                # N2O emissions from energy system transformations in kt N2O
                setNames(dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3) * MtN2_to_ktN2O,
-                          "Emi|N2O|+|Energy Supply (kt N2O/yr)")
+                          "Emi|N2O|+|Energy Supply (kt N2O/yr)"),
+
+               # N2O agricultural sub-categories
+               # Agriculture Inorganic Fertilizer N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2ofertin") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Inorganic Fertilizers (kt N2O/yr)"),
+               # Agriculture Decay of Crop Residues N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2ofertcr") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Decay of Crop Residues (kt N2O/yr)"),
+               # Agriculture Soil Organic Matter Loss N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2ofertsom") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Soil Organic Matter Loss (kt N2O/yr)"),
+               # Agriculture Manure applied to Croplands N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2oanwstc") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Manure applied to Croplands (kt N2O/yr)"),
+               # Agriculture Animal Waste Management N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2oanwstm") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Animal Waste Management (kt N2O/yr)"),
+               # Agriculture Pasture N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2oanwstp") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Pasture (kt N2O/yr)"),
+               # Agriculture Burning of Crop Residues N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2oagwaste") * MtN2_to_ktN2O,
+                          "Emi|N2O|Agriculture|+|Waste Burning (kt N2O/yr)"),
+
+               # N2O land-use change sub-categories
+               # land-use change Forest Burning N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2oforest") * MtN2_to_ktN2O,
+                          "Emi|N2O|Land-Use Change|+|Forest Burning (kt N2O/yr)"),
+               # land-use change Savanna Burning N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2osavan") * MtN2_to_ktN2O,
+                          "Emi|N2O|Land-Use Change|+|Savanna Burning (kt N2O/yr)")
   )
+
+  if ("n2opeatland" %in% mac.map$all_enty) {
+    out <- mbind(out,
+               # land-use change Peatland N2O emissions in kt N2O
+               setNames(mselect(EmiMAC, macsector = "n2opeatland") * MtN2_to_ktN2O,
+                         "Emi|N2O|Land-Use Change|+|Peatland (kt N2O/yr)")
+    )
+  }
+
+
 
   # CH4 and N2O Emissions by sector in MtCO2eq
 
