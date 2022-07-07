@@ -1352,12 +1352,19 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Emi|CH4|Land-Use Change|+|Forest Burning (Mt CH4/yr)"),
                # land-use change Savanna Burning CH4 emissions in MtCH4
                setNames(mselect(EmiMAC, macsector = "ch4savan"),
-                          "Emi|CH4|Land-Use Change|+|Savanna Burning (Mt CH4/yr)"),
+                          "Emi|CH4|Land-Use Change|+|Savanna Burning (Mt CH4/yr)")
+  )
+
+  if ("ch4peatland" %in% mac.map$all_enty) {
+
+    out <- mbind(out,
                # land-use change Peatland CH4 emissions in MtCH4
                setNames(mselect(EmiMAC, macsector = "ch4peatland"),
-                          "Emi|CH4|Land-Use Change|+|Peatland (Mt CH4/yr)"),
+                          "Emi|CH4|Land-Use Change|+|Peatland (Mt CH4/yr)")
+    )
+  }
 
-
+  out <- mbind(out,
                # N2O Emissions
                # total N2O emissions
                setNames((dimSums(mselect(EmiMAC, gas = "n2o"), dim = 3)
@@ -1411,12 +1418,18 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Emi|N2O|Land-Use Change|+|Forest Burning (kt N2O/yr)"),
                # land-use change Savanna Burning N2O emissions in kt N2O
                setNames(mselect(EmiMAC, macsector = "n2osavan") * MtN2_to_ktN2O,
-                          "Emi|N2O|Land-Use Change|+|Savanna Burning (kt N2O/yr)"),
+                          "Emi|N2O|Land-Use Change|+|Savanna Burning (kt N2O/yr)")
+  )
+
+  if ("n2opeatland" %in% mac.map$all_enty) {
+    out <- mbind(out,
                # land-use change Peatland N2O emissions in kt N2O
                setNames(mselect(EmiMAC, macsector = "n2opeatland") * MtN2_to_ktN2O,
-                          "Emi|N2O|Land-Use Change|+|Peatland (kt N2O/yr)")
+                         "Emi|N2O|Land-Use Change|+|Peatland (kt N2O/yr)")
+    )
+  }
 
-  )
+
 
   # CH4 and N2O Emissions by sector in MtCO2eq
 
