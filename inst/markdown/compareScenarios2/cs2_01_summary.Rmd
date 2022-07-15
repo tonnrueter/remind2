@@ -6,8 +6,10 @@
 data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
-    stats = list("Peak (Period)" = function(v, p) sprintf("%.2f (%d)", max(v), p[which.max(v)]))
+    stats = list("Peak (Period)" = function(v, p) 
+      sprintf("%.1f (%d)", max(v)/1000, p[which.max(v)]))
   ) %>%
+  mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
 ```
 
