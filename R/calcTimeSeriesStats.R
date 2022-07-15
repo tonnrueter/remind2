@@ -43,23 +43,21 @@ calcTimeSeriesStats <- function(
   stopifnot(length(from) == 1 && length(to) == 1)
 
   idCols <- c("model", "scenario", "region", "variable")
-  data %>%
-    filter(.data$variable %in% .env$var, .data$period >= .env$from, .data$period <= .env$to) ->
-    d
+  d <- data %>%
+    filter(.data$variable %in% .env$var, .data$period >= .env$from, .data$period <= .env$to)
   if (nrow(d) == 0) {
     warning("No data after filtering for `var`, `from`, and `to`.")
   }
-  d %>% distinct(across(all_of(.env$idCols)), .data$unit) -> unit
+  unit <- d %>% distinct(across(all_of(.env$idCols)), .data$unit)
 
   res <- NULL
   for (i in seq_along(stats)) {
-    d %>%
+    res <- d %>%
       group_by(across(all_of(.env$idCols))) %>%
       summarize(value = stats[[i]](.data$value, .data$period), .groups = "drop") %>%
       mutate(statistic = names(stats)[i]) %>%
       left_join(unit, by = idCols) %>%
-      bind_rows(res) ->
-      res
+      bind_rows(res)
   }
   return(res)
 }

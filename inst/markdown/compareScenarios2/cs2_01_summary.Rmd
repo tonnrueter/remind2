@@ -3,29 +3,29 @@
 ## Summary Statistics
 
 ```{r}
-data %>% 
+data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
     stats = list("Peak (Period)" = function(v, p) sprintf("%.2f (%d)", max(v), p[which.max(v)]))
-  ) %>% 
+  ) %>%
   showStatsTable()
 ```
 
 ```{r}
-data %>% 
+data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
     stats = list("Net 0 Period" = function(v, p) p[which(v <= 0)[1]])
-  )  %>% 
+  )  %>%
   showStatsTable()
 ```
 
 ```{r}
-data %>% 
+data %>%
   calcTimeSeriesStats(
     "Temperature|Global Mean",
     stats = list("Peak (Period)" = function(v, p) sprintf("%.2f (%d)", max(v), p[which.max(v)]))
-  ) %>% 
+  ) %>%
   showStatsTable()
 ```
 
@@ -143,31 +143,29 @@ showAreaAndBarPlots(data, items)
 ## FE per capita (by sector, time domain, line graph)
 
 ```{r FE per capita (by sector, time domain, line graph)}
-data %>% 
+dIea <- data %>%
   # To make the plots less crowded, show only IEA historical data.
-  filter(scenario != "historical" | model == "IEA") -> 
-  dIea
+  filter(scenario != "historical" | model == "IEA")
 showMultiLinePlots(dIea, "FE pCap")
 items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-showMultiLinePlots(dIea, items, scales="fixed")
+showMultiLinePlots(dIea, items, scales = "fixed")
 ```
 
 ## FE per capita (by sector, GDP)
 
 ```{r FE per capita by sector (GDP domain)}
-data %>% 
+dIea <- data %>%
   # To make the plots less crowded, show only IEA historical data.
-  filter(scenario != "historical" | model == "IEA") -> 
-  dIea
+  filter(scenario != "historical" | model == "IEA")
 showMultiLinePlotsByVariable(dIea, "FE pCap", "GDP|PPP pCap")
 items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales="fixed")
+showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 ```
 
 ## FE by carrier
@@ -253,12 +251,12 @@ items <- c(
 
 if ("SE|Electricity|Wind|Offshore" %in% levels(data$variable)) {
   items <- c(
-    items, 
+    items,
     "SE|Electricity|Wind|Onshore",
     "SE|Electricity|Wind|Offshore")
 } else {
   items <- c(
-    items, 
+    items,
     "SE|Electricity|Wind")
 }
 
@@ -321,10 +319,10 @@ if (all(items %in% data$variable)) {
   ind_tax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
   sup_tax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
   # only create plots if a tax is unequal to the average co2 tax
-  if (! identical(bui_tax, avg_tax) |
-      ! identical(tra_tax, avg_tax) |
-      ! identical(ind_tax, avg_tax) |
-      ! identical(sup_tax, avg_tax)
+  if (!identical(bui_tax, avg_tax) ||
+      !identical(tra_tax, avg_tax) ||
+      !identical(ind_tax, avg_tax) ||
+      !identical(sup_tax, avg_tax)
       ) {
     showLinePlots(data, "Price|Carbon|Demand|Buildings")
     showLinePlots(data, "Price|Carbon|Demand|Transport")

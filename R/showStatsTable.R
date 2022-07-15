@@ -34,12 +34,11 @@ showStatsTable <- function(statsData) {
     return(NULL)
   }
 
-  statsData %>%
+  p <- statsData %>%
     filter(.data$model == "REMIND") %>%
     select(.data$scenario, .data$region, .data$value) %>%
     arrange(.data$region != "World", .data$region)  %>%
-    pivot_wider(names_from = .data$scenario, values_from = .data$value) ->
-    p
+    pivot_wider(names_from = .data$scenario, values_from = .data$value)
 
   firstColumnWidth <- 20
   pageTextWidth <- 287
@@ -65,4 +64,3 @@ showStatsTable <- function(statsData) {
       2:ncol(p),
       width = paste0((pageTextWidth - firstColumnWidth) / ncol(p) - cellMargin, "mm"))
 }
-
