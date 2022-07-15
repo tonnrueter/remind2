@@ -19,6 +19,7 @@ Imports:
     ggplot2,
     highcharter,
     iamc,
+    kableExtra,
     knitr,
     lubridate,
     lucode2,
@@ -51,7 +52,6 @@ Suggests:
     covr,
     flexdashboard,
     gridExtra,
-    kableExtra,
     sr15data,
     testthat,
     tidyverse
