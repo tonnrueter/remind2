@@ -1,37 +1,5 @@
 # Summary
 
-## Summary Statistics
-
-```{r}
-data %>%
-  calcTimeSeriesStats(
-    "Emi|CO2",
-    stats = list("Peak (Period)" = function(v, p) 
-      sprintf("%.1f (%d)", max(v)/1000, p[which.max(v)]))
-  ) %>%
-  mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
-  showStatsTable()
-```
-
-```{r}
-data %>%
-  calcTimeSeriesStats(
-    "Emi|CO2",
-    stats = list("Net 0 Period" = function(v, p) p[which(v <= 0)[1]])
-  )  %>%
-  showStatsTable()
-```
-
-```{r}
-data %>%
-  calcTimeSeriesStats(
-    "Temperature|Global Mean",
-    stats = list("Peak (Period)" = function(v, p) sprintf("%.2f (%d)", max(v), p[which.max(v)]))
-  ) %>%
-  showStatsTable()
-```
-
-\newpage
 
 
 ## GHG Emissions
@@ -354,4 +322,36 @@ showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumpt
 
 ```{r Policy Cost-GDP Loss}
 showLinePlots(data, "Policy Cost|GDP Loss")
+```
+
+
+## Times 
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Emi|CO2",
+    stats = list("Peak Period" = function(v, p) 
+      sprintf("%d (%.1f)", p[which.max(v)], max(v)/1000))
+  ) %>%
+  mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
+  showStatsTable()
+```
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Emi|CO2",
+    stats = list("Net 0 Period" = function(v, p) p[which(v <= 0)[1]])
+  )  %>%
+  showStatsTable()
+```
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Temperature|Global Mean",
+    stats = list("Peak Period" = function(v, p) sprintf("%d (%.2f)", p[which.max(v)], max(v)))
+  ) %>%
+  showStatsTable()
 ```
