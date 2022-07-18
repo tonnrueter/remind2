@@ -4,7 +4,7 @@
 \alias{calcTimeSeriesStats}
 \title{Calculate Statistics of Time Series}
 \usage{
-calcTimeSeriesStats(data, var, stats, from = -Inf, to = 2100)
+calcTimeSeriesStats(data, var, stats, from = -Inf, to = Inf)
 }
 \arguments{
 \item{data}{A quitte object.}
