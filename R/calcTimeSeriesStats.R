@@ -32,7 +32,7 @@ calcTimeSeriesStats <- function(
     var,
     stats,
     from = -Inf,
-    to = 2100) {
+    to = Inf) {
 
   stopifnot(quitte::is.quitte(data))
   stopifnot(is.list(stats))

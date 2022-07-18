@@ -324,15 +324,20 @@ showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumpt
 showLinePlots(data, "Policy Cost|GDP Loss")
 ```
 
-
 ## Tables of Significant Periods 
+
+Every statistic in the following tables, e.g., $\max$, $\min$, is taken over the REMIND model outputs only (no historical data).
+
+\newpage
+
+### Emi|CO2: Max, Min, and Net 0
 
 ```{r}
 data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
-    stats = list("Peak Period" = function(v, p) 
-      sprintf("%d (%.1f)", p[which.max(v)], max(v)/1000))
+    stats = list("Max Period (Max Value)" = function(v, p) 
+      sprintf("%d (%5.2f)", p[which.max(v)], max(v)/1000))
   ) %>%
   mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
@@ -342,16 +347,72 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
-    stats = list("Net 0 Period" = function(v, p) p[which(v <= 0)[1]])
-  )  %>%
+    stats = list("Min Period (Min Value)" = function(v, p) 
+      sprintf("%d (%5.2f)", p[which.min(v)], min(v)/1000))
+  ) %>%
+  mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
 ```
 
 ```{r}
 data %>%
   calcTimeSeriesStats(
-    "Temperature|Global Mean",
-    stats = list("Peak Period" = function(v, p) sprintf("%d (%.2f)", p[which.max(v)], max(v)))
+    "Emi|CO2",
+    stats = list("Net 0 Period, i.e., first period with < 2\\% of 2005 value" = function(v, p) 
+      p[which(v <= v[p==2005]*0.02)[1]])
   ) %>%
   showStatsTable()
 ```
+
+\newpage
+
+### Emi|GHG: Max, Min, and Net 0
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Emi|GHG",
+    stats = list("Max Period (Max Value)" = function(v, p) 
+      sprintf("%d (%5.2f)", p[which.max(v)], max(v)/1000))
+  ) %>%
+  mutate(unit = "Gt CO2eq/yr") %>% # divided by 1000 and change unit form Mt to Gt
+  showStatsTable()
+```
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Emi|GHG",
+    stats = list("Min Period (Min Value)" = function(v, p) 
+      sprintf("%d (%5.2f)", p[which.min(v)], min(v)/1000))
+  ) %>%
+  mutate(unit = "Gt CO2eq/yr") %>% # divided by 1000 and change unit form Mt to Gt
+  showStatsTable()
+```
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Emi|GHG",
+    stats = list("Net 0 Period, i.e., first period with < 2\\% of 2005 value" = function(v, p) 
+      p[which(v <= v[p==2005]*0.02)[1]])
+  ) %>%
+  showStatsTable()
+```
+
+\newpage
+
+
+### Temperature|Global Mean: Max
+
+```{r}
+data %>%
+  calcTimeSeriesStats(
+    "Temperature|Global Mean",
+    stats = list("Max Period (Max Value)" = function(v, p) sprintf("%d (%.2f)", p[which.max(v)], max(v)))
+  ) %>%
+  showStatsTable()
+```
+
+\newpage
+
