@@ -26,6 +26,9 @@
 #' @export
 showStatsTable <- function(statsData) {
 
+  if (!requireNamespace("kableExtra", quietly = TRUE))
+    stop("Package \"kableExtra\" must be installed to use showStatsTable().", call. = FALSE)
+
   stopifnot(is.data.frame(statsData))
   stopifnot(c("model", "scenario", "region", "value", "variable", "unit", "statistic") %in% colnames(statsData))
 
