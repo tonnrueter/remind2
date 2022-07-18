@@ -325,7 +325,7 @@ showLinePlots(data, "Policy Cost|GDP Loss")
 ```
 
 
-## Times 
+## Tables of Significant Periods 
 
 ```{r}
 data %>%
