@@ -86,6 +86,7 @@ library(tidyverse)
 library(kableExtra)
 library(quitte)
 library(mip)
+library(remind2)
 ```
 
 
@@ -207,11 +208,11 @@ rm(dataScen, dataScenNested, dataHist)
 data %>%
   # In the variable names, replace `$dot$` by `.`.
   mutate(
-    variable = remind2::substituePlaceholder(variable)) %>%
+    variable = substituePlaceholder(variable)) %>%
   # In the variable names, replace `|+|`, `|++|`, `|+++|`, ... by `|`.
   mutate(
     varplus = as.character(variable),
-    variable = remind2::deletePlus(variable)) ->
+    variable = deletePlus(variable)) ->
   data
 
 # Filter regions.
