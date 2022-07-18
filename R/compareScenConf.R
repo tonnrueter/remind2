@@ -5,7 +5,8 @@
 #' @param configfile path to configfile. If empty, uses './default.cfg'
 #' @param row.names column in csv used for row.names. Use NULL for mapping files
 #' @param renamedCols vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))
-#' @param renamedRows vector with old and new row names such as c("old3" = "new3", "old4" = "new4"))
+#' @param renamedRows vector with old and new row names such as c("old3" = "new3", "old3" = "new4", "old5" = "new5"))
+#'        the "old" name can also remain in the new file, if you generated a variant
 #' @param printit boolean switch (default: TRUE) whether function prints its output
 #' @author Oliver Richters
 #' @examples
@@ -77,10 +78,8 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
 
   # rename columns and rows in old file to new names after some checks
   allwarnings <- checkRowsCols(settings1, settings2, renamedCols, renamedRows)
-  names(settings1)[names(settings1) %in% names(renamedCols)] <-
-    renamedCols[intersect(names(renamedCols), unlist(names(settings1)))]
-  rownames(settings1)[rownames(settings1) %in% names(renamedRows)] <-
-    renamedRows[intersect(names(renamedRows), unlist(rownames(settings1)))]
+  for (colname in intersect(names(settings1), names(renamedCols)))
+    names(settings1)[names(settings1) == colname] <- renamedCols[colname]
 
   # print comparison
   scenarios <- unique(c(rownames(settings2), rownames(settings1)))
@@ -98,20 +97,21 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
   settings1[, addedCols] <- ""
   m <- c(m, "", "Changes in the scenarios:")
   for (s in scenarios) {
-    if (s %in% intersect(rownames(settings1), rownames(settings2))) {
+    if (s %in% intersect(c(rownames(settings1), renamedRows), rownames(settings2))) {
       # scenario name, oldname -> newname if renamed
-      if (! all(identical(toString(settings1[s, jointCols]), toString(settings2[s, jointCols])))) {
-        m <- c(m, paste0("~ ", ifelse(s %in% renamedRows, paste(names(which(renamedRows == s)), "-> "), ""), s, ":"))
+      sold <- if (s %in% renamedRows) names(renamedRows[s == renamedRows]) else s
+      if (! all(identical(toString(settings1[sold, jointCols]), toString(settings2[s, jointCols])))) {
+        m <- c(m, paste0("~ ", ifelse(s %in% renamedRows, paste(sold, "-> "), ""), s, ":"))
         for (c in jointCols) {
           # print only if different, if description was changed print only this fact
-          if (! identical(toString(settings1[s, c]), toString(settings2[s, c]))) {
+          if (! identical(toString(settings1[sold, c]), toString(settings2[s, c]))) {
             m <- c(m, paste0("    ", ifelse(c %in% renamedCols, paste(names(which(renamedCols == c)), "-> "), ""), c,
-                   ": ", ifelse(c == "description", "was changed", paste0(settings1[s, c], " -> ", settings2[s, c])),
+                   ": ", ifelse(c == "description", "was changed", paste0(settings1[sold, c], " -> ", settings2[s, c])),
                    ifelse(isFALSE(configfile) || is.null(cfg$gms[[c]]), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
           }
         }
       }
-    } else {
+    } else if (! s %in% names(renamedRows)) {
       m <- c(m, ifelse(s %in% rownames(settings1), paste0("- ", s, " was deleted."), paste0("+ ", s, " was added.")))
     }
   }
@@ -145,10 +145,6 @@ checkRowsCols <- function(settings1, settings2, renamedCols, renamedRows) {
   if (any(! names(renamedRows) %in% rownames(settings1))) {
     allwarnings <- c(allwarnings, "newRowNotIn1" = paste(
       "Old row name(s) not present in first file:", setdiff(names(renamedRows), rownames(settings1))))
-  }
-  if (any(names(renamedRows) %in% rownames(settings2))) {
-    allwarnings <- c(allwarnings, "oldRowAlsoIn2" = paste(
-      "Old row name(s) also present in second file:", setdiff(names(renamedRows), rownames(settings2))))
   }
   if (any(! renamedRows %in% rownames(settings2))) {
     allwarnings <- c(allwarnings, "newRowNotIn2" = paste(

@@ -23,7 +23,8 @@ compareScenConf(
 
 \item{renamedCols}{vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))}
 
-\item{renamedRows}{vector with old and new row names such as c("old3" = "new3", "old4" = "new4"))}
+\item{renamedRows}{vector with old and new row names such as c("old3" = "new3", "old3" = "new4", "old5" = "new5"))
+the "old" name can also remain in the new file, if you generated a variant}
 
 \item{printit}{boolean switch (default: TRUE) whether function prints its output}
 }
