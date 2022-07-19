@@ -41,7 +41,7 @@ if (exists("cfgTopLevel") && !is.null(cfgTopLevel)) {
     cat("### ", as.character(fileReference$newScenarioName[i]), "\n\n")
 
     description <-
-    cfgTopLevel %>%
+      cfgTopLevel %>%
       filter(fileid == i, name == "description") %>%
       pull(value) %>%
       pluck(1)
