@@ -23,7 +23,7 @@ items <- c(
   "Emi|GHG|Industrial Processes",
   "Emi|GHG|Agriculture",
   "Emi|GHG|Waste")
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 
@@ -133,24 +133,24 @@ showLinePlots(data, items)
 ### Electricity and Heat
 
 ```{r}
-# UNFCCC has "EMI|CO2|Energy|Demand|Electricity and Heat", 
+# UNFCCC has "EMI|CO2|Energy|Demand|Electricity and Heat",
 # CEDS and REMIND only separate
 # manually added for now
 # TODO: move to mrremind!
 
 item <- "Emi|CO2|Energy|Supply|Electricity and Heat"
 summands <- c(
-  "Emi|CO2|Energy|Supply|Electricity", 
+  "Emi|CO2|Energy|Supply|Electricity",
   "Emi|CO2|Energy|Supply|Heat")
-data %>% 
-  filter(variable %in% summands) %>% 
-  pivot_wider(names_from=variable, values_from=value) %>% 
+newRows <-
+  data %>%
+  filter(variable %in% summands) %>%
+  pivot_wider(names_from = variable, values_from = value) %>%
   rowwise() %>%
-  mutate(!!item := sum(c_across(all_of(summands)))) %>% 
-  ungroup() %>% 
-  select(!all_of(summands)) %>% 
-  pivot_longer(all_of(item), names_to="variable", values_to="value") ->
-  newRows
+  mutate(!!item := sum(c_across(all_of(summands)))) %>%
+  ungroup() %>%
+  select(!all_of(summands)) %>%
+  pivot_longer(all_of(item), names_to = "variable", values_to = "value")
 showLinePlots(bind_rows(data, newRows) %>% as.quitte(), item)
 ```
 
@@ -188,23 +188,23 @@ showLinePlots(data, items)
 ### Industry with Industrial Processes
 
 ```{r}
-# Emi|CO2|Industry = Emi|CO2|Energy|Demand|Industry + Emi|CO2|Industrial Processes 
+# Emi|CO2|Industry = Emi|CO2|Energy|Demand|Industry + Emi|CO2|Industrial Processes
 # (new REMIND reporting variable coming soon, current solution is terrible)
 # TODO: Switch to new variable as soon as it is also available in historical data.
 item <- "Emi|CO2|Industry"
 summands <- c(
-  "Emi|CO2|Energy|Demand|Industry", 
+  "Emi|CO2|Energy|Demand|Industry",
   "Emi|CO2|Industrial Processes")
-data %>% 
-  filter(variable %in% summands) %>% 
-  pivot_wider(names_from=variable, values_from=value) %>% 
+newRows <-
+  data %>%
+  filter(variable %in% summands) %>%
+  pivot_wider(names_from = variable, values_from = value) %>%
   rowwise() %>%
-  mutate(!!item := sum(c_across(all_of(summands)))) %>% 
-  ungroup() %>% 
-  select(!all_of(summands)) %>% 
-  pivot_longer(all_of(item), names_to="variable", values_to="value") ->
-  newRows
-showLinePlots(bind_rows(data, newRows) %>% as.quitte(), item)                           
+  mutate(!!item := sum(c_across(all_of(summands)))) %>%
+  ungroup() %>%
+  select(!all_of(summands)) %>%
+  pivot_longer(all_of(item), names_to = "variable", values_to = "value")
+showLinePlots(bind_rows(data, newRows) %>% as.quitte(), item)
 ```
 
 
@@ -281,36 +281,36 @@ showAreaAndBarPlots(data, items, tot)
 
 
 ```{r}
-levels(data$variable) %>% 
-  str_subset(fixed("Emi|CO2|CDR|")) ->
-  cdrVars
-walk(cdrVars, showLinePlots, data=data)
+cdrVars <-
+  levels(data$variable) %>%
+  str_subset(fixed("Emi|CO2|CDR|"))
+walk(cdrVars, showLinePlots, data = data)
 ```
 
 
 ### Cumulated Emissions
 
 ```{r}
-data %>% 
-  filter(variable == "Emi|CO2|Cumulated") ->
-  d
+d <-
+  data %>%
+  filter(variable == "Emi|CO2|Cumulated")
 # subtract 2010 values
-d %>% 
+d <-
+  d %>%
   left_join(
     d %>% filter(period == 2010),
     by = c("model", "scenario", "region", "variable"),
-    suffix = c("", "2010")) %>% 
-  mutate(value = value - value2010) ->
-  d
+    suffix = c("", "2010")) %>%
+  mutate(value = value - value2010)
 showLinePlots(d)
 ```
 
 
 ```{r}
-levels(data$variable) %>% 
-  str_subset(fixed("Emi|CO2|Cumulated|CDR|")) ->
-  cdr_vars
-walk(cdr_vars, showLinePlots, data=data)
+cdrVars <-
+  levels(data$variable) %>%
+  str_subset(fixed("Emi|CO2|Cumulated|CDR|"))
+walk(cdrVars, showLinePlots, data = data)
 ```
 
 ```{r}
@@ -421,7 +421,7 @@ showAreaAndBarPlots(data, items, tot)
 ### F-Gases
 
 ```{r}
-showLinePlots(data, "Emi|GHG|F-Gases")
+showLinePlots(data, "Emi|GHG|FALSE-Gases")
 ```
 
 ## Industry Subsector Emissions
@@ -433,5 +433,5 @@ items <- c(
   "Emi|CO2|Energy|Demand|Industry|Chemicals",
   "Emi|CO2|Energy|Demand|Industry|Other Industry")
 showAreaAndBarPlots(data, items)
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```

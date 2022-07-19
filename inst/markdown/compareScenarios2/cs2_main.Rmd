@@ -57,9 +57,9 @@ if (interactive()) {
   fn <- ".rs.setNotebookGraphicsOption"
   envToolsRstudio <- as.environment("tools:rstudio")
   if (!exists(".old.rs.setNotebookGraphicsOption"))
-    old.rs.setNotebookGraphicsOption <- envToolsRstudio[[fn]]
+    oldRsSetNotebookGraphicsOption <- envToolsRstudio[[fn]]
   insertExprAtStartOfFun(
-    old.rs.setNotebookGraphicsOption,
+    oldRsSetNotebookGraphicsOption,
     fn,
     envToolsRstudio,
     rlang::expr({
@@ -80,13 +80,13 @@ if (interactive()) {
 # may cause "Undefined control sequence" errors in LaTeX.
 try(unloadNamespace("kableExtra"), silent = TRUE)
 
-library(gridExtra)
-options(tidyverse.quiet = TRUE)
-library(tidyverse)
-library(kableExtra)
-library(quitte)
-library(mip)
-library(remind2)
+library(gridExtra) # nolint
+options(tidyverse.quiet = TRUE) # nolint
+library(tidyverse) # nolint
+library(kableExtra) # nolint
+library(quitte) # nolint
+library(mip) # nolint
+library(remind2) # nolint
 ```
 
 
@@ -97,28 +97,28 @@ if (!is.null(params$cfgScen)) {
     load(path, envir = env)
     return(env$cfg)
   }
-  tibble(path = unname(params$cfgScen)) %>%
+  cfgs <-
+    tibble(path = unname(params$cfgScen)) %>%
     rowid_to_column("fileid") %>%
     mutate(cfg = map(path, loadCfg)) %>%
     unnest(cfg) %>%
     mutate(
       name = names(cfg),
       value = unname(cfg),
-      cfg = NULL) ->
-    cfgs
-  cfgs %>%
+      cfg = NULL)
+  cfgGms <-
+    cfgs %>%
     filter(name == "gms") %>%
     unnest(value) %>%
-    mutate(name = names(value)) ->
-    cfgGms
-  cfgs %>%
-    filter(name != "gms") ->
-    cfgTopLevel
+    mutate(name = names(value))
+  cfgTopLevel <-
+    cfgs %>%
+    filter(name != "gms")
   rm(cfgs)
 }
 if (!is.null(params$cfgDefault)) {
   env <- new.env()
-  source(params$cfgDefault, local = env, echo = FALSE)
+  source(params$cfgDefault, local = env, echo = FALSE) # nolint
   cfgDefault <- env$cfg
 }
 ```
@@ -126,7 +126,8 @@ if (!is.null(params$cfgDefault)) {
 
 ```{r read scenario mifs}
 # Read *.mif-files as nested tibble.
-tibble(path = unname(params$mifScen)) %>%
+dataScenNested <-
+  tibble(path = unname(params$mifScen)) %>%
   rowid_to_column("fileid") %>%
   mutate(data = map(
     path,
@@ -135,41 +136,40 @@ tibble(path = unname(params$mifScen)) %>%
     # read.quitte() default NA-strings and Inf, -Inf
     na.strings = c("UNDF", "NA", "N/A", "n_a", "Inf", "-Inf"))) %>%
   unnest(data) %>%
-  nest(data = -c(fileid, path, scenario)) ->
-  dataScenNested
+  nest(data = -c(fileid, path, scenario))
 # Add column character column "newScenarioName",
 # either with contents of params$mifScenNames or copy names from column scenario.
 if (is.null(params$mifScenNames)) {
-  dataScenNested %>%
-    mutate(newScenarioName = as.character(scenario)) ->
-    dataScenNested
+  dataScenNested <-
+    dataScenNested %>%
+    mutate(newScenarioName = as.character(scenario))
 } else {
-  dataScenNested %>%
+  dataScenNested <-
+    dataScenNested %>%
     left_join(
       tibble(
         fileid = seq_along(params$mifScen),
         newScenarioName = params$mifScenNames),
-      by = "fileid") ->
-    dataScenNested
+      by = "fileid")
 }
 # Check for duplicated scenario names.
 if (anyDuplicated(dataScenNested$newScenarioName)) {
   warning("There are duplicated scenario names. They will be renamed.")
-  dataScenNested %>%
-    mutate(newScenarioName = make.unique(newScenarioName)) ->
-    dataScenNested
+  dataScenNested <-
+    dataScenNested %>%
+    mutate(newScenarioName = make.unique(newScenarioName))
 }
 # Retrieve data for reference table to be shown at the beginning of the document.
-dataScenNested %>%
-  select(fileid, path, scenario, newScenarioName) ->
-  fileReference
+fileReference <-
+  dataScenNested %>%
+  select(fileid, path, scenario, newScenarioName)
 
 # Apply renaming of scenario, unnest, and select only relevant columns.
-dataScenNested %>%
+dataScen <-
+  dataScenNested %>%
   mutate(scenario = factor(newScenarioName, levels = newScenarioName)) %>%
   unnest(data) %>%
-  select(model, scenario, region, variable, unit, period, value) ->
-  dataScen
+  select(model, scenario, region, variable, unit, period, value)
 ```
 
 ```{r define scenario colors}
@@ -180,47 +180,47 @@ lightenColor <- function(clr, by) {
   colRGB <- colorRamp(c(clr, "white"))(by)
   rgb(colRGB[1], colRGB[2], colRGB[3], maxColorValue = 255)
 }
-bkgndColors <- sapply(scenarioColors, lightenColor, by = 0.5)
+bkgndColors <- vapply(scenarioColors, lightenColor, rgb(0, 0, 0), by = 0.5)
 ```
 
 
 ```{r read historical mif}
-params$mifHist %>%
-  read.quitte(factors = TRUE) ->
-  dataHist
+dataHist <-
+  params$mifHist %>%
+  read.quitte(factors = TRUE)
 ```
 
 
 ```{r preprocess}
 # Filter years and NA.
-dataScen %>%
-  filter(period %in% params$yearsScen) ->
-  dataScen
-dataHist %>%
+dataScen <-
+  dataScen %>%
+  filter(period %in% params$yearsScen)
+dataHist <-
+  dataHist %>%
   filter(period %in% params$yearsHist, !(model %in% params$modelsHistExclude), !is.na(value)) %>%
-  droplevels() ->
-  dataHist
+  droplevels()
 
 # Combine into one data frame and remove old.
 data <- bind_rows(dataScen, dataHist)
 rm(dataScen, dataScenNested, dataHist)
 
-data %>%
+data <-
+  data %>%
   # In the variable names, replace `$dot$` by `.`.
   mutate(
     variable = substituePlaceholder(variable)) %>%
   # In the variable names, replace `|+|`, `|++|`, `|+++|`, ... by `|`.
   mutate(
     varplus = as.character(variable),
-    variable = deletePlus(variable)) ->
-  data
+    variable = deletePlus(variable))
 
 # Filter regions.
 if (!is.null(params$reg)) {
-  data %>%
-    filter(region %in% params$reg) %>% 
-    droplevels() ->
-    data
+  data <-
+    data %>%
+    filter(region %in% params$reg) %>%
+    droplevels()
 }
 ```
 
@@ -230,14 +230,15 @@ if (!is.null(params$reg)) {
 
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
-bind_rows(
-  data %>% filter(!unit %in% c("million US$2005/yr")),
-  data %>%
-    filter(unit == "million US$2005/yr") %>%
-    mutate(
-      unit = "billion US$2005/yr",
-      value = value / 1000)) ->
-  data
+data <-
+  bind_rows(
+    data %>% filter(!unit %in% c("million US$2005/yr")),
+    data %>%
+      filter(unit == "million US$2005/yr") %>%
+      mutate(
+        unit = "billion US$2005/yr",
+        value = value / 1000)
+  )
 ```
 
 
@@ -253,7 +254,7 @@ histRefModel <- c(
 ```{r calcuate pCap variables}
 # For all variables in following table, add a new variable to data with the name
 # "OldName pCap". Calculate its value by
-#     OldValue * conversionFactor
+#     OldValue * conversionFactor # nolint
 # and set its unit to newUnit.
 # The new variable "OldName pCap" will be available in the plot sections.
 pCapVariables <- tribble(
@@ -306,16 +307,17 @@ pCapVariables <- tribble(
   "Emi|CO2|Gross|Energy|Supply|Non-electric", "t CO2eq/yr", 1e6,
   "Emi|CO2|Gross|Energy|Supply|Electricity", "t CO2eq/yr", 1e6)
 
-data %>%
+dataPop <-
+  data %>%
   filter(variable == "Population") %>%
   filter(scenario != "historical" | model == histRefModel["Population"]) %>%
   select(scenario, region, period, value) %>%
   mutate(
     population = value * 1e6, # unit originally is million, now is 1
-    value = NULL) ->
-  dataPop
+    value = NULL)
 
-data %>%
+dataPCap <-
+  data %>%
   inner_join(pCapVariables, "variable") %>%
   left_join(dataPop, c("scenario", "region", "period")) %>%
   mutate(
@@ -323,22 +325,21 @@ data %>%
     variable = paste0(variable, " pCap"),
     varplus = paste0(varplus, " pCap"),
     unit = newUnit,
-    newUnit = NULL, conversionFactor = NULL, population = NULL) ->
-  dataPCap
+    newUnit = NULL, conversionFactor = NULL, population = NULL)
 
-data %>%
-  bind_rows(dataPCap) ->
-  data
+data <-
+  data %>%
+  bind_rows(dataPCap)
 ```
 
 
 ```{r calcuate pGDP variables}
-data %>%
+dataGDP <-
+  data %>%
   filter(variable == "GDP|PPP pCap") %>%
   filter(scenario != "historical" | model == histRefModel["GDP|PPP pCap"]) %>%
   select(scenario, region, period, value) %>%
-  rename(gdp = value) ->
-  dataGDP
+  rename(gdp = value)
 
 # For all variables in following table, add a new variable to data with the name
 # "OldName pGDP". Calculate its value by
@@ -353,7 +354,8 @@ pGdpVariables <- tribble(
   "FE|Buildings", "MJ/US$2005", 1e3,
   "FE|Industry", "MJ/US$2005", 1e3)
 
-data %>%
+dataPGdp <-
+  data %>%
   inner_join(pGdpVariables, "variable") %>%
   left_join(dataGDP, c("scenario", "region", "period")) %>%
   mutate(
@@ -361,12 +363,11 @@ data %>%
     variable = paste0(variable, " pGDP"),
     varplus = paste0(varplus, " pGDP"),
     unit = newUnit,
-    newUnit = NULL, conversionFactor = NULL, gdp = NULL) ->
-  dataPGdp
+    newUnit = NULL, conversionFactor = NULL, gdp = NULL)
 
-data %>%
-  bind_rows(dataPGdp) ->
-  data
+data <-
+  data %>%
+  bind_rows(dataPGdp)
 ```
 
 
@@ -377,34 +378,35 @@ data <- as.quitte(data)
 
 ```{r global variables}
 # Set global variables for use in plotting.
-options(mip.mainReg = params$mainReg)
-options(mip.yearsBarPlot = params$yearsBarPlot)
-options(mip.histRefModel = histRefModel)
+options(mip.mainReg = params$mainReg) # nolint
+options(mip.yearsBarPlot = params$yearsBarPlot) # nolint
+options(mip.histRefModel = histRefModel) # nolint
 
 # Reference year for Kaya decomposition is params$yearRef or the first available year therafter.
-options(kaya.refYear = min(params$yearsScen[params$yearsScen >= params$yearRef]))
+options(kaya.refYear = min(params$yearsScen[params$yearsScen >= params$yearRef])) # nolint
 ```
 
 
 
 ```{r sectionPaths}
-dir() %>%
-  str_match("^cs2_([0-9]+).+\\.Rmd$") ->
-  matches
-tibble(
-  files = matches[, 1],
-  nums = as.numeric(matches[, 2])) %>%
+matches <-
+  dir() %>%
+  str_match("^cs2_([0-9]+).+\\.Rmd$")
+availableSections <-
+  tibble(
+    files = matches[, 1],
+    nums = as.numeric(matches[, 2])
+  ) %>%
   drop_na() %>%
-  arrange(files) ->
-  availableSections
+  arrange(files)
 if (length(params$sections) == 1 && params$sections == "all") {
   sectionPaths <- availableSections$files
 } else if (is.numeric(params$sections)) {
-  tibble(nums = params$sections) %>%
+  sectionPaths <-
+    tibble(nums = params$sections) %>%
     left_join(availableSections, by = "nums") %>%
     drop_na() %>%
-    pull(files) ->
-    sectionPaths
+    pull(files)
 } else {
   if (length(params$sections) > 0) {
     sectionPaths <- paste0("cs2_", params$sections, ".Rmd")
@@ -421,10 +423,8 @@ if (length(params$sections) == 1 && params$sections == "all") {
 
 
 ```{r include sections, child = sectionPaths}
-
 ```
 
 
 ```{r include user section, child = params$userSectionPath}
-
 ```
