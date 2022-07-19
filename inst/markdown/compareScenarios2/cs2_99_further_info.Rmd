@@ -38,7 +38,7 @@ showInTables <- function(
       out <-
         out %>%
         column_spec(
-          1:(nVarCols + 1),
+          seq_len(nVarCols + 1),
           background = background
         ) %>%
         kable_styling(
