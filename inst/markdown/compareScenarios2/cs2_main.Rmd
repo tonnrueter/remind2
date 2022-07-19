@@ -226,7 +226,7 @@ if (!is.null(params$reg)) {
 
 
 ```{r Corrections}
-# TODO: Should not be done in compareScenarios. # nolint
+# TODO: Should not be done in compareScenarios.
 
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
