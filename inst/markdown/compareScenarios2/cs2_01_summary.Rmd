@@ -4,7 +4,7 @@
 
 ## GHG Emissions
 
-```{r Emi-GHG}
+```{r}
 tot <- "Emi|GHG"
 items <- c(
   "Emi|CO2|Energy",
@@ -19,7 +19,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ## GHG by sector (w/ gross emissions, excl. BECCS)
 
-```{r Emi-GHG with gross}
+```{r}
 tot <- "Emi|GHG"
 items <- c(
   "Emi|GHG|Gross|Energy|Supply|Electricity",
@@ -46,7 +46,7 @@ showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"))
 
 ## CO2 by sector (w/ gross emissions, excl. BECCS)
 
-```{r CO2 by sector}
+```{r}
 tot <- "Emi|CO2"
 items <- c(
   "Emi|CO2|Land-Use Change",
@@ -72,7 +72,7 @@ showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"))
 
 ###  CO2 cumulated by sector
 
-```{r CO2 by sector cumulated}
+```{r}
 tot <- "Emi|CO2|Cumulated"
 items <- c(
   "Emi|CO2|Cumulated|Land-Use Change",
@@ -91,7 +91,7 @@ showAreaAndBarPlots(data, items, tot)
 
 ## FE by sector
 
-```{r FE by sector}
+```{r}
 items <- c(
   "FE|CDR",
   "FE|Transport",
@@ -102,7 +102,7 @@ showAreaAndBarPlots(data, items)
 
 ## FE per capita (by sector, time domain, area plot)
 
-```{r FE per capita (by sector, time domain, area plot)}
+```{r}
 items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
@@ -112,7 +112,7 @@ showAreaAndBarPlots(data, items)
 
 ## FE per capita (by sector, time domain, line graph)
 
-```{r FE per capita (by sector, time domain, line graph)}
+```{r}
 dIea <- data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA")
@@ -126,7 +126,7 @@ showMultiLinePlots(dIea, items, scales = "fixed")
 
 ## FE per capita (by sector, GDP)
 
-```{r FE per capita by sector (GDP domain)}
+```{r}
 dIea <- data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA")
@@ -140,7 +140,7 @@ showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 
 ## FE by carrier
 
-```{r FE by carrier}
+```{r}
 items <- c(
   "FE|Solids",
   "FE|Liquids",
@@ -153,7 +153,7 @@ showAreaAndBarPlots(data, items)
 
 ## FE Industry by carrier
 
-```{r FE Industry by carrier}
+```{r}
 items <- c(
   "FE|Industry|Solids",
   "FE|Industry|Liquids",
@@ -166,7 +166,7 @@ showAreaAndBarPlots(data, items)
 
 ## FE Buildings by carrier
 
-```{r FE Buildings by carrier}
+```{r}
 items <- c(
   "FE|Buildings|Solids",
   "FE|Buildings|Liquids",
@@ -179,7 +179,7 @@ showAreaAndBarPlots(data, items)
 
 ## FE Transport by carrier
 
-```{r FE Transport by carrier}
+```{r}
 items <- c(
   "FE|Transport|Electricity",
   "FE|Transport|Hydrogen",
@@ -191,7 +191,7 @@ showAreaAndBarPlots(data, items)
 ## FE CDR by carrier
 
 
-```{r FE CDR by carrier}
+```{r}
 items <- c(
   "FE|CDR|Liquids",
   "FE|CDR|Gases",
@@ -202,7 +202,7 @@ showAreaAndBarPlots(data, items)
 
 ## SE Electricity by carrier
 
-```{r SE Electricity by carrier}
+```{r}
 items <- c(
   "SE|Electricity|Coal|w/ CC",
   "SE|Electricity|Coal|w/o CC",
@@ -238,21 +238,21 @@ showAreaAndBarPlots(data, items)
 
 ### SE Wind Onshore
 
-```{r SE Wind Onshore}
+```{r}
 showLinePlots(data, "SE|Electricity|Wind|Onshore")
 ```
 
 
 ### SE Wind Offshore
 
-```{r SE Wind Offshore}
+```{r}
 showLinePlots(data, "SE|Electricity|Wind|Offshore")
 ```
 
 
 ## PE by carrier
 
-```{r PE by carrier}
+```{r}
 items <- c(
   "PE|Coal",
   "PE|Oil",
@@ -269,12 +269,12 @@ showAreaAndBarPlots(data, items)
 
 ## CO2 Prices
 
-```{r CO2 Prices}
+```{r}
 showLinePlots(data, "Price|Carbon")
 showRegiLinePlots(data, "Price|Carbon")
 ```
 
-```{r CO2 Sector Prices}
+```{r}
 items <- c(
   "Price|Carbon|Demand|Transport",
   "Price|Carbon|Demand|Buildings",
@@ -283,16 +283,16 @@ items <- c(
 )
 # older runs might not have the new sector tax variables
 if (all(items %in% data$variable)) {
-  avg_tax <- data[data$variable == "Price|Carbon"                  & data$scenario != "historical", "value"]
-  bui_tax <- data[data$variable == "Price|Carbon|Demand|Buildings" & data$scenario != "historical", "value"]
-  tra_tax <- data[data$variable == "Price|Carbon|Demand|Transport" & data$scenario != "historical", "value"]
-  ind_tax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
-  sup_tax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
+  avgTax <- data[data$variable == "Price|Carbon"                  & data$scenario != "historical", "value"]
+  buiTax <- data[data$variable == "Price|Carbon|Demand|Buildings" & data$scenario != "historical", "value"]
+  traTax <- data[data$variable == "Price|Carbon|Demand|Transport" & data$scenario != "historical", "value"]
+  indTax <- data[data$variable == "Price|Carbon|Demand|Industry"  & data$scenario != "historical", "value"]
+  supTax <- data[data$variable == "Price|Carbon|Supply"           & data$scenario != "historical", "value"]
   # only create plots if a tax is unequal to the average co2 tax
-  if (!identical(bui_tax, avg_tax) ||
-      !identical(tra_tax, avg_tax) ||
-      !identical(ind_tax, avg_tax) ||
-      !identical(sup_tax, avg_tax)
+  if (!identical(buiTax, avgTax) ||
+      !identical(traTax, avgTax) ||
+      !identical(indTax, avgTax) ||
+      !identical(supTax, avgTax)
       ) {
     showLinePlots(data, "Price|Carbon|Demand|Buildings")
     showLinePlots(data, "Price|Carbon|Demand|Transport")
@@ -302,7 +302,7 @@ if (all(items %in% data$variable)) {
 }
 ```
 
-```{r CO2 Prices ETS,ESR}
+```{r}
 showLinePlots(data, "Price|Carbon|ETS")
 showLinePlots(data, "Price|Carbon|ESR")
 ```
@@ -310,17 +310,17 @@ showLinePlots(data, "Price|Carbon|ESR")
 
 ## Policy Costs
 
-```{r Policy Costs-Consumption Loss}
+```{r}
 showLinePlots(data, "Policy Cost|Consumption Loss")
 ```
 
 
-```{r Policy Cost-Consumption Loss-Relative to Reference Consumption}
+```{r}
 showLinePlots(data, "Policy Cost|Consumption Loss|Relative to Reference Consumption")
 ```
 
 
-```{r Policy Cost-GDP Loss}
+```{r}
 showLinePlots(data, "Policy Cost|GDP Loss")
 ```
 
@@ -336,8 +336,9 @@ Every statistic in the following tables, e.g., $\max$, $\min$, is taken over the
 data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
-    stats = list("Max Period (Max Value)" = function(v, p) 
-      sprintf("%d (%5.2f)", p[which.max(v)], max(v)/1000))
+    stats = list("Max Period (Max Value)" = function(v, p) {
+      sprintf("%d (%5.2f)", p[which.max(v)], max(v) / 1000)
+    })
   ) %>%
   mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
@@ -347,8 +348,9 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
-    stats = list("Min Period (Min Value)" = function(v, p) 
-      sprintf("%d (%5.2f)", p[which.min(v)], min(v)/1000))
+    stats = list("Min Period (Min Value)" = function(v, p) {
+      sprintf("%d (%5.2f)", p[which.min(v)], min(v) / 1000)
+    })
   ) %>%
   mutate(unit = "Gt CO2/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
@@ -358,8 +360,9 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Emi|CO2",
-    stats = list("Net 0 Period, i.e., first period with < 2\\% of 2005 value" = function(v, p) 
-      p[which(v <= v[p==2005]*0.02)[1]])
+    stats = list("Net 0 Period, i.e., first period with < 2\\% of 2005 value" = function(v, p) {
+      p[which(v <= v[p == 2005] * 0.02)[1]]
+    })
   ) %>%
   showStatsTable()
 ```
@@ -372,8 +375,9 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Emi|GHG",
-    stats = list("Max Period (Max Value)" = function(v, p) 
-      sprintf("%d (%5.2f)", p[which.max(v)], max(v)/1000))
+    stats = list("Max Period (Max Value)" = function(v, p) {
+      sprintf("%d (%5.2f)", p[which.max(v)], max(v) / 1000)
+    })
   ) %>%
   mutate(unit = "Gt CO2eq/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
@@ -383,8 +387,9 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Emi|GHG",
-    stats = list("Min Period (Min Value)" = function(v, p) 
-      sprintf("%d (%5.2f)", p[which.min(v)], min(v)/1000))
+    stats = list("Min Period (Min Value)" = function(v, p) {
+      sprintf("%d (%5.2f)", p[which.min(v)], min(v) / 1000)
+    })
   ) %>%
   mutate(unit = "Gt CO2eq/yr") %>% # divided by 1000 and change unit form Mt to Gt
   showStatsTable()
@@ -394,8 +399,9 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Emi|GHG",
-    stats = list("Net 0 Period, i.e., first period with < 2\\% of 2005 value" = function(v, p) 
-      p[which(v <= v[p==2005]*0.02)[1]])
+    stats = list("Net 0 Period, i.e., first period with < 2\\% of 2005 value" = function(v, p) {
+      p[which(v <= v[p == 2005] * 0.02)[1]]
+    })
   ) %>%
   showStatsTable()
 ```
@@ -409,7 +415,9 @@ data %>%
 data %>%
   calcTimeSeriesStats(
     "Temperature|Global Mean",
-    stats = list("Max Period (Max Value)" = function(v, p) sprintf("%d (%.2f)", p[which.max(v)], max(v)))
+    stats = list("Max Period (Max Value)" = function(v, p) {
+      sprintf("%d (%.2f)", p[which.max(v)], max(v))
+    })
   ) %>%
   showStatsTable()
 ```

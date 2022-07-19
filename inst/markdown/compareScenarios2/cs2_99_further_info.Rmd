@@ -24,18 +24,19 @@ showInTables <- function(
     }
     colIdx <- 1 + 1:nVarCols + (i - 1) * varsPerTable
     tbl <- data[, c(1, colIdx)]
-    tbl %>%
-      kbl(booktabs = TRUE, align = "c") ->
-      out
+    out <-
+      tbl %>%
+      kbl(booktabs = TRUE, align = "c")
     if (is.null(background)) {
-      out %>%
+      out <-
+        out %>%
         kable_styling(
           bootstrap_options = c("striped", "condensed"),
           latex_options = c("striped", "hold_position")
-        ) ->
-        out
+        )
     } else {
-      out %>%
+      out <-
+        out %>%
         column_spec(
           1:(nVarCols + 1),
           background = background
@@ -43,10 +44,10 @@ showInTables <- function(
         kable_styling(
           bootstrap_options = c("condensed"),
           latex_options = c("hold_position")
-        ) ->
-        out
+        )
     }
-    out %>%
+    out <-
+      out %>%
       column_spec(
         1,
         width = paste0(firstColumnWidth, "mm"),
@@ -60,8 +61,7 @@ showInTables <- function(
         0,
         monospace = TRUE,
         bold = TRUE
-      ) ->
-      out
+      )
     out %>%
       cat("\n\n")
   }
@@ -71,22 +71,22 @@ showInTables <- function(
 ```{r}
 # Get config options where scenarios differ and where all scenarios are the same.
 if (exists("cfgGms") && !is.null(cfgGms)) {
-  cfgGms %>%
+  cfgGmsWide <-
+    cfgGms %>%
     left_join(select(fileReference, fileid, newScenarioName), by = "fileid") %>%
     select(-path, -fileid) %>%
     rename(scenario = newScenarioName) %>%
-    filter(! name %in% c("c_expname" , "c_description")) %>% 
+    filter(!name %in% c("c_expname", "c_description")) %>%
     pivot_wider(names_from = name, values_from = value) %>%
-    mutate(across(-scenario, unlist)) ->
-    cfgGmsWide
-  cfgGmsWide %>%
+    mutate(across(-scenario, unlist))
+  cfgGmsWideDiff <-
+    cfgGmsWide %>%
     select(-where(~ length(unique(.)) == 1)) %>%
-    select(scenario, everything()) ->
-    cfgGmsWideDiff
-  cfgGmsWide %>%
+    select(scenario, everything())
+  cfgGmsWideSame <-
+    cfgGmsWide %>%
     select(where(~ length(unique(.)) == 1)) %>%
-    distinct() ->
-    cfgGmsWideSame
+    distinct()
 }
 ```
 
@@ -97,15 +97,19 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
     exists("cfgGmsWideSame") && !is.null(cfgGmsWideSame)) {
   colNames <- intersect(names(cfgGmsWideSame), names(cfgDefault$gms))
   # the types may differ between the two lists, so convert to character
-  isSameAsDefault <- sapply(
+  isSameAsDefault <- vapply(
     colNames,
-    function(nm) identical(
-      as.character(cfgDefault$gms[[nm]]),
-      as.character(unname(cfgGmsWideSame[[nm]]))))
-  bind_rows(
-    lapply(cfgGmsWideSame[colNames[!isSameAsDefault]], as.character),
-    lapply(cfgDefault$gms[colNames[!isSameAsDefault]], as.character)) ->
-    cfgGmsWideSameDiffDefault
+    function(nm) {
+      identical(
+        as.character(cfgDefault$gms[[nm]]),
+        as.character(unname(cfgGmsWideSame[[nm]])))
+    },
+    logical(1)
+  )
+  cfgGmsWideSameDiffDefault <-
+    bind_rows(
+      lapply(cfgGmsWideSame[colNames[!isSameAsDefault]], as.character),
+      lapply(cfgDefault$gms[colNames[!isSameAsDefault]], as.character))
 
   cat("## GAMS Config Non-Default\n\n")
 

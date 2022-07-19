@@ -21,14 +21,14 @@ items <- c(
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
-showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showAreaAndBarPlots(data, items, tot, fill = TRUE)
 ```
 
 #### FE|* Line Plots
 
 ```{r}
 showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 #### FE|Electricity|Share
@@ -58,14 +58,14 @@ items <- c(
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
-showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showAreaAndBarPlots(data, items, tot, fill = TRUE)
 ```
 
 #### FE|Buildings|* Line Plots
 
 ```{r}
 showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 #### FE|Buildings|Electricity|Share
@@ -96,14 +96,14 @@ items <- c(
 
 ```{r}
 showAreaAndBarPlots(data, items, tot)
-showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showAreaAndBarPlots(data, items, tot, fill = TRUE)
 ```
 
 #### FE|Industry|* Line Plots
 
 ```{r}
 showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 #### FE|Industry|Electricity|Share
@@ -198,55 +198,54 @@ showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 items <- c(
   "FE|Industry|Specific Energy Consumption|Chemicals",
   "FE|Industry|Specific Energy Consumption|Other Industry")
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 ### Specific Energy Consumption with thermodynamic limits
 ```{r}
-#estimated values for thermodynamic limits are hardcoded here. Could be improved
+# estimated values for thermodynamic limits are hardcoded here. Could be improved
 
-#Cement and other non-metallic minerals
+# Cement and other non-metallic minerals
 var1 <- "FE|Industry|Specific Energy Consumption|Cement"
-data %>% 
-  filter(variable == var1) %>% 
+data %>%
+  filter(variable == var1) %>%
   bind_rows(
     expand.grid(
       model = "Thermodynamic limit for cement",
-      scenario = "historical", 
-      region = levels(.$region), 
-      period = range(.$period), 
-      variable = var1, 
+      scenario = "historical",
+      region = levels(.$region),
+      period = range(.$period),
+      variable = var1,
       value = 1.8)) %>% # GJ/t.
   showLinePlots(var1)
 
-#Primary steel
+# Primary steel
 var2 <- "FE|Industry|Specific Energy Consumption|Primary Steel"
-data %>% 
-  filter(variable == var2) %>% 
+data %>%
+  filter(variable == var2) %>%
   bind_rows(
     expand.grid(
-      model = "Thermodynamic limit for primary steel", 
-      scenario = "historical", 
-      region = levels(.$region), 
-      period = range(.$period), 
-      variable = var2, 
+      model = "Thermodynamic limit for primary steel",
+      scenario = "historical",
+      region = levels(.$region),
+      period = range(.$period),
+      variable = var2,
       value = 8.2)) %>% # GJ/t.
   showLinePlots(var2)
 
-#Secondary steel
+# Secondary steel
 var3 <- "FE|Industry|Specific Energy Consumption|Secondary Steel"
-data %>% 
-  filter(variable == var3) %>% 
+data %>%
+  filter(variable == var3) %>%
   bind_rows(
     expand.grid(
       model = "Thermodynamic limit for secondary steel",
-      scenario = "historical", 
-      region = levels(.$region), 
-      period = range(.$period), 
-      variable = var3, 
+      scenario = "historical",
+      region = levels(.$region),
+      period = range(.$period),
+      variable = var3,
       value = 1.3)) %>% # GJ/t.
   showLinePlots(var3)
-
 ```
 
 
@@ -277,14 +276,14 @@ items2 <- c(
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items2, tot)
-showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showAreaAndBarPlots(data, items, tot, fill = TRUE)
 ```
 
 #### FE|Transport|* Line Plots -- with Bunkers
 
 ```{r}
 showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 #### FE|Transport|Electricity|Share
@@ -319,14 +318,14 @@ items2 <- c(
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items2, tot)
-showAreaAndBarPlots(data, items, tot, fill=TRUE)
+showAreaAndBarPlots(data, items, tot, fill = TRUE)
 ```
 
 #### FE|Transport|* Line Plots -- w/o Bunkers
 
 ```{r}
 showLinePlots(data, tot)
-walk(items, showLinePlots, data=data)
+walk(items, showLinePlots, data = data)
 ```
 
 
