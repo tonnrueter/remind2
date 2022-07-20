@@ -1452,6 +1452,26 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                             "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"))
 
 
+      out <- mbind(
+        out,
+        setNames(
+          out[, , "FE|Industry|Chemicals|+|Solids (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
+          "FE|w/o Non-energy Use|Industry|Chemicals|Solids (EJ/yr)"
+        ),
+        setNames(
+          out[, , "FE|Industry|Chemicals|+|Liquids (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
+          "FE|w/o Non-energy Use|Industry|Chemicals|Liquids (EJ/yr)"
+        ),
+        setNames(
+          out[, , "FE|Industry|Chemicals|+|Gases (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
+          "FE|w/o Non-energy Use|Industry|Chemicals|Gases (EJ/yr)"
+        ),
+        setNames(
+          out[, , "FE|Industry|+++|Chemicals (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry (EJ/yr)"],
+          "FE|w/o Non-energy Use|Industry|Chemicals (EJ/yr)"
+        )
+      )
+
       # energy carrier split in FE non-energy use variables
       out <- mbind(out,
                   # split of non-energy use variables to fossil, bio, synfuels
