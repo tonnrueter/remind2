@@ -260,7 +260,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     factor <- 1000.
     
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, techmap)
-    int2ext <- get_global_mapping(category, unit, techmap)
+    int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
   }
   
   if (tran_mod == "complex") {
@@ -347,7 +347,9 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
 
   ### write to output ###
-  output[is.na(output)] <- 0  # substitute na by 0
+  ## substitute NA by 1E-30 to avoid that if in 2005, 2010, 2015, 2130, 2150,
+  ## output is 0 in each region, the sum is returned by speed_aggregate
+  output[is.na(output) | output == 0] <- 1E-30
   ## delete "+" and "++" from variable names
   output <- deletePlus(output)
   

@@ -20,7 +20,9 @@ checkEqs <- function(dt, eqs, scope = "all", sens = 1e-8) {
 
     dt[, diff := total - get(names(eqs)[LHS])]
     if (nrow(dt[abs(diff) > sens]) > 0) {
-      fail(paste("Check on data integrity failed for", names(eqs)[LHS]))
+      fail(paste(c(paste("Check on data integrity failed for", names(eqs)[LHS]),
+                 gsub('`', '', unlist(strsplit(eqs[[LHS]], '`+`', TRUE)))),
+                 collapse = '\n' ))
     }
   }
 }
@@ -90,9 +92,15 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   if (!file.exists(histMif)) {
     utils::download.file("https://rse.pik-potsdam.de/data/example/historical.mif", histMif, quiet = TRUE)
   }
-  scenarioComparisonPath <- file.path(tempdir(), "scenarioComparison.pdf")
-  suppressWarnings(compareScenarios(myMifs, histMif, fileName = scenarioComparisonPath))
-  expect_true(file.exists(scenarioComparisonPath))
+  capture.output( # Do not show stdout text.
+    compareScenarios2(
+      mifScen = myMifs,
+      mifHist = histMif,
+      outputFormat = "pdf",
+      outputFile = "cs2_test",
+      outputDir = tempdir(),
+      sections = 0)) # Render only the info section.
+  expect_true(file.exists(file.path(tempdir(), "cs2_test.pdf")))
   unlink(tempdir(), recursive = TRUE)
   tempdir(TRUE)
 })

@@ -46,4 +46,3 @@ readEmissions <- function(gdx,emiengregi,eminegregi){
   getNames(tmp) <- paste(names_emiengregi,names_eminegregi,sep="&")
   return(tmp)
 }
-

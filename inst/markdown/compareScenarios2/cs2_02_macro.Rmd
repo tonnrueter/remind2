@@ -3,53 +3,60 @@
 
 ## Consumption
 
-```{r Consumption}
+```{r}
 showLinePlots(data, "Consumption")
 ```
 
 
 ## Population
 
-```{r Population}
+```{r}
 showLinePlots(data, "Population")
 ```
 
 ## GDP - MER
 
-```{r GDP-MER}
+```{r}
 showLinePlots(data, "GDP|MER")
 ```
 
-
 ## GDP - PPP
 
-```{r GDP-PPP}
+```{r}
 showLinePlots(data, "GDP|PPP")
+```
+
+## GDP - MER per Capita
+
+```{r}
+showLinePlots(data, "GDP|MER pCap")
 ```
 
 ## GDP - PPP per Capita
 
-```{r GDP-PPP pCap}
+```{r}
 showLinePlots(data, "GDP|PPP pCap")
 ```
+
+
 
 ## Capital Stock
 
 
-```{r Capital Stock}
+```{r}
 showLinePlots(data, "Capital Stock|Non-ESM")
 ```
 
 ## Investments
 
-```{r Investments-Non-ESM}
+```{r}
 showLinePlots(data, "Investments|Non-ESM")
 ```
 
 
 ## Interest Rate
 
-```{r Interest Rate}
+```{r}
 showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 ```
 
@@ -57,76 +64,173 @@ showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 
 ```{r}
 # Local (this subsection) preprocessing for all price variables.
-data %>% 
-  filter(scenario != "historical") %>%
-  filter(str_starts(variable, "Price")) %>% 
-  filter(period >= 2010) %>% # 2005 values are invalid
-  droplevels() -> 
-  dPrice
+dPrice <-
+  data %>%
+    filter(scenario != "historical") %>%
+    filter(str_starts(variable, "Price")) %>%
+    filter(period >= 2010) %>% # 2005 values are invalid
+    droplevels()
 ```
 
 
 ### PE Prices
 
-```{r PE Prices}
-levels(dPrice$variable) %>% 
-  str_subset("^Price\\|Primary Energy\\|") %>% 
-  str_subset("\\|Moving Avg$", negate=TRUE) ->
-  vars
-walk(vars, showLinePlots, data=dPrice, scale="fixed")
+```{r}
+vars <-
+  levels(dPrice$variable) %>%
+  str_subset("^Price\\|Primary Energy\\|") %>%
+  str_subset("\\|Moving Avg$", negate = TRUE)
+walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
 ### SE Prices
 
 
-```{r SE Prices}
-levels(dPrice$variable) %>% 
-  str_subset("^Price\\|Secondary Energy\\|") %>% 
-  str_subset("\\|Moving Avg$", negate=TRUE) ->
-  vars
-walk(vars, showLinePlots, data=dPrice, scale="fixed")
+```{r}
+vars <-
+  levels(dPrice$variable) %>%
+  str_subset("^Price\\|Secondary Energy\\|") %>%
+  str_subset("\\|Moving Avg$", negate = TRUE)
+walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
 ### FE Prices
 
-```{r FE Prices}
-levels(dPrice$variable) %>% 
-  str_subset("^Price\\|Final Energy\\|") %>% 
-  str_subset("\\|Moving Avg$", negate=TRUE) ->
-  vars
+```{r}
+vars <-
+levels(dPrice$variable) %>%
+  str_subset("^Price\\|Final Energy\\|") %>%
+  str_subset(
+    "\\|Moving Avg|\\|Total LCOE|\\|Fuel Cost|\\|Transport and Distribution|\\|Carbon Price Component|\\|Other Taxes$",
+    negate = TRUE)
 
-vars %>% 
-  str_subset("Liquids") %>% 
-  walk(showLinePlots, data=dPrice, scale="fixed")
-vars %>% 
-  str_subset("Gases") %>% 
-  walk(showLinePlots, data=dPrice, scale="fixed")
-vars %>% 
-  str_subset("Solids") %>% 
-  walk(showLinePlots, data=dPrice, scale="fixed")
-vars %>% 
-  str_subset("Electricity") %>% 
-  walk(showLinePlots, data=dPrice, scale="fixed")
-vars %>% 
-  str_subset("Hydrogen") %>% 
-  walk(showLinePlots, data=dPrice, scale="fixed")
-vars %>% 
-  str_subset("Heat") %>% 
-  walk(showLinePlots, data=dPrice, scale="fixed")
+vars %>%
+  str_subset("Liquids") %>%
+  walk(showLinePlots, data = dPrice, scale = "fixed")
+vars %>%
+  str_subset("Gases") %>%
+  walk(showLinePlots, data = dPrice, scale = "fixed")
+vars %>%
+  str_subset("Solids") %>%
+  walk(showLinePlots, data = dPrice, scale = "fixed")
+vars %>%
+  str_subset("Electricity") %>%
+  walk(showLinePlots, data = dPrice, scale = "fixed")
+vars %>%
+  str_subset("Hydrogen") %>%
+  walk(showLinePlots, data = dPrice, scale = "fixed")
+vars %>%
+  str_subset("Heat") %>%
+  walk(showLinePlots, data = dPrice, scale = "fixed")
 ``` 
+
+### FE LCOE Prices Transport
+
+```{r}
+
+groups <- c(
+  "Price|Final Energy|Transport|Liquids|Petroleum",
+  "Price|Final Energy|Transport|Liquids|Diesel",
+  "Price|Final Energy|Transport|Liquids|Biomass",
+  "Price|Final Energy|Transport|Liquids|Efuel",
+  "Price|Final Energy|Transport|Gases|Natural Gas",
+  "Price|Final Energy|Transport|Gases|Efuel",
+  "Price|Final Energy|Transport|Electricity",
+  "Price|Final Energy|Transport|Hydrogen"
+)
+
+for (g in groups) {
+
+  items <- c(
+    paste0(g, "|Fuel Cost"),
+    paste0(g, "|Transport and Distribution"),
+    paste0(g, "|Carbon Price Component"),
+    paste0(g, "|Other Taxes")
+  )
+
+  tot <- paste0(g, "|Total LCOE")
+
+  showAreaAndBarPlots(dPrice, intersect(items, unique(dPrice$variable)), tot)
+}
+```
+
+### FE LCOE Prices Buildings
+
+```{r}
+
+groups <- c(
+  "Price|Final Energy|Buildings|Liquids|Oil",
+  "Price|Final Energy|Buildings|Liquids|Biomass",
+  "Price|Final Energy|Buildings|Liquids|Efuel",
+  "Price|Final Energy|Buildings|Gases|Natural Gas",
+  "Price|Final Energy|Buildings|Gases|Biomass",
+  "Price|Final Energy|Buildings|Gases|Efuel",
+  "Price|Final Energy|Buildings|Solids|Biomass",
+  "Price|Final Energy|Buildings|Electricity",
+  "Price|Final Energy|Buildings|Heat",
+  "Price|Final Energy|Buildings|Hydrogen"
+)
+
+for (g in groups) {
+
+  items <- c(
+    paste0(g, "|Fuel Cost"),
+    paste0(g, "|Transport and Distribution"),
+    paste0(g, "|Carbon Price Component"),
+    paste0(g, "|Other Taxes")
+  )
+
+  tot <- paste0(g, "|Total LCOE")
+
+  showAreaAndBarPlots(dPrice, intersect(items, unique(dPrice$variable)), tot)
+}
+```
+
+### FE LCOE Prices Industry
+
+```{r}
+
+groups <- c(
+  "Price|Final Energy|Industry|Liquids|Oil",
+  "Price|Final Energy|Industry|Liquids|Biomass",
+  "Price|Final Energy|Industry|Liquids|Efuel",
+  "Price|Final Energy|Industry|Gases|Natural Gas",
+  "Price|Final Energy|Industry|Gases|Biomass",
+  "Price|Final Energy|Industry|Gases|Efuel",
+  "Price|Final Energy|Industry|Solids|Coal",
+  "Price|Final Energy|Industry|Solids|Biomass",
+  "Price|Final Energy|Industry|Electricity",
+  "Price|Final Energy|Industry|Heat",
+  "Price|Final Energy|Industry|Hydrogen"
+)
+
+for (g in groups) {
+
+  items <- c(
+    paste0(g, "|Fuel Cost"),
+    paste0(g, "|Transport and Distribution"),
+    paste0(g, "|Carbon Price Component"),
+    paste0(g, "|Other Taxes")
+  )
+
+  tot <- paste0(g, "|Total LCOE")
+
+  showAreaAndBarPlots(dPrice, intersect(items, unique(dPrice$variable)), tot)
+}
+```
 
 ## Trade
 
-```{r Trade}
-levels(data$variable) %>% 
-  str_subset("^Trade\\|[^|]*$") ->
-  vars
-walk(vars, showLinePlots, data=data)
+```{r}
+vars <-
+  levels(data$variable) %>%
+  str_subset("^Trade\\|[^|]*$")
+walk(vars, showLinePlots, data = data)
 ```
 
 ## FE intensity of GDP
 
-```{r FE intensity of GDP}
+```{r}
 items <- c(
   "FE|Transport pGDP",
   "FE|Buildings pGDP",
@@ -136,86 +240,89 @@ showAreaAndBarPlots(data, items)
 
 ## FE intensity of GDP, linegraph (by GDP)
 
-```{r FE intensity of GDP-linegraph}
-data %>% 
+```{r}
+dIea <-
+  data %>%
   # To make the plots less crowded, show only IEA historical data.
-  filter(scenario != "historical" | model == "IEA") -> 
-  dIea
+  filter(scenario != "historical" | model == "IEA")
 items <- c(
   "FE|Transport pGDP",
   "FE|Buildings pGDP",
   "FE|Industry pGDP")
-showMultiLinePlots(dIea, items, scales="fixed")
-showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales="fixed")
+showMultiLinePlots(dIea, items, scales = "fixed")
+showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 ```
 
 ## Kaya-Decomposition
 
-```{r kaya calc}
-data %>% 
-  filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>% 
-  filter(scenario != "historical") %>% 
-  select(model, scenario, region, variable, unit, period, value) ->
-  d
-d %>% 
-  distinct(variable, unit) ->
-  old_units
-d %>% 
-  select(-unit) %>% 
-  pivot_wider(names_from=variable, values_from=value) %>% 
+```{r}
+d <-
+  data %>%
+  filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>%
+  filter(scenario != "historical") %>%
+  select(model, scenario, region, variable, unit, period, value)
+oldUnits <-
+  d %>%
+  distinct(variable, unit)
+kaya <-
+  d %>%
+  select(-unit) %>%
+  pivot_wider(names_from = variable, values_from = value) %>%
   mutate(
-    emiCO2_by_FE = `Emi|CO2|Energy`/FE,
-    FE_by_GDP = FE/`GDP|MER`,
-    GDP_by_Pop = `GDP|MER`/Population,
-    `Emi|CO2|Energy` = NULL, FE = NULL, `GDP|MER` = NULL) %>% 
+    emiCO2_by_FE = `Emi|CO2|Energy` / FE,
+    FE_by_GDP = FE / `GDP|MER`,
+    GDP_by_Pop = `GDP|MER` / Population,
+    `Emi|CO2|Energy` = NULL, FE = NULL, `GDP|MER` = NULL) %>%
   pivot_longer(
-    c(emiCO2_by_FE, FE_by_GDP, GDP_by_Pop, Population), 
-    names_to="variable",
-    values_to="value") -> kaya
-kaya_units <- tribble(
+    c(emiCO2_by_FE, FE_by_GDP, GDP_by_Pop, Population),
+    names_to = "variable",
+    values_to = "value")
+kayaUnits <- tribble(
   ~variable, ~unit,
   "Population", "million",
   "GDP_by_Pop", "billion US$2005/yr/million",
   "FE_by_GDP", "EJ/billion US$2005",
   "emiCO2_by_FE", "EJ/Mt CO2")
-kaya_vars <- kaya_units$variable
-kaya %>%
-  left_join(kaya_units) %>% 
-  as.quitte() ->
-  kaya
+kayaVars <- kayaUnits$variable
+kaya <-
+  kaya %>%
+  left_join(kayaUnits, by = "variable") %>%
+  as.quitte()
 
-ref_year <- 2005
-kaya %>% 
-  filter(period==ref_year) %>% 
-  select(-period) %>% 
-  rename(ref_value=value) -> 
-  kaya_ref
-kaya %>% 
-  left_join(kaya_ref) %>% 
+refYear <- getOption("kaya.refYear")
+kayaRef <-
+  kaya %>%
+  filter(period == refYear) %>%
+  select(-period) %>%
+  rename(refValue = value)
+kayaRel <-
+  kaya %>%
+  left_join(kayaRef, by = c("model", "scenario", "region", "variable", "unit")) %>%
   mutate(
-    value = value / ref_value,
-    unit = paste0("relative to ", ref_year),
-    ref_value = NULL) %>% 
-  as.quitte() ->
-  kaya_rel
+    value = value / refValue,
+    unit = paste0("relative to ", refYear),
+    refValue = NULL) %>%
+  as.quitte()
 ```
 
 ### Absolute
 
-```{r kaya plot abs}
-showMultiLinePlots(kaya, kaya_vars)
-walk(kaya_vars, showRegiLinePlots, data=kaya)
+```{r}
+showMultiLinePlots(kaya, kayaVars)
+walk(kayaVars, showRegiLinePlots, data = kaya)
 ```
 
-### Relative to 2005
+```{r results='asis'}
+cat("### Relative to ", refYear, "\n")
+```
 
-```{r kaya plot rel}
-showMultiLinePlots(kaya_rel, kaya_vars)
-walk(kaya_vars, showRegiLinePlots, data=kaya)
+```{r}
+showMultiLinePlots(kayaRel, kayaVars)
+walk(kayaVars, showRegiLinePlots, data = kayaRel)
 ```
 
 ### Components
 
-```{r kaya_vars plot}
-walk(kaya_vars, showLinePlots, data=kaya_rel)
+```{r}
+walk(kayaVars, showLinePlots, data = kaya)
 ```

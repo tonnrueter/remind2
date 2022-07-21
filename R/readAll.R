@@ -17,6 +17,7 @@
 #' gdxPaths <- c(baseline = "fulldata1.gdx", policy = "fulldata2.gdx")
 #' croparea <- read_all(gdxPaths, func = croparea, level = "glo", crop_aggr = TRUE, asList = TRUE)
 #' }
+#' @export
 #' @importFrom magclass ndata mbind
 readAll <- function(pathToGdx, func, asList = TRUE, ...) {
   if (!is.list(pathToGdx)) {

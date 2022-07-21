@@ -4,21 +4,21 @@
 
 ```{r}
 items <- c(
-  "Energy Investments|Elec|Biomass|w/ CC", 
-  "Energy Investments|Elec|Biomass|w/o CC", 
-  "Energy Investments|Elec|Coal|w/ CC", 
-  "Energy Investments|Elec|Coal|w/o CC", 
-  "Energy Investments|Elec|Fossil", 
-  "Energy Investments|Elec|Gas|w/ CC", 
-  "Energy Investments|Elec|Gas|w/o CC", 
-  "Energy Investments|Elec|Geothermal", 
-  "Energy Investments|Elec|Grid", 
-  "Energy Investments|Elec|Hydro", 
-  "Energy Investments|Elec|Hydrogen", 
-  "Energy Investments|Elec|Nuclear", 
-  "Energy Investments|Elec|Oil", 
-  "Energy Investments|Elec|Solar", 
-  "Energy Investments|Elec|Storage", 
+  "Energy Investments|Elec|Biomass|w/ CC",
+  "Energy Investments|Elec|Biomass|w/o CC",
+  "Energy Investments|Elec|Coal|w/ CC",
+  "Energy Investments|Elec|Coal|w/o CC",
+  "Energy Investments|Elec|Fossil",
+  "Energy Investments|Elec|Gas|w/ CC",
+  "Energy Investments|Elec|Gas|w/o CC",
+  "Energy Investments|Elec|Geothermal",
+  "Energy Investments|Elec|Grid",
+  "Energy Investments|Elec|Hydro",
+  "Energy Investments|Elec|Hydrogen",
+  "Energy Investments|Elec|Nuclear",
+  "Energy Investments|Elec|Oil",
+  "Energy Investments|Elec|Solar",
+  "Energy Investments|Elec|Storage",
   "Energy Investments|Elec|Wind")
 showAreaAndBarPlots(data, items)
 ```
@@ -235,7 +235,7 @@ items <- c(
   "SE|Input|Electricity|Transport (EJ/yr)",
   "SE|Input|Electricity|CDR (EJ/yr)",
   "SE|Input|Electricity|Self Consumption Energy System (EJ/yr)")
-  
+
 showAreaAndBarPlots(data, items)
 ```
 
