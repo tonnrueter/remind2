@@ -1472,6 +1472,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
               "FE|w/o Non-energy Use|Industry|Chemicals (EJ/yr)"
             )
           )
+        },
+        error = function(e) {
+          warning(e)
         }
       )
 
