@@ -17,7 +17,7 @@
 #'
 #' @importFrom rmndt approx_dt readMIF writeMIF
 #' @importFrom gdxdt readgdx
-#' @importFrom data.table fread fwrite rbindlist copy CJ
+#' @importFrom data.table fread fwrite rbindlist copy CJ setnames := data.table as.data.table
 #' @importFrom dplyr %>%
 #' @importFrom quitte as.quitte
 #' @export
