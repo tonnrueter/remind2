@@ -20,7 +20,10 @@
 #' @importFrom dplyr bind_rows summarise group_by mutate filter
 #' @importFrom tidyr %>%
 #' @importFrom quitte as.quitte
-#' @importFrom ggplot2 ggplot geom_point geom_line scale_fill_manual scale_y_discrete geom_rect geom_hline scale_x_continuous coord_cartesian coord_flip geom_bar geom_text position_stack element_blank geom_boxplot aes_
+#' @importFrom ggplot2 ggplot geom_point geom_line scale_fill_manual
+#'   scale_y_discrete geom_rect geom_hline scale_x_continuous coord_cartesian
+#'   coord_flip geom_bar geom_text position_stack element_blank geom_boxplot
+#'   aes_
 #' @importFrom plotly ggplotly config hide_legend subplot layout style
 #' @importFrom reshape2 dcast
 #' @importFrom stats quantile IQR lag
