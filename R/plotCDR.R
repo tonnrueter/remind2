@@ -1,23 +1,18 @@
 
 #' Read in GDX and write *.mif reporting
-#' 
+#'
 #' Read in all information from GDX file and create
 #' the *.mif reporting
-#' 
-#' 
+#'
+#'
 #' @param mif a path to one or more mif-files (might be created by confGDX2MIF)
 #' @param hist a path to one mif-file containing historical data
-#' @param y time span for the data in line plots, default: y=c(seq(2005,2060,5),seq(2070,2100,10)) 
+#' @param y time span for the data in line plots, default: y=c(seq(2005,2060,5),seq(2070,2100,10))
 #' @param y_hist time span for the historical data in the line plots, default: c(seq(1960,2014,1))
 #' @param y_bar time slides for bar plots, default: y_bar=c(2010,2030,2050,2100)
 #' @param reg region(s) in focus, reg ="all_regi" shows all regions if the mifs contain different regions
-#' 
+#'
 #' @author Lavinia Baumstark
-#' @examples
-#' 
-#' \dontrun{compareScenarios(mif_path)}
-#'
-#'
 #' @export
 #' @importFrom magclass read.report mbind getRegions new.magpie getYears add_dimension setNames getNames<-
 #' @importFrom lusweave swopen swlatex swfigure swclose
@@ -28,7 +23,7 @@
 plotCDR <- function(mif,hist,y=c(seq(2005,2060,5),seq(2070,2100,10)),y_hist=c(seq(1960,2015,1)),y_bar=c(2010,2030,2050,2100),reg=NULL) {
 
 ############### read data ####################################################
-# read model results 
+# read model results
 data <- NULL
 for(i in 1:length(mif)){
   data_new <- read.report(mif[i],as.list=FALSE)
@@ -45,7 +40,7 @@ for(i in 1:length(mif)){
         dummy_data_new <- new.magpie(oldReg,getYears(data_new),getNames(data_new),fill=NA)
         data_new       <- mbind(data_new,dummy_data_new)
         # compine old and new data
-        data <- mbind(data,data_new) 
+        data <- mbind(data,data_new)
       } else {
         # expand data by new regions from data_new
         newReg     <- getRegions(data_new)[-which(getRegions(data_new) %in% getRegions(data))]
@@ -56,13 +51,13 @@ for(i in 1:length(mif)){
         dummy_data_new <- new.magpie(oldReg,getYears(data_new),getNames(data_new),fill=NA)
         data_new       <- mbind(data_new,dummy_data_new)
         # compine old and new data
-        data <- mbind(data,data_new) 
+        data <- mbind(data,data_new)
       }
-      
-    } else { 
+
+    } else {
       stop("the regional aggregation of the results are different, you might use reg='all_reg'")
     }
-  }  
+  }
 }
 
 if (!(is.null(reg))) {
@@ -70,7 +65,7 @@ if (!(is.null(reg))) {
      data <- data[reg,y,]
   } else {
      data <- data[,y,]
-  }  
+  }
 } else {
   data <- data[,y,]
 }
@@ -194,7 +189,7 @@ swfigure(sw,mipLineHistorical,data[,,"Price|Carbon (US$2005/t CO2)"],x_hist=NULL
 
 if("GLO" %in% getRegions(data)) {
 swfigure(sw,mipLineHistorical,data["GLO",,"Price|Carbon (US$2005/t CO2)"],x_hist=NULL,
-                              ylab='Price|Carbon_log [US$2005/t CO2]',ybreaks=c(20,30,40,50,60,75,100,200,500,1000,2000,3000), 
+                              ylab='Price|Carbon_log [US$2005/t CO2]',ybreaks=c(20,30,40,50,60,75,100,200,500,1000,2000,3000),
                               ylim=c(20,3000),ylog=TRUE,sw_option="height=10,width=9")
 }
 
@@ -220,7 +215,7 @@ PE <- data[,,items]
 magclass::getNames(PE) <- gsub("PE\\|","",magclass::getNames(PE))
 magclass::getNames(PE) <- gsub(" \\(EJ/yr\\)","",magclass::getNames(PE))
 PE <- PE[,y_bar,]
-p <- mipBarYearData(PE,ylab="PE (EJ/yr)",colour=plotstyle(magclass::getNames(PE,dim=3))) 
+p <- mipBarYearData(PE,ylab="PE (EJ/yr)",colour=plotstyle(magclass::getNames(PE,dim=3)))
 print(p)
 swfigure(sw,print,p,sw_option="height=10,width=9")
 
@@ -310,5 +305,5 @@ swfigure(sw,mipLineHistorical,data[,,"Temperature|Global Mean (K)"],x_hist=NULL,
 swclose(sw)
 ###############################################################################
 
-}  
-  
+}
+
