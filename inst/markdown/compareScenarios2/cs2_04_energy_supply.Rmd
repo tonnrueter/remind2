@@ -216,25 +216,25 @@ items <- c(
   "FE|Buildings|Hydrogen",
   "FE|Transport|Hydrogen",
   "FE|CDR|Hydrogen",
-  "SE|Input|Hydrogen|Electricity|Normal Turbines (EJ/yr)",
-  "SE|Input|Hydrogen|Electricity|Forced VRE Turbines (EJ/yr)",
-  "SE|Input|Hydrogen|Synthetic Fuels|Liquids (EJ/yr)",
-  "SE|Input|Hydrogen|Synthetic Fuels|Gases (EJ/yr)")
+  "SE|Input|Hydrogen|Electricity|Normal Turbines",
+  "SE|Input|Hydrogen|Electricity|Forced VRE Turbines",
+  "SE|Input|Hydrogen|Synthetic Fuels|Liquids",
+  "SE|Input|Hydrogen|Synthetic Fuels|Gases")
 showAreaAndBarPlots(data, items)
 ```
 
 ### SE|Electricity - Usage
 ```{r}
 items <- c(
-  "SE|Input|Hydrogen|Synthetic Fuels|Gases (EJ/yr)",
-  "SE|Input|Hydrogen|Synthetic Fuels|Liquids (EJ/yr)",
-  "SE|Input|Electricity|Hydrogen|direct FE H2 (EJ/yr)",
-  "SE|Input|Electricity|Hydrogen|VRE Storage (EJ/yr)",
-  "SE|Input|Electricity|Buildings (EJ/yr)",
-  "SE|Input|Electricity|Industry (EJ/yr)",
-  "SE|Input|Electricity|Transport (EJ/yr)",
-  "SE|Input|Electricity|CDR (EJ/yr)",
-  "SE|Input|Electricity|Self Consumption Energy System (EJ/yr)")
+  "SE|Input|Hydrogen|Synthetic Fuels|Gases",
+  "SE|Input|Hydrogen|Synthetic Fuels|Liquids",
+  "SE|Input|Electricity|Hydrogen|direct FE H2",
+  "SE|Input|Electricity|Hydrogen|VRE Storage",
+  "SE|Input|Electricity|Buildings",
+  "SE|Input|Electricity|Industry",
+  "SE|Input|Electricity|Transport",
+  "SE|Input|Electricity|CDR",
+  "SE|Input|Electricity|Self Consumption Energy System")
 
 showAreaAndBarPlots(data, items)
 ```

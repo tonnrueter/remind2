@@ -1,14 +1,18 @@
-Package: remind2
 Type: Package
+Package: remind2
 Title: The REMIND R package (2nd generation)
-Version: 1.95.2
-Date: 2022-07-21
-Authors@R: as.person(c(
-    "Renato Rodrigues <renato.rodrigues@pik-potsdam.de> [aut,cre]"))
-Description: Contains the REMIND-specific routines for data and model output manipulation.
+Version: 1.95.3
+Date: 2022-07-25
+Authors@R: 
+    person("Renato", "Rodrigues", , "renato.rodrigues@pik-potsdam.de", role = c("aut", "cre"))
+Description: Contains the REMIND-specific routines for data and model
+    output manipulation.
+License: LGPL-3
+URL: https://github.com/pik-piam/remind2
 Depends:
-    magclass(>= 3.37)
+    magclass (>= 3.37)
 Imports:
+    RColorBrewer,
     abind,
     assertr,
     data.table,
@@ -30,7 +34,6 @@ Imports:
     openxlsx,
     plotly,
     quitte,
-    RColorBrewer,
     readr,
     remulator,
     reshape2,
@@ -44,9 +47,6 @@ Imports:
     withr,
     yaml,
     ymlthis
-Encoding: UTF-8
-License: LGPL-3
-RoxygenNote: 7.2.1
 Suggests:
     covr,
     flexdashboard,
@@ -55,5 +55,7 @@ Suggests:
     sr15data,
     testthat,
     tidyverse
-VignetteBuilder: knitr
-URL: https://github.com/pik-piam/remind2
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+RoxygenNote: 7.2.1

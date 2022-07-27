@@ -8,6 +8,7 @@ output:
     toc_depth: 6
     keep_tex: false
     template: cs2_latex_template.tex
+    extra_dependencies: ["float"]
     includes: 
       in_header: cs2_pdf_header_include.tex
   html_document:
@@ -43,7 +44,8 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = params$warning,
   fig.width = params$figWidth,
-  fig.height = params$figHeight)
+  fig.height = params$figHeight,
+  fig.pos = "H")
 ```
 
 

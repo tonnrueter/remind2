@@ -247,7 +247,7 @@ showLinePlots(data, items)
 ### non-BECCS CDR
 
 ```{r}
-showLinePlots(data, "non-BECCS CDR")
+showLinePlots(data, "Emi|CO2|non-BECCS CDR")
 ```
 
 ### CDR
@@ -421,7 +421,7 @@ showAreaAndBarPlots(data, items, tot)
 ### F-Gases
 
 ```{r}
-showLinePlots(data, "Emi|GHG|FALSE-Gases")
+showLinePlots(data, "Emi|GHG|F-Gases")
 ```
 
 ## Industry Subsector Emissions
