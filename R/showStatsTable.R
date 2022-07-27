@@ -55,7 +55,7 @@ showStatsTable <- function(statsData) {
     ) %>%
     kableExtra::kable_styling(
       bootstrap_options = c("striped", "condensed"),
-      latex_options = c("striped", "hold_position"),
+      latex_options = c("striped", "HOLD_position"),
       full_width = FALSE
     ) %>%
     kableExtra::column_spec(

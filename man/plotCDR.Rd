@@ -30,12 +30,6 @@ plotCDR(
 Read in all information from GDX file and create
 the *.mif reporting
 }
-\examples{
-
-\dontrun{compareScenarios(mif_path)}
-
-
-}
 \author{
 Lavinia Baumstark
 }

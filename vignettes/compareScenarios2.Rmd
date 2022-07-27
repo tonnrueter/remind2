@@ -219,7 +219,7 @@ If `compareScenarios2()` is provided with paths to the `config.Rdata` files of t
 compareScenarios2(
   mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"),
   cfgScen = c("path/to/scen1/config.RData", "path/to/scen2/config.RData"),
-  cfgDefault = "path/to/default.cfg"
+  cfgDefault = "path/to/default.cfg",
   ...)
 ```
 
