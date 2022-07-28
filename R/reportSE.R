@@ -60,14 +60,11 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   input_liquids <- c(entyPe, "seh2")
 
   ## parameter
-  pm_prodCouple    <- readGDX(gdx, c("pm_prodCouple", "p_prodCouple", "p_dataoc"), restore_zeros = FALSE, format = "first_found")
-
+  pm_prodCouple <- readGDX(gdx, c("pm_prodCouple", "p_prodCouple", "p_dataoc"), restore_zeros = FALSE, format = "first_found")
+  pm_prodCoupleEmi <- readGDX(gdx, "pm_prodCoupleEmi", restore_zeros = FALSE, react = "silent")
+  pm_prodCouple <- mbind(pm_prodCouple, pm_prodCoupleEmi)
   pm_prodCouple[is.na(pm_prodCouple)] <- 0
-  teprodCoupleSeel <- getNames(mselect(pm_prodCouple, all_enty2 = "seel"), dim = 3)
-  if (!"ccsinje" %in% teprodCoupleSeel) {
-    pm_prodCoupleEmi <- readGDX(gdx, c("pm_prodCoupleEmi"), restore_zeros = FALSE, format = "first_found")
-    pm_prodCoupleEmi[is.na(pm_prodCoupleEmi)] <- 0
-  }
+
   p_macBase <- readGDX(gdx, c("p_macBaseMagpie", "pm_macBaseMagpie","p_macBase"), format = "first_found")
   #  p_macEmi  <- readGDX(gdx,"p_macEmi")
   ## variables
@@ -397,15 +394,10 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   # filter for coupled production coefficents which consume seel
   # (have all_enty2=seel and are negative)
+  teprodCoupleSeel <- getNames(mselect(pm_prodCouple, all_enty2 = "seel"), dim = 3)
   CoeffOwnConsSeel <- pm_prodCouple[, , teprodCoupleSeel]
   CoeffOwnConsSeel[CoeffOwnConsSeel > 0] <- 0
-  if ("ccsinje" %in% teprodCoupleSeel) { # old
-    CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[, , "ccsinje", invert = T]
-    CoeffOwnConsSeel_CCS <- CoeffOwnConsSeel[, , "ccsinje"]
-  } else { # after separating emi out of all_enty
-    CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel
-    CoeffOwnConsSeel_CCS <- pm_prodCoupleEmi
-  }
+  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[, , "ccsinje", invert = T]
 
   # FE and SE production that has own consumption of electricity
   # calculate vm_prodSe back to TWa (was in EJ before), but prod couple coefficient is defined in TWa(input)/Twa(output)
@@ -414,7 +406,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   tmp1 <- mbind(tmp1, setNames(
     -pm_conv_TWa_EJ *
       (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[, , getNames(CoeffOwnConsSeel_woCCS, dim = 3)], dim = 3, na.rm = T) +
-        dimSums(CoeffOwnConsSeel_CCS * vm_co2CCS[, , "ccsinje"], dim = 3,  na.rm = T)),
+        dimSums(CoeffOwnConsSeel[, , "ccsinje"] * vm_co2CCS[, , "ccsinje"], dim = 3,  na.rm = T)),
     "SE|Input|Electricity|Self Consumption Energy System (EJ/yr)"))
 
   # electricity for central ground heat pumps
