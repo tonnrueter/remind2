@@ -39,7 +39,7 @@ variablesAsList <- function(x, entry = c("NULL", "name", "INFO")) {
   if (is.factor(x)) x <- as.character(x)
   if (is.character(x)) {
     if (length(x) == 1 && file.exists(x)) {
-      data <- quitte::read.quitte(vars)
+      data <- quitte::read.quitte(x)
       vars <- data$variable
     } else {
       vars <- x
