@@ -69,8 +69,8 @@ variablesAsList <- function(x, entry = c("NULL", "name", "INFO")) {
   varsTable <- table(vars)
   uniqueVars <- names(varsTable)
   splitList <- strsplit(uniqueVars, "|", fixed = TRUE)
-  maxLen <- max(sapply(splitList, length))
-  varsMatrix <- t(sapply(splitList, function(x) x[seq_len(maxLen)]))
+  maxLen <- max(vapply(splitList, length, integer(1)))
+  varsMatrix <- t(vapply(splitList, function(x) x[seq_len(maxLen)], character(maxLen)))
 
   # Function to recursively parse variable names and create node value.
   .splitMatrixAsList <- function(mat, prefix) {
@@ -102,7 +102,7 @@ variablesAsList <- function(x, entry = c("NULL", "name", "INFO")) {
     lst <- split(mat[, -1, drop = FALSE], mat[, 1])
     lst <- lapply(lst, matrix, ncol = NCOL(mat) - 1)
     newPrefixes <- paste0(prefix, if (nchar(prefix) > 0) "|", names(lst))
-    resSubCategories <- mapply(.splitMatrixAsList, lst, newPrefixes, SIMPLIFY = FALSE)
+    resSubCategories <- Map(.splitMatrixAsList, lst, newPrefixes)
 
     return(c(nodeValue, resSubCategories))
   }
