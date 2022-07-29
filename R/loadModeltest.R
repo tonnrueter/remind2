@@ -3,7 +3,9 @@ globalVariables(".")
 
 getProjectPath <- function(project = "remind") {
   possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "/p/projects"), project)
-  possibleProjectLocations[which(file.exists(possibleProjectLocations))[1]]
+  sel <- which(file.exists(possibleProjectLocations))[1]
+  if (is.na(sel)) stop("Cannot determine a path to projects on the cluster.")
+  possibleProjectLocations[sel]
 }
 
 #' @importFrom dplyr bind_cols
@@ -24,12 +26,12 @@ getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
     matrix(nrow = 3, dimnames = list(c("name", "date", "time"), NULL)) %>%
     t() %>%
     as_tibble() %>%
-    bind_cols(runName = .env$allRunNames) %>%
+    bind_cols(runName = allRunNames) %>%
     mutate(date = as.Date(.data$date)) %>%
     filter(date >= max(.data$date) - 3) # day of newest run until 3 days before
   selectedRuns <-
     newest %>%
-    filter(grepl(x = .data$name, pattern = .data$namePattern)) %>%
+    filter(grepl(x = .data$name, pattern = .env$namePattern)) %>%
     mutate(path = file.path(.env$modeltestOutPath, .data$runName))
 
   return(selectedRuns)
