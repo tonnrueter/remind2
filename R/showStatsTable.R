@@ -24,7 +24,7 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom rlang .data
 #' @export
-showStatsTable <- function(statsData) {
+showStatsTable <- function(statsData, mainReg = getOption("mip.mainReg")) {
 
   if (!requireNamespace("kableExtra", quietly = TRUE))
     stop("Package \"kableExtra\" must be installed to use showStatsTable().", call. = FALSE)
@@ -40,7 +40,7 @@ showStatsTable <- function(statsData) {
   p <- statsData %>%
     filter(.data$model == "REMIND") %>%
     select(.data$scenario, .data$region, .data$value) %>%
-    arrange(.data$region != "World", .data$region)  %>%
+    arrange(.data$region != mainReg, .data$region)  %>%
     pivot_wider(names_from = .data$scenario, values_from = .data$value)
 
   firstColumnWidth <- 20
