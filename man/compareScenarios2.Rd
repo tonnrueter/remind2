@@ -11,6 +11,7 @@ compareScenarios2(
   outputFile = "CompareScenarios2",
   outputFormat = "PDF",
   envir = new.env(),
+  quiet = FALSE,
   ...
 )
 }
@@ -35,6 +36,8 @@ to be evaluated. See the argument of the same name in
 \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 Set this to \code{globalenv()} and \code{sections} to \code{NULL} to load
 an preprocess data in your global environment during development.}
+
+\item{quiet}{\code{logical(1)}. Suppress printing during rendering?}
 
 \item{...}{YAML parameters, see below.}
 }

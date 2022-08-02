@@ -4,21 +4,24 @@
 \alias{showStatsTable}
 \title{Show a Table of a Statistics Data Frame}
 \usage{
-showStatsTable(statsData)
+showStatsTable(statsData, mainReg = getOption("mip.mainReg"))
 }
 \arguments{
 \item{statsData}{A data frame with the columns "model", "scenario", "region",
 "value", "variable", "unit", "statistic".}
+
+\item{mainReg}{\code{character(1)}. The main region. Will be shown at the top
+of the table.}
 }
 \value{
 A \code{knitr_kable} object. A table with columns region and one
   column for each scenario.
 }
 \description{
-Take the output of \code{calcTimeSeriesStats()} (a data frame) and show it as
-a kable table. Only results from model REMIND are shown. It is assumed that
-the input argument only contains a single statistic of a single variable (but
-multiple regions and scenarios). The caption of the resulting table is
+Take the output of \code{\link{calcTimeSeriesStats}} (a data frame) and show
+it as a kable table. Only results from model REMIND are shown. It is assumed
+that the input argument only contains a single statistic of a single variable
+(but multiple regions and scenarios). The caption of the resulting table is
 created from the entries of the columns variable, unit, and statistic in the
 first row (should be the same in all rows).
 }
