@@ -292,14 +292,14 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   # FE marginal price ----
 
   ## loading values from the model
-  pm_FEPrice_by_SE_Sector_EmiMkt <- readGDX(gdx, "pm_FEPrice_by_SE_Sector_EmiMkt", react = "silent")
-  pm_FEPrice_by_Sector_EmiMkt <- readGDX(gdx, "pm_FEPrice_by_Sector_EmiMkt", react = "silent")
-  pm_FEPrice_by_SE_Sector <- readGDX(gdx, "pm_FEPrice_by_SE_Sector", react = "silent")
-  pm_FEPrice_by_SE_EmiMkt <- readGDX(gdx, "pm_FEPrice_by_SE_EmiMkt", react = "silent")
-  pm_FEPrice_by_SE <- readGDX(gdx, "pm_FEPrice_by_SE", react = "silent")
-  pm_FEPrice_by_Sector <- readGDX(gdx, "pm_FEPrice_by_Sector", react = "silent")
-  pm_FEPrice_by_EmiMkt <- readGDX(gdx, "pm_FEPrice_by_EmiMkt", react = "silent")
-  pm_FEPrice_by_FE <- readGDX(gdx, "pm_FEPrice_by_FE", react = "silent")
+  pm_FEPrice_by_SE_Sector_EmiMkt <- readGDX(gdx, c("pm_FEPrice_by_SE_Sector_EmiMkt","p_FEPrice_by_SE_Sector_EmiMkt"), format="first_found", react = "silent")
+  pm_FEPrice_by_Sector_EmiMkt <- readGDX(gdx, c("pm_FEPrice_by_Sector_EmiMkt","p_FEPrice_by_Sector_EmiMkt"), format="first_found", react = "silent")
+  pm_FEPrice_by_SE_Sector <- readGDX(gdx, c("pm_FEPrice_by_SE_Sector","p_FEPrice_by_SE_Sector"), format="first_found", react = "silent")
+  pm_FEPrice_by_SE_EmiMkt <- readGDX(gdx, c("pm_FEPrice_by_SE_EmiMkt","p_FEPrice_by_SE_EmiMkt"), format="first_found", react = "silent")
+  pm_FEPrice_by_SE <- readGDX(gdx, c("pm_FEPrice_by_SE","p_FEPrice_by_SE"), format="first_found", react = "silent")
+  pm_FEPrice_by_Sector <- readGDX(gdx, c("pm_FEPrice_by_Sector","p_FEPrice_by_Sector"), format="first_found", react = "silent")
+  pm_FEPrice_by_EmiMkt <- readGDX(gdx, c("pm_FEPrice_by_EmiMkt","p_FEPrice_by_EmiMkt"), format="first_found", react = "silent")
+  pm_FEPrice_by_FE <- readGDX(gdx, c("pm_FEPrice_by_FE","p_FEPrice_by_FE"), format="first_found", react = "silent")
 
   if(length(pm_FEPrice_by_FE) > 0) {
     ## subsetting to those entries used in the model
