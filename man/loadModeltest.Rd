@@ -13,12 +13,16 @@ loadModeltest(
 \arguments{
 \item{envir}{\code{environment}. The environment where the loaded data is put into.}
 
-\item{namePattern}{\code{character(1)}. A regular expression to filter the modeltest run names.}
+\item{namePattern}{\code{character(1)}. A regular expression to filter the
+modeltest run names.}
 
 \item{folder}{\code{character(1)}. A folder to copy the modeltest data to.}
 }
 \description{
-The newest model tests are collected from the cluster and copied into a temporary folder (by default). Then the \link[=compareScenarios2]{compareScenarios2()} data loading procedure is used to load this data into the users environment.
+The newest model tests are collected from the cluster and copied into a
+temporary folder (by default). Then the
+\link[=compareScenarios2]{compareScenarios2()} data loading procedure is used
+to load this data into the users environment.
 }
 \examples{
 \dontrun{
