@@ -5,7 +5,7 @@
 \title{Get the List of cs2 Profiles}
 \usage{
 getCs2Profiles(
-  path = normalizePath(file.path(remindDir, relativePath, mustWork = TRUE)),
+  path = file.path(remindDir, relativePath),
   relativePath = "scripts/cs2/profiles.json",
   remindDir = "."
 )
@@ -13,7 +13,7 @@ getCs2Profiles(
 \arguments{
 \item{path}{\code{character(1)}. Relative or absolute path to the profiles file.}
 
-\item{relativePath}{\code{character(1)}. Path to the profiles file relative to the REMIND directory.}
+\item{relativePath}{\code{character(1)}. Path to the profiles file relative to the REMIND directory, i.e., \code{remindDir}.}
 
 \item{remindDir}{\code{character(1)}. Path to the REMIND directory.}
 }
@@ -24,7 +24,12 @@ A named list of profiles. The names are the names of the respective profile. Eac
 A list of arguments to \code{\link{compareScenarios2}} is called a (cs2-) profile. This function loads a list of such profiles from a file. The default arguments are set such that the default profiles file of REMIND is loaded.
 }
 \examples{
-\dontrun{profiles <- getCs2Profiles()}
+\dontrun{
+profiles <- getCs2Profiles() # load from default location
+profiles <- getCs2Profiles(remindDir = "path/to/remind")
+profiles <- getCs2Profiles(path = "path/to/profiles.json")
+profiles <- getCs2Profiles(relativePath = "path/relative/to/remindDir/profiles.json")
+}
 }
 \author{
 Christof Schoetz
