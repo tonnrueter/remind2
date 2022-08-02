@@ -46,7 +46,8 @@ Imports:
     tidyselect,
     withr,
     yaml,
-    ymlthis
+    ymlthis,
+    jsonlite
 Suggests:
     covr,
     flexdashboard,
