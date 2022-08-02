@@ -36,8 +36,12 @@ v <- variablesAsList(vars, entry = "name")
 \dontrun{mip::showLinePlots(data, v$Emi$GHG$nm)}
 
 \dontrun{
+loadModeltest()
 v <- variablesAsList(data, entry = "INFO")
 View(v)
+# Include structure induced by |+|,|++|, ...:
+vp <- variablesAsList(data$varplus, entry = "INFO")
+View(vp)
 }
 
 \dontrun{View(variablesAsList("path/to/scenario.mif"))}
