@@ -34,7 +34,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   # intialize varibles used in dplyr operations
-  all_enty2 <- all_te <- all_enty <- all_enty1 <- emi_sectors <- all_emiMkt <- all_in <- NULL
+  all_enty2 <- all_te <- all_enty <- all_enty1 <- emi_sectors <- all_emiMkt <- all_in <- emiAll <- NULL
 
   # Read Data from GDX ----
 
@@ -234,9 +234,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   # supply and demand emissions of conversion technologies
-  emi2te.pe2se.co2 <- emi2te %>%
-    filter(all_enty2 == "co2") %>%
-    filter(all_te %in% pe2se$all_te)
+  if (names(emi2te)[4] == "emiAll") {
+    emi2te.pe2se.co2 <- emi2te %>%
+      filter(emiAll == "co2") %>%
+      filter(all_te %in% pe2se$all_te)
+  } else {
+    emi2te.pe2se.co2 <- emi2te %>%
+      filter(all_enty2 == "co2") %>%
+      filter(all_te %in% pe2se$all_te)
+  }
 
   sel_pm_emifac_pe2se <- if(getSets(pm_emifac)[[6]] == "emiAll"){
                         mselect(pm_emifac, all_te = pe2se$all_te, emiAll = "co2")
@@ -1290,7 +1296,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # create magpie array with MAC emissions per sector, market and gas
   # MAC emissions comprise non-energy CO2, CH4, N2O emissions
-  EmiMAC <- new.magpie(getRegions(vm_emiMacSector), getYears(vm_emiMacSector), paste(mac.map$all_enty, mac.map$emi_sectors, mac.map$all_emiMkt, mac.map$all_enty1, sep = "."))
+  EmiMAC <- new.magpie(
+    getRegions(vm_emiMacSector),
+    getYears(vm_emiMacSector),
+    paste(
+      mac.map$all_enty,
+      mac.map$emi_sectors,
+      mac.map$all_emiMkt,
+      mac.map[[if ("emiAll" %in% names(mac.map)) "emiAll" else "all_enty1"]],
+      sep = "."))
   getSets(EmiMAC) <- c("region", "year", "macsector", "sector", "emiMkt", "gas") # rename dimensions for sake of understanding
   EmiMAC[, , mac.map$all_enty] <- vm_emiMacSector[, , mac.map$all_enty]
 
