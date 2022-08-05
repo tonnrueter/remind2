@@ -10,8 +10,8 @@ items <- c(
   "Energy Investments|Elec|Grid|Normal",
   "Energy Investments|Elec|Hydrogen",
   "Energy Investments|Elec|Storage",
-  "Energy Investments|Elec|Wind",
   "Energy Investments|Elec|Solar",
+  "Energy Investments|Elec|Wind",
   "Energy Investments|Elec|Geothermal",
   "Energy Investments|Elec|Hydro",
   "Energy Investments|Elec|Biomass|w/ CC",
@@ -29,10 +29,10 @@ showAreaAndBarPlots(data, items, orderVars = "user")
 
 ```{r}
 items <- c(
-  "Cap|Electricity|Solar",
   "Cap|Electricity|Storage|Battery",
+  "Cap|Electricity|Solar",
   if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
-    c("Cap|Electricity|Wind|Onshore",    "Cap|Electricity|Wind|Offshore")
+    c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
   else 
     "Cap|Electricity|Wind",
   "Cap|Electricity|Hydro",
