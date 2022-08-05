@@ -1,6 +1,6 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.98.1**
+R package **remind2**, version **1.99.0**
 
 [![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)  [![R build status](https://github.com/pik-piam/remind2/workflows/check/badge.svg)](https://github.com/pik-piam/remind2/actions) [![codecov](https://codecov.io/gh/pik-piam/remind2/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/remind2) [![r-universe](https://pik-piam.r-universe.dev/badges/remind2)](https://pik-piam.r-universe.dev/ui#builds)
 
@@ -11,13 +11,13 @@ Contains the REMIND-specific routines for data and model
 
 
 ## Installation
+
 For installation of the most recent package version an additional repository has to be added in R:
 
 ```r
 options(repos = c(CRAN = "@CRAN@", pik = "https://rse.pik-potsdam.de/r/packages"))
 ```
 The additional repository can be made available permanently by adding the line above to a file called `.Rprofile` stored in the home folder of your system (`Sys.glob("~")` in R returns the home directory).
-
 
 After that the most recent version of the package can be installed using `install.packages`:
 
@@ -49,7 +49,7 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R (2022). _remind2: The REMIND R package (2nd generation)_. R package version 1.98.1, <https://github.com/pik-piam/remind2>.
+Rodrigues R (2022). _remind2: The REMIND R package (2nd generation)_. R package version 1.99.0, <URL: https://github.com/pik-piam/remind2>.
 
 A BibTeX entry for LaTeX users is
 
@@ -58,7 +58,7 @@ A BibTeX entry for LaTeX users is
   title = {remind2: The REMIND R package (2nd generation)},
   author = {Renato Rodrigues},
   year = {2022},
-  note = {R package version 1.98.1},
+  note = {R package version 1.99.0},
   url = {https://github.com/pik-piam/remind2},
 }
 ```
