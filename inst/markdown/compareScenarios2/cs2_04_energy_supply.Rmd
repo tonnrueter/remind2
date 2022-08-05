@@ -4,49 +4,49 @@
 
 ```{r}
 items <- c(
-  "Energy Investments|Elec|Biomass|w/ CC",
-  "Energy Investments|Elec|Biomass|w/o CC",
-  "Energy Investments|Elec|Coal|w/ CC",
-  "Energy Investments|Elec|Coal|w/o CC",
-  "Energy Investments|Elec|Gas|w/ CC",
-  "Energy Investments|Elec|Gas|w/o CC",
-  "Energy Investments|Elec|Geothermal",
 #  "Energy Investments|Elec|Grid",
   "Energy Investments|Elec|Grid|BEV Chargers",
-  "Energy Investments|Elec|Grid|Normal",
   "Energy Investments|Elec|Grid|VRE support",
-  "Energy Investments|Elec|Hydro",
+  "Energy Investments|Elec|Grid|Normal",
   "Energy Investments|Elec|Hydrogen",
-  "Energy Investments|Elec|Nuclear",
-  "Energy Investments|Elec|Oil",
-  "Energy Investments|Elec|Solar",
   "Energy Investments|Elec|Storage",
-  "Energy Investments|Elec|Wind")
-showAreaAndBarPlots(data, items)
+  "Energy Investments|Elec|Wind",
+  "Energy Investments|Elec|Solar",
+  "Energy Investments|Elec|Geothermal",
+  "Energy Investments|Elec|Hydro",
+  "Energy Investments|Elec|Biomass|w/ CC",
+  "Energy Investments|Elec|Biomass|w/o CC",
+  "Energy Investments|Elec|Oil",
+  "Energy Investments|Elec|Gas|w/ CC",
+  "Energy Investments|Elec|Gas|w/o CC",
+  "Energy Investments|Elec|Coal|w/ CC",
+  "Energy Investments|Elec|Coal|w/o CC",
+  "Energy Investments|Elec|Nuclear")
+showAreaAndBarPlots(data, items, orderVars = "user")
 ```
 
 ## Capacities Electricity
 
 ```{r}
 items <- c(
-  "Cap|Electricity|Coal|w/ CC",
-  "Cap|Electricity|Coal|w/o CC",
+  "Cap|Electricity|Solar",
+  "Cap|Electricity|Storage|Battery",
+  if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
+    c("Cap|Electricity|Wind|Onshore",    "Cap|Electricity|Wind|Offshore")
+  else 
+    "Cap|Electricity|Wind",
+  "Cap|Electricity|Hydro",
+  "Cap|Electricity|Geothermal",
+  "Cap|Electricity|Biomass",
+  "Cap|Electricity|Hydrogen",
   "Cap|Electricity|Gas|w/ CC",
   "Cap|Electricity|Gas|w/o CC",
   "Cap|Electricity|Oil|w/o CC",
-  "Cap|Electricity|Biomass",
-  "Cap|Electricity|Nuclear",
-  "Cap|Electricity|Hydro",
-  "Cap|Electricity|Geothermal",
-  "Cap|Electricity|Hydrogen",
-  "Cap|Electricity|Storage|Battery",
-  "Cap|Electricity|Solar",
-  if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
-    c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
-  else
-    "Cap|Electricity|Wind"
+  "Cap|Electricity|Coal|w/ CC",
+  "Cap|Electricity|Coal|w/o CC",
+  "Cap|Electricity|Nuclear"
   )
-showAreaAndBarPlots(data, items)
+showAreaAndBarPlots(data, items, orderVars = "user")
 ```
 
 ## Capacities electricity line plots
