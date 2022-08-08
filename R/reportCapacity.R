@@ -31,7 +31,10 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   possibleRefineries <- c("refped", "refdip", "refliq")
   refineries <- intersect(teall2rlf[, 1], possibleRefineries)
   ttot        <- readGDX(gdx, name = "ttot")
+
+  # read parameters
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)
+  pm_prodCouple <- readGDX(gdx, c("pm_prodCouple", "p_prodCouple", "p_dataoc"), restore_zeros = FALSE, format = "first_found")
 
   # read variables
   vm_cap      <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found") * 1000
@@ -47,25 +50,35 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   vm_deltaCap <- vm_deltaCap[, ttot, ]
   v_earlyreti <-   v_earlyreti[, ttot, ]
   t2005 <- ttot[ttot > 2004]
+
+  ####### fix negative values of dataoc to 0 - using the lines from reportSE.R ##################
+  #### adjust regional dimension of dataoc
+  dataoc <- new.magpie(getRegions(vm_cap), getYears(pm_prodCouple), magclass::getNames(pm_prodCouple), fill = 0)
+  dataoc[getRegions(pm_prodCouple), , ] <- pm_prodCouple
+  getSets(dataoc) <- getSets(pm_prodCouple)
+
+  dataoc[dataoc < 0] <- 0
+
+
   # build reporting
   tmp1 <- NULL
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("tnrs", "fnrs")], dim = 3), "Cap|Electricity|Nuclear (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("spv", "csp")], dim = 3),  "Cap|Electricity|Solar (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("tnrs", "fnrs")], dim = 3),                                 "Cap|Electricity|Nuclear (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("spv", "csp")], dim = 3),                                   "Cap|Electricity|Solar (GW)"))
   if ("windoff" %in% magclass::getNames(vm_cap, dim = 1)) {
-    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("wind", "windoff")], dim = 3),       "Cap|Electricity|Wind (GW)"))
+    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("wind", "windoff")], dim = 3),                            "Cap|Electricity|Wind (GW)"))
   } else {
-    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "wind"], dim = 3),          "Cap|Electricity|Wind (GW)"))
+    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "wind"], dim = 3),                                          "Cap|Electricity|Wind (GW)"))
   }
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "hydro"], dim = 3),         "Cap|Electricity|Hydro (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "dot"], dim = 3),           "Cap|Electricity|Oil (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "hydro"], dim = 3),                                           "Cap|Electricity|Hydro (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "dot"], dim = 3),                                             "Cap|Electricity|Oil (GW)"))
   tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("igcc", "pc", "coalchp", "igccc", "pco", "pcc")], dim = 3), "Cap|Electricity|Coal (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3),     "Cap|Electricity|Gas (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("bioigccc", "biochp", "bioigcc")], dim = 3),            "Cap|Electricity|Biomass (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "geohdr"], dim = 3),        "Cap|Electricity|Geothermal (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3),               "Cap|Electricity|Gas (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("bioigccc", "biochp", "bioigcc")], dim = 3),                "Cap|Electricity|Biomass (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "geohdr"], dim = 3),                                          "Cap|Electricity|Geothermal (GW)"))
   if (all(c("h2turbVRE", "h2turb") %in% magclass::getNames(vm_cap, dim = 1))) {
-    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("h2turb", "h2turbVRE")], dim = 3), "Cap|Electricity|Hydrogen (GW)"))
+    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("h2turb", "h2turbVRE")], dim = 3),                        "Cap|Electricity|Hydrogen (GW)"))
   }
-  tmp1 <- mbind(tmp1, setNames(dimSums(tmp1, dim = 3),                      "Cap|Electricity (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(tmp1, dim = 3),                                                          "Cap|Electricity (GW)"))
 
   tmp7 <- NULL
   tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2c")], dim = 3),         "Cap|Hydrogen|Gas|w/ CC (GW)"))
@@ -82,20 +95,24 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp7 <- mbind(tmp7, setNames(dimSums(tmp7, dim = 3),                      "Cap|Hydrogen (GW)"))
 
   tmp <- NULL
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "igccc"], dim = 3),               "Cap|Electricity|Coal|IGCC|w/ CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "igcc"], dim = 3),                "Cap|Electricity|Coal|IGCC|w/o CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("igccc", "pco", "pcc")], dim = 3), "Cap|Electricity|Coal|w/ CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngccc"], dim = 3),               "Cap|Electricity|Gas|CC|w/ CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngcc"], dim = 3),                "Cap|Electricity|Gas|CC|w/o CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngccc"], dim = 3),               "Cap|Electricity|Gas|w/ CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngt"], dim = 3),                 "Cap|Electricity|Gas|GT (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("igcc", "pc", "coalchp")], dim = 3), "Cap|Electricity|Coal|w/o CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp")], dim = 3), "Cap|Electricity|Gas|w/o CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("bioigccc")], dim = 3),         "Cap|Electricity|Biomass|w/ CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biochp", "bioigcc")], dim = 3), "Cap|Electricity|Biomass|w/o CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "dot"], dim = 3),           "Cap|Electricity|Oil|w/o CC (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "spv"], dim = 3),                 "Cap|Electricity|Solar|PV (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "csp"], dim = 3),                 "Cap|Electricity|Solar|CSP (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "igccc"], dim = 3),                        "Cap|Electricity|Coal|IGCC|w/ CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "igcc"], dim = 3),                         "Cap|Electricity|Coal|IGCC|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("igccc", "pco", "pcc")], dim = 3),       "Cap|Electricity|Coal|w/ CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "coalchp"], dim = 3),                      "Cap|Electricity|Coal|CHP (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngccc"], dim = 3),                        "Cap|Electricity|Gas|CC|w/ CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngcc"], dim = 3),                         "Cap|Electricity|Gas|CC|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngccc"], dim = 3),                        "Cap|Electricity|Gas|w/ CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "ngt"], dim = 3),                          "Cap|Electricity|Gas|GT (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "gaschp"], dim = 3),                       "Cap|Electricity|Gas|CHP (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("igcc", "pc", "coalchp")], dim = 3),     "Cap|Electricity|Coal|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp")], dim = 3),     "Cap|Electricity|Gas|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("bioigccc")], dim = 3),                  "Cap|Electricity|Biomass|w/ CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biochp", "bioigcc")], dim = 3),         "Cap|Electricity|Biomass|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "biochp"], dim = 3),                       "Cap|Electricity|Biomass|CHP (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "dot"], dim = 3),                          "Cap|Electricity|Oil|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "spv"], dim = 3),                          "Cap|Electricity|Solar|PV (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "csp"], dim = 3),                          "Cap|Electricity|Solar|CSP (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biochp", "gaschp", "coalchp")], dim = 3), "Cap|Electricity|CHP (GW)"))
 
   if ("windoff" %in% magclass::getNames(vm_cap, dim = 1)) {
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "wind"], dim = 3),                "Cap|Electricity|Wind|Onshore (GW)"))
@@ -106,11 +123,17 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwind"], dim = 3) * 1.2,      "Cap|Electricity|Storage|Battery|For Wind (GW)"))
 
   # heat
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("coalhp", "biohp", "solhe", "geohe")], dim = 3), "Cap|Heat (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("coalhp")], dim = 3), "Cap|Heat|Coal (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biohp")], dim = 3), "Cap|Heat|Biomass (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("solhe")], dim = 3), "Cap|Heat|Solar (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("geohe")], dim = 3), "Cap|Heat|Geothermal (GW)"))
+  tmp_chp <- NULL
+  tmp_chp <- mbind(tmp_chp, setNames(dimSums(vm_cap[, , c("solhe")], dim = 3),                                            "Cap|Heat|Solar (GW)"))
+  tmp_chp <- mbind(tmp_chp, setNames(dimSums(vm_cap[, , c("geohe")], dim = 3),                                            "Cap|Heat|Heat Pump (GW)"))
+  tmp_chp <- mbind(tmp_chp, setNames(dimSums(vm_cap[, , c("coalhp")], dim = 3)
+                                     + dimSums(vm_cap[, , c("coalchp")], dim = 3) * dataoc[,,"pecoal.seel.coalchp.sehe"], "Cap|Heat|Coal (GW)"))
+  tmp_chp <- mbind(tmp_chp, setNames(dimSums(vm_cap[, , c("biohp")], dim = 3)
+                                     + dimSums(vm_cap[, , c("biochp")], dim = 3) * dataoc[,,"pebiolc.seel.biochp.sehe"],  "Cap|Heat|Biomass (GW)"))
+  tmp_chp <- mbind(tmp_chp, setNames(dimSums(vm_cap[, , c("gashp")], dim = 3)
+                                     + dimSums(vm_cap[, , c("gaschp")], dim = 3) * dataoc[,,"pegas.seel.gaschp.sehe"],    "Cap|Heat|Gas (GW)"))
+  tmp_chp <- mbind(tmp_chp, setNames(dimSums(tmp_chp, dim = 3),                                                           "Cap|Heat (GW)"))
+  tmp <- mbind(tmp, tmp_chp)
 
   # gases
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("gastr", "coalgas", "biogas", "h22ch4")], dim = 3), "Cap|Gases (GW)"))
@@ -184,16 +207,17 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("coalh2c", "coalh2")], dim = 3),   "New Cap|Hydrogen|Coal (GW/yr)"))
 
   # heat capacity additions
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biohp")], dim = 3),   "New Cap|Heat|Biomass (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("coalhp")], dim = 3),   "New Cap|Heat|Coal (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("solhe")], dim = 3),   "New Cap|Heat|Solar (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("geohe")], dim = 3),   "New Cap|Heat|Geothermal (GW/yr)"))
-
-
-
-
-
-
+  tmp_chpAdd <- NULL
+  tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(vm_deltaCap[, , c("solhe")], dim = 3),                                       "New Cap|Heat|Solar (GW)"))
+  tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(vm_deltaCap[, , c("geohe")], dim = 3),                                       "New Cap|Heat|Heat Pump (GW)"))
+  tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(vm_deltaCap[, , c("coalhp")], dim = 3)
+                                           + dimSums(vm_cap[, , c("coalchp")], dim = 3) * dataoc[,,"pecoal.seel.coalchp.sehe"], "New Cap|Heat|Coal (GW)"))
+  tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(vm_deltaCap[, , c("biohp")], dim = 3)
+                                           + dimSums(vm_cap[, , c("biochp")], dim = 3) * dataoc[,,"pebiolc.seel.biochp.sehe"],  "New Cap|Heat|Biomass (GW)"))
+  tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(vm_deltaCap[, , c("gashp")], dim = 3)
+                                           + dimSums(vm_cap[, , c("gaschp")], dim = 3) * dataoc[,,"pegas.seel.gaschp.sehe"],    "New Cap|Heat|Gas (GW)"))
+  tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(tmp_chpAdd, dim = 3),                                                        "New Cap|Heat (GW)"))
+  tmp2 <- mbind(tmp2, tmp_chpAdd)
 
     # Newly built capacities liquids
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec", "bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl", "MeOH")], dim = 3),
