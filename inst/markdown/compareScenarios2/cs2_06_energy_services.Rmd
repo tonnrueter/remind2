@@ -6,7 +6,7 @@ tot <- "FE|Buildings"
 items <- c(
   "FE|Buildings|non-Heating|Electricity|Conventional",
   "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Electricity|Heat pumps",
+  "FE|Buildings|Heating|Electricity|Heat pump",
   "FE|Buildings|Heating|District Heating",
   "FE|Buildings|Heating|Solids",
   "FE|Buildings|Heating|Liquids",

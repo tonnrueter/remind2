@@ -256,7 +256,7 @@ items <- c(
   "SE|Heat|Biomass",
   "SE|Heat|Coal",
   "SE|Heat|Gas",
-  "SE|Heat|Electricity|Heat Pumps")
+  "SE|Heat|Electricity|Heat Pump")
 showAreaAndBarPlots(data, items)
 ```
 
