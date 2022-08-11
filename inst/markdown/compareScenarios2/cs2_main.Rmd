@@ -8,6 +8,7 @@ output:
     toc_depth: 6
     keep_tex: false
     template: cs2_latex_template.tex
+    extra_dependencies: ["float"]
     includes: 
       in_header: cs2_pdf_header_include.tex
   html_document:
@@ -43,7 +44,8 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = params$warning,
   fig.width = params$figWidth,
-  fig.height = params$figHeight)
+  fig.height = params$figHeight,
+  fig.pos = "H")
 ```
 
 
@@ -310,7 +312,9 @@ pCapVariables <- tribble(
 dataPop <-
   data %>%
   filter(variable == "Population") %>%
-  filter(scenario != "historical" | model == histRefModel["Population"]) %>%
+  filter( # Choose unique Population variable per scenario.
+    (scenario == "historical" & model == histRefModel["Population"]) |
+      (scenario != "historical" & model == "REMIND")) %>%
   select(scenario, region, period, value) %>%
   mutate(
     population = value * 1e6, # unit originally is million, now is 1
@@ -337,7 +341,9 @@ data <-
 dataGDP <-
   data %>%
   filter(variable == "GDP|PPP pCap") %>%
-  filter(scenario != "historical" | model == histRefModel["GDP|PPP pCap"]) %>%
+  filter( # Choose unique GDP|PPP pCap variable per scenario.
+    (scenario == "historical" & model == histRefModel["GDP|PPP pCap"]) |
+      (scenario != "historical" & model == "REMIND")) %>%
   select(scenario, region, period, value) %>%
   rename(gdp = value)
 

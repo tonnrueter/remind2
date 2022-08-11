@@ -20,6 +20,7 @@
 #'   \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 #'   Set this to \code{globalenv()} and \code{sections} to \code{NULL} to load
 #'   an preprocess data in your global environment during development.
+#' @param quiet \code{logical(1)}. Suppress printing during rendering?
 #' @param ... YAML parameters, see below.
 #' @return The value returned by \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 #' @section YAML Parameters:
@@ -121,6 +122,7 @@ compareScenarios2 <- function(
   outputFile = "CompareScenarios2",
   outputFormat = "PDF",
   envir = new.env(),
+  quiet = FALSE,
   ...
   ) {
   # Set yaml parameters and convert relative to absolute paths.
@@ -155,7 +157,8 @@ compareScenarios2 <- function(
     output_file = outputFile,
     output_format = outputFormat,
     params = yamlParams,
-    envir = envir)
+    envir = envir,
+    quiet = quiet)
 }
 
 # Copies the CompareScenarios2-Rmds to the specified location and modifies

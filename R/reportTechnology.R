@@ -96,7 +96,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   if (is.null(v_adjustteinv_avg)) {
     v_adjustteinv_avg <- v_investcost[,,]*0
   }
-  
+
   ############ build reporting #####################
 
   techmap <- c(
@@ -139,7 +139,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "coalftrec" = "Liquids|Fossil|Coal|w/o CC",
     "gashp"  = "Heat|Gas",
     "coalhp" = "Heat|Coal",
-    "geohe"  = "Heat|Electricity|Heat Pumps",
+    "geohe"  = "Heat|Electricity|Heat Pump",
     "biohp"  = "Heat|Biomass"
   )
 
@@ -155,7 +155,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   # add synfuel technologies
   techmap <- append(techmap, c("MeOH" = "Liquids|Hydrogen",
                                "h22ch4" = "Gases|Hydrogen"))
-  
+
 
   if (CDR_mod != "off") {
     cdrmap <- c("dac" = "DAC",
@@ -179,12 +179,12 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     techmap <- append(techmap, c("wind" = "Electricity|Wind",
                                  "storwind" = "Electricity|Storage|Battery|For Wind"))
   }
-  
+
   bar_and <- function(str) {
     ## prepend pipe if not empty
     ifelse(str == "", str, paste0("|", str))
   }
-  
+
   report_str <- function(tech, category = "", unit = "", predicate = "Tech") {
     ## Construct a reporting string of the form predicate|tech|category (unit)
     if (unit != "")
@@ -219,14 +219,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
       ## storage needs a special mapping
       int2ext[[report_str("Electricity|Storage|Battery|For PV", category, unit)]] <- report_str("Electricity|Solar|PV", unit = "EJ/yr", predicate = "SE")
       int2ext[[report_str("Electricity|Storage|Battery|For CSP", category, unit)]] <- report_str("Electricity|Solar|CSP", unit = "EJ/yr", predicate = "SE")
-      
+
       if ("windoff" %in% te) {
         int2ext[[report_str("Electricity|Storage|Battery|For Wind Onshore", category, unit)]] <- report_str("Electricity|Wind|Onshore", unit = "EJ/yr", predicate = "SE")
         int2ext[[report_str("Electricity|Storage|Battery|For Wind Offshore", category, unit)]] <- report_str("Electricity|Wind|Offshore", unit = "EJ/yr", predicate = "SE")
       } else {
         int2ext[[report_str("Electricity|Storage|Battery|For Wind", category, unit)]] <- report_str("Electricity|Wind", unit = "EJ/yr", predicate = "SE")
       }
-      
+
     } else if (all(map %in% carmap)) {
       ## cars need a special mapping, too
       ## for global avgs we use FEs as weights
@@ -258,11 +258,11 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     category <- "Capital Costs|w/ Adj Costs"
     unit <- "US$2005/kW"
     factor <- 1000.
-    
+
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, techmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
   }
-  
+
   if (tran_mod == "complex") {
     unit <- "US$2005/veh"
     tmp <- bind_category(tmp, v_investcost, category, unit, factor, carmap)
@@ -352,7 +352,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   output[is.na(output) | output == 0] <- 1E-30
   ## delete "+" and "++" from variable names
   output <- deletePlus(output)
-  
+
 
   # add global values
   map <- data.frame(region = getRegions(tmp), world = "GLO", stringsAsFactors = FALSE)

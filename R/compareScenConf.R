@@ -20,6 +20,7 @@
 #'
 #' @return list with $allwarnings and $out
 #' @importFrom utils read.csv2
+#' @importFrom gms getLine
 #' @export
 compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names = 1,
                             renamedCols = NULL, renamedRows = NULL, printit = TRUE) {

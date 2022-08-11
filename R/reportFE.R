@@ -574,7 +574,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     carrierBuild <- c(
       feelcb  = "FE|Buildings|non-Heating|Electricity|Conventional (EJ/yr)",
       feelrhb = "FE|Buildings|Heating|Electricity|Resistance (EJ/yr)",
-      feelhpb = "FE|Buildings|Heating|Electricity|Heat pumps (EJ/yr)",
+      feelhpb = "FE|Buildings|Heating|Electricity|Heat pump (EJ/yr)",
       feheb   = "FE|Buildings|Heating|District Heating (EJ/yr)",
       fesob   = "FE|Buildings|Heating|Solids (EJ/yr)",
       fehob   = "FE|Buildings|Heating|Liquids (EJ/yr)",
@@ -664,7 +664,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                   setNames(dimSums(v_prodEs[,,"uecwgab"],dim=3,na.rm=T),        "UE|Buildings|Cooking and Water|Gases (EJ/yr)"),
                   setNames(dimSums(v_prodEs[,,"uecwhob"],dim=3,na.rm=T),        "UE|Buildings|Cooking and Water|Liquids (EJ/yr)"),
                   setNames(dimSums(v_prodEs[,,"uecwh2b"],dim=3,na.rm=T),        "UE|Buildings|Cooking and Water|Hydrogen (EJ/yr)"),
-                  setNames(dimSums(v_prodEs[,,"uecwhpb"],dim=3,na.rm=T),        "UE|Buildings|Cooking and Water|Electricity|Heat pumps (EJ/yr)"),
+                  setNames(dimSums(v_prodEs[,,"uecwhpb"],dim=3,na.rm=T),        "UE|Buildings|Cooking and Water|Electricity|Heat pump (EJ/yr)"),
                   setNames(dimSums(v_prodEs[,,c("uecwelb","uecwhpb")],dim=3,na.rm=T), "UE|Buildings|Cooking and Water|Electricity (EJ/yr)"),
 
 
@@ -676,7 +676,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                   setNames(dimSums(v_prodEs[,,"ueshgab"],dim=3,na.rm=T),        "UE|Buildings|Space Heating|Gases (EJ/yr)"),
                   setNames(dimSums(v_prodEs[,,"ueshhob"],dim=3,na.rm=T),        "UE|Buildings|Space Heating|Liquids (EJ/yr)"),
                   setNames(dimSums(v_prodEs[,,"ueshh2b"],dim=3,na.rm=T),        "UE|Buildings|Space Heating|Hydrogen (EJ/yr)"),
-                  setNames(dimSums(v_prodEs[,,"ueshhpb"],dim=3,na.rm=T),        "UE|Buildings|Space Heating|Electricity|Heat pumps (EJ/yr)"),
+                  setNames(dimSums(v_prodEs[,,"ueshhpb"],dim=3,na.rm=T),        "UE|Buildings|Space Heating|Electricity|Heat pump (EJ/yr)"),
                   setNames(dimSums(v_prodEs[,,c("ueshelb","ueshhpb")],dim=3,na.rm=T), "UE|Buildings|Space Heating|Electricity (EJ/yr)"),
 
                   # Final Energy
@@ -690,7 +690,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                   setNames(dimSums(vm_demFeForEs[,,"uecwgab"],dim=3,na.rm=T),        "FE|Buildings|Cooking and Water|Gases (EJ/yr)"),
                   setNames(dimSums(vm_demFeForEs[,,"uecwhob"],dim=3,na.rm=T),        "FE|Buildings|Cooking and Water|Liquids (EJ/yr)"),
                   setNames(dimSums(vm_demFeForEs[,,"uecwh2b"],dim=3,na.rm=T),        "FE|Buildings|Cooking and Water|Hydrogen (EJ/yr)"),
-                  setNames(dimSums(vm_demFeForEs[,,"uecwhpb"],dim=3,na.rm=T),        "FE|Buildings|Cooking and Water|Electricity|Heat pumps (EJ/yr)"),
+                  setNames(dimSums(vm_demFeForEs[,,"uecwhpb"],dim=3,na.rm=T),        "FE|Buildings|Cooking and Water|Electricity|Heat pump (EJ/yr)"),
 
                   setNames(dimSums(vm_demFeForEs[,,c("uecwelb","uecwhpb")],dim=3,na.rm=T), "FE|Buildings|Cooking and Water|Electricity (EJ/yr)"),
 
@@ -704,7 +704,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                   setNames(dimSums(vm_demFeForEs[,,"ueshgab"],dim=3,na.rm=T),        "FE|Buildings|Space Heating|Gases (EJ/yr)"),
                   setNames(dimSums(vm_demFeForEs[,,"ueshhob"],dim=3,na.rm=T),        "FE|Buildings|Space Heating|Liquids (EJ/yr)"),
                   setNames(dimSums(vm_demFeForEs[,,"ueshh2b"],dim=3,na.rm=T),        "FE|Buildings|Space Heating|Hydrogen (EJ/yr)"),
-                  setNames(dimSums(vm_demFeForEs[,,"ueshhpb"],dim=3,na.rm=T),        "FE|Buildings|Space Heating|Electricity|Heat pumps (EJ/yr)"),
+                  setNames(dimSums(vm_demFeForEs[,,"ueshhpb"],dim=3,na.rm=T),        "FE|Buildings|Space Heating|Electricity|Heat pump (EJ/yr)"),
                   setNames(dimSums(vm_demFeForEs[,,c("ueshelb","ueshhpb")],dim=3,na.rm=T), "FE|Buildings|Space Heating|Electricity (EJ/yr)")#,
 
     )
@@ -1377,7 +1377,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                   setNames(dimSums(vm_demFENonEnergySector, dim=3),
                            "FE|Non-energy Use (EJ/yr)"),
 
-
                   setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst"), dim=3),
                            "FE|Non-energy Use|+|Industry (EJ/yr)"),
 
@@ -1442,8 +1441,24 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                  setNames(dimSums(vm_demFeSector_woNonEn[,,"sesofos"],dim=3),                                                       "FE|w/o Non-energy Use|Solids|+|Fossil (EJ/yr)")
     )
 
-
-
+      out <- mbind(out,
+                 setNames(out[,,"FE (EJ/yr)"]
+                          - out[,,"FE|Transport|Bunkers (EJ/yr)"]
+                          - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
+                          "FE|w/o Non-energy Use w/o Bunkers (EJ/yr)"),
+                 setNames(out[,,"FE|++|Industry (EJ/yr)"]
+                          - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
+                          "FE|w/o Non-energy Use|Industry (EJ/yr)"),
+                 setNames(out[,,"FE|Industry|+|Liquids (EJ/yr)"]
+                          - out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
+                          "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
+                 setNames(out[,,"FE|Industry|+|Gases (EJ/yr)"]
+                          - out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
+                          "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
+                 setNames(out[,,"FE|Industry|+|Solids (EJ/yr)"]
+                          - out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
+                          "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)") )
+      
 
     #FE per sector and per emission market (ETS and ESR)
     out <- mbind(out,
@@ -1502,6 +1517,61 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
     )
 
+ # energy carrier split in FE energy use variables
+      out <- mbind(out,
+                   # FE industry (without feedstocks) liquids: from fossils, biomass, hydrogen
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
+                              out[,,"FE|Industry|Liquids|+|Hydrogen (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
+                              out[,,"FE|Industry|Liquids|+|Biomass (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
+                              out[,,"FE|Industry|Liquids|+|Fossil (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
+                   # FE industry (without feedstocks) gases: from fossils, biomass, hydrogen
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
+                              out[,,"FE|Industry|Gases|+|Hydrogen (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
+                              out[,,"FE|Industry|Gases|+|Biomass (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
+                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
+                              out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"))
+
+      tryCatch(
+        expr = {
+          out <- mbind(
+            out,
+            setNames(
+              out[, , "FE|Industry|Chemicals|+|Solids (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
+              "FE|w/o Non-energy Use|Industry|Chemicals|Solids (EJ/yr)"
+            ),
+            setNames(
+              out[, , "FE|Industry|Chemicals|+|Liquids (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
+              "FE|w/o Non-energy Use|Industry|Chemicals|Liquids (EJ/yr)"
+            ),
+            setNames(
+              out[, , "FE|Industry|Chemicals|+|Gases (EJ/yr)"] - out[, , "FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
+              "FE|w/o Non-energy Use|Industry|Chemicals|Gases (EJ/yr)"
+            ),
+            setNames(
+              out[, , "FE|Industry|+++|Chemicals (EJ/yr)"] - out[, , "FE|Non-energy Use|+|Industry (EJ/yr)"],
+              "FE|w/o Non-energy Use|Industry|Chemicals (EJ/yr)"
+            )
+          )
+        },
+        error = function(e) {
+          warning(e)
+        }
+      )
 
 
   }

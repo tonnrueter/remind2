@@ -50,6 +50,18 @@ items <- c(
   "FE|Buildings|Solids",
   "FE|Buildings|Liquids",
   "FE|Buildings|Hydrogen")
+items2 <- c(
+  "FE|Buildings|Electricity",
+  "FE|Buildings|Gases|Fossil",
+  "FE|Buildings|Gases|Biomass",
+  "FE|Buildings|Gases|Hydrogen",
+  "FE|Buildings|Heat",
+  "FE|Buildings|Solids|Fossil",
+  "FE|Buildings|Solids|Biomass",
+  "FE|Buildings|Liquids|Fossil",
+  "FE|Buildings|Liquids|Biomass",
+  "FE|Buildings|Liquids|Hydrogen",
+  "FE|Buildings|Hydrogen")
 ```
 
 \newpage
@@ -59,6 +71,7 @@ items <- c(
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items2, tot, orderVars = "user")
 ```
 
 #### FE|Buildings|* Line Plots
@@ -88,6 +101,18 @@ items <- c(
   "FE|Industry|Solids",
   "FE|Industry|Liquids",
   "FE|Industry|Hydrogen")
+items2 <- c(
+  "FE|Industry|Electricity",
+  "FE|Industry|Gases|Fossil",
+  "FE|Industry|Gases|Biomass",
+  "FE|Industry|Gases|Hydrogen",
+  "FE|Industry|Heat",
+  "FE|Industry|Solids|Fossil",
+  "FE|Industry|Solids|Biomass",
+  "FE|Industry|Liquids|Fossil",
+  "FE|Industry|Liquids|Biomass",
+  "FE|Industry|Liquids|Hydrogen",
+  "FE|Industry|Hydrogen")
 ```
 
 \newpage
@@ -97,6 +122,7 @@ items <- c(
 ```{r}
 showAreaAndBarPlots(data, items, tot)
 showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items2, tot, orderVars = "user")
 ```
 
 #### FE|Industry|* Line Plots
