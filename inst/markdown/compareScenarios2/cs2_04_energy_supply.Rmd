@@ -4,47 +4,49 @@
 
 ```{r}
 items <- c(
+#  "Energy Investments|Elec|Grid",
+  "Energy Investments|Elec|Grid|BEV Chargers",
+  "Energy Investments|Elec|Grid|VRE support",
+  "Energy Investments|Elec|Grid|Normal",
+  "Energy Investments|Elec|Hydrogen",
+  "Energy Investments|Elec|Storage",
+  "Energy Investments|Elec|Solar",
+  "Energy Investments|Elec|Wind",
+  "Energy Investments|Elec|Geothermal",
+  "Energy Investments|Elec|Hydro",
   "Energy Investments|Elec|Biomass|w/ CC",
   "Energy Investments|Elec|Biomass|w/o CC",
-  "Energy Investments|Elec|Coal|w/ CC",
-  "Energy Investments|Elec|Coal|w/o CC",
-  "Energy Investments|Elec|Fossil",
+  "Energy Investments|Elec|Oil",
   "Energy Investments|Elec|Gas|w/ CC",
   "Energy Investments|Elec|Gas|w/o CC",
-  "Energy Investments|Elec|Geothermal",
-  "Energy Investments|Elec|Grid",
-  "Energy Investments|Elec|Hydro",
-  "Energy Investments|Elec|Hydrogen",
-  "Energy Investments|Elec|Nuclear",
-  "Energy Investments|Elec|Oil",
-  "Energy Investments|Elec|Solar",
-  "Energy Investments|Elec|Storage",
-  "Energy Investments|Elec|Wind")
-showAreaAndBarPlots(data, items)
+  "Energy Investments|Elec|Coal|w/ CC",
+  "Energy Investments|Elec|Coal|w/o CC",
+  "Energy Investments|Elec|Nuclear")
+showAreaAndBarPlots(data, items, orderVars = "user")
 ```
 
 ## Capacities Electricity
 
 ```{r}
 items <- c(
-  "Cap|Electricity|Coal|w/ CC",
-  "Cap|Electricity|Coal|w/o CC",
-  "Cap|Electricity|Gas|w/ CC",
-  "Cap|Electricity|Gas|w/o CC",
-  "Cap|Electricity|Oil|w/o CC",
-  "Cap|Electricity|Biomass",
-  "Cap|Electricity|Nuclear",
-  "Cap|Electricity|Hydro",
-  "Cap|Electricity|Geothermal",
-  "Cap|Electricity|Hydrogen",
   "Cap|Electricity|Storage|Battery",
   "Cap|Electricity|Solar",
   if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
     c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
   else
-    "Cap|Electricity|Wind"
+    "Cap|Electricity|Wind",
+  "Cap|Electricity|Hydro",
+  "Cap|Electricity|Geothermal",
+  "Cap|Electricity|Biomass",
+  "Cap|Electricity|Hydrogen",
+  "Cap|Electricity|Gas|w/ CC",
+  "Cap|Electricity|Gas|w/o CC",
+  "Cap|Electricity|Oil|w/o CC",
+  "Cap|Electricity|Coal|w/ CC",
+  "Cap|Electricity|Coal|w/o CC",
+  "Cap|Electricity|Nuclear"
   )
-showAreaAndBarPlots(data, items)
+showAreaAndBarPlots(data, items, orderVars = "user")
 ```
 
 ## Capacities electricity line plots
@@ -109,7 +111,7 @@ items <- c(
 showAreaAndBarPlots(data, items)
 ```
 
-### PE|Coal
+### PE|Gas
 ```{r}
 items <- c(
   "PE|Gas|Gases",
@@ -226,8 +228,8 @@ showAreaAndBarPlots(data, items)
 ### SE|Electricity - Usage
 ```{r}
 items <- c(
-  "SE|Input|Hydrogen|Synthetic Fuels|Gases",
-  "SE|Input|Hydrogen|Synthetic Fuels|Liquids",
+  "SE|Input|Electricity|Hydrogen|Synthetic Fuels|Liquids",
+  "SE|Input|Electricity|Hydrogen|Synthetic Fuels|Gases",
   "SE|Input|Electricity|Hydrogen|direct FE H2",
   "SE|Input|Electricity|Hydrogen|VRE Storage",
   "SE|Input|Electricity|Buildings",
@@ -254,11 +256,42 @@ items <- c(
   "SE|Heat|Biomass",
   "SE|Heat|Coal",
   "SE|Heat|Gas",
-  "SE|Heat|Electricity|Heat Pumps")
+  "SE|Heat|Electricity|Heat Pump")
 showAreaAndBarPlots(data, items)
 ```
 
 ## Secondary Energy line plots
+### SE|Liquids
+```{r}
+showLinePlots(data, "SE|Liquids")
+```
+
+### SE|Gases
+```{r}
+showLinePlots(data, "SE|Gases")
+```
+
+### SE|Hydrogen
+```{r}
+showLinePlots(data, "SE|Hydrogen")
+```
+
+### SE|Electricity
+```{r}
+showLinePlots(data, "SE|Electricity")
+```
+
+### SE|Solids
+```{r}
+showLinePlots(data, "SE|Solids")
+```
+
+### SE|Heat
+```{r}
+showLinePlots(data, "SE|Heat")
+```
+
+## Secondary Energy line plots - detail
 ### SE|Gases
 ```{r}
 showLinePlots(data,  c("SE|Gases|Fossil|Natural Gas", "SE|Gases|Gas"))
@@ -271,10 +304,15 @@ showLinePlots(data, "SE|Gases|Biomass")
 showLinePlots(data, "SE|Electricity|Gas")
 showLinePlots(data, "SE|Electricity|Coal")
 showLinePlots(data, "SE|Electricity|Oil")
-showLinePlots(data, "SE|Electricity|Hydro")
-showLinePlots(data, "SE|Electricity|Wind")
 showLinePlots(data, "SE|Electricity|Nuclear")
+showLinePlots(data, "SE|Electricity|Hydro")
+showLinePlots(data, "SE|Electricity|Hydrogen")
+showLinePlots(data, "SE|Electricity|Wind")
+showLinePlots(data, "SE|Electricity|Wind|Onshore")
+showLinePlots(data, "SE|Electricity|Wind|Offshore")
 showLinePlots(data, "SE|Electricity|Solar")
+showLinePlots(data, "SE|Electricity|Solar|PV")
+showLinePlots(data, "SE|Electricity|Solar|CSP")
 showLinePlots(data, "SE|Electricity|Biomass")
 ```
 

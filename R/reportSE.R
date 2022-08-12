@@ -273,8 +273,8 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(vm_prodSe, dataoc, oc2te, entySe,  pebio, "sehe",                   name = "SE|Heat|+|Biomass (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "sehe",                 name = "SE|Heat|+|Coal (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pegas", "sehe",                  name = "SE|Heat|+|Gas (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pegeo", "sehe",                  name = "SE|Heat|+|Geothermal (EJ/yr)"), # same as SE|Heat|Electricity|Heat Pumps
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pegeo", "sehe",                  name = "SE|Heat|Electricity|Heat Pumps (EJ/yr)"),
+    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pegeo", "sehe",                  name = "SE|Heat|+|Geothermal (EJ/yr)"), # same as SE|Heat|Electricity|Heat Pump
+    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pegeo", "sehe",                  name = "SE|Heat|Electricity|Heat Pump (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pesol", "sehe",                  name = "SE|Heat|+|Solar (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe,  entyPe, "sehe", te = techp,      name = "SE|Heat|Combined Heat and Power (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pecoal", "sehe", te = "coalchp", name = "SE|Heat|Coal|Combined Heat and Power (EJ/yr)"),
@@ -413,7 +413,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   tmp1 <- mbind(tmp1, setNames(
     -pm_conv_TWa_EJ *
       (dimSums(CoeffOwnConsSeel_woCCS[, , "geohe"] * prodOwnCons[, , "geohe"], dim = 3)),
-    "SE|Input|Electricity|Self Consumption Energy System|Central Ground Heat Pumps (EJ/yr)"))
+    "SE|Input|Electricity|Self Consumption Energy System|Central Ground Heat Pump (EJ/yr)"))
 
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[, , "SE|Hydrogen|+|Electricity (EJ/yr)"] / tmp1[, , "SE|Hydrogen (EJ/yr)"])

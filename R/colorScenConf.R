@@ -15,6 +15,7 @@
 #' @importFrom openxlsx createWorkbook addWorksheet writeData createStyle addStyle saveWorkbook
 #' @importFrom utils read.csv2
 #' @importFrom withr defer local_connection
+#' @importFrom gms getLine
 #' @export
 colorScenConf <- function(fileList = "", configfile = "default.cfg") {
   if (!file.exists(configfile)) {
