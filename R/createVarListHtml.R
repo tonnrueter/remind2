@@ -15,7 +15,7 @@ innerNode2Html <- function(name, item) {
   content <- namedList2Html(item)
   if ("INFO" %in% names(item)) name <- paste0("<b>", name, "</b>")
   html <- c(
-    "<details >",
+    "<details>",
     paste0("  <summary>", name, "</summary>"),
     paste0("  ", content),
     "</details>")
@@ -28,7 +28,7 @@ info2Html <- function(item) {
     "<b>", names(item), "</b>: ",
     vapply(item, paste0, character(1), collapse = ", "))
   html <- c(
-    "<details >",
+    "<details>",
     paste0("  <summary>", name, "</summary>"),
     "  <ul>",
     paste0("    <li>", content, "</li>"),
