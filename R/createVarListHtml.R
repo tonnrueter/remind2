@@ -6,7 +6,7 @@ node2Html <- function(name, item) {
   } else {
     html <- paste0(
       "<div><b>", name, "</b>: ",
-      paste0(as.character(item), collapse=", ") , "</div>")
+      paste0(as.character(item), collapse = ", "), "</div>")
   }
   return(html)
 }
@@ -26,12 +26,12 @@ info2Html <- function(item) {
   name <- "<i>INFO</i>"
   content <- paste0(
     "<b>", names(item), "</b>: ",
-    vapply(item, paste0, character(1), collapse=", "))
+    vapply(item, paste0, character(1), collapse = ", "))
   html <- c(
     "<details >",
     paste0("  <summary>", name, "</summary>"),
     "  <ul>",
-    paste0("    <li>", content,"</li>"),
+    paste0("    <li>", content, "</li>"),
     "  </ul>",
     "</details>")
   return(html)
@@ -80,4 +80,3 @@ createVarListHtml <- function(x, outFileName, title = "List of Variables") {
   message("Done.")
   return(invisible(NULL))
 }
-

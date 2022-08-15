@@ -10,7 +10,7 @@ getProjectPath <- function(project = "remind") {
 
 getScenNamesFast <- function(outputDirs) {
   folder <- basename(outputDirs)
-  substr(folder, start=0, stop=nchar(folder)-20)
+  substr(folder, start = 0, stop = nchar(folder) - 20)
 }
 
 
@@ -40,7 +40,7 @@ getNewsestModeltests <- function(namePattern, requireMif) {
     bind_cols(runName = allRunNames) %>%
     mutate(date = as.Date(.data$date)) %>%
     mutate(path = file.path(.env$modeltestOutPath, .data$runName)) %>%
-    mutate(mifScen = getMifScenPath(path))
+    mutate(mifScen = getMifScenPath(.data$path))
   selectedRuns <-
     allRuns %>%
     filter(grepl(x = .data$name, pattern = .env$namePattern)) %>%
@@ -153,7 +153,7 @@ loadModeltest <- function(
     if (!all(success))
       warning(
         "failed copying following files\n",
-        paste(from[!success], collapse="\n"),
+        paste(from[!success], collapse = "\n"),
         immediate. = TRUE)
   }
 
