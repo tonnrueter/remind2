@@ -45,7 +45,7 @@ namedList2Html <- function(v) {
 
 renderVarListAsHtml <- function(varList, outFileName, title) {
   htmlLines <- namedList2Html(varList)
-  htmlTemplateFile <- system.file("variablesAsListTemplate.html", package = "remind2")
+  htmlTemplateFile <- system.file("extdata/variablesAsListTemplate.html", package = "remind2")
   htmlTemplate <- readLines(htmlTemplateFile)
   html <-
     htmlTemplate %>%
