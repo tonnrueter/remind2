@@ -25,20 +25,24 @@
 reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                                t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
 
-  #---- Functions ----
+  #### ---- Functions ----
   findRealModule <- function(moduleSet, moduleName) {
     return(moduleSet[moduleSet$modules == moduleName, 2])
   }
 
-  ####### conversion factors ##########
+  #### ---- conversion factors ----
   TWa_2_EJ     <- 31.536
-  #####################################
+  sm_DpGJ_2_TDpTWa  <- readGDX(gdx, "sm_DpGJ_2_TDpTWa")
+
+  #### ---- read in data from GDX ----
+
   t2005to2150        <- c("y2005", "y2010", "y2015", "y2020", "y2025", "y2030", "y2035", "y2040", "y2045", "y2050",
                           "y2055", "y2060", "y2070", "y2080", "y2090", "y2100", "y2110", "y2130", "y2150")
 
+
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
 
-  vm_cesIO   <- readGDX(gdx, c("vm_cesIO", "v_vari"), field = "l", format = "first_found")
+  vm_cesIO   <- readGDX(gdx, c("vm_cesIO", "v_vari"), field = "l", format = "first_found")[,t2005to2150,]
 
   vm_invMacro <- readGDX(gdx, c("vm_invMacro", "v_invest"), field = "l", format = "first_found")
   pm_pvp     <- readGDX(gdx, name = c("pm_pvp", "p80_pvp"), format = "first_found")[, , "good"]
@@ -59,11 +63,11 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
     indu_mod <- "fixed_shares"
     buil_mod <- "simple"
   }
-  #####################################
+
   # choose the CES entries names for transport
   name_trsp <- c("fepet", "ueLDVt", "fedie", "ueHDVt", "feelt", "ueelTt")
   name_trsp <- name_trsp[name_trsp %in% getNames(vm_cesIO)]
-  #####################################
+
 
   cons     <- setNames(readGDX(gdx, name = "vm_cons", field = "l", format = "first_found")[, t2005to2150, ] * 1000,
                   "Consumption (billion US$2005/yr)")
