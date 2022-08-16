@@ -358,6 +358,13 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
 
+  # remove regional aggregations for CES Prices and CES MRS
+  vars.remove.agg <- c(grep("Internal\\|CES Function\\|MRS", getNames(out), value=T),
+                       grep("Internal\\|CES Function\\|CES Price", getNames(out), value=T))
+
+  # set to zero instead of NA because NA erases the labels in compare scenario 2
+  out[setdiff(getRegions(out), getRegions(CES.price)),,vars.remove.agg] <- 0
+
   # calculate interest rate
   inteRate <- new.magpie(getRegions(out),
                          getYears(out),
