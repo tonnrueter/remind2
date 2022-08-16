@@ -129,3 +129,34 @@ showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|feli_otherInd")
 
 ```
 
+## CES Function Value Added (selected)
+
+### Buildings
+
+
+```{r Buildings Value Added}
+
+showLinePlots(data, "Internal|CES Function|Value Added|enb")
+showLinePlots(data, "Internal|CES Function|Value Added|enhb")
+showLinePlots(data, "Internal|CES Function|Value Added|feelcb")
+```
+
+### Industry
+
+```{r Industry Value Added}
+
+showLinePlots(data, "Internal|CES Function|Value Added|ue_industry")
+showLinePlots(data, "Internal|CES Function|Value Added|ue_steel")
+showLinePlots(data, "Internal|CES Function|Value Added|ue_cement")
+showLinePlots(data, "Internal|CES Function|Value Added|ue_chemicals")
+showLinePlots(data, "Internal|CES Function|Value Added|ue_otherInd")
+```
+
+### Transport
+
+```{r Transport Value Added}
+
+showLinePlots(data, "Internal|CES Function|Value Added|entrp")
+
+```
+
