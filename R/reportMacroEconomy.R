@@ -89,8 +89,8 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   forcOs                  <- readGDX(gdx, "vm_forcOs", field = "l")[, t2005to2150, ]
   inconvPenCoalSolids     <- readGDX(gdx, c("v02_inconvPenCoalSolids",
                                             "v_inconvPenCoalSolids"), field = "l")[, t2005to2150, ]
-  o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F) # CES derivatives aka CES prices, marginal products
-  o01_CESmrs <- readGDX(gdx, "o01_CESmrs", restore_zeros = F) # marginal rate of substitution (ratio of CES prices)
+  o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F, react = "silent") # CES derivatives aka CES prices, marginal products
+  o01_CESmrs <- readGDX(gdx, "o01_CESmrs", restore_zeros = F, react = "silent") # marginal rate of substitution (ratio of CES prices)
 
   # add zeros in first years from 2005 for o01_CESderivatives and o01_CESmrs
   o01_CESderivatives_w0 <- new.magpie(getRegions(o01_CESderivatives),t2005to2150,  getNames(o01_CESderivatives))
@@ -244,6 +244,9 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   # (internal variables that should usually not be reported to external projects
   #  but that serve as diagnostic output for understanding REMIND results better)
 
+  # check that CES derivatives output parameter exists in GDX
+  if (length(o01_CESderivatives > 0)) {
+
 
   ## 1.) CES Prices (CES Derivatives)
 
@@ -338,7 +341,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   # bind all CES variables together in one array
   ces <- mbind(ces,CES.price,CES.mrs,CES.value)
 
-
+  }
   #### end CES function reporting
 
 
@@ -362,8 +365,11 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   vars.remove.agg <- c(grep("Internal\\|CES Function\\|MRS", getNames(out), value=T),
                        grep("Internal\\|CES Function\\|CES Price", getNames(out), value=T))
 
-  # set to zero instead of NA because NA erases the labels in compare scenario 2
-  out[setdiff(getRegions(out), getRegions(CES.price)),,vars.remove.agg] <- 0
+
+  if (length(o01_CESderivatives > 0)) {
+    # set to zero instead of NA because NA erases the labels in compare scenario 2
+    out[setdiff(getRegions(out), getRegions(CES.price)),,vars.remove.agg] <- 0
+  }
 
   # calculate interest rate
   inteRate <- new.magpie(getRegions(out),
