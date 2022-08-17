@@ -93,13 +93,13 @@ variablesAsList <- function(
       df$value <- NULL
       df$period <- NULL
     }
+    counts <- dplyr::count(df, .data$name)
     df <- distinct(df)
     summary <-
       df %>%
       group_by(.data$name) %>%
-      summarize(
-        across(everything(), ~ list(as.character(unique(.x)))),
-        count = dplyr::n())
+      summarize(across(everything(), ~ list(as.character(unique(.x))))) %>%
+      left_join(counts, by = "name")
     if (!is.null(details)) {
       summary <- left_join(summary, details, by = "name")
     }
