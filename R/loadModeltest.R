@@ -8,8 +8,19 @@ getProjectPath <- function(project = "remind") {
   possibleProjectLocations[sel]
 }
 
+getScenNamesFast <- function(outputDirs) {
+  folder <- basename(outputDirs)
+  substr(folder, start = 0, stop = nchar(folder) - 20)
+}
+
+
+getMifScenPath <- function(outputDirs) {
+  names <- getScenNamesFast(outputDirs)
+  file.path(outputDirs, paste0("REMIND_generic_", names, ".mif"))
+}
+
 #' @importFrom dplyr bind_cols
-getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
+getNewsestModeltests <- function(namePattern, requireMif) {
 
   modeltestOutPath <- file.path(getProjectPath(), "modeltests/output")
   entries <- dir(modeltestOutPath)
@@ -19,7 +30,7 @@ getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
       x = .,
       pattern = "^[a-zA-Z0-9-]+_\\d{4}-\\d{2}-\\d{2}_\\d{2}\\.\\d{2}\\.\\d{2}$",
       value = TRUE)
-  newest <-
+  allRuns <-
     allRunNames %>%
     strsplit("_", fixed = TRUE) %>%
     unlist() %>%
@@ -28,21 +39,21 @@ getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
     as_tibble() %>%
     bind_cols(runName = allRunNames) %>%
     mutate(date = as.Date(.data$date)) %>%
-    filter(date >= max(.data$date) - 3) # day of newest run until 3 days before
+    mutate(path = file.path(.env$modeltestOutPath, .data$runName)) %>%
+    mutate(mifScen = getMifScenPath(.data$path))
   selectedRuns <-
-    newest %>%
+    allRuns %>%
     filter(grepl(x = .data$name, pattern = .env$namePattern)) %>%
-    mutate(path = file.path(.env$modeltestOutPath, .data$runName))
+    filter(!.env$requireMif | file.exists(.data$mifScen)) %>%
+    filter(date >= max(.data$date) - 3) # day of newest run until 3 days before
 
   return(selectedRuns)
 }
 
 cs2InputPaths <- function(outputDirs) {
-  names <- lucode2::getScenNames(outputDirs)
-  # conditional for _adjustedPolicyCosts.mif not needed anymore since REMIND PR #881.
   path <- list(
     run = outputDirs,
-    mifScen = file.path(outputDirs, paste0("REMIND_generic_", names, ".mif")),
+    mifScen = getMifScenPath(outputDirs),
     mifHist = file.path(outputDirs[1], "historical.mif"),
     cfgScen = file.path(outputDirs, "config.Rdata"),
     cfgDefault = file.path(outputDirs[1], "../../config/default.cfg")
@@ -124,7 +135,8 @@ loadModeltest <- function(
 
   cat("Obtaining modeltest paths.\n")
 
-  modeltests <- getNewsestModeltests(namePattern)
+  modeltests <- getNewsestModeltests(namePattern, requireMif = TRUE)
+  if (NROW(modeltests) == 0) stop("Did not find model tests.")
   path <- cs2InputPaths(modeltests$path)
   tmpPath <- list(
     mifScen = file.path(folder, paste0(modeltests$name, ".mif")),
@@ -137,7 +149,12 @@ loadModeltest <- function(
         "\nto\n  ", paste(to, collapse = "\n  "),
         "\n",
         sep = "")
-    file.copy(from, to, overwrite = TRUE)
+    success <- file.copy(from, to, overwrite = TRUE)
+    if (!all(success))
+      warning(
+        "failed copying following files\n",
+        paste(from[!success], collapse = "\n"),
+        immediate. = TRUE)
   }
 
   copyFile(path$mifScen, tmpPath$mifScen)
