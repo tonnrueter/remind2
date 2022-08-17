@@ -94,7 +94,6 @@ createVarListHtml <- function(
   ) {
   message("Creating the hierarchical list structure...")
   varList <- variablesAsList(x, entry = "INFO", usePlus = usePlus, details = details)
-  browser()
   outFileName <- normalizePath(outFileName, mustWork = FALSE)
   message("Creating HTML and writing it to ", outFileName, "...")
   renderVarListAsHtml(varList, outFileName, title)
