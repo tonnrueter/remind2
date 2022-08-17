@@ -77,7 +77,7 @@ variablesAsList <- function(
   }
   vars <- as.character(vars)
   stopifnot(is.character(vars))
-  stopifnot(is.null(data) || is.quitte(data))
+  stopifnot(is.null(data) || quitte::is.quitte(data))
 
   # Create a data frame summary from vars and data containing all relevant info for further processing.
   if (entry == "INFO") {
@@ -96,10 +96,10 @@ variablesAsList <- function(
     df <- distinct(df)
     summary <-
       df %>%
-      group_by(name) %>%
+      group_by(.data$name) %>%
       summarize(
         across(everything(), ~ list(as.character(unique(.x)))),
-        count = n())
+        count = dplyr::n())
     if (!is.null(details)) {
       summary <- left_join(summary, details, by = "name")
     }
