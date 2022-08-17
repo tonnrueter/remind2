@@ -61,6 +61,7 @@ renderVarListAsHtml <- function(varList, outFileName, title) {
 #' and writes it as an HTML document that displays the hierarchy via the
 #' \code{<details>} HTML5-tag.
 #'
+#' @seealso \code{\link{variablesAsList}}
 #' @param outFileName A single string. The path of the output file, preferably
 #'   ending in \code{.html}
 #' @param title The title displayed at the top of the created HTML.
@@ -69,11 +70,31 @@ renderVarListAsHtml <- function(varList, outFileName, title) {
 #' \dontrun{
 #' loadModeltest()
 #' createVarListHtml(data, "variables.html")
+#' detailsAR6 <-
+#'   readr::read_delim(
+#'     "https://raw.githubusercontent.com/pik-piam/project_interfaces/master/ar6/mapping_template_AR6.csv",
+#'     delim = ";",
+#'     col_select = c(r21m42, Definition)
+#'   ) %>%
+#'   rename(name = r21m42)
+#' createVarListHtml(
+#'   data,
+#'   "variablesWithDesciption.html",
+#'   title = "Reported REMIND Varibles with AR6 Description",
+#'   usePlus = TRUE,
+#'   details = detailsAR6)
 #' }
 #' @export
-createVarListHtml <- function(x, outFileName, title = "List of Variables") {
+createVarListHtml <- function(
+    x,
+    outFileName,
+    title = "List of Variables",
+    usePlus = FALSE,
+    details = NULL
+  ) {
   message("Creating the hierarchical list structure...")
-  varList <- variablesAsList(x, entry = "INFO")
+  varList <- variablesAsList(x, entry = "INFO", usePlus = usePlus, details = details)
+  browser()
   outFileName <- normalizePath(outFileName, mustWork = FALSE)
   message("Creating HTML and writing it to ", outFileName, "...")
   renderVarListAsHtml(varList, outFileName, title)

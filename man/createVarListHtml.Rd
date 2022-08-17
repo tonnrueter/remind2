@@ -4,16 +4,28 @@
 \alias{createVarListHtml}
 \title{Create an HTML Document of a Hierarchical List of Variables}
 \usage{
-createVarListHtml(x, outFileName, title = "List of Variables")
+createVarListHtml(
+  x,
+  outFileName,
+  title = "List of Variables",
+  usePlus = FALSE,
+  details = NULL
+)
 }
 \arguments{
-\item{x}{A character vector of variable names, a quitte object, or a path to
-a mif file.}
+\item{x}{A character vector of variable names, a quitte object, or a
+character vectors of paths to mif files.}
 
 \item{outFileName}{A single string. The path of the output file, preferably
 ending in \code{.html}}
 
 \item{title}{The title displayed at the top of the created HTML.}
+
+\item{usePlus}{\code{logical(1)}. If \code{FALSE}, removes \code{|+|, |++|,
+...} from variable names.}
+
+\item{details}{\code{NULL} or a data frame with a column \code{name}. The
+entries of further columns of \code{details} are put into the INFO nodes.}
 }
 \description{
 Creates a hierarchical list from mif data using \code{\link{variablesAsList}}
@@ -24,5 +36,21 @@ and writes it as an HTML document that displays the hierarchy via the
 \dontrun{
 loadModeltest()
 createVarListHtml(data, "variables.html")
+detailsAR6 <-
+  readr::read_delim(
+    "https://raw.githubusercontent.com/pik-piam/project_interfaces/master/ar6/mapping_template_AR6.csv",
+    delim = ";",
+    col_select = c(r21m42, Definition)
+  ) \%>\%
+  rename(name = r21m42)
+createVarListHtml(
+  data,
+  "variablesWithDesciption.html",
+  title = "Reported REMIND Varibles with AR6 Description",
+  usePlus = TRUE,
+  details = detailsAR6)
 }
+}
+\seealso{
+\code{\link{variablesAsList}}
 }
