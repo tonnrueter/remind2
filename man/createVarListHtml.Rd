@@ -45,8 +45,8 @@ detailsAR6 <-
   rename(name = r21m42)
 createVarListHtml(
   data,
-  "variablesWithDesciption.html",
-  title = "Reported REMIND Varibles with AR6 Description",
+  "variablesWithDescription.html",
+  title = "Reported REMIND Variables with AR6 Description",
   usePlus = TRUE,
   details = detailsAR6)
 }
