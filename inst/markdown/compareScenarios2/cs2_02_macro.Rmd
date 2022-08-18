@@ -69,53 +69,53 @@ showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 
 tot <- "GDP|MER"
 items <- c(
-  "Internal|CES Function|Value Added|lab",
-  "Internal|CES Function|Value Added|kap",
-  "Internal|CES Function|Value Added|entrp",
-  "Internal|CES Function|Value Added|enb",
-  "Internal|CES Function|Value Added|ue_industry")
+  "Internal|CES Function|Value|lab",
+  "Internal|CES Function|Value|kap",
+  "Internal|CES Function|Value|entrp",
+  "Internal|CES Function|Value|enb",
+  "Internal|CES Function|Value|ue_industry")
   
 showAreaAndBarPlots(data, items, tot)
 ```
 
 
-### Transport Value Added Disaggregation
+### Transport Value Disaggregation
 
-```{r Transport Value}
+```{r Transport Value Disaggregtion}
 
-tot <- "Internal|CES Function|Value Added|entrp"
+tot <- "Internal|CES Function|Value|entrp"
 items <- c(
-  "Internal|CES Function|Value Added|entrp_pass_sm",
-  "Internal|CES Function|Value Added|entrp_pass_lo",
-  "Internal|CES Function|Value Added|entrp_frgt_sm",
-  "Internal|CES Function|Value Added|entrp_frgt_lo")
+  "Internal|CES Function|Value|entrp_pass_sm",
+  "Internal|CES Function|Value|entrp_pass_lo",
+  "Internal|CES Function|Value|entrp_frgt_sm",
+  "Internal|CES Function|Value|entrp_frgt_lo")
 
 showAreaAndBarPlots(data, items, tot)
 ```
 
-### Buildings Value Added Disaggregation
+### Buildings Value Disaggregation
 
-```{r Buildings Value}
+```{r Buildings Value Disaggregtion}
 
-tot <- "Internal|CES Function|Value Added|enb"
+tot <- "Internal|CES Function|Value|enb"
 items <- c(
-  "Internal|CES Function|Value Added|enhb",
-  "Internal|CES Function|Value Added|feelcb")
+  "Internal|CES Function|Value|enhb",
+  "Internal|CES Function|Value|feelcb")
   
 showAreaAndBarPlots(data, items, tot)
 ```
 
 
-### Industry Value Added Disaggregation
+### Industry Value Disaggregation
 
-```{r Industry Value}
+```{r Industry Value Disaggregtion}
 
-tot <- "Internal|CES Function|Value Added|ue_industry"
+tot <- "Internal|CES Function|Value|ue_industry"
 items <- c(
-  "Internal|CES Function|Value Added|ue_steel",
-  "Internal|CES Function|Value Added|ue_cement",
-  "Internal|CES Function|Value Added|ue_chemicals",
-  "Internal|CES Function|Value Added|ue_otherInd")
+  "Internal|CES Function|Value|ue_steel",
+  "Internal|CES Function|Value|ue_cement",
+  "Internal|CES Function|Value|ue_chemicals",
+  "Internal|CES Function|Value|ue_otherInd")
   
 showAreaAndBarPlots(data, items, tot)
 ```

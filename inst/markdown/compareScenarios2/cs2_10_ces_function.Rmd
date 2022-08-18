@@ -109,54 +109,73 @@ showLinePlots(data, "Internal|CES Function|MRS|feelh2b|fegab")
 ```
 
 
-```{r MRS Industry}
+### Industry
 
+#### Steel
 
+```{r MRS Steel}
 showLinePlots(data, "Internal|CES Function|MRS|feel_steel_secondary|feso_steel")
 showLinePlots(data, "Internal|CES Function|MRS|feh2_steel|feso_steel")
-
-showLinePlots(data, "Internal|CES Function|MRS|feh2_cement|fega_cement")
-
-showLinePlots(data, "Internal|CES Function|MRS|feelht_chemicals|fega_chemicals")
-showLinePlots(data, "Internal|CES Function|MRS|feelht_chemicals|feli_chemicals")
-showLinePlots(data, "Internal|CES Function|MRS|feh2_chemicals|fega_chemicals")
-showLinePlots(data, "Internal|CES Function|MRS|feh2_chemicals|feli_chemicals")
-
-showLinePlots(data, "Internal|CES Function|MRS|feelht_otherInd|fega_otherInd")
-showLinePlots(data, "Internal|CES Function|MRS|feelht_otherInd|feli_otherInd")
-showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|fega_otherInd")
-showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|feli_otherInd")
-
 ```
 
-## CES Function Value Added (selected)
+
+
+#### Cement
+
+```{r MRS Cement}
+showLinePlots(data, "Internal|CES Function|MRS|feh2_cement|fega_cement")
+```
+
+
+#### Chemicals
+
+```{r MRS Chemicals}
+showLinePlots(data, "Internal|CES Function|MRS|feelhth_chemicals|fega_chemicals")
+showLinePlots(data, "Internal|CES Function|MRS|feelhth_chemicals|feli_chemicals")
+showLinePlots(data, "Internal|CES Function|MRS|feh2_chemicals|fega_chemicals")
+showLinePlots(data, "Internal|CES Function|MRS|feh2_chemicals|feli_chemicals")
+```
+
+
+#### Other Industry
+
+```{r MRS Other Industry}
+showLinePlots(data, "Internal|CES Function|MRS|feelhth_otherInd|fega_otherInd")
+showLinePlots(data, "Internal|CES Function|MRS|feelhth_otherInd|feli_otherInd")
+showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|fega_otherInd")
+showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|feli_otherInd")
+```
+
+
+
+
+## CES Function Value (selected)
 
 ### Buildings
 
 
-```{r Buildings Value Added}
+```{r Buildings Value}
 
-showLinePlots(data, "Internal|CES Function|Value Added|enb")
-showLinePlots(data, "Internal|CES Function|Value Added|enhb")
-showLinePlots(data, "Internal|CES Function|Value Added|feelcb")
+showLinePlots(data, "Internal|CES Function|Value|enb")
+showLinePlots(data, "Internal|CES Function|Value|enhb")
+showLinePlots(data, "Internal|CES Function|Value|feelcb")
 ```
 
 ### Industry
 
-```{r Industry Value Added}
+```{r Industry Value}
 
-showLinePlots(data, "Internal|CES Function|Value Added|ue_industry")
-showLinePlots(data, "Internal|CES Function|Value Added|ue_steel")
-showLinePlots(data, "Internal|CES Function|Value Added|ue_cement")
-showLinePlots(data, "Internal|CES Function|Value Added|ue_chemicals")
-showLinePlots(data, "Internal|CES Function|Value Added|ue_otherInd")
+showLinePlots(data, "Internal|CES Function|Value|ue_industry")
+showLinePlots(data, "Internal|CES Function|Value|ue_steel")
+showLinePlots(data, "Internal|CES Function|Value|ue_cement")
+showLinePlots(data, "Internal|CES Function|Value|ue_chemicals")
+showLinePlots(data, "Internal|CES Function|Value|ue_otherInd")
 ```
 
 ### Transport
 
-```{r Transport Value Added}
+```{r Transport Value}
 
-showLinePlots(data, "Internal|CES Function|Value Added|entrp")
+showLinePlots(data, "Internal|CES Function|Value|entrp")
 
 ```
-
