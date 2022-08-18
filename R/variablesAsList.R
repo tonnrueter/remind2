@@ -69,7 +69,7 @@ variablesAsList <- function(
   if (is.null(vars)) {
     if ("varplus" %in% names(data))
       vars <- data$varplus
-    else if ("variable" %in% data)
+    else if ("variable" %in% names(data))
       vars <- data$variable
     else
       stop("Object data does not contain a variable column.")
