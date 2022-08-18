@@ -8,6 +8,7 @@ createVarListHtml(
   x,
   outFileName,
   title = "List of Variables",
+  htmlBefore = "",
   usePlus = FALSE,
   details = NULL
 )
@@ -20,6 +21,8 @@ character vectors of paths to mif files.}
 ending in \code{.html}}
 
 \item{title}{The title displayed at the top of the created HTML.}
+
+\item{htmlBefore}{\code{character(1)}. HTML to be put between title and list of variables.}
 
 \item{usePlus}{\code{logical(1)}. If \code{FALSE}, removes \code{|+|, |++|,
 ...} from variable names.}
