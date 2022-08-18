@@ -60,19 +60,21 @@ variablesAsList <- function(
   vars <- NULL
   if (is.factor(x)) x <- as.character(x)
   if (is.character(x) && length(x) < 100 && all(file.exists(x))) { # x are files
-    data <- quitte::read.quitte(x, na.strings = c("UNDF", "NA", "N/A", "n_a", "Inf", "-Inf"))
+    data <- quitte::read.quitte(x)
   } else if (is.character(x)) {
     vars <- x
   } else {
     data <- quitte::as.quitte(x)
   }
   if (is.null(vars)) {
-    if (usePlus) {
+    if ("varplus" %in% names(data))
       vars <- data$varplus
-    } else {
+    else if ("variable" %in% data)
       vars <- data$variable
-    }
-  } else if (!usePlus) {
+    else
+      stop("Object data does not contain a variable column.")
+  }
+  if (!usePlus) {
     vars <- deletePlus(vars)
   }
   vars <- as.character(vars)
