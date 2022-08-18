@@ -1,6 +1,7 @@
 #' @importFrom utils globalVariables
 globalVariables(".")
 
+
 getProjectPath <- function(project = "remind") {
   possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "/p/projects"), project)
   sel <- which(file.exists(possibleProjectLocations))[1]
@@ -8,16 +9,6 @@ getProjectPath <- function(project = "remind") {
   possibleProjectLocations[sel]
 }
 
-getScenNamesFast <- function(outputDirs) {
-  folder <- basename(outputDirs)
-  substr(folder, start = 0, stop = nchar(folder) - 20)
-}
-
-
-getMifScenPath <- function(outputDirs) {
-  names <- getScenNamesFast(outputDirs)
-  file.path(outputDirs, paste0("REMIND_generic_", names, ".mif"))
-}
 
 #' @importFrom dplyr bind_cols
 getNewsestModeltests <- function(namePattern, requireMif) {
@@ -50,16 +41,6 @@ getNewsestModeltests <- function(namePattern, requireMif) {
   return(selectedRuns)
 }
 
-cs2InputPaths <- function(outputDirs) {
-  path <- list(
-    run = outputDirs,
-    mifScen = getMifScenPath(outputDirs),
-    mifHist = file.path(outputDirs[1], "historical.mif"),
-    cfgScen = file.path(outputDirs, "config.Rdata"),
-    cfgDefault = file.path(outputDirs[1], "../../config/default.cfg")
-  )
-  lapply(path, normalizePath)
-}
 
 #' Load compareScenarios2 Data
 #'
@@ -99,6 +80,19 @@ loadCs2Data <- function(
   file.remove(file.path(folder, paste0(outputFile, ".pdf")))
   return(invisible(NULL))
 }
+
+
+cs2InputPaths <- function(outputDirs) {
+  path <- list(
+    run = outputDirs,
+    mifScen = getMifScenPath(outputDirs),
+    mifHist = getMifHistPath(outputDirs[1]),
+    cfgScen = getCfgScenPath(outputDirs),
+    cfgDefault = getCfgDefaultPath(file.path(outputDirs[1], "../.."))
+  )
+  lapply(path, normalizePath)
+}
+
 
 #' Load Modeltest Results
 #'
@@ -164,7 +158,10 @@ loadModeltest <- function(
 
   cat(
     "Loading cs2 data into ",
-    if (environmentName(envir) == "") "user specified environment", environmentName(envir),
+    if (environmentName(envir) == "")
+      "user specified environment"
+    else
+      environmentName(envir),
     ".\n", sep = "")
 
   loadCs2Data(
