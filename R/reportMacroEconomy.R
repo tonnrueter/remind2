@@ -92,12 +92,12 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F, react = "silent") # CES derivatives aka CES prices, marginal products
   o01_CESmrs <- readGDX(gdx, "o01_CESmrs", restore_zeros = F, react = "silent") # marginal rate of substitution (ratio of CES prices)
 
-  # add zeros in first years from 2005 for o01_CESderivatives and o01_CESmrs
-  o01_CESderivatives_w0 <- new.magpie(getRegions(o01_CESderivatives),t2005to2150,  getNames(o01_CESderivatives))
-  o01_CESmrs_w0 <- new.magpie(getRegions( o01_CESmrs),t2005to2150,  getNames( o01_CESmrs))
+  # add NAs in first years from 2005 for o01_CESderivatives and o01_CESmrs
+  o01_CESderivatives_w0 <- new.magpie(getRegions(o01_CESderivatives),t2005to2150,  getNames(o01_CESderivatives), fill = NA)
+  o01_CESmrs_w0 <- new.magpie(getRegions( o01_CESmrs),t2005to2150,  getNames( o01_CESmrs), fill = NA)
 
   o01_CESderivatives_w0[,getYears(o01_CESderivatives),] <- o01_CESderivatives
-  o01_CESmrs[,getYears(o01_CESmrs),] <- o01_CESmrs
+  o01_CESmrs_w0[,getYears(o01_CESmrs),] <- o01_CESmrs
 
   getSets(o01_CESderivatives_w0) <- getSets(o01_CESderivatives)
   getSets(o01_CESmrs_w0) <- getSets(o01_CESmrs)
