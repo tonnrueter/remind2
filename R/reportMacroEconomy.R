@@ -272,20 +272,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   # bind FE and non-FE CES prices to one array
   CES.price <- mbind(CES.price.fe, CES.price.nofe)
 
-  # add units to prices of certain non-FE inputs where possible
-  if ("subsectors" == indu_mod) {
-    CES.price[,,"Internal|CES Function|CES Price|ue_steel_primary (trUS$2005/Input)"] <-
-      setNames(CES.price[,,"Internal|CES Function|CES Price|ue_steel_primary (trUS$2005/Input)"] * 1e-3,
-               "Internal|CES Function|CES Price|ue_steel_primary (US$2005/t Steel)")
 
-    CES.price[,,"Internal|CES Function|CES Price|ue_steel_secondary (trUS$2005/Input)"] <-
-      setNames(CES.price[,,"Internal|CES Function|CES Price|ue_steel_secondary (trUS$2005/Input)"] * 1e-3,
-               "Internal|CES Function|CES Price|ue_steel_secondary (US$2005/t Steel)")
-
-    CES.price[,,"Internal|CES Function|CES Price|ue_cement (trUS$2005/Input)"] <-
-      setNames(CES.price[,,"Internal|CES Function|CES Price|ue_cement (trUS$2005/Input)"] * 1e-3,
-               "Internal|CES Function|CES Price|ue_cement (US$2005/t Cement)")
-  }
 
   ## 2.) Marginal rates of substitution
 
