@@ -18,9 +18,9 @@ getCfgDefaultPath(remindDir = ".", mustWork = FALSE)
 \arguments{
 \item{outputDirs}{A character vector of paths to output folders of REMIND runs.}
 
-\item{remindDir}{A single string. The path to the remind directory.}
+\item{mustWork}{\code{logical(1)}. Throw error if file not available?}
 
-\item{mustWotk}{\code{logical(1)}. Throw error if file not available?}
+\item{remindDir}{A single string. The path to the remind directory.}
 }
 \description{
 \code{getMifScenPath}: get path to the scenarios' reporting mifs.
