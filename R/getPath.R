@@ -21,6 +21,7 @@ getMifScenPath <- function(outputDirs, mustWork = FALSE) {
   normalizePath(path, mustWork = mustWork)
 }
 
+#' @inheritParams getMifScenPath
 #' @rdname getPath
 #' @export
 getMifHistPath <- function(outputDirs, mustWork = FALSE) {
@@ -28,6 +29,7 @@ getMifHistPath <- function(outputDirs, mustWork = FALSE) {
   normalizePath(path, mustWork = mustWork)
 }
 
+#' @inheritParams getMifScenPath
 #' @rdname getPath
 #' @export
 getCfgScenPath <- function(outputDirs, mustWork = FALSE) {
@@ -36,6 +38,7 @@ getCfgScenPath <- function(outputDirs, mustWork = FALSE) {
 }
 
 #' @param remindDir A single string. The path to the remind directory.
+#' @inheritParams getMifScenPath
 #' @rdname getPath
 #' @export
 getCfgDefaultPath <- function(remindDir = ".", mustWork = FALSE) {
