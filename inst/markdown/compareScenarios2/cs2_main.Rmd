@@ -420,11 +420,11 @@ if (length(params$sections) == 1 && params$sections == "all") {
 ```
 
 ```{r remove objects not to be used anymore}
-varNames <- c( 
-  "availableSections", "cfgTopLevel", "dataGDP", "dataPCap", 
-  "dataPGdp", "dataPop", "dataScenNested", "env", "envToolsRstudio", 
-  "fn", "histRefModel", "insertExprAtStartOfFun", "lightenColor", 
-  "loadCfg", "matches", "oldRsSetNotebookGraphicsOption", "pCapVariables", 
+varNames <- c(
+  "availableSections", "cfgTopLevel", "dataGDP", "dataPCap",
+  "dataPGdp", "dataPop", "dataScenNested", "env", "envToolsRstudio",
+  "fn", "histRefModel", "insertExprAtStartOfFun", "lightenColor",
+  "loadCfg", "matches", "oldRsSetNotebookGraphicsOption", "pCapVariables",
   "pGdpVariables")
 for (vn in varNames) if (exists(vn)) rm(list = vn)
 rm(varNames)
