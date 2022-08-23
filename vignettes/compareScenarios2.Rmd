@@ -140,7 +140,7 @@ compareScenarios2(
   mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"), # TODO.
   mifHist = "path/to/historical.mif", # TODO.
   outputFile = format(Sys.time(), "cs2-%Y%m%d-%H%M%S"),
-  sections = NN) # TODO: Replace NN by the number of the section you changed 
+  sections = NN) # TODO: Replace NN by the number of the section you changed
 # (or by "all" to build the whole compare scenarios file, which will take a while).
 ```
 
