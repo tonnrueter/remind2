@@ -16,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval=FALSE
+  eval = FALSE
 )
 ```
 
@@ -84,7 +84,7 @@ First we need access to the Rmd-files. Here we essentially have two options.
 
 We call `remind2::compareScenarios2()` with `outputFormat = "Rmd"` to obtain a (modified) copy of the Rmd-files.
 
-```{r eval=FALSE}
+```{r}
 library(remind2)
 compareScenarios2(
   mifScen = c("path/to/scen1.mif", "path/to/scen2.mif", "path/to/scen3.mif"), # TODO.
@@ -92,7 +92,7 @@ compareScenarios2(
   outputDir = "path/to/where/rmds/should/be/copied/to", # TODO.
   outputFormat = "Rmd",
   # Add current time as output name to not overwrite other things:
-  outputFile = format(Sys.time(), "CompScen2-%Y%m%d-%H%M%S")) 
+  outputFile = format(Sys.time(), "CompScen2-%Y%m%d-%H%M%S"))
 ```
 
 The code in these Rmd-files is structured in chunks and each chunk can be run separately by clicking on its play-button. We first open `cs2_main.Rmd`. At the end of the file, there is a chunk
@@ -120,9 +120,9 @@ Now we want to load the `data` object so that the code-chunks can be executed. I
 5. Press `CTRL+SHIFT+L` to call `devtools::load_all(".")`, which loads `remind2` from your local copy.
 6. If it is sufficient to test your new plots on the latest AMTs and you are connected to the PIK network (possibly via VPN), call `loadModeltest()`. Otherwise call an adapted form of 
 
-```{r eval=FALSE}
+```{r}
 loadCs2Data(
-  c("path/to/scen1.mif", "path/to/scen2.mif") # TODO.
+  c("path/to/scen1.mif", "path/to/scen2.mif"), # TODO.
   "path/to/historical.mif") # TODO.
 ```
 
@@ -135,12 +135,13 @@ This might take some time (up to 1min). After this, an R-object `data` should be
 11. Run your newly created chunk to see the plot.
 12. Run the following code to see your new plot in a PDF.
 
-```{r eval=FALSE}
+```{r}
 compareScenarios2(
   mifScen = c("path/to/scen1.mif", "path/to/scen2.mif"), # TODO.
   mifHist = "path/to/historical.mif", # TODO.
   outputFile = format(Sys.time(), "cs2-%Y%m%d-%H%M%S"),
-  sections = <NN>) # TODO: Replace <NN> by the number of the section you changed (or by "all" to build the whole compare scenarios file, which will take a while).
+  sections = <NN>) # TODO: Replace <NN> by the number of the section you changed 
+# (or by "all" to build the whole compare scenarios file, which will take a while).
 ```
 
 13. Commit your changes. In the commit message, you may use the shorthand `cs2` to indicate that you made a change to compareScenarios2, e.g., `cs2: added plot of My|Variable`.
