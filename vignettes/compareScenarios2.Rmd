@@ -118,7 +118,7 @@ Now we want to load the `data` object so that the code-chunks can be executed. I
 3. Clone the repository and switch to the newly created branch to get your local copy.
 4. In your local copy, open `remind2.Rproj` in RStudio.
 5. Press `CTRL+SHIFT+L` to call `devtools::load_all(".")`, which loads `remind2` from your local copy.
-6. If it is sufficient to test your new plots on the latest AMTs and you are connected to the PIK network (possibly via VPN), call `loadModeltest()`. Otherwise call an adapted form of 
+6. If it is sufficient to test your new plots on the latest AMTs and you are connected to the PIK network (possibly via VPN), call `loadModeltest(folder = "some/folder")`. Otherwise call an adapted form of 
 
 ```{r}
 loadCs2Data(
@@ -133,7 +133,7 @@ This might take some time (up to 1min). After this, an R-object `data` should be
 9. Insert a new chunk by copying an old one or by pressing `CTRL+ALT+I`. Note: It is better to not assign names to the chunks as cs2 will crash if you used the same name twice.
 10. Add a new plot inside the chunk, e.g., `showLinePlots(data, "Your|Variable|Name")`. See [Plot Functions] below.
 11. Run your newly created chunk to see the plot.
-12. Run the following code to see your new plot in a PDF.
+12. Run the following code to see your new plot in a PDF. If you used `loadModeltest()` in 6., mif-files should be available in `some/folder/`.
 
 ```{r}
 compareScenarios2(
