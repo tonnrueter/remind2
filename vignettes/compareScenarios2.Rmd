@@ -110,6 +110,38 @@ Clone the [remind2 repository](https://github.com/pik-piam/remind2). Open a sect
 Now we want to load the `data` object so that the code-chunks can be executed. If we have VPN or are in the local network at PIK, we can load the data from the latest automated model tests (AMT) via `remind2::loadModeltest()`. If this is not possible or we want other mifs to be loaded, we can use `remind2::loadCs2Data()` to create the `data` object. See the help pages (`?<funName>`) of these functions for more information. Now the chunks in the Rmd-files should be executable.
 
 
+# Viewing Available Variables in mif Files
+
+The variables in the reported mif-files (`remind/output/<run_folder>/REMIND_generic_<run>.mif`) have a hierarchical structure induced by the character `|`. This structure can be viewed in a hierarchical list.
+
+## output.R
+
+In a remind folder with finished runs (with mif-files):
+
+1. execute `Rscript output.R`
+2. choose `Comparison across runs`
+3. choose `varListHtml`
+4. choose the runs you want to read the mif files from
+5. choose a file name prefix if you like
+
+Then the creation of the a HTML-file containing the hierarchical list of variables names in the chosen mif files is started. Note that it does not use slurm at the moment.
+
+## Package Function
+
+See `?remind2::variablesAsList`.
+
+If connected to the PIK network (possibly via VPN) execute the following code to get an overview of the variables available in the automated model test mifs.
+
+```{r}
+library(remind2)
+loadModeltest()
+varList <- variablesAsList(data, entry = "INFO")
+View(varList) # in RStudio
+```
+
+See also `?createVarListHtml` to create an HTML-file containing this info.
+
+
 
 # Workflow for Adding a New Plot to CompareScenarios2
 
