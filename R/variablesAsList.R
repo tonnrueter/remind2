@@ -60,19 +60,21 @@ variablesAsList <- function(
   vars <- NULL
   if (is.factor(x)) x <- as.character(x)
   if (is.character(x) && length(x) < 100 && all(file.exists(x))) { # x are files
-    data <- quitte::read.quitte(x, na.strings = c("UNDF", "NA", "N/A", "n_a", "Inf", "-Inf"))
+    data <- quitte::read.quitte(x)
   } else if (is.character(x)) {
     vars <- x
   } else {
     data <- quitte::as.quitte(x)
   }
   if (is.null(vars)) {
-    if (usePlus) {
+    if ("varplus" %in% names(data))
       vars <- data$varplus
-    } else {
+    else if ("variable" %in% names(data))
       vars <- data$variable
-    }
-  } else if (!usePlus) {
+    else
+      stop("Object data does not contain a variable column.")
+  }
+  if (!usePlus) {
     vars <- deletePlus(vars)
   }
   vars <- as.character(vars)
@@ -111,38 +113,41 @@ variablesAsList <- function(
   maxLen <- max(vapply(splitList, length, integer(1)))
   varsMatrix <- t(vapply(splitList, function(x) x[seq_len(maxLen)], character(maxLen)))
 
-  # Function to recursively parse variable names and create node value.
-  .splitMatrixAsList <- function(mat, prefix) {
+  res <- .splitMatrixAsList(varsMatrix, prefix = "", entry = entry, summary = summary)
+  return(res)
+}
 
-    # Set the value of the node.
-    if (prefix %in% summary$name) {
-      nodeValue <- switch(
-        entry,
-        "NULL" = NULL,
-        "name" = list(nm = prefix),
-        "INFO" = {
-          info <- filter(summary, .data$name == .env$prefix) # Exactly one row.
-          info <- lapply(info, function(x) if(is.list(x) && length(x) == 1) x[[1]] else x)
-          names(info) <- names(summary)
-          list(INFO = info)
-        }
-      )
-    } else {
-      nodeValue <- NULL
-    }
 
-    # Termination condition.
-    if (length(mat) == 0 || all(is.na(mat))) return(nodeValue)
+# Function to recursively parse variable names and create node value.
+.splitMatrixAsList <- function(mat, prefix, entry, summary) {
 
-    # Process subcategories.
-    lst <- split(mat[, -1, drop = FALSE], mat[, 1])
-    lst <- lapply(lst, matrix, ncol = NCOL(mat) - 1)
-    newPrefixes <- paste0(prefix, if (nchar(prefix) > 0) "|", names(lst))
-    resSubCategories <- Map(.splitMatrixAsList, lst, newPrefixes)
-
-    return(c(nodeValue, resSubCategories))
+  # Set the value of the node.
+  if (prefix %in% summary$name) {
+    nodeValue <- switch(
+      entry,
+      "NULL" = NULL,
+      "name" = list(nm = prefix),
+      "INFO" = {
+        info <- filter(summary, .data$name == .env$prefix) # Exactly one row.
+        info <- lapply(info, function(x) if (is.list(x) && length(x) == 1) x[[1]] else x)
+        names(info) <- names(summary)
+        list(INFO = info)
+      }
+    )
+  } else {
+    nodeValue <- NULL
   }
 
-  res <- .splitMatrixAsList(varsMatrix, prefix = "")
-  return(res)
+  # Termination condition.
+  if (length(mat) == 0 || all(is.na(mat))) return(nodeValue)
+
+  # Process subcategories.
+  lst <- split(mat[, -1, drop = FALSE], mat[, 1])
+  lst <- lapply(lst, matrix, ncol = NCOL(mat) - 1)
+  newPrefixes <- paste0(prefix, if (nchar(prefix) > 0) "|", names(lst))
+  resSubCategories <- Map(
+    \(x, y) .splitMatrixAsList(x, y, entry = entry, summary = summary),
+    lst, newPrefixes)
+
+  return(c(nodeValue, resSubCategories))
 }

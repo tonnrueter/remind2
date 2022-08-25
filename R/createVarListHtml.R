@@ -43,13 +43,14 @@ namedList2Html <- function(v) {
   return(html)
 }
 
-renderVarListAsHtml <- function(varList, outFileName, title) {
+renderVarListAsHtml <- function(varList, outFileName, title, htmlBefore) {
   htmlLines <- namedList2Html(varList)
   htmlTemplateFile <- system.file("extdata/variablesAsListTemplate.html", package = "remind2")
   htmlTemplate <- readLines(htmlTemplateFile)
   html <-
     htmlTemplate %>%
     sub("[:TITLE:]", title, ., fixed = TRUE) %>%
+    sub("[:BEFORE:]", htmlBefore, ., fixed = TRUE) %>%
     sub("[:CONTENT:]", paste0(htmlLines, collapse = "\n"), ., fixed = TRUE)
   write(html, outFileName)
   return(invisible(NULL))
@@ -65,6 +66,7 @@ renderVarListAsHtml <- function(varList, outFileName, title) {
 #' @param outFileName A single string. The path of the output file, preferably
 #'   ending in \code{.html}
 #' @param title The title displayed at the top of the created HTML.
+#' @param htmlBefore \code{character(1)}. HTML to be put between title and list of variables.
 #' @inheritParams variablesAsList
 #' @examples
 #' \dontrun{
@@ -91,6 +93,7 @@ createVarListHtml <- function(
     x,
     outFileName,
     title = "List of Variables",
+    htmlBefore = "",
     usePlus = FALSE,
     details = NULL
   ) {
@@ -98,7 +101,7 @@ createVarListHtml <- function(
   varList <- variablesAsList(x, entry = "INFO", usePlus = usePlus, details = details)
   outFileName <- normalizePath(outFileName, mustWork = FALSE)
   message("Creating HTML and writing it to ", outFileName, "...")
-  renderVarListAsHtml(varList, outFileName, title)
+  renderVarListAsHtml(varList, outFileName, title, htmlBefore)
   message("Done.")
   return(invisible(NULL))
 }
