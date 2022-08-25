@@ -132,6 +132,13 @@ loadModeltest <- function(
   modeltests <- getNewsestModeltests(namePattern, requireMif = TRUE)
   if (NROW(modeltests) == 0) stop("Did not find model tests.")
   path <- cs2InputPaths(modeltests$path)
+
+  if (!dir.exists(folder)) {
+    cat(folder, "does not exist -> creating it.\n")
+    dir.create(folder, recursive = TRUE)
+  }
+  folder <- normalizePath(folder, mustWork = TRUE)
+
   tmpPath <- list(
     mifScen = file.path(folder, paste0(modeltests$name, ".mif")),
     mifHist = file.path(folder, "historical.mif"),
