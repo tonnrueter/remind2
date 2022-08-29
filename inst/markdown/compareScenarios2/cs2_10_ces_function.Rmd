@@ -124,6 +124,7 @@ showLinePlots(data, "Internal|CES Function|MRS|feh2_steel|feso_steel")
 
 ```{r MRS Cement}
 showLinePlots(data, "Internal|CES Function|MRS|feh2_cement|fega_cement")
+showLinePlots(data, "Internal|CES Function|MRS|feh2_cement|feso_cement")
 ```
 
 
@@ -142,8 +143,11 @@ showLinePlots(data, "Internal|CES Function|MRS|feh2_chemicals|feli_chemicals")
 ```{r MRS Other Industry}
 showLinePlots(data, "Internal|CES Function|MRS|feelhth_otherInd|fega_otherInd")
 showLinePlots(data, "Internal|CES Function|MRS|feelhth_otherInd|feli_otherInd")
+showLinePlots(data, "Internal|CES Function|MRS|feelhth_otherInd|feso_otherInd")
+
 showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|fega_otherInd")
 showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|feli_otherInd")
+showLinePlots(data, "Internal|CES Function|MRS|feh2_otherInd|feso_otherInd")
 ```
 
 

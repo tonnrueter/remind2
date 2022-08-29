@@ -291,11 +291,13 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
 
                   "feelhth_otherInd.fega_otherInd",
                   "feelhth_otherInd.feli_otherInd",
+                  "feelhth_otherInd.feso_otherInd",
                   "feelhth_chemicals.fega_chemicals",
                   "feelhth_chemicals.feli_chemicals",
 
                   "feh2_otherInd.fega_otherInd",
                   "feh2_otherInd.feli_otherInd",
+                  "feh2_otherInd.feso_otherInd",
                   "feh2_chemicals.fega_chemicals",
                   "feh2_chemicals.feli_chemicals",
                   "feh2_cement.fega_cement",
