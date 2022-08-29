@@ -105,7 +105,7 @@ showLinePlots(data, "Internal|CES Function|MRS|feelhpb|fehob")
 showLinePlots(data, "Internal|CES Function|MRS|feelhpb|fesob")
 showLinePlots(data, "Internal|CES Function|MRS|feelhpb|feelrhb")
 
-showLinePlots(data, "Internal|CES Function|MRS|feelh2b|fegab")
+showLinePlots(data, "Internal|CES Function|MRS|feh2b|fegab")
 ```
 
 
