@@ -146,7 +146,7 @@ variablesAsList <- function(
   lst <- lapply(lst, matrix, ncol = NCOL(mat) - 1)
   newPrefixes <- paste0(prefix, if (nchar(prefix) > 0) "|", names(lst))
   resSubCategories <- Map(
-    \(x, y) .splitMatrixAsList(x, y, entry = entry, summary = summary),
+    function(x, y) .splitMatrixAsList(x, y, entry = entry, summary = summary),
     lst, newPrefixes)
 
   return(c(nodeValue, resSubCategories))

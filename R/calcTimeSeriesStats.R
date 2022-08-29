@@ -21,7 +21,7 @@
 #'     calcTimeSeriesStats(
 #'       data, \
 #'       "Emi|CO2",
-#'       stats = list("Net 0 Period" = \(v, p) p[which(v <= 0)[1]]))
+#'       stats = list("Net 0 Period" = function(v, p) p[which(v <= 0)[1]]))
 #'   }
 #' @importFrom dplyr all_of %>% filter distinct group_by summarize mutate
 #'   left_join bind_rows
