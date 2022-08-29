@@ -60,6 +60,68 @@ showLinePlots(data, "Investments|Non-ESM")
 showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 ```
 
+
+## GDP Disaggregation
+
+### Top-level GDP Disaggregation
+
+```{r GDP Disaggregation}
+
+tot <- "GDP|MER"
+items <- c(
+  "Internal|CES Function|Value|lab",
+  "Internal|CES Function|Value|kap",
+  "Internal|CES Function|Value|entrp",
+  "Internal|CES Function|Value|enb",
+  "Internal|CES Function|Value|ue_industry")
+  
+showAreaAndBarPlots(data, items, tot)
+```
+
+
+### Transport Value Disaggregation
+
+```{r Transport Value Disaggregtion}
+
+tot <- "Internal|CES Function|Value|entrp"
+items <- c(
+  "Internal|CES Function|Value|entrp_pass_sm",
+  "Internal|CES Function|Value|entrp_pass_lo",
+  "Internal|CES Function|Value|entrp_frgt_sm",
+  "Internal|CES Function|Value|entrp_frgt_lo")
+
+showAreaAndBarPlots(data, items, tot)
+```
+
+### Buildings Value Disaggregation
+
+```{r Buildings Value Disaggregtion}
+
+tot <- "Internal|CES Function|Value|enb"
+items <- c(
+  "Internal|CES Function|Value|enhb",
+  "Internal|CES Function|Value|feelcb")
+  
+showAreaAndBarPlots(data, items, tot)
+```
+
+
+### Industry Value Disaggregation
+
+```{r Industry Value Disaggregtion}
+
+tot <- "Internal|CES Function|Value|ue_industry"
+items <- c(
+  "Internal|CES Function|Value|ue_steel",
+  "Internal|CES Function|Value|ue_cement",
+  "Internal|CES Function|Value|ue_chemicals",
+  "Internal|CES Function|Value|ue_otherInd")
+  
+showAreaAndBarPlots(data, items, tot)
+```
+
+
+
 ## Prices
 
 ```{r}
