@@ -35,6 +35,6 @@ model, scenario, region, variable, and statistic in a data frame.
     calcTimeSeriesStats(
       data, \
       "Emi|CO2",
-      stats = list("Net 0 Period" = \(v, p) p[which(v <= 0)[1]]))
+      stats = list("Net 0 Period" = function(v, p) p[which(v <= 0)[1]]))
   }
 }
