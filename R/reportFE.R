@@ -1544,7 +1544,18 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                    setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
                               out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /
                               out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"))
+                            "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"),
+                  # FE industry (without feedstocks) solids: from fossils, biomass
+                  setNames(out[,,"FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"] *
+                              out[,,"FE|Industry|Solids|+|Fossil (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Solids (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"),
+                  setNames(out[,,"FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"] *
+                              out[,,"FE|Industry|Solids|+|Biomass (EJ/yr)"] /
+                              out[,,"FE|Industry|+|Solids (EJ/yr)"],
+                            "FE|w/o Non-energy Use|Industry|Solids|+|Biomass (EJ/yr)"))
+
+
 
       tryCatch(
         expr = {

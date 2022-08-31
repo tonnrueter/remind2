@@ -1,6 +1,7 @@
 #' @importFrom utils globalVariables
 globalVariables(".")
 
+
 getProjectPath <- function(project = "remind") {
   possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "/p/projects"), project)
   sel <- which(file.exists(possibleProjectLocations))[1]
@@ -8,8 +9,9 @@ getProjectPath <- function(project = "remind") {
   possibleProjectLocations[sel]
 }
 
+
 #' @importFrom dplyr bind_cols
-getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
+getNewsestModeltests <- function(namePattern, requireMif) {
 
   modeltestOutPath <- file.path(getProjectPath(), "modeltests/output")
   entries <- dir(modeltestOutPath)
@@ -19,7 +21,7 @@ getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
       x = .,
       pattern = "^[a-zA-Z0-9-]+_\\d{4}-\\d{2}-\\d{2}_\\d{2}\\.\\d{2}\\.\\d{2}$",
       value = TRUE)
-  newest <-
+  allRuns <-
     allRunNames %>%
     strsplit("_", fixed = TRUE) %>%
     unlist() %>%
@@ -28,27 +30,17 @@ getNewsestModeltests <- function(namePattern = "^SSP2EU-AMT-") {
     as_tibble() %>%
     bind_cols(runName = allRunNames) %>%
     mutate(date = as.Date(.data$date)) %>%
-    filter(date >= max(.data$date) - 3) # day of newest run until 3 days before
+    mutate(path = file.path(.env$modeltestOutPath, .data$runName)) %>%
+    mutate(mifScen = getMifScenPath(.data$path))
   selectedRuns <-
-    newest %>%
+    allRuns %>%
     filter(grepl(x = .data$name, pattern = .env$namePattern)) %>%
-    mutate(path = file.path(.env$modeltestOutPath, .data$runName))
+    filter(!.env$requireMif | file.exists(.data$mifScen)) %>%
+    filter(date >= max(.data$date) - 3) # day of newest run until 3 days before
 
   return(selectedRuns)
 }
 
-cs2InputPaths <- function(outputDirs) {
-  names <- lucode2::getScenNames(outputDirs)
-  # conditional for _adjustedPolicyCosts.mif not needed anymore since REMIND PR #881.
-  path <- list(
-    run = outputDirs,
-    mifScen = file.path(outputDirs, paste0("REMIND_generic_", names, ".mif")),
-    mifHist = file.path(outputDirs[1], "historical.mif"),
-    cfgScen = file.path(outputDirs, "config.Rdata"),
-    cfgDefault = file.path(outputDirs[1], "../../config/default.cfg")
-  )
-  lapply(path, normalizePath)
-}
 
 #' Load compareScenarios2 Data
 #'
@@ -89,6 +81,19 @@ loadCs2Data <- function(
   return(invisible(NULL))
 }
 
+
+cs2InputPaths <- function(outputDirs) {
+  path <- list(
+    run = outputDirs,
+    mifScen = getMifScenPath(outputDirs),
+    mifHist = getMifHistPath(outputDirs[1]),
+    cfgScen = getCfgScenPath(outputDirs),
+    cfgDefault = getCfgDefaultPath(file.path(outputDirs[1], "../.."))
+  )
+  lapply(path, normalizePath)
+}
+
+
 #' Load Modeltest Results
 #'
 #' The newest model tests are collected from the cluster and copied into a
@@ -124,8 +129,16 @@ loadModeltest <- function(
 
   cat("Obtaining modeltest paths.\n")
 
-  modeltests <- getNewsestModeltests(namePattern)
+  modeltests <- getNewsestModeltests(namePattern, requireMif = TRUE)
+  if (NROW(modeltests) == 0) stop("Did not find model tests.")
   path <- cs2InputPaths(modeltests$path)
+
+  if (!dir.exists(folder)) {
+    cat(folder, "does not exist -> creating it.\n")
+    dir.create(folder, recursive = TRUE)
+  }
+  folder <- normalizePath(folder, mustWork = TRUE)
+
   tmpPath <- list(
     mifScen = file.path(folder, paste0(modeltests$name, ".mif")),
     mifHist = file.path(folder, "historical.mif"),
@@ -137,7 +150,12 @@ loadModeltest <- function(
         "\nto\n  ", paste(to, collapse = "\n  "),
         "\n",
         sep = "")
-    file.copy(from, to, overwrite = TRUE)
+    success <- file.copy(from, to, overwrite = TRUE)
+    if (!all(success))
+      warning(
+        "failed copying following files\n",
+        paste(from[!success], collapse = "\n"),
+        immediate. = TRUE)
   }
 
   copyFile(path$mifScen, tmpPath$mifScen)
@@ -147,7 +165,10 @@ loadModeltest <- function(
 
   cat(
     "Loading cs2 data into ",
-    if (environmentName(envir) == "") "user specified environment", environmentName(envir),
+    if (environmentName(envir) == "")
+      "user specified environment"
+    else
+      environmentName(envir),
     ".\n", sep = "")
 
   loadCs2Data(

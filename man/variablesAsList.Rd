@@ -4,19 +4,29 @@
 \alias{variablesAsList}
 \title{Variable Names as Hierarchical List}
 \usage{
-variablesAsList(x, entry = c("NULL", "name", "INFO"))
+variablesAsList(
+  x,
+  entry = c("NULL", "name", "INFO"),
+  usePlus = FALSE,
+  details = NULL
+)
 }
 \arguments{
-\item{x}{A character vector of variable names, a quitte object, or a path to
-a mif file.}
+\item{x}{A character vector of variable names, a quitte object, or a
+character vectors of paths to mif files.}
 
 \item{entry}{A string determining the entries of all leafs and the nodes
 which represent variables in \code{vars}. \code{"NULL"} puts \code{NULL}
 into the leafs of the resulting list. \code{"name"} places the full name of
 an existing variable as entry \code{nm} in the respective node.
 \code{"INFO"} puts a list of further information about this node in each
-node with existing variables, which requires \code{x} to be a mif file or a
-quitte object.}
+node with existing variables, including \code{details} if specified.}
+
+\item{usePlus}{\code{logical(1)}. If \code{FALSE}, removes \code{|+|, |++|,
+...} from variable names.}
+
+\item{details}{\code{NULL} or a data frame with a column \code{name}. The
+entries of further columns of \code{details} are put into the INFO nodes.}
 }
 \value{
 A hierarchical named list.
@@ -34,17 +44,23 @@ v <- variablesAsList(vars)
 \dontrun{View(v)}
 v <- variablesAsList(vars, entry = "name")
 \dontrun{mip::showLinePlots(data, v$Emi$GHG$nm)}
+details <- data.frame(name = vars, nr = seq_along(vars))
+v <- variablesAsList(vars, entry = "INFO", details = details)
+\dontrun{View(v)}
 
 \dontrun{
 loadModeltest()
 v <- variablesAsList(data, entry = "INFO")
 View(v)
 # Include structure induced by |+|,|++|, ...:
-vp <- variablesAsList(data$varplus, entry = "INFO")
+vp <- variablesAsList(data, entry = "INFO", usePlus = TRUE)
 View(vp)
 }
 
 \dontrun{View(variablesAsList("path/to/scenario.mif"))}
+}
+\seealso{
+\code{\link{createVarListHtml}} for creating an HTML-file of such a list.
 }
 \author{
 Christof Schoetz
