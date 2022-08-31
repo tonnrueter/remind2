@@ -712,8 +712,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       setNames(abs(esm2macro.m[,,name_trsp[1]]/(budget.m+1e-10)) * tdptwyr2dpgj , "Price|Energy Service|Transport LDV (US$2005/GJ)"))
   }
 
-  # report GHG taxes, differentiated by sector 
-  #WARNING: the sector markup code does not consider regipol sector and emission market specific CO2eq prices. If you use both you will have wrongly reported sectoral and regional prices. 
+  # report GHG taxes, differentiated by sector
+  # WARNING: the below sector markup code calculation does not consider regipol sector and emission market specific CO2eq prices. If you use both markups and the model 47 formulations, you will have wrongly reported CO2 sectoral and regional prices.
   if (all(p21_CO2TaxSectorMarkup == 0)) { # then all are identical
     out <- mbind(out, setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
     for (pcname in c("Price|Carbon|Demand|Buildings (US$2005/t CO2)", "Price|Carbon|Demand|Transport (US$2005/t CO2)",
@@ -773,7 +773,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   if (!is.null(pm_taxemiMkt)) {
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ETS"] * 1000 * 12/44, "Price|Carbon|ETS (US$2005/t CO2)"))
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESR (US$2005/t CO2)"))
-    if(!is.null(p47_taxCO2eq_AggFE)) {
+    if(!is.null(p47_taxCO2eq_AggFE)) { # recalculating carbon prices to take into account emi Mkt taxes
+      out <- out[,,setdiff(getNames(out),c("Price|Carbon|Demand|Buildings (US$2005/t CO2)","Price|Carbon|Demand|Industry (US$2005/t CO2)","Price|Carbon|Demand|Transport (US$2005/t CO2)","Price|Carbon (US$2005/t CO2)"))]
       out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"build"] * 1000 * 12/44, "Price|Carbon|Demand|Buildings (US$2005/t CO2)"))
       out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"indst"] * 1000 * 12/44, "Price|Carbon|Demand|Industry (US$2005/t CO2)"))
       out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"trans"] * 1000 * 12/44, "Price|Carbon|Demand|Transport (US$2005/t CO2)"))
