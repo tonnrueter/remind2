@@ -643,17 +643,14 @@ reportLCOE <- function(gdx, output.type = "both"){
   # calculate marginal renewable capacity factor
   df.CapFac.ren <- df.CapDistr %>% 
                       filter(tech %in% c(teReNoBio, teVRE)) %>% 
-                      left_join(df.RE.maxprod, by = c("region", "tech", "rlf")) %>%
-                      # maximum capacity at maxprod
-                      mutate( maxcap = maxprod * s_twa2mwh / 8760 / nur * 1e-6 ) %>%      
-                      # filter for all grades which are still free (Capacity < 90% of capacity of max. potential)
+                      left_join(df.RE.maxprod, by = c("region", "tech", "rlf")) %>% 
+                      # filter for the lowest grade that is filled (remark by Robert: this will then slightly overestimate CF for the cases that the model expands this technology, but in such a case it will anyway go into the next bad grade in the next time step, so it should in general look better)
                       # but not smaller than ninth grade (last grade of spv; still check all REN technologies for number of last grade)
-                      filter( CapDistr <= 0.9 * maxcap | as.numeric(rlf) >= 9) %>%     
+                      filter( CapDistr >= 1e-7 | as.numeric(rlf) >= 9)  %>% 
                       # choose highest grade
                       group_by(region, period, tech) %>% 
-                      summarise(CapFac = max(nur)) %>% 
-                      ungroup() 
-
+                      summarise(CapFac = min(nur)) %>% 
+                      ungroup()
   
   # CapFac, merge renewble and non renewable Cap Facs
   df.CapFac <- as.quitte(vm_capFac) %>% 
