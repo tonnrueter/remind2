@@ -245,8 +245,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   #  but that serve as diagnostic output for understanding REMIND results better)
 
   # check that CES derivatives output parameter exists in GDX
-  if (length(o01_CESderivatives > 0)) {
-
+  if ((length(o01_CESmrs > 0)) & (length(o01_CESderivatives > 0))) {
 
   ## 1.) CES Prices (CES Derivatives)
 
@@ -364,7 +363,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                        grep("Internal\\|CES Function\\|CES Price", getNames(out), value=T))
 
 
-  if (length(o01_CESderivatives > 0)) {
+  if ((length(o01_CESmrs > 0)) & (length(o01_CESderivatives > 0))) {
     # set to zero instead of NA because NA erases the labels in compare scenario 2
     out[setdiff(getRegions(out), getRegions(CES.price)),,vars.remove.agg] <- 0
   }
