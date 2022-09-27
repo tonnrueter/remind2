@@ -54,6 +54,7 @@ Suggests:
     flexdashboard,
     gridExtra,
     kableExtra,
+    stringr,
     testthat,
     tidyverse
 VignetteBuilder: 
