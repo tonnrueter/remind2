@@ -11,11 +11,9 @@
 #' @rdname getPath
 #' @export
 getMifScenPath <- function(outputDirs, mustWork = FALSE) {
-  # Find all mif files starting with REMIND_generic_. The result will also contain REMIND_generic_withoutPlus.mif
-  reports <- list.files(outputDirs, "^REMIND_generic_.*\\.mif$", full.names = TRUE)
-  # Filter out filenames having "withoutPlus.mif" in their name
-  path <- reports[grepl("REMIND_generic_(?!.*(withoutPlus)\\.mif).*\\.mif$", reports, perl = TRUE)]
-  normalizePath(path, mustWork = mustWork)
+  scenNames <- lucode2::getScenNames(outputDirs)
+  path <- file.path(outputDirs, paste0("REMIND_generic_", scenNames, ".mif"))
+  return(normalizePath(path, mustWork = mustWork))
 }
 
 #' @rdname getPath
