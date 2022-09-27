@@ -1,8 +1,3 @@
-getScenNamesFast <- function(outputDirs) {
-  folder <- basename(outputDirs)
-  substr(folder, start = 0, stop = nchar(folder) - 20)
-}
-
 #' Get Paths to Certain Files in the REMIND Directory
 #'
 #' \code{getMifScenPath}: get path to the scenarios' reporting mifs.
@@ -16,8 +11,10 @@ getScenNamesFast <- function(outputDirs) {
 #' @rdname getPath
 #' @export
 getMifScenPath <- function(outputDirs, mustWork = FALSE) {
-  names <- getScenNamesFast(outputDirs)
-  path <- file.path(outputDirs, paste0("REMIND_generic_", names, ".mif"))
+  # Find all mif files starting with REMIND_generic_. The result will also contain REMIND_generic_withoutPlus.mif
+  reports <- list.files(outputDirs, "^REMIND_generic_.*\\.mif$", full.names = TRUE)
+  # Filter out filenames having "withoutPlus.mif" in their name
+  path <- reports[grepl("REMIND_generic_(?!.*(withoutPlus)\\.mif).*\\.mif$", reports, perl = TRUE)]
   normalizePath(path, mustWork = mustWork)
 }
 
