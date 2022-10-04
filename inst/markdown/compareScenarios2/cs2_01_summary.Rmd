@@ -203,6 +203,9 @@ showAreaAndBarPlots(data, items)
 ## SE Electricity by carrier
 
 ```{r}
+
+tot <- "SE|Electricity"
+
 items <- c(
   "SE|Electricity|Coal|w/ CC",
   "SE|Electricity|Coal|w/o CC",
@@ -216,38 +219,14 @@ items <- c(
   "SE|Electricity|Biomass|w/o CC",
   "SE|Electricity|Solar|CSP",
   "SE|Electricity|Solar|PV",
+  "SE|Electricity|Wind|Onshore",
+  "SE|Electricity|Wind|Offshore",
   "SE|Electricity|Hydrogen",
   "SE|Electricity|Net Imports")
 
-if ("SE|Electricity|Wind|Offshore" %in% levels(data$variable)) {
-  items <- c(
-    items,
-    "SE|Electricity|Wind|Onshore",
-    "SE|Electricity|Wind|Offshore")
-} else {
-  items <- c(
-    items,
-    "SE|Electricity|Wind")
-}
-
-showAreaAndBarPlots(data, items)
+showAreaAndBarPlots(data, items, tot)
 ```
 
-
-
-
-### SE Wind Onshore
-
-```{r}
-showLinePlots(data, "SE|Electricity|Wind|Onshore")
-```
-
-
-### SE Wind Offshore
-
-```{r}
-showLinePlots(data, "SE|Electricity|Wind|Offshore")
-```
 
 
 ## PE by carrier
