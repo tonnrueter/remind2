@@ -1136,7 +1136,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
 
-
+  ### carbon usage ----
 
   # storage/usage of captured carbon
   out <- mbind(out,
@@ -1161,7 +1161,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Carbon Management|Share of Stored CO2 from Captured CO2 (%)")
   )
 
-  # calculate some specific carbon sink (CCS) variables
+  ### carbon storage ----
+
+  # calculate carbon storage variables
   out <- mbind(out,
 
                # total captured and stored by pe2se BECCS
@@ -1183,6 +1185,51 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"] * p_share_CCS,
                           "Carbon Management|Storage|+|DAC (Mt CO2/yr)")
   )
+
+  # calculate carbon storage variables for energy supply CCS
+  out <- mbind(out,
+
+               # biomass carbonn storage
+               setNames(out[, , "Carbon Management|Carbon Capture|Biomass|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                        "Carbon Management|Storage|Biomass|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"),
+
+               setNames(out[, , "Carbon Management|Carbon Capture|Biomass|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                        "Carbon Management|Storage|Biomass|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"),
+
+               setNames(out[, , "Carbon Management|Carbon Capture|Biomass|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                        "Carbon Management|Storage|Biomass|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"),
+
+               setNames(out[, , "Carbon Management|Carbon Capture|Biomass|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                        "Carbon Management|Storage|Biomass|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"),
+
+               setNames(out[, , "Carbon Management|Carbon Capture|Biomass|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                        "Carbon Management|Storage|Biomass|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)"),
+
+               setNames(out[, , "Carbon Management|Carbon Capture|Biomass|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                        "Carbon Management|Storage|Biomass|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"),
+
+              # fossil carbon storage
+              setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                       "Carbon Management|Storage|Fossil|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"),
+
+              setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                       "Carbon Management|Storage|Fossil|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"),
+
+              setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                       "Carbon Management|Storage|Fossil|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"),
+
+              setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                       "Carbon Management|Storage|Fossil|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"),
+
+              setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                       "Carbon Management|Storage|Fossil|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)"),
+
+              setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
+                       "Carbon Management|Storage|Fossil|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"))
+
+
+
+
 
   ## 4. Gross Emissions (excl. negative emissions from BECCS) ----
 
@@ -2129,6 +2176,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)",
 
     # Gross CO2 Emissions
+    "Emi|CO2|Gross (Mt CO2/yr)",
     "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)",
     "Emi|CO2|Gross|Energy (Mt CO2/yr)",
     "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
