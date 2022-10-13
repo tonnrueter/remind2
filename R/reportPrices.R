@@ -702,7 +702,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(pric_emu_pre * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve (US$2005/GJ)"),
     setNames(pric_emu_pre_shifted * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"),
     setNames(pric_emu * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"),
-    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"))
+    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy sustainability tax (US$2005/GJ)"))
 
 
   # energy services
@@ -816,7 +816,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"    = "Primary Energy Production|Biomass|Energy Crops MAgPIE (EJ/yr)",
     "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"             = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
     "Internal|Price|Biomass|MAgPIE (US$2005/GJ)"                       = "Primary Energy Production|Biomass|Energy Crops MAgPIE (EJ/yr)",
-    "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"                = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
+    "Internal|Price|Biomass|Bioenergy sustainability tax (US$2005/GJ)" = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
     "Price|N2O (US$2005/t N2O)"                                        = "Emi|N2O (kt N2O/yr)",
     "Price|CH4 (US$2005/t CH4)"                                        = "Emi|CH4 (Mt CH4/yr)",
     "Price|Secondary Energy|Electricity (US$2005/GJ)"                  = "SE|Electricity (EJ/yr)",
