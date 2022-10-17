@@ -78,7 +78,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pric_mag       <- readGDX(gdx,name="p30_pebiolc_pricemag",format="first_found")[, t,]
   pric_emu_pre   <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop",format="first_found")[, t,]
   pric_emu_pre_shifted <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop_shifted",format="first_found")[, t,]
-  bio_tax_factor <- readGDX(gdx,name="p21_tau_bioenergy_tax",format="first_found")[, t,]
+  bio_tax_factor <- readGDX(gdx,name="p21_tau_bioenergy_tax",format="first_found",react="silent")[, t,]
+  if (is.null(bio_tax_factor)) bio_tax_factor <- readGDX(gdx,name="v21_tau_bio",field="l",format="first_found")[, t,]
   pm_pvp         <- readGDX(gdx,name=c("pm_pvp","p80_pvp"),format="first_found")[, t, p80_subset]
   pm_dataemi     <- readGDX(gdx,name=c("pm_emifac","pm_dataemi"),format="first_found",restore_zeros=FALSE)[,t, c("pegas.seel.ngt.co2","pecoal.seel.pc.co2")]
   pm_pvpRegi     <- readGDX(gdx,name='pm_pvpRegi',format="first_found")[, t, "perm"]
@@ -701,7 +702,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(pric_emu_pre * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve (US$2005/GJ)"),
     setNames(pric_emu_pre_shifted * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"),
     setNames(pric_emu * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"),
-    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"))
+    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy sustainability tax (US$2005/GJ)"))
 
 
   # energy services
@@ -815,7 +816,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"    = "Primary Energy Production|Biomass|Energy Crops MAgPIE (EJ/yr)",
     "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"             = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
     "Internal|Price|Biomass|MAgPIE (US$2005/GJ)"                       = "Primary Energy Production|Biomass|Energy Crops MAgPIE (EJ/yr)",
-    "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"                = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
+    "Internal|Price|Biomass|Bioenergy sustainability tax (US$2005/GJ)" = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
     "Price|N2O (US$2005/t N2O)"                                        = "Emi|N2O (kt N2O/yr)",
     "Price|CH4 (US$2005/t CH4)"                                        = "Emi|CH4 (Mt CH4/yr)",
     "Price|Secondary Energy|Electricity (US$2005/GJ)"                  = "SE|Electricity (EJ/yr)",
