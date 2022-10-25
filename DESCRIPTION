@@ -33,6 +33,7 @@ Imports:
     madrat,
     mip,
     openxlsx,
+    piamInterfaces,
     plotly,
     quitte,
     readr,
