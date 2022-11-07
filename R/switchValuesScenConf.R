@@ -13,14 +13,16 @@ switchValuesScenConf <- function(switchname = NULL, directory = ".") {
                             file.path(directory, "config", "scenario_config*.csv"),
                             file.path(directory, "config", "*", "scenario_config*.csv")))
   maingmsdirectory <- directory
-  if (all(file.exists(file.path(directory, c("main.gms", file.path("..", "main.gms")))) == c(FALSE, TRUE))) {
-    maingmsdirectory <- normalizePath(file.path(directory, ".."))
+  if (! file.exists(file.path(directory, "main.gms")) && file.exists(file.path(dirname(directory), "main.gms"))) {
+    maingmsdirectory <- dirname(directory)
   }
   if (file.exists(file.path(maingmsdirectory, "main.gms"))) {
     cfg <- readDefaultConfig(maingmsdirectory)
     mainswitchnames <- sort(names(cfg$gms))
     duplo <- mainswitchnames[duplicated(mainswitchnames)]
-    message("\n### Duplicated switches in main.gms: ", paste(duplo, collapse = ", "))
+    if (length(duplo) > 0) {
+      message("\n### Duplicated switches in main.gms: ", paste(duplo, collapse = ", "))
+    }
   } else {
     message("\n### No main.gms found in directory ", maingmsdirectory, ". Please specify REMIND directory.")
     return(NULL)
@@ -30,7 +32,7 @@ switchValuesScenConf <- function(switchname = NULL, directory = ".") {
             length(csvfiles), " scenario config files:")
     switchesUniqueValue <- NULL
     for (switchname in mainswitchnames) {
-      results <- suppressMessages(switchValuesScenConf(switchname))
+      results <- suppressMessages(switchValuesScenConf(switchname, directory))
       if (length(results) == 1) {
         switchesUniqueValue[switchname] <- results
         message(switchname, " <- ", results)
@@ -38,7 +40,6 @@ switchValuesScenConf <- function(switchname = NULL, directory = ".") {
     }
     return(switchesUniqueValue)
   } else {
-    message("\n### Check values of ", switchname, " in scenario config files:")
     results <- NULL
     if (switchname %in% names(cfg$gms)) {
       message("\n### Default from main.gms: ", cfg$gms[switchname])
@@ -49,6 +50,7 @@ switchValuesScenConf <- function(switchname = NULL, directory = ".") {
     if (length(csvfiles) == 0) {
       message("\n### No scenario_config*.csv file found in directory ", directory, ".")
     } else {
+      message("\n### Check values of ", switchname, " in ", length(csvfiles), " scenario config files:")
       for (config.file in csvfiles) {
         settings <- read.csv2(config.file, stringsAsFactors = FALSE, row.names = 1, comment.char = "#", na.strings = "")
         if (switchname %in% names(settings)) {
@@ -56,12 +58,11 @@ switchValuesScenConf <- function(switchname = NULL, directory = ".") {
           results <- c(results, unique(settings[, switchname]))
         }
       }
-      if (length(results) > 0) {
-        message("\n### Values used in ", length(csvfiles), " scenario config files: ",
-                paste(sort(unique(results)), collapse = ", "))
-      } else {
-        message("\n### Not found in ", length(csvfiles), " scenario config files.")
-      }
+    }
+    if (length(results) > 0) {
+      message("\n### All values for ", switchname, " used somewhere: ", paste(sort(unique(results)), collapse = ", "))
+    } else {
+      message("\n### ", switchname, " not found anywhere.")
     }
     return(sort(unique(results)))
   }

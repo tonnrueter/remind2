@@ -14,6 +14,7 @@ If NULL, prints all switches with only one value in main.gms and scenario config
 }
 \value{
 values used in default and all scenario configs
+        if switchname = NULL, then list of all unique values
 }
 \description{
 searches all scenario config files of REMIND directory for a switch and prints the occurences
