@@ -1441,23 +1441,23 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                  setNames(dimSums(vm_demFeSector_woNonEn[,,"sesofos"],dim=3),                                                       "FE|w/o Non-energy Use|Solids|+|Fossil (EJ/yr)")
     )
 
-      out <- mbind(out,
-                 setNames(out[,,"FE (EJ/yr)"]
-                          - out[,,"FE|Transport|Bunkers (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
-                          "FE|w/o Non-energy Use w/o Bunkers (EJ/yr)"),
-                 setNames(out[,,"FE|++|Industry (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry (EJ/yr)"),
-                 setNames(out[,,"FE|Industry|+|Liquids (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
-                 setNames(out[,,"FE|Industry|+|Gases (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
-                 setNames(out[,,"FE|Industry|+|Solids (EJ/yr)"]
-                          - out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
-                          "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)") )
+      # out <- mbind(out,
+      #            setNames(out[,,"FE (EJ/yr)"]
+      #                     - out[,,"FE|Transport|Bunkers (EJ/yr)"]
+      #                     - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
+      #                     "FE|w/o Non-energy Use w/o Bunkers (EJ/yr)"),
+      #            setNames(out[,,"FE|++|Industry (EJ/yr)"]
+      #                     - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
+      #                     "FE|w/o Non-energy Use|Industry (EJ/yr)"),
+      #            setNames(out[,,"FE|Industry|+|Liquids (EJ/yr)"]
+      #                     - out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
+      #                     "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
+      #            setNames(out[,,"FE|Industry|+|Gases (EJ/yr)"]
+      #                     - out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
+      #                     "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
+      #            setNames(out[,,"FE|Industry|+|Solids (EJ/yr)"]
+      #                     - out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
+      #                     "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)") )
       
 
     #FE per sector and per emission market (ETS and ESR)
