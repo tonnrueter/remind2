@@ -556,16 +556,15 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Liquids (billion US$2005/yr)"], "Total Energy costs|Liquids (billion US$2005/yr)"))
   
   ##### Liquids|Oil Ref
-  cost <- op_costs(ei="peoil",eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Oil Ref (billion US$2005/yr)"], "Total Energy costs|Liquids|Oil Ref (billion US$2005/yr)"))
+  costoil <- op_costs(ei="peoil",eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
+  tmp  <- mbind(tmp,setNames(costoil + output[regi_on_gdx,,"Energy Investments|Liquids|Oil Ref (billion US$2005/yr)"], "Total Energy costs|Liquids|Oil Ref (billion US$2005/yr)"))
   
-  ##### Liquids|Fossil|w/ oil
+  ##### Liquids|Fossil
   cost <- op_costs(ei=petyf,eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil|w/o oil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil|w/o oil (billion US$2005/yr)"))
-  
-  ##### Liquids|Fossil 
-  cost <- op_costs(ei="pecoal",eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil (billion US$2005/yr)"))
+
+  ##### Liquids|Fossil|w/o oil
+  tmp  <- mbind(tmp,setNames(cost - costoil + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil|w/o oil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil|w/o oil (billion US$2005/yr)"))
   
   ##### Liquids|Bio
   cost <- op_costs(ei=perenew,eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
