@@ -8,7 +8,6 @@
 # both ("all"). Sensitivity determines the allowed offset when comparing
 # LHS to RHS
 library(dplyr)
-library(piamInterfaces)
 
 checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
   if (scope == "regional") {
@@ -163,11 +162,7 @@ magiccVars <- c(
 
 test_that("Test if REMIND reporting produces mandatory variables for NGFS reporting", {
 
-
-  #gdxPath <- "~/Cluster/remind2_test-NGFS_fulldata.gdx"
-
   gdxPath <- file.path(tempdir(), "fulldata.gdx")
-
   utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-NGFS_fulldata.gdx",
                        gdxPath, mode = "wb", quiet = TRUE)
 
@@ -178,8 +173,8 @@ test_that("Test if REMIND reporting produces mandatory variables for NGFS report
   computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
 
   templateVariables <- unique(
-    getREMINDTemplateVariables("AR6"),
-    getREMINDTemplateVariables("AR6_NGFS")
+    piamInterfaces::getREMINDTemplateVariables("AR6"),
+    piamInterfaces::getREMINDTemplateVariables("AR6_NGFS")
   )
 
   missingVariables <- setdiff(templateVariables, computedVariables)
@@ -194,7 +189,6 @@ test_that("Test if REMIND reporting produces mandatory variables for NGFS report
       paste(missingVariables, collapse = ",\n ")
     )
   }
-
   expect_true(length(missingVariables) == 0)
   unlink(tempdir(), recursive = TRUE)
   tempdir(TRUE)

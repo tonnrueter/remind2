@@ -1,4 +1,5 @@
 library(testthat)
-library(remind2)
+library(piamInterfaces)
+library(remind2)#
 
 test_check("remind2")
