@@ -49,7 +49,7 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R (2022). _remind2: The REMIND R package (2nd generation)_. R package version 1.103.11, <https://github.com/pik-piam/remind2>.
+Rodrigues R (2022). _remind2: The REMIND R package (2nd generation)_. R package version 1.103.11, <URL: https://github.com/pik-piam/remind2>.
 
 A BibTeX entry for LaTeX users is
 
