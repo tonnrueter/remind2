@@ -85,8 +85,10 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                        "Damage factor (1)")
 
   ies                     <- readGDX(gdx, c("pm_ies", "p_ies"), format = "first_found")
-  c_damage                <- readGDX(gdx, "cm_damage", "c_damage", format = "first_found")
-  forcOs                  <- readGDX(gdx, "vm_forcOs", field = "l")[, t2005to2150, ]
+  c_damage                <- readGDX(gdx, "cm_damage", "c_damage", format = "first_found", react = "silent")
+  if (is.null(c_damage)) c_damage <- 0
+  forcOs                  <- readGDX(gdx, "vm_forcOs", field = "l", react = "silent")[, t2005to2150, ]
+  if (is.null(forcOs)) forcOs <- 0
   inconvPenCoalSolids     <- readGDX(gdx, c("v02_inconvPenCoalSolids",
                                             "v_inconvPenCoalSolids"), field = "l")[, t2005to2150, ]
   o01_CESderivatives <- readGDX(gdx, "o01_CESderivatives", restore_zeros = F, react = "silent") # CES derivatives aka CES prices, marginal products
