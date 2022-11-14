@@ -8,6 +8,8 @@
 # both ("all"). Sensitivity determines the allowed offset when comparing
 # LHS to RHS
 library(dplyr)
+library(gdx)
+library(piamInterfaces)
 
 checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
   if (scope == "regional") {
