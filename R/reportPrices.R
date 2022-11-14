@@ -22,7 +22,7 @@
 #' @importFrom luscale speed_aggregate
 #' @importFrom dplyr %>% case_when distinct filter inner_join tibble left_join rename
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind getYears getRegions setNames dimSums new.magpie lowpass complete_magpie getItems<- getNames
+#' @importFrom magclass mbind getYears getRegions setNames dimExists dimSums new.magpie lowpass complete_magpie getItems<- getNames
 #' @importFrom quitte df.2.named.vector getColValues
 #' @importFrom readr read_csv
 #' @importFrom madrat toolAggregate
@@ -86,6 +86,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pm_taxCO2eq    <- readGDX(gdx,name=c("pm_taxCO2eq","pm_tau_CO2_tax"),format="first_found")[, t,]
   pm_taxCO2eqSCC <- readGDX(gdx,name='pm_taxCO2eqSCC',format="first_found")[, t,]
   p21_CO2TaxSectorMarkup <- readGDX(gdx,name=c('p21_CO2TaxSectorMarkup','p21_CO2_tax_sector_markup'),format="first_found",react="silent")
+  if (dimExists("ttot", p21_CO2TaxSectorMarkup)) p21_CO2TaxSectorMarkup <- p21_CO2TaxSectorMarkup[, t,]
   pm_taxemiMkt   <- readGDX(gdx,name="pm_taxemiMkt",format="first_found",react="silent")[, t,]
   p47_taxCO2eq_AggFE <- readGDX(gdx,name="p47_taxCO2eq_AggFE",format="first_found",react="silent")[, t,]
   p47_taxCO2eq_SectorAggFE <- readGDX(gdx,name="p47_taxCO2eq_SectorAggFE",format="first_found",react="silent")[, t,]
