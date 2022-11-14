@@ -164,7 +164,9 @@ magiccVars <- c(
 
 test_that("Test if REMIND reporting produces mandatory variables for NGFS reporting", {
 
-  skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
+  # for now, we enforce this test locally to ensure that remind2 reportings do
+  # not accidentally mess up the reporting
+  skip_on_ci()
 
   gdxPath <- file.path(tempdir(), "fulldata.gdx")
   utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-NGFS_fulldata.gdx",
