@@ -9,8 +9,8 @@ geometry: "a4paper,landscape,left=0.5cm,right=0.5cm,top=0.5cm,bottom=0.5cm,footn
 params:
   gdxPaths: ""
   gdxPathNames: null
-  figWidth: 15 
-  figHeight: 10
+  figWidth: 16 
+  figHeight: 9
   warning: no
   message: no
 ---
@@ -28,13 +28,18 @@ params:
 </style>
 
 ```{r setup, include=FALSE}
+library(svglite)
+
 knitr::opts_chunk$set(
   echo = FALSE,
   error = TRUE,
   message = params$message,
   warning = params$warning,
   fig.width = params$figWidth,
-  fig.height = params$figHeight
+  fig.height = params$figHeight,
+  dev = "svglite",
+  fig.ext = ".svg",
+  dpi = 100
 )
 ```
 
@@ -69,18 +74,30 @@ for (i in seq(length(params$gdxPaths))) {
   } else {
     tmp <- add_dimension(tmp,
       dim = 3.1, add = "scenario",
-      nm = rev(setdiff(strsplit(params$gdxPaths[[i]], "/|\\\\")[[1]], ""))[2]
+      nm = gsub("\\.", "_", rev(setdiff(
+        strsplit(yamlParams$gdxPaths[[i]], "/|\\\\")[[1]], ""
+      ))[2])
     )
   }
   data <- mbind(data, tmp)
 }
 
 allYears <- getYears(data, as.integer = TRUE)
-yearsUntil2050 <- getYears(data)[getYears(data, as.integer = TRUE) <= 2050]
+
+yearsUntil2050 <- getYears(data, as.integer = TRUE)[
+  getYears(data, as.integer = TRUE) <= 2050
+]
+
+regionsH12 <- toolGetMapping(name = "regionmappingH12.csv", type = "regional")
+regionsH12 <- unique(regionsH12$RegionCode)
+
+regionsEU <- toolGetMapping(name = "regionmapping_21_EU11.csv", type = "regional")
+regionsEU <- setdiff(unique(regionsEU$RegionCode), regionsH12)
+
 data <- as.quitte(data) %>% select(region, scenario, variable = all_in, period, value)
 
-.plot <- function(v, y) {
-  df <- data %>% filter(period %in% y, variable == v)
+.plot <- function(v, y, r) {
+  df <- data %>% filter(period %in% y, variable == v, region %in% r)
 
   p <- ggplot() +
     geom_line(
@@ -111,8 +128,15 @@ data <- as.quitte(data) %>% select(region, scenario, variable = all_in, period, 
 
 vars <- c("inco", "lab", "kap")
 for (v in vars) {
-  p <- .plot(v, allYears)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
 }
 ```
 
@@ -122,7 +146,16 @@ for (v in vars) {
 vars <- c("feelcb", "fehob", "fesob", "feelhpb", "feelrhb", "feheb", "fegab", "feh2b")
 
 for (v in vars) {
-  p <- .plot(v, allYears)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
+
   print(p)
 }
 ```
@@ -133,8 +166,15 @@ for (v in vars) {
 vars <- c("entrp_pass_sm", "entrp_pass_lo", "entrp_frgt_sm", "entrp_frgt_lo")
 
 for (v in vars) {
-  p <- .plot(v, allYears)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
 }
 ```
 
@@ -144,8 +184,15 @@ for (v in vars) {
 vars <- c("ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement", "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd")
 
 for (v in vars) {
-  p <- .plot(v, allYears)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
 }
 ```
 
@@ -155,9 +202,17 @@ for (v in vars) {
 ```{r top-2050}
 
 vars <- c("inco", "lab", "kap")
+
 for (v in vars) {
-  p <- .plot(v, yearsUntil2050)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsEU)
+    print(p)
+  }
 }
 ```
 
@@ -168,8 +223,15 @@ for (v in vars) {
 vars <- c("feelcb", "fehob", "fesob", "feelhpb", "feelrhb", "feheb", "fegab", "feh2b")
 
 for (v in vars) {
-  p <- .plot(v, yearsUntil2050)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsEU)
+    print(p)
+  }
 }
 ```
 
@@ -179,8 +241,15 @@ for (v in vars) {
 vars <- c("entrp_pass_sm", "entrp_pass_lo", "entrp_frgt_sm", "entrp_frgt_lo")
 
 for (v in vars) {
-  p <- .plot(v, yearsUntil2050)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsEU)
+    print(p)
+  }
 }
 ```
 
@@ -190,7 +259,14 @@ for (v in vars) {
 vars <- c("ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement", "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd")
 
 for (v in vars) {
-  p <- .plot(v, yearsUntil2050)
-  print(p)
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, yearsUntil2050, regionsEU)
+    print(p)
+  }
 }
 ```
