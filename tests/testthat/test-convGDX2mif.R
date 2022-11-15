@@ -9,7 +9,6 @@
 # LHS to RHS
 library(dplyr)
 library(gdx)
-library(piamInterfaces)
 
 checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
   if (scope == "regional") {
@@ -24,9 +23,13 @@ checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
 
     dt[, diff := total - get(names(eqs)[LHS])]
     if (nrow(dt[abs(diff) > sens]) > 0) {
-      fail(paste(c(gdxPath, paste("Check on data integrity failed for", names(eqs)[LHS]),
-                   gsub("`", "", unlist(strsplit(eqs[[LHS]], "`+`", TRUE)))),
-                 collapse = "\n"))
+      fail(paste(
+        c(
+          gdxPath, paste("Check on data integrity failed for", names(eqs)[LHS]),
+          gsub("`", "", unlist(strsplit(eqs[[LHS]], "`+`", TRUE)))
+        ),
+        collapse = "\n"
+      ))
     }
   }
 }
@@ -42,8 +45,10 @@ checkIntegrity <- function(out, gdxPath = NULL) {
   # remove from the tests the variables whose totals cannot be found
   chck <- grep(" \\(.*.\\)$", names(myList), invert = TRUE)
   if (length(chck) > 0) {
-    warning(paste0("For this group the corresponding total could not be found and the summation check ",
-                   "will not be performed: \n", myList[chck], "\n\n"))
+    warning(paste0(
+      "For this group the corresponding total could not be found and the summation check ",
+      "will not be performed: \n", myList[chck], "\n\n"
+    ))
   }
   myList <- myList[grep(" \\(.*.\\)$", names(myList))]
 
@@ -61,7 +66,9 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     defaultGdxPath <- file.path(tempdir(), "fulldata.gdx")
     if (!file.exists(defaultGdxPath)) {
       utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_fulldata.gdx",
-                           defaultGdxPath, mode = "wb", quiet = TRUE)
+        defaultGdxPath,
+        mode = "wb", quiet = TRUE
+      )
     }
     gdxPaths <- defaultGdxPath
   }
@@ -71,12 +78,14 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     didremindfinish <- function(fulldatapath) {
       logpath <- paste0(stringr::str_sub(fulldatapath, 1, -14), "/full.log")
       return(file.exists(logpath) &&
-               any(grep("*** Status: Normal completion", readLines(logpath, warn = FALSE), fixed = TRUE)))
+        any(grep("*** Status: Normal completion", readLines(logpath, warn = FALSE), fixed = TRUE)))
     }
     gdx <- Sys.glob("/p/projects/remind/modeltests/output/*/fulldata.gdx")
-    stamp <- lapply(gdx, stringr::str_sub, -32, -14) %>% strptime(format = "%Y-%m-%d_%H.%M.%S") %>% as.numeric
+    stamp <- lapply(gdx, stringr::str_sub, -32, -14) %>%
+      strptime(format = "%Y-%m-%d_%H.%M.%S") %>%
+      as.numeric()
     gdx <- data.frame(list(gdx = gdx, stamp = stamp))
-    gdx <- gdx[Sys.time() - gdx$stamp < 30 * 24 * 60 * 60 & ! is.na(gdx$stamp), ]
+    gdx <- gdx[Sys.time() - gdx$stamp < 30 * 24 * 60 * 60 & !is.na(gdx$stamp), ]
     gdx <- gdx[unlist(lapply(gdx$gdx, didremindfinish)), ]
     gdx <- gdx[order(gdx$stamp), ]
     datetimepattern <- "_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}"
@@ -132,72 +141,10 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
       outputFormat = "pdf",
       outputFile = "cs2_test",
       outputDir = tempdir(),
-      sections = 0)) # Render only the info section.
+      sections = 0
+    )
+  ) # Render only the info section.
   expect_true(file.exists(file.path(tempdir(), "cs2_test.pdf")))
   unlink(tempdir(), recursive = TRUE)
   tempdir(TRUE)
 })
-
-
-magiccVars <- c(
-  "Concentration|CH4 (ppb)",
-  "Concentration|CO2 (ppm)",
-  "Concentration|N2O (ppb)",
-  "Forcing (W/m2)",
-  "Forcing|Aerosol (W/m2)",
-  "Forcing|Aerosol|BC (W/m2)",
-  "Forcing|Aerosol|Cloud Indirect (W/m2)",
-  "Forcing|Aerosol|OC (W/m2)",
-  "Forcing|Aerosol|Other (W/m2)",
-  "Forcing|Aerosol|Sulfate Direct (W/m2)",
-  "Forcing|Albedo Change and Mineral Dust (W/m2)",
-  "Forcing|CH4 (W/m2)",
-  "Forcing|CO2 (W/m2)",
-  "Forcing|F-Gases (W/m2)",
-  "Forcing|Kyoto Gases (W/m2)",
-  "Forcing|Montreal Gases (W/m2)",
-  "Forcing|N2O (W/m2)",
-  "Forcing|Other (W/m2)",
-  "Forcing|Tropospheric Ozone (W/m2)",
-  "Temperature|Global Mean (K)"
-)
-
-test_that("Test if REMIND reporting produces mandatory variables for NGFS reporting", {
-
-  # for now, we enforce this test locally to ensure that remind2 reportings do
-  # not accidentally mess up the reporting
-  skip_on_ci()
-
-  gdxPath <- file.path(tempdir(), "fulldata.gdx")
-  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-NGFS_fulldata.gdx",
-                       gdxPath, mode = "wb", quiet = TRUE)
-
-  mif <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
-
-  computedVariables <- getItems(mif, dim = 3.3)
-
-  computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
-
-  templateVariables <- unique(
-    piamInterfaces::getREMINDTemplateVariables("AR6"),
-    piamInterfaces::getREMINDTemplateVariables("AR6_NGFS")
-  )
-
-  missingVariables <- setdiff(templateVariables, computedVariables)
-
-  # MAGICC variables in template are not created here and therefore not considered
-  missingVariables <- setdiff(missingVariables, magiccVars)
-
-  if (length(missingVariables) > 0) {
-    warning(
-      "The following variables are expected in the piamInterfaces package,
-          but cannot be found in the reporting generated: ",
-      paste(missingVariables, collapse = ",\n ")
-    )
-  }
-  expect_true(length(missingVariables) == 0)
-  unlink(tempdir(), recursive = TRUE)
-  tempdir(TRUE)
-})
-
-
