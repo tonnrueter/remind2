@@ -1,6 +1,6 @@
 #' Render compareCalibrationTargets
 #'
-#' @param gdx \code{character(n)}, optionally named. Paths to GDX objects.
+#' @param gdxPaths \code{character(n)}, optionally named. Paths to GDX objects.
 #'   If the vector has names, those are used to refer to the scenarios in the
 #'   output file.
 #' @param outputDir The directory where the output document
@@ -19,7 +19,8 @@
 #' )
 #' }
 #' @export
-compareCalibrationTargets <- function(gdxPaths, outputDir = getwd(), outputFile = "compareCalibrationTargets.html") {
+compareCalibrationTargets <- function(gdxPaths, outputDir = getwd(),
+                                      outputFile = "compareCalibrationTargets.html") {
   yamlParams <- list(
     gdxPaths = normalizePath(gdxPaths, mustWork = TRUE),
     gdxPathNames = names(gdxPaths)
