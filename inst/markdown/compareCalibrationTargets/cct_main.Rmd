@@ -25,6 +25,12 @@ params:
   .svg-container {
     margin: auto !important;
   }
+  img {
+    max-width: 100% !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 </style>
 
 ```{r setup, include=FALSE}
@@ -58,6 +64,7 @@ library(quitte)
 library(gdx)
 library(ggplot2)
 library(dplyr)
+library(madrat)
 ```
 
 
@@ -120,81 +127,6 @@ data <- as.quitte(data) %>% select(region, scenario, variable = all_in, period, 
 ```
 
 # Results {.tabset .tabset-dropdown}
-
-## All years {.tabset}
-
-### Top Level
-```{r top-all}
-
-vars <- c("inco", "lab", "kap")
-for (v in vars) {
-  if (any(regionsH12 %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsH12)
-    print(p)
-  }
-
-  if (any(regionsEU %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsEU)
-    print(p)
-  }
-}
-```
-
-### Buildings
-```{r buildings-all}
-
-vars <- c("feelcb", "fehob", "fesob", "feelhpb", "feelrhb", "feheb", "fegab", "feh2b")
-
-for (v in vars) {
-  if (any(regionsH12 %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsH12)
-    print(p)
-  }
-
-  if (any(regionsEU %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsEU)
-    print(p)
-  }
-
-  print(p)
-}
-```
-
-### Transportation
-```{r transportation-all}
-
-vars <- c("entrp_pass_sm", "entrp_pass_lo", "entrp_frgt_sm", "entrp_frgt_lo")
-
-for (v in vars) {
-  if (any(regionsH12 %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsH12)
-    print(p)
-  }
-
-  if (any(regionsEU %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsEU)
-    print(p)
-  }
-}
-```
-
-### Industry
-```{r industry-all}
-
-vars <- c("ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement", "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd")
-
-for (v in vars) {
-  if (any(regionsH12 %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsH12)
-    print(p)
-  }
-
-  if (any(regionsEU %in% unique(data$region))) {
-    p <- .plot(v, allYears, regionsEU)
-    print(p)
-  }
-}
-```
 
 ## Years until 2050 {.tabset} 
 
@@ -266,6 +198,81 @@ for (v in vars) {
 
   if (any(regionsEU %in% unique(data$region))) {
     p <- .plot(v, yearsUntil2050, regionsEU)
+    print(p)
+  }
+}
+```
+
+## All years {.tabset}
+
+### Top Level
+```{r top-all}
+
+vars <- c("inco", "lab", "kap")
+for (v in vars) {
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
+}
+```
+
+### Buildings
+```{r buildings-all}
+
+vars <- c("feelcb", "fehob", "fesob", "feelhpb", "feelrhb", "feheb", "fegab", "feh2b")
+
+for (v in vars) {
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
+
+  print(p)
+}
+```
+
+### Transportation
+```{r transportation-all}
+
+vars <- c("entrp_pass_sm", "entrp_pass_lo", "entrp_frgt_sm", "entrp_frgt_lo")
+
+for (v in vars) {
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
+    print(p)
+  }
+}
+```
+
+### Industry
+```{r industry-all}
+
+vars <- c("ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement", "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd")
+
+for (v in vars) {
+  if (any(regionsH12 %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsH12)
+    print(p)
+  }
+
+  if (any(regionsEU %in% unique(data$region))) {
+    p <- .plot(v, allYears, regionsEU)
     print(p)
   }
 }
