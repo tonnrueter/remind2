@@ -9,7 +9,7 @@ reportLCOE(gdx, output.type = "both")
 \arguments{
 \item{gdx}{a GDX object as created by readGDX, or the path to a gdx}
 
-\item{output.type}{string to determine which output shall be produced. 
+\item{output.type}{string to determine which output shall be produced.
 Can be either "average" (returns only average LCOE),
 "marginal" (returns only marginal LCOE), "both" (returns marginal and average LCOE) and
 and "marginal detail" (returns table to trace back how marginal LCOE are calculated).}
@@ -18,10 +18,10 @@ and "marginal detail" (returns table to trace back how marginal LCOE are calcula
 MAgPIE object - LCOE calculated by model post-processing. Two types a) standing system LCOE b) new plant LCOE.
 }
 \description{
-This function provides a post-processing calculation of LCOE (Levelized Cost of Energy) for energy conversion technologies in REMIND. 
-In incluldes most technologies that generate secondary energy and the distribution technologies which convert secondary energy to final energy. 
-This script calculates two different types of LCOE: average LCOE (standing system) and marginal LCOE (new plant). 
-The average LCOE reflect the total cost incurred by the technology deployment in a specific time step divided by its energy output. 
+This function provides a post-processing calculation of LCOE (Levelized Cost of Energy) for energy conversion technologies in REMIND.
+In incluldes most technologies that generate secondary energy and the distribution technologies which convert secondary energy to final energy.
+This script calculates two different types of LCOE: average LCOE (standing system) and marginal LCOE (new plant).
+The average LCOE reflect the total cost incurred by the technology deployment in a specific time step divided by its energy output.
 The marginal LCOE estimate the per-unit lifetime cost of the output if the model added another capacity of that technology in the respective time step.
 }
 \examples{
