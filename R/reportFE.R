@@ -21,7 +21,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames
 #'                      dimSums getNames<- as.data.frame as.magpie
-#' @importFrom dplyr filter %>% mutate select inner_join group_by summarise left_join full_join
+#' @importFrom dplyr filter %>% mutate select group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
 #' @importFrom utils tail
@@ -1323,19 +1323,22 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
 
 
-  # variables required by the exogains code
-  # Disaggregate solids between coal, modern biomass and traditional biomass
-  out <-  mbind(out,  setNames(asS4(pmin(out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"],out[,,"FE|Buildings|+|Solids (EJ/yr)"]))         ,"FE|Buildings|Solids|Biomass|Traditional (EJ/yr)"))
-  out <-  mbind(out,  setNames(out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"] - out[,,"FE|Buildings|Solids|Biomass|Traditional (EJ/yr)"] , "FE|Industry|Solids|Biomass|Traditional (EJ/yr)" ))
-
-  share_sol_noTrad_buil = (out[,,"FE|Buildings|+|Solids (EJ/yr)"] - out[,,"FE|Buildings|Solids|Biomass|Traditional (EJ/yr)"]) / (out[,,"FE|+|Solids (EJ/yr)"] - out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"] )
-  share_sol_noTrad_indu = (out[,, "FE|Industry|+|Solids (EJ/yr)"] - out[,, "FE|Industry|Solids|Biomass|Traditional (EJ/yr)"]) / (out[,,"FE|+|Solids (EJ/yr)"] - out[,,"FE|Solids|Biomass|+|Traditional (EJ/yr)"] )
-
+  # split sectoral biomass in modern and traditional for exogains
+  # allocate tradional biomass to buildings first and only consider industry if
+  # all biomass in buildings is traditional. All fossil solids are coal.
+  out <- mbind(out, setNames(asS4(pmin(out[, , "FE|Solids|Biomass|+|Traditional (EJ/yr)"],
+                                       out[, , "FE|Buildings|Solids|+|Biomass (EJ/yr)"])),
+                             "FE|Buildings|Solids|Biomass|+|Traditional (EJ/yr)"))
+  out <- mbind(out, setNames(out[, , "FE|Solids|Biomass|+|Traditional (EJ/yr)"] -
+                               out[, , "FE|Buildings|Solids|Biomass|+|Traditional (EJ/yr)"] ,
+                             "FE|Industry|Solids|Biomass|+|Traditional (EJ/yr)" ))
   out <- mbind(out,
-    setNames(out[,,"FE|Solids|Biomass|+|Modern (EJ/yr)"] * share_sol_noTrad_buil, "FE|Buildings|Solids|Biomass|Modern (EJ/yr)"),
-    setNames(out[,,"FE|Solids|Fossil|+|Coal (EJ/yr)"]    * share_sol_noTrad_buil, "FE|Buildings|Solids|Coal (EJ/yr)"),
-    setNames(out[,,"FE|Solids|Biomass|+|Modern (EJ/yr)"] * share_sol_noTrad_indu,  "FE|Industry|Solids|Biomass|Modern (EJ/yr)"),
-    setNames(out[,,"FE|Solids|Fossil|+|Coal (EJ/yr)"]    * share_sol_noTrad_indu,  "FE|Industry|Solids|Coal (EJ/yr)")
+    setNames(out[, , "FE|Buildings|Solids|+|Biomass (EJ/yr)"] - out[, , "FE|Buildings|Solids|Biomass|+|Traditional (EJ/yr)"],
+             "FE|Buildings|Solids|Biomass|+|Modern (EJ/yr)"),
+    setNames(out[, , "FE|Industry|Solids|+|Biomass (EJ/yr)"] - out[, , "FE|Industry|Solids|Biomass|+|Traditional (EJ/yr)"],
+             "FE|Industry|Solids|Biomass|+|Modern (EJ/yr)"),
+    setNames(out[, , "FE|Buildings|Solids|+|Fossil (EJ/yr)"], "FE|Buildings|Solids|Coal (EJ/yr)"),
+    setNames(out[, , "FE|Industry|Solids|+|Fossil (EJ/yr)"], "FE|Industry|Solids|Coal (EJ/yr)")
   )
 
 
@@ -1377,14 +1380,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                         rename( encar = data) %>%
                         # join current FE|Industry|Liquids etc. with non-energy use subsectors data
                         revalue.levels(encar = map.vars.nechem) %>%
-                        left_join(df.fe_nechem) %>%
+                        left_join(df.fe_nechem,
+                                  by = c("region", "period", "encar")) %>%
                         mutate( Value_NonEn = ifelse(value >= value_subsectors, value_subsectors, value)) %>%
                         filter( SSP == "SSP2") %>%
                         # map to non-energy use variable names
-                        revalue.levels(encar= map.nonen.vars) %>%
+                        revalue.levels(encar = map.nonen.vars) %>%
                         select(region, period, encar, Value_NonEn)
 
-      out.nechem <- suppressWarnings(as.magpie(df.out.nechem, spatial=1, temporal=2, datacol=4))
+      out.nechem <- suppressWarnings(as.magpie(df.out.nechem, spatial = 1, temporal = 2, datacol = 4))
       out.nechem <- out.nechem[getRegions(out), getYears(out),]
 
       # set NAs to zero
