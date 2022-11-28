@@ -1,6 +1,6 @@
 # Further Information
 
-```{r}
+```{r Further information}
 # varsPerTable # Number of variable columns in table.
 # firstColumnWidth  # in mm; first column shows the scenario title.
 # pageTextWidth <- # in mm; DIN A4 landscape minus margins.
@@ -68,7 +68,7 @@ showInTables <- function(
 }
 ```
 
-```{r}
+```{r get config options}
 # Get config options where scenarios differ and where all scenarios are the same.
 if (exists("cfgGms") && !is.null(cfgGms)) {
   cfgGmsWide <-

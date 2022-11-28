@@ -1,6 +1,6 @@
 # Climate
 
-```{r}
+```{r Climate}
 showLinePlots(data, "Forcing")
 showLinePlots(data, "Temperature|Global Mean")
 ```

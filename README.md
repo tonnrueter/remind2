@@ -49,14 +49,14 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R (2022). _remind2: The REMIND R package (2nd generation)_. R package version 1.103.18, <https://github.com/pik-piam/remind2>.
+Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P (2022). _remind2: The REMIND R package (2nd generation)_. R package version 1.103.17, <URL: https://github.com/pik-piam/remind2>.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Manual{,
   title = {remind2: The REMIND R package (2nd generation)},
-  author = {Renato Rodrigues},
+  author = {Renato Rodrigues and Lavinia Baumstark and Falk Benke and Jan Philipp Dietrich and Alois Dirnaichner and Pascal Führlich and Anastasis Giannousakis and Robin Hasse and Jérome Hilaire and David Klein and Johannes Koch and Katarzyna Kowalczyk and Antoine Levesque and Aman Malik and Anne Merfort and Leon Merfort and Simón Morena-Leiva and Michaja Pehl and Robert Pietzcker and Sebastian Rauner and Oliver Richters and Marianna Rottoli and Christof Schötz and Felix Schreyer and Kais Siala and Björn Sörgel and Mike Spahr and Jessica Strefler and Philipp Verpoort},
   year = {2022},
   note = {R package version 1.103.18},
   url = {https://github.com/pik-piam/remind2},
