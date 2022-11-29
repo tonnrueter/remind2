@@ -380,6 +380,7 @@ data <- as.quitte(data)
 
 
 ```{r global variables}
+on.exit(options(warn = getOption("warn")))
 options(warn = 1)
 
 

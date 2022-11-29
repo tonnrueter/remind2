@@ -467,6 +467,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   price.investment <- vm_costTeCapital * p_teAnnuity / vm_capFac
   price.omf <- pm_data_omf * vm_costTeCapital / vm_capFac
   price.td <- collapseDim(price.investment + price.omf)  * 1e6 / 3.6 # [tr USD2005/TWh] -> [USD2005/GJ]
+  price.td[price.td == Inf] <- 0
 
   out <- mbind(
     out,
