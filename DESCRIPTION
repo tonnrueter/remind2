@@ -1,8 +1,8 @@
 Type: Package
 Package: remind2
 Title: The REMIND R package (2nd generation)
-Version: 1.103.16
-Date: 2022-11-21
+Version: 1.103.17
+Date: 2022-11-29
 Authors@R: 
     person("Renato", "Rodrigues", , "renato.rodrigues@pik-potsdam.de", role = c("aut", "cre"))
 Description: Contains the REMIND-specific routines for data and model
@@ -33,6 +33,7 @@ Imports:
     madrat,
     mip,
     openxlsx,
+    piamInterfaces (>= 0.0.31),
     plotly,
     quitte,
     readr,
@@ -61,3 +62,5 @@ VignetteBuilder:
     knitr
 Encoding: UTF-8
 RoxygenNote: 7.2.2
+Config/testthat/parallel: true
+Config/testthat/edition: 3

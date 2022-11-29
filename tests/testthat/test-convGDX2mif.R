@@ -8,6 +8,8 @@
 # both ("all"). Sensitivity determines the allowed offset when comparing
 # LHS to RHS
 library(dplyr)
+library(gdx)
+
 checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
   if (scope == "regional") {
     dt <- dt[all_regi != "World"]
@@ -21,9 +23,13 @@ checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
 
     dt[, diff := total - get(names(eqs)[LHS])]
     if (nrow(dt[abs(diff) > sens]) > 0) {
-      fail(paste(c(gdxPath, paste("Check on data integrity failed for", names(eqs)[LHS]),
-                 gsub("`", "", unlist(strsplit(eqs[[LHS]], "`+`", TRUE)))),
-                 collapse = "\n"))
+      fail(paste(
+        c(
+          gdxPath, paste("Check on data integrity failed for", names(eqs)[LHS]),
+          gsub("`", "", unlist(strsplit(eqs[[LHS]], "`+`", TRUE)))
+        ),
+        collapse = "\n"
+      ))
     }
   }
 }
@@ -39,8 +45,10 @@ checkIntegrity <- function(out, gdxPath = NULL) {
   # remove from the tests the variables whose totals cannot be found
   chck <- grep(" \\(.*.\\)$", names(myList), invert = TRUE)
   if (length(chck) > 0) {
-    warning(paste0("For this group the corresponding total could not be found and the summation check ",
-                   "will not be performed: \n", myList[chck], "\n\n"))
+    warning(paste0(
+      "For this group the corresponding total could not be found and the summation check ",
+      "will not be performed: \n", myList[chck], "\n\n"
+    ))
   }
   myList <- myList[grep(" \\(.*.\\)$", names(myList))]
 
@@ -58,7 +66,9 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     defaultGdxPath <- file.path(tempdir(), "fulldata.gdx")
     if (!file.exists(defaultGdxPath)) {
       utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_fulldata.gdx",
-                           defaultGdxPath, mode = "wb", quiet = TRUE)
+        defaultGdxPath,
+        mode = "wb", quiet = TRUE
+      )
     }
     gdxPaths <- defaultGdxPath
   }
@@ -68,12 +78,14 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     didremindfinish <- function(fulldatapath) {
       logpath <- paste0(stringr::str_sub(fulldatapath, 1, -14), "/full.log")
       return(file.exists(logpath) &&
-             any(grep("*** Status: Normal completion", readLines(logpath, warn = FALSE), fixed = TRUE)))
+        any(grep("*** Status: Normal completion", readLines(logpath, warn = FALSE), fixed = TRUE)))
     }
     gdx <- Sys.glob("/p/projects/remind/modeltests/output/*/fulldata.gdx")
-    stamp <- lapply(gdx, stringr::str_sub, -32, -14) %>% strptime(format = "%Y-%m-%d_%H.%M.%S") %>% as.numeric
+    stamp <- lapply(gdx, stringr::str_sub, -32, -14) %>%
+      strptime(format = "%Y-%m-%d_%H.%M.%S") %>%
+      as.numeric()
     gdx <- data.frame(list(gdx = gdx, stamp = stamp))
-    gdx <- gdx[Sys.time() - gdx$stamp < 30 * 24 * 60 * 60 & ! is.na(gdx$stamp), ]
+    gdx <- gdx[Sys.time() - gdx$stamp < 30 * 24 * 60 * 60 & !is.na(gdx$stamp), ]
     gdx <- gdx[unlist(lapply(gdx$gdx, didremindfinish)), ]
     gdx <- gdx[order(gdx$stamp), ]
     datetimepattern <- "_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}"
@@ -129,7 +141,9 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
       outputFormat = "pdf",
       outputFile = "cs2_test",
       outputDir = tempdir(),
-      sections = 0)) # Render only the info section.
+      sections = 0
+    )
+  ) # Render only the info section.
   expect_true(file.exists(file.path(tempdir(), "cs2_test.pdf")))
   unlink(tempdir(), recursive = TRUE)
   tempdir(TRUE)
