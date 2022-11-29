@@ -34,7 +34,7 @@ params:
   mainReg: "World"
   figWidth: 15 
   figHeight: 10
-  warning: yes
+  warning: FALSE
 ---
 
 ```{r setup, include=FALSE}
@@ -380,6 +380,9 @@ data <- as.quitte(data)
 
 
 ```{r global variables}
+options(warn = 1)
+
+
 # Set global variables for use in plotting.
 options(mip.mainReg = params$mainReg) # nolint
 options(mip.yearsBarPlot = params$yearsBarPlot) # nolint
@@ -387,6 +390,9 @@ options(mip.histRefModel = histRefModel) # nolint
 
 # Reference year for Kaya decomposition is params$yearRef or the first available year therafter.
 options(kaya.refYear = min(params$yearsScen[params$yearsScen >= params$yearRef])) # nolint
+
+# allow for duplicate chunk labels
+options(knitr.duplicate.label = "allow")
 ```
 
 

@@ -1,4 +1,7 @@
+\begingroup
+\let\newpage\relax
 # Further Information
+\endgroup
 
 ```{r Further information}
 # varsPerTable # Number of variable columns in table.
@@ -138,7 +141,7 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
 if (exists("cfgGmsWideDiff") && !is.null(cfgGmsWideDiff)) {
   cat("## GAMS Config Differences\n\n")
 
-  cat("Following GAMS settings are different among the sceanrios:\n\n")
+  cat("Following GAMS settings are different among the scenarios:\n\n")
 
   showInTables(cfgGmsWideDiff, bkgndColors)
 }

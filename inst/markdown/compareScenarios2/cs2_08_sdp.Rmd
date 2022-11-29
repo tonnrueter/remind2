@@ -55,6 +55,7 @@ items <- c(
 walk(items, showLinePlots, data = data)
 ```
 
+\newpage
 ## SDG 7
 
 ### access
@@ -139,6 +140,7 @@ items <- c(
 walk(items, showLinePlots, data = data)
 ```
 
+\newpage
 ## SDG 12
 
 ```{r SDG 12}
