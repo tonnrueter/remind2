@@ -1,4 +1,4 @@
-%% NOTE: This a slightly modified verseion of the default Pandoc LaTeX template https://github.com/jgm/pandoc/tree/master/data/templates/
+%% NOTE: This a slightly modified version of the default Pandoc LaTeX template https://github.com/jgm/pandoc/tree/master/data/templates/
 %% Modifications:
 %% * package hyperref is loaded last
 %% 
@@ -481,7 +481,10 @@ $if(colorlinks)$
 \hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$$endif$}
 $endif$
 \setcounter{tocdepth}{$toc-depth$}
+\begingroup
+\let\newpage\relax
 \tableofcontents
+\endgroup
 }
 $endif$
 $endif$

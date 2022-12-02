@@ -1,6 +1,9 @@
+\begingroup
+\let\newpage\relax
 # Further Information
+\endgroup
 
-```{r}
+```{r Further information}
 # varsPerTable # Number of variable columns in table.
 # firstColumnWidth  # in mm; first column shows the scenario title.
 # pageTextWidth <- # in mm; DIN A4 landscape minus margins.
@@ -68,7 +71,7 @@ showInTables <- function(
 }
 ```
 
-```{r}
+```{r get config options}
 # Get config options where scenarios differ and where all scenarios are the same.
 if (exists("cfgGms") && !is.null(cfgGms)) {
   cfgGmsWide <-
@@ -138,7 +141,7 @@ if (exists("cfgDefault") && !is.null(cfgDefault) &&
 if (exists("cfgGmsWideDiff") && !is.null(cfgGmsWideDiff)) {
   cat("## GAMS Config Differences\n\n")
 
-  cat("Following GAMS settings are different among the sceanrios:\n\n")
+  cat("Following GAMS settings are different among the scenarios:\n\n")
 
   showInTables(cfgGmsWideDiff, bkgndColors)
 }
