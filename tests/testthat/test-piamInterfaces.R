@@ -1,5 +1,4 @@
 library(gdx)
-library(piamInterfaces)
 
 test_that("Test if REMIND reporting produces mandatory variables for NGFS reporting", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
