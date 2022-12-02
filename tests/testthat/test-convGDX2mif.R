@@ -134,16 +134,19 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   if (!file.exists(histMif)) {
     utils::download.file("https://rse.pik-potsdam.de/data/example/historical.mif", histMif, quiet = TRUE)
   }
-  capture.output( # Do not show stdout text.
-    compareScenarios2(
-      mifScen = myMifs,
-      mifHist = histMif,
-      outputFormat = "pdf",
-      outputFile = "cs2_test",
-      outputDir = tempdir(),
-      sections = 0
-    )
-  ) # Render only the info section.
+
+  suppressWarnings(
+    capture.output( # Do not show stdout text.
+      compareScenarios2(
+        mifScen = myMifs,
+        mifHist = histMif,
+        outputFormat = "pdf",
+        outputFile = "cs2_test",
+        outputDir = tempdir(),
+        sections = 0
+      )
+    ) # Render only the info section.
+  )
   expect_true(file.exists(file.path(tempdir(), "cs2_test.pdf")))
   unlink(tempdir(), recursive = TRUE)
   tempdir(TRUE)
