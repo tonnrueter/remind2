@@ -55,7 +55,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
       remind = c("power", "indst", "res", "trans", "indprocess", "solvents", "extraction"),
       reporting = c(paste0("Emi|", pollutant, "|Energy Supply|Electricity (Mt ", pollutant, "/yr)"),
                     paste0("Emi|", pollutant, "|Energy Demand|Industry (Mt ", pollutant, "/yr)"), 
-                    paste0("Emi|", pollutant, "|Energy Demand|ResCom (Mt ", pollutant, "/yr)"),
+                    paste0("Emi|", pollutant, "|Energy Demand|Buildings (Mt ", pollutant, "/yr)"),
                     paste0("Emi|", pollutant, "|Energy Demand|Transport|Ground Trans (Mt ", pollutant, "/yr)"),
                     paste0("Emi|", pollutant, "|Energy Demand|Industry (Mt ", pollutant, "/yr)"), 
                     paste0("Emi|", pollutant, "|Solvents (Mt ", pollutant, "/yr)"), 
@@ -120,7 +120,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
     # Aggregation: Energy Demand + Energy Supply, Land Use
     tmp3 <- mbind(tmp2, 
                   setNames(dimSums(tmp2[,,c(paste0("Emi|",pollutant,"|Energy Demand|Industry (Mt ",pollutant,"/yr)"),
-                                            paste0("Emi|",pollutant,"|Energy Demand|ResCom (Mt ",pollutant,"/yr)"),
+                                            paste0("Emi|",pollutant,"|Energy Demand|Buildings (Mt ",pollutant,"/yr)"),
                                             paste0("Emi|",pollutant,"|Energy Demand|Transport (Mt ",pollutant,"/yr)"),
                                             paste0("Emi|",pollutant,"|Energy Supply (Mt ",pollutant,"/yr)"))],dim = 3),
                            paste0("Emi|",pollutant,"|Energy Supply and Demand (Mt ",pollutant,"/yr)")),
@@ -322,7 +322,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
       remind = c("power", "indst", "res", "trans", "indprocess", "solvents", "extraction"),
       reporting = c(paste0("Emi|", pollutant, "|Energy Supply|Electricity (Mt ", pollutant, "/yr)"),
                     paste0("Emi|", pollutant, "|Energy Demand|Industry (Mt ", pollutant, "/yr)"), 
-                    paste0("Emi|", pollutant, "|Energy Demand|ResCom (Mt ", pollutant, "/yr)"),
+                    paste0("Emi|", pollutant, "|Energy Demand|Buildings (Mt ", pollutant, "/yr)"),
                     paste0("Emi|", pollutant, "|Energy Demand|Transport|Ground Trans (Mt ", pollutant, "/yr)"),
                     paste0("Emi|", pollutant, "|Energy Demand|Industry (Mt ", pollutant, "/yr)"), 
                     paste0("Emi|", pollutant, "|Solvents (Mt ", pollutant, "/yr)"), 
@@ -369,7 +369,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
     # Aggregation: Energy Demand + Energy Supply, Land Use
     tmp3 <- mbind(tmp2, 
                   setNames(dimSums(tmp2[,,c(paste0("Emi|",pollutant,"|Energy Demand|Industry (Mt ",pollutant,"/yr)"),
-                                            paste0("Emi|",pollutant,"|Energy Demand|ResCom (Mt ",pollutant,"/yr)"),
+                                            paste0("Emi|",pollutant,"|Energy Demand|Buildings (Mt ",pollutant,"/yr)"),
                                             paste0("Emi|",pollutant,"|Energy Demand|Transport (Mt ",pollutant,"/yr)"),
                                             paste0("Emi|",pollutant,"|Energy Supply (Mt ",pollutant,"/yr)"))],dim = 3),
                            paste0("Emi|",pollutant,"|Energy Supply and Demand (Mt ",pollutant,"/yr)")),
@@ -521,7 +521,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
         remind = c("power", "indst", "res", "trans", "solvents", "extraction"),
         reporting = c(paste0("Emi|", poll_rep, "|Energy Supply|Electricity (Mt ", poll_rep, "/yr)"),
                       paste0("Emi|", poll_rep, "|Energy Demand|Industry (Mt ", poll_rep, "/yr)"), 
-                      paste0("Emi|", poll_rep, "|Energy Demand|ResCom (Mt ", poll_rep, "/yr)"),
+                      paste0("Emi|", poll_rep, "|Energy Demand|Buildings (Mt ", poll_rep, "/yr)"),
                       paste0("Emi|", poll_rep, "|Energy Demand|Transport|Ground Trans (Mt ", poll_rep, "/yr)"),
                       paste0("Emi|", poll_rep, "|Solvents (Mt ", poll_rep, "/yr)"), 
                       paste0("Emi|", poll_rep, "|Energy Supply|Extraction (Mt ", poll_rep, "/yr)")))
@@ -595,7 +595,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
         # Aggregation: Energy Demand + Energy Supply, Land Use
         out <- mbind(out, 
                       setNames(dimSums(out[,,c(paste0("Emi|",poll_rep,"|Energy Demand|Industry (Mt ",poll_rep,"/yr)"),
-                                               paste0("Emi|",poll_rep,"|Energy Demand|ResCom (Mt ",poll_rep,"/yr)"),
+                                               paste0("Emi|",poll_rep,"|Energy Demand|Buildings (Mt ",poll_rep,"/yr)"),
                                                paste0("Emi|",poll_rep,"|Energy Demand|Transport (Mt ",poll_rep,"/yr)"),
                                                paste0("Emi|",poll_rep,"|Energy Supply (Mt ",poll_rep,"/yr)"))],dim = 3),
                                paste0("Emi|",poll_rep,"|Energy Supply and Demand (Mt ",poll_rep,"/yr)")),
