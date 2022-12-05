@@ -4,29 +4,29 @@
 
 ```{r carbon capture}
 showLinePlots(data, "Carbon Management|Carbon Capture")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Biomass|Pe2Se")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Fossil|Pe2Se")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Industry Energy")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture", scales = "fixed")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Biomass|Pe2Se", scales = "fixed")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Fossil|Pe2Se", scales = "fixed")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Industry Energy", scales = "fixed")
 ```
 
 ## Storage
 
-```{r storage}
+```{r carbon management storage}
 showLinePlots(data, "Carbon Management|Storage")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Storage")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Storage|Industry Energy")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Storage", scales = "fixed")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Storage|Industry Energy", scales = "fixed")
 ```
 
 ## Usage
 
-```{r usage}
+```{r carbon management usage}
 showLinePlots(data, "Carbon Management|Usage")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Usage")
+showAreaAndBarPlotsPlus(data, "Carbon Management|Usage", scales = "fixed")
 ```
 
 ## Share
 
-```{r share}
+```{r carbon management share}
 showLinePlots(data, "Carbon Management|Share of Stored CO2 from Captured CO2")
 ```

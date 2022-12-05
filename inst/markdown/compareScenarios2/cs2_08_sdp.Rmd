@@ -2,7 +2,7 @@
 
 ## SDG 1
 
-```{r}
+```{r SDG 1}
 items <- c(
   "Population|Extreme poverty",
   "Population|Extreme poverty|International poverty line",
@@ -13,7 +13,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 3
 
-```{r}
+```{r SDG 3}
 items <- c(
   "Premature mortality|PM2_5",
   "Disability-Adjusted Life Year|PM2_5")
@@ -22,7 +22,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 4
 
-```{r}
+```{r SDG 4}
 items <- c(
   "Population|Primary education",
   "Population|Secondary education",
@@ -39,7 +39,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 5
 
-```{r}
+```{r SDG 5}
 items <- c(
   "Population|Gender education gap|Primary",
   "Population|Gender education gap|Secondary")
@@ -48,18 +48,19 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 6
 
-```{r}
+```{r SDG 6}
 items <- c(
   "Water Consumption|Electricity",
   "Water Consumption|Electricity w/o Hydro")
 walk(items, showLinePlots, data = data)
 ```
 
+\newpage
 ## SDG 7
 
 ### access
 
-```{r}
+```{r SDG 7 access}
 items <- c(
   "UE|per capita|Buildings",
   "UE|per capita|Industry",
@@ -71,7 +72,7 @@ walk(items, showLinePlots, data = data)
 
 ### modern
 
-```{r}
+```{r SDG 7 modern}
 items <- c(
   "FE|Electricity|Share",
   "UE|Electricity and Hydrogen|Share|Transport",
@@ -88,7 +89,7 @@ walk(items, showLinePlots, data = data)
 
 ### clean
 
-```{r}
+```{r SDG 7 clean}
 items <- c(
   "PE|Non-Biomass Renewables",
   "SE|Electricity|Non-Biomass Renewables",
@@ -99,7 +100,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 8
 
-```{r}
+```{r SDG 8}
 items <- c(
   "GDP|PPP|Per capita growth rate",
   "GDP|PPP|Per capita ratio to OECD")
@@ -108,7 +109,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 9
 
-```{r}
+```{r SDG 9}
 items <- c(
   "Final Energy|Industry|Electricity|Share",
   "Final Energy|Industry|Hydrogen and Electricity|Share",
@@ -123,7 +124,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 10
 
-```{r}
+```{r SDG 10}
 items <- c(
   "Population|Relative poverty|wrt median income|Share",
   "Inequality|Bottom 40% average income|Ratio")
@@ -132,16 +133,17 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 11
 
-```{r}
+```{r SDG 11}
 items <- c(
   "Energy Service|per capita|Buildings|Residential|Floor Space",
   "Air pollution concentration|PM2_5|Urban population")
 walk(items, showLinePlots, data = data)
 ```
 
+\newpage
 ## SDG 12
 
-```{r}
+```{r SDG 12}
 items <- c(
   "Emi|CO2|Industry|Direct",
   "Intensity|GDP|Final Energy")
@@ -150,7 +152,7 @@ walk(items, showLinePlots, data = data)
 
 ## LCA
 
-```{r}
+```{r SDG 12 LCA}
 items <- c(
   "Resource|Use|Mineral|Electricity",
   "Ecotoxicity|Freshwater|Electricity",
@@ -166,7 +168,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 13
 
-```{r}
+```{r SDG 13}
 items <- c(
   "Emi|CO2",
   "Emi|GHGtot",
@@ -176,7 +178,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 14
 
-```{r}
+```{r SDG 14}
 items <- c(
   "Ocean|New production",
   "Ocean|Extension of suboxic zones",
@@ -189,7 +191,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 16
 
-```{r}
+```{r SDG 16}
 items <- c(
   "Political institutions|Equality before law and individual liberty",
   "Conflict|Battle-related deaths|Probability of below 2005 value")
@@ -198,7 +200,7 @@ walk(items, showLinePlots, data = data)
 
 ## SDG 17
 
-```{r}
+```{r SDG 17}
 items <- c(
   "Policy Cost|Transfers",
   "Policy Cost|GDP Loss",
