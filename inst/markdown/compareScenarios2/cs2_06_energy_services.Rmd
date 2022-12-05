@@ -1,22 +1,65 @@
 # Energy Services and Products
 
-## FE|Buildings
-```{r FE Buildings}
+## Buildings
+### FE mix
+```{r FE demand from buildings by carriers}
 tot <- "FE|Buildings"
 items <- c(
   "FE|Buildings|non-Heating|Electricity|Conventional",
-  "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Electricity|Heat pump",
-  "FE|Buildings|Heating|District Heating",
   "FE|Buildings|Heating|Solids",
   "FE|Buildings|Heating|Liquids",
   "FE|Buildings|Heating|Gases",
+  "FE|Buildings|Heating|District Heating",
+  "FE|Buildings|Heating|Electricity|Resistance",
+  "FE|Buildings|Heating|Electricity|Heat pump",
   "FE|Buildings|Heating|Hydrogen")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### UE mix
+```{r UE demand from buildings by carriers}
+tot <- "UE|Buildings"
+items <- c(
+  "UE|Buildings|non-Heating|Electricity|Conventional",
+  "UE|Buildings|Heating|Solids",
+  "UE|Buildings|Heating|Liquids",
+  "UE|Buildings|Heating|Gases",
+  "UE|Buildings|Heating|District Heating",
+  "UE|Buildings|Heating|Electricity|Resistance",
+  "UE|Buildings|Heating|Electricity|Heat pump",
+  "UE|Buildings|Heating|Hydrogen")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### FE heating
+```{r FE demand from buildings for heating by carriers}
+tot <- "FE|Buildings|Heating"
+items <- c(
+  "FE|Buildings|Heating|Solids",
+  "FE|Buildings|Heating|Liquids",
+  "FE|Buildings|Heating|Gases",
+  "FE|Buildings|Heating|District Heating",
+  "FE|Buildings|Heating|Electricity|Resistance",
+  "FE|Buildings|Heating|Electricity|Heat pump",
+  "FE|Buildings|Heating|Hydrogen")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### UE heating
+```{r UE demand from buildings for heating by carriers}
+tot <- "UE|Buildings|Heating"
+items <- c(
+  "UE|Buildings|Heating|Solids",
+  "UE|Buildings|Heating|Liquids",
+  "UE|Buildings|Heating|Gases",
+  "UE|Buildings|Heating|District Heating",
+  "UE|Buildings|Heating|Electricity|Resistance",
+  "UE|Buildings|Heating|Electricity|Heat pump",
+  "UE|Buildings|Heating|Hydrogen")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Region Intercomparison FE|Buildings
-
 ```{r FE Buildings Region}
 items <- c(
   "FE|Buildings|Heating",
