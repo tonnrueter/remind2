@@ -60,7 +60,7 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Region Intercomparison FE|Buildings
-```{r}
+```{r FE Buildings Region}
 items <- c(
   "FE|Buildings|Heating",
   "FE|Buildings|Appliances and Light",
