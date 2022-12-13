@@ -99,9 +99,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # total emissions by gas
   vm_emiAllMkt <- readGDX(gdx, "vm_emiAllMkt", field = "l", restore_zeros = F)[, t, ]
   # total energy emissions from pe2se and se2fe conversions
-  v_emiTeDetailMkt <- readGDX(gdx, "v_emiTeDetailMkt", field = "l", restore_zeros = F)
+  vm_emiTeDetailMkt <- readGDX(gdx, c("vm_emiTeDetailMkt","v_emiTeDetailMkt"), field = "l", restore_zeros = F)
   # total energy emissions in REMIND
-  vm_emiTeMkt <- readGDX(gdx, c("v_emiTeMkt","vm_emiTeMkt"), field = "l", restore_zeros = F, format="first_found")[, t, ]
+  vm_emiTeMkt <- readGDX(gdx, c("vm_emiTeMkt","v_emiTeMkt"), field = "l", restore_zeros = F, format="first_found")[, t, ]
   # emissions from MAC curves (non-energy emissions)
   vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)[, t, ]
   # exogenous emissions (SO2, BC, OC)
@@ -226,10 +226,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   p_share_CCS[is.infinite(p_share_CCS)] <- 0
   p_share_CCS[is.na(p_share_CCS)] <- 0
 
-  sel_v_emiTeDetailMkt_cco2 <- if(getSets(v_emiTeDetailMkt)[[6]] == "emiAll"){
-    mselect(v_emiTeDetailMkt, emiAll = "cco2")
+  sel_vm_emiTeDetailMkt_cco2 <- if(getSets(vm_emiTeDetailMkt)[[6]] == "emiAll"){
+    mselect(vm_emiTeDetailMkt, emiAll = "cco2")
   } else {
-    mselect(v_emiTeDetailMkt, all_enty2 = "cco2")
+    mselect(vm_emiTeDetailMkt, all_enty2 = "cco2")
   }
 
 
@@ -1399,16 +1399,16 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   ### 5.1 non-CO2 GHG by sector ----
 
-  sel_v_emiTeDetailMkt_ch4 <- if (getSets(v_emiTeDetailMkt)[[6]] == "emiAll") {
-    mselect(v_emiTeDetailMkt, emiAll = "ch4")
+  sel_vm_emiTeDetailMkt_ch4 <- if (getSets(vm_emiTeDetailMkt)[[6]] == "emiAll") {
+    mselect(vm_emiTeDetailMkt, emiAll = "ch4")
   } else {
-    mselect(v_emiTeDetailMkt, all_enty2 = "ch4")
+    mselect(vm_emiTeDetailMkt, all_enty2 = "ch4")
   }
 
-  sel_v_emiTeDetailMkt_n2o <- if (getSets(v_emiTeDetailMkt)[[6]] == "emiAll") {
-    mselect(v_emiTeDetailMkt, emiAll = "n2o")
+  sel_vm_emiTeDetailMkt_n2o <- if (getSets(vm_emiTeDetailMkt)[[6]] == "emiAll") {
+    mselect(vm_emiTeDetailMkt, emiAll = "n2o")
   } else {
-    mselect(v_emiTeDetailMkt, all_enty2 = "n2o")
+    mselect(vm_emiTeDetailMkt, all_enty2 = "n2o")
   }
   # CH4 and N2O Emissions by sector in native MtCH4 and kt N2O units
   out <- mbind(out,
@@ -1416,7 +1416,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                # CH4 Emissions
                # total CH4 emissions
                setNames(dimSums(mselect(EmiMAC, gas = "ch4"), dim = 3)
-                          + dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3),
+                          + dimSums(sel_vm_emiTeDetailMkt_ch4, dim = 3),
                           "Emi|CH4 (Mt CH4/yr)"),
                # extraction CH4 emissions in MtCH4
                setNames(dimSums(mselect(EmiMAC, sector = "extraction", gas = "ch4"), dim = 3),
@@ -1431,7 +1431,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMAC, sector = "lulucf", gas = "ch4"), dim = 3),
                           "Emi|CH4|+|Land-Use Change (Mt CH4/yr)"),
                # CH4 emissions from energy system transformations in MtCH4
-               setNames(dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3),
+               setNames(dimSums(sel_vm_emiTeDetailMkt_ch4, dim = 3),
                           "Emi|CH4|+|Energy Supply (Mt CH4/yr)"),
 
                # CH4 Agriculture sub-categories
@@ -1470,7 +1470,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                # N2O Emissions
                # total N2O emissions
                setNames((dimSums(mselect(EmiMAC, gas = "n2o"), dim = 3)
-                           +  dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3)) * MtN2_to_ktN2O,
+                           +  dimSums(sel_vm_emiTeDetailMkt_n2o, dim = 3)) * MtN2_to_ktN2O,
                           "Emi|N2O (kt N2O/yr)"),
                # agriculture N2O emissions in kt N2O
                setNames(dimSums(mselect(EmiMAC, sector = "Agriculture", gas = "n2o"), dim = 3) * MtN2_to_ktN2O,
@@ -1488,7 +1488,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMAC, sector = "indst", gas = "n2o"), dim = 3) * MtN2_to_ktN2O,
                           "Emi|N2O|+|Industry (kt N2O/yr)"),
                # N2O emissions from energy system transformations in kt N2O
-               setNames(dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3) * MtN2_to_ktN2O,
+               setNames(dimSums(sel_vm_emiTeDetailMkt_n2o, dim = 3) * MtN2_to_ktN2O,
                           "Emi|N2O|+|Energy Supply (kt N2O/yr)"),
 
                # N2O agricultural sub-categories
@@ -1558,7 +1558,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMACEq, sector = "lulucf", gas = "ch4"), dim = 3),
                           "Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"),
                # CH4 emissions from energy system transformations in Mt CO2eq
-               setNames(dimSums(sel_v_emiTeDetailMkt_ch4, dim = 3) * sm_tgch4_2_pgc * GtC_2_MtCO2,
+               setNames(dimSums(sel_vm_emiTeDetailMkt_ch4, dim = 3) * sm_tgch4_2_pgc * GtC_2_MtCO2,
                           "Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"),
 
 
@@ -1579,7 +1579,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(EmiMACEq, sector = "indst", gas = "n2o"), dim = 3),
                           "Emi|GHG|N2O|+|Industry (Mt CO2eq/yr)"),
                # N2O emissions from energy system transformations in Mt CO2eq/yr
-               setNames(dimSums(sel_v_emiTeDetailMkt_n2o, dim = 3) * sm_tgn_2_pgc * GtC_2_MtCO2,
+               setNames(dimSums(sel_vm_emiTeDetailMkt_n2o, dim = 3) * sm_tgn_2_pgc * GtC_2_MtCO2,
                           "Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)")
   )
 
