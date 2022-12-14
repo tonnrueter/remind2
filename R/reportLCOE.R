@@ -110,6 +110,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  pm_data <- readGDX(gdx,"pm_data")
  pm_emifac <- readGDX(gdx,"pm_emifac", restore_zeros=F) # emission factor per technology
  pm_priceCO2 <- readGDX(gdx,"pm_priceCO2") # co2 price
+ pm_taxemiMkt <- readGDX(gdx,"pm_taxemiMkt") # regional co2 price
  pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F) # efficiency oftechnologies with time-dependent eta
  pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)# efficiency of technologies with time-independent eta
 
@@ -124,7 +125,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  v_investcost  <- readGDX(gdx,name=c("vm_costTeCapital","v_costTeCapital","v_investcost"),field="l",format="first_found")[,ttot,]
  vm_cap        <- readGDX(gdx,name=c("vm_cap"),field="l",format="first_found")
  vm_prodFe     <- readGDX(gdx,name=c("vm_prodFe"),field="l",restore_zeros=FALSE,format="first_found")
- v_emiTeDetail <- readGDX(gdx,name=c("vm_emiTeDetail","v_emiTeDetail"),field="l",restore_zeros=FALSE,format="first_found")
+ v_emiTeDetail <- readGDX(gdx,name=c("vm_emiTeDetail","v_emiTeDetailMkt"),field="l",restore_zeros=FALSE,format="first_found")
 
  ## equations
  qm_pebal  <- readGDX(gdx,name=c("q_balPe"),field="m",format="first_found")
@@ -307,7 +308,7 @@ reportLCOE <- function(gdx, output.type = "both"){
                   getNames(v_emiTeDetail[,,"co2"], dim = 3))
 
  te_annual_co2_cost[,,tmp] <- setNames(
-   ( pm_priceCO2[,getYears(v_emiTeDetail),]
+   ( (pm_priceCO2[,getYears(v_emiTeDetail),] + pm_taxemiMkt[,getYears(v_emiTeDetail),"ETS"])
    * dimSums(v_emiTeDetail[,,tmp], dim = c(3.1, 3.2, 3.4), na.rm = TRUE)
    * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
    ),
