@@ -113,7 +113,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  pm_taxemiMkt <- readGDX(gdx,"pm_taxemiMkt") # regional co2 price
  pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F) # efficiency oftechnologies with time-dependent eta
  pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)# efficiency of technologies with time-independent eta
-
+ pm_emiMktTarget <- readGDX(gdx,name=c("pm_emiMktTarget","p_emiMktTarget"),restore_zeros=FALSE)
 
 
  ## variables
@@ -125,12 +125,13 @@ reportLCOE <- function(gdx, output.type = "both"){
  v_investcost  <- readGDX(gdx,name=c("vm_costTeCapital","v_costTeCapital","v_investcost"),field="l",format="first_found")[,ttot,]
  vm_cap        <- readGDX(gdx,name=c("vm_cap"),field="l",format="first_found")
  vm_prodFe     <- readGDX(gdx,name=c("vm_prodFe"),field="l",restore_zeros=FALSE,format="first_found")
- v_emiTeDetail <- readGDX(gdx,name=c("vm_emiTeDetail","v_emiTeDetailMkt"),field="l",restore_zeros=FALSE,format="first_found")
-
+ v_emiTeDetail <- readGDX(gdx,name=c("vm_emiTeDetail","v_emiTeDetail"),field="l",restore_zeros=FALSE,format="first_found")
+ vm_emiTeDetailMkt <- readGDX(gdx,name=c("vm_emiTeDetailMkt","v_emiTeDetailMkt"),field="l",restore_zeros=FALSE,format="first_found")
+ 
+   
  ## equations
  qm_pebal  <- readGDX(gdx,name=c("q_balPe"),field="m",format="first_found")
  qm_budget <- readGDX(gdx,name=c("qm_budget"),field="m",format="first_found")
-
 
  # module-specific
  # amount of curtailed electricity
@@ -195,7 +196,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  # p_pmeg(t-td+1) = 1 for td = t (measure of how many capacities still standing from past investments)
  # p_pmeg(t-td+1) = 0 for td = t-lifetime
 
- # where t is the year for which the investment cost are calculatet and
+ # where t is the year for which the investment cost are calculated and
  # td are all past time steps before t back to t-lifetime of the technology
  # so: annuity cost incurred over past lifetime years are are divided by current production
  # (annuity cost = discounted investment cost spread over lifetime)
@@ -296,25 +297,66 @@ reportLCOE <- function(gdx, output.type = "both"){
                                                                 dimSums( v_emiTeDetail[,,"cco2"], dim = 3, na.rm = T),
                                                                 teCCS)
 
-
  ####### 8. sub-part: co2 cost  #################################
 
  te_annual_co2_cost <- new.magpie(getRegions(te_inv_annuity), ttot_from2005,
                                   getNames(te_inv_annuity), fill = 0)
 
+ # regions for which there are regional ghg prices
+ reg <- intersect(getRegions(pm_emiMktTarget),
+                    getRegions(vm_prodSe))
+ 
  # limit technology names to those existing in both te_inv_annuity and
  # v_emiTeDetail
- tmp <- intersect(getNames(te_annual_co2_cost),
+ tmp <- intersect(getNames(te_inv_annuity),
                   getNames(v_emiTeDetail[,,"co2"], dim = 3))
-
+ 
  te_annual_co2_cost[,,tmp] <- setNames(
-   ( (pm_priceCO2[,getYears(v_emiTeDetail),] + pm_taxemiMkt[,getYears(v_emiTeDetail),"ETS"])
-   * dimSums(v_emiTeDetail[,,tmp], dim = c(3.1, 3.2, 3.4), na.rm = TRUE)
-   * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
+   ( pm_priceCO2[,getYears(v_emiTeDetail),]
+     * dimSums(v_emiTeDetail[,,tmp], dim = c(3.1, 3.2, 3.4), na.rm = TRUE)
+     * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
+   ),
+   tmp)
+ rm(tmp)
+  
+ if (!is.null(reg)){
+
+ # ETS part of the regional price
+ tmp <- intersect(getNames(te_inv_annuity),
+                  getNames(vm_emiTeDetailMkt[,,"ETS"], dim = 3))
+
+ te_annual_co2_cost[reg,,tmp] <- setNames(
+   ( pm_taxemiMkt[reg,getYears(vm_emiTeDetailMkt),"ETS"]
+     * dimSums(vm_emiTeDetailMkt[reg,,tmp], dim = c(3.1, 3.2, 3.4, 3.5), na.rm = TRUE)
+     * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
    ),
    tmp)
  rm(tmp)
 
+ # ES part of the regional price
+ tmp <- intersect(getNames(te_inv_annuity),
+                  getNames(vm_emiTeDetailMkt[,,"ES"], dim = 3))
+ 
+ te_annual_co2_cost[reg,,tmp] = te_annual_co2_cost[reg,,tmp] + setNames(
+   ( pm_taxemiMkt[reg,getYears(vm_emiTeDetailMkt),"ES"]
+     * dimSums(vm_emiTeDetailMkt[reg,,tmp], dim = c(3.1, 3.2, 3.4, 3.5), na.rm = TRUE)
+     * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
+   ),
+   tmp)
+ rm(tmp)
+ 
+ # "other" part of the regional price
+ tmp <- intersect(getNames(te_inv_annuity),
+                  getNames(vm_emiTeDetailMkt[,,"other"], dim = 3))
+ 
+ te_annual_co2_cost[reg,,tmp] = te_annual_co2_cost[reg,,tmp] + setNames(
+   ( pm_taxemiMkt[reg,getYears(v_emiTeDetail),"other"]
+     * dimSums(vm_emiTeDetailMkt[reg,,tmp], dim = c(3.1, 3.2, 3.4, 3.5), na.rm = TRUE)
+     * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
+   ),
+   tmp)
+ rm(tmp)
+ }
  ####### 9. sub-part: curtailment cost  #################################
  ########### (only relevant for RLDC version!) ##########################
 
