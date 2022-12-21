@@ -320,7 +320,7 @@ reportLCOE <- function(gdx, output.type = "both"){
    te_annual_co2_cost[,getYears(p47_taxCO2eq_AggFE),tmp] <- setNames(
      ( dimSums(p47_taxCO2eq_AggFE,dim=3, na.rm = TRUE)
        * dimSums(v_emiTeDetail[,getYears(p47_taxCO2eq_AggFE),tmp], dim = c(3.1, 3.2, 3.4), na.rm = TRUE)
-       * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
+       * 1e9 * 1e3  # T$/tC * GtC/yr * 1e9 t/Gt 1e3$/T$ = $/yr
      ),
      tmp)
    
@@ -413,7 +413,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  # convert to better dimensional format
  df.lcoe.avg <- as.quitte(LCOE.avg) %>%
                   select(region, period, data, value) %>%
-                  rename(variable = data)
+                  rename(variable = data) %>% 
+                  replace(is.na(.), 0)
 
 
  # extract further dimensions from variable name
