@@ -39,19 +39,16 @@ test_that("Test if REMIND reporting produces mandatory variables for NGFS report
 test_that("Test if REMIND reporting produces mandatory variables for Ariadne reporting", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
-  # gdxPath <- file.path(tempdir(), "fulldata.gdx")
-  # utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-Ariadne_fulldata.gdx",
-  #                      gdxPath,
-  #                      mode = "wb", quiet = TRUE
-  # )
+  gdxPath <- file.path(tempdir(), "fulldata.gdx")
 
-  gdxPath <- file.path("~/Cluster/fulldata.gdx")
+  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-Ariadne_fulldata.gdx",
+                       gdxPath,
+                       mode = "wb", quiet = TRUE
+  )
 
   mif <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
 
   computedVariables <- getItems(mif, dim = 3.3)
-
-  computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
 
   templateVariables <- piamInterfaces::getREMINDTemplateVariables("ARIADNE")
 
