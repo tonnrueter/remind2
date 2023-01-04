@@ -108,6 +108,7 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   }
   tmp <- mbind(tmp, setNames(inv_se(ie = "peoil", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),  "Energy Investments|Elec|Oil (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "peoil", te = tenoccs, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),  "Energy Investments|Elec|Oil|w/o CC (billion US$2005/yr)"))
+  tmp <- mbind(tmp, setNames(inv_se(ie = "peoil", te = teccs, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),  "Energy Investments|Elec|Oil|w/ CC (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pebiolc", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),           "Energy Investments|Elec|Biomass (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pebiolc", te = teccs, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),  "Energy Investments|Elec|Biomass|w/ CC (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pebiolc", te = tenoccs, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv), "Energy Investments|Elec|Biomass|w/o CC (billion US$2005/yr)"))
