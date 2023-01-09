@@ -109,7 +109,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  pm_ts   <- readGDX(gdx,"pm_ts")
  pm_data <- readGDX(gdx,"pm_data")
  pm_emifac <- readGDX(gdx,"pm_emifac", restore_zeros=F) # emission factor per technology
- pm_priceCO2 <- readGDX(gdx,"pm_priceCO2") # co2 price
+ p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found") # co2 price
  pm_taxemiMkt <- readGDX(gdx,"pm_taxemiMkt") # regional co2 price
  pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F) # efficiency oftechnologies with time-dependent eta
  pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)# efficiency of technologies with time-independent eta
@@ -305,7 +305,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  tmp <- intersect(getNames(te_inv_annuity),
                   getNames(v_emiTeDetail[,,"co2"], dim = 3))
  te_annual_co2_cost[,,tmp] <- setNames(
-   ( pm_priceCO2[,getYears(v_emiTeDetail),]
+   ( p_priceCO2[,getYears(v_emiTeDetail),]
      * dimSums(v_emiTeDetail[,,tmp], dim = c(3.1, 3.2, 3.4), na.rm = TRUE)
      * 1e9   # $/tC * GtC/yr * 1e9 t/Gt = $/yr
    ),
@@ -736,9 +736,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
 
   ### 7. retrieve carbon price
-  pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F)
-
-  df.co2price <- as.quitte(pm_priceCO2) %>%
+  df.co2price <- as.quitte(p_priceCO2) %>%
     select(region, period, value) %>%
     # where carbon price is NA, it is zero
     # convert from USD2005/tC CO2 to USD2015/tCO2
@@ -805,9 +803,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
 
   # ### 7. retrieve carbon price
-  # pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F)
-  #
-  # df.co2price <- as.quitte(pm_priceCO2) %>%
+  # df.co2price <- as.quitte(p_priceCO2) %>%
   #   select(region, period, value) %>%
   #   # where carbon price is NA, it is zero
   #   # convert from USD2005/tC CO2 to USD2015/tCO2

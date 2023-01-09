@@ -515,12 +515,12 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pm_emifac <- readGDX(gdx, "pm_emifac", field = "l", restore_zeros = F)[, YearsFrom2005, "co2"][, , tech.fossil] # [GtC CO2/TWa]
   pm_emifac <- pm_emifac * 1e9 / s_twa2mwh / 3.6 # [GtC CO2/TWa] -> [tC CO2/GJ]
 
-  pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F) # [USD2005/tC CO2]
-  if(length(pm_priceCO2) > 0) {
-    pm_priceCO2 <- add_columns(pm_priceCO2, addnm = setdiff(YearsFrom2005, getYears(pm_priceCO2)), dim = 2, fill = NA)
-    pm_priceCO2 <- add_columns(pm_priceCO2, addnm = setdiff(getRegions(pm_emifac), getRegions(pm_priceCO2)), dim = 1, fill = NA)
+  p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found", restore_zeros = F) # [USD2005/tC CO2]
+  if(length(p_priceCO2) > 0) {
+    p_priceCO2 <- add_columns(p_priceCO2, addnm = setdiff(YearsFrom2005, getYears(p_priceCO2)), dim = 2, fill = NA)
+    p_priceCO2 <- add_columns(p_priceCO2, addnm = setdiff(getRegions(pm_emifac), getRegions(p_priceCO2)), dim = 1, fill = NA)
 
-    price.carbon <- collapseDim(pm_emifac * pm_priceCO2) # [USD2005/GJ]
+    price.carbon <- collapseDim(pm_emifac * p_priceCO2) # [USD2005/GJ]
 
     out <- mbind(
       out,
