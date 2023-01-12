@@ -33,7 +33,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                      t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130,
                            2150)) {
   fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <-
-    all_enty <- all_enty1 <- all_te <- all_in <- NULL
+    all_enty <- all_enty1 <- all_te <- all_in <- mats <- NULL
 
   ####### conversion factors ##########
   TWa_2_EJ     <- 31.536
@@ -122,6 +122,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   buil_mod = find_real_module(module2realisation,"buildings")
   cdr_mod  = find_real_module(module2realisation,"CDR")
 
+  if (indu_mod == 'subsectors') {
+    is_PBS <- "steel" %in% readGDX(gdx, "secInd37Prcb")
+  } else {
+    is_PBS <- FALSE
+  }
 
   # ---- FE total production ------
   out <- mbind(out,
@@ -526,6 +531,10 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # CES nodes, convert from TWa to EJ
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
 
+  if(is_PBS){
+    v37_demFEPrcb <- readGDX(gdx, name=c("v37_demFEPrcb"), field="l", restore_zeros=FALSE,format= "first_found")[,t,,]*TWa_2_EJ
+  }
+
   # ---- transformations
   # Correct for offset quantities in the transition between ESM and CES for zero quantities
   if (any(grep('\\.offset_quantity$', getNames(pm_cesdata)))) {
@@ -753,35 +762,68 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                all_enty1 = "fegas"), dim = 3),
                "FE|Industry|Steel|+|Gases (EJ/yr)"))
 
-    # more detailed reporting of electricity uses available in subsectors realization
+
     if (indu_mod == 'subsectors') {
-      out <- mbind(
-        out,
-        setNames(mselect(vm_cesIO, all_in = "feel_steel_primary"),
-                 "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
-        setNames(mselect(vm_cesIO, all_in = "feel_steel_secondary"),
-                 "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
+      if (is_PBS) {
 
-      # mapping of industrial output to energy production factors in CES tree
-      ces_eff_target_dyn37 <- readGDX(gdx, "ces_eff_target_dyn37")
+        # mapping of process to output materials
+        tePrcb2MatsOut <- readGDX(gdx, "tePrcb2MatsOut")
 
-      # energy production factors for primary and secondary steel
-      en.ppfen.primary.steel <- ces_eff_target_dyn37 %>%
-        filter(all_in == "ue_steel_primary") %>%
-        pull('all_in1')
-      en.ppfen.sec.steel <- ces_eff_target_dyn37 %>%
-        filter(all_in == "ue_steel_secondary") %>%
-        pull('all_in1')
+        # energy production factors for primary and secondary steel
+        teSteelPrimary <- tePrcb2MatsOut %>%
+          filter(mats == "prsteel") %>%
+          pull('tePrcb')
+        teSteelSecondary <- tePrcb2MatsOut %>%
+          filter(mats == "sesteel") %>%
+          pull('tePrcb')
 
-      # total FE by primary/secondary Steel
-      out <- mbind(
-        out,
-        setNames(dimSums(mselect(vm_cesIO, all_in = en.ppfen.primary.steel),
-                         dim = 3),
-                 "FE|Industry|Steel|++|Primary (EJ/yr)"),
-        setNames(dimSums(mselect(vm_cesIO, all_in = en.ppfen.sec.steel),
-                         dim = 3),
-                 "FE|Industry|Steel|++|Secondary (EJ/yr)"))
+        # more detailed reporting of electricity uses available in subsectors realization
+        out <- mbind(
+          out,
+          setNames(dimSums(mselect(v37_demFEPrcb, all_enty = "feels", all_te = teSteelPrimary), dim = 3),
+                  "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
+          setNames(dimSums(mselect(v37_demFEPrcb, all_enty = "feels", all_te = teSteelSecondary), dim = 3),
+                  "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
+
+        # total FE by primary/secondary Steel
+        out <- mbind(
+          out,
+          setNames(dimSums(mselect(v37_demFEPrcb, all_te = teSteelPrimary), dim = 3 ),
+                  "FE|Industry|Steel|++|Primary (EJ/yr)"),
+          setNames(dimSums(mselect(v37_demFEPrcb, all_te = teSteelSecondary), dim = 3 ),
+                  "FE|Industry|Steel|++|Secondary (EJ/yr)"))
+
+        } else {
+
+        # more detailed reporting of electricity uses available in subsectors realization
+        out <- mbind(
+          out,
+          setNames(mselect(vm_cesIO, all_in = "feel_steel_primary"),
+                  "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
+          setNames(mselect(vm_cesIO, all_in = "feel_steel_secondary"),
+                  "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
+
+        # mapping of industrial output to energy production factors in CES tree
+        ces_eff_target_dyn37 <- readGDX(gdx, "ces_eff_target_dyn37")
+
+        # energy production factors for primary and secondary steel
+        en.ppfen.primary.steel <- ces_eff_target_dyn37 %>%
+          filter(all_in == "ue_steel_primary") %>%
+          pull('all_in1')
+        en.ppfen.sec.steel <- ces_eff_target_dyn37 %>%
+          filter(all_in == "ue_steel_secondary") %>%
+          pull('all_in1')
+
+        # total FE by primary/secondary Steel
+        out <- mbind(
+          out,
+          setNames(dimSums(mselect(vm_cesIO, all_in = en.ppfen.primary.steel),
+                          dim = 3),
+                  "FE|Industry|Steel|++|Primary (EJ/yr)"),
+          setNames(dimSums(mselect(vm_cesIO, all_in = en.ppfen.sec.steel),
+                          dim = 3),
+                  "FE|Industry|Steel|++|Secondary (EJ/yr)"))
+      }
     }
 
     ### cement sector ----
@@ -892,6 +934,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         # for obtaining Mt or billion US$2005
         setNames(mselect(vm_cesIO, all_in = "ue_cement") * 1e3 / TWa_2_EJ,
                  "Production|Industry|Cement (Mt/yr)"),
+        # TODO: replace by prodMats for PBS
         setNames(
           mselect(vm_cesIO, all_in = "ue_steel_primary") * 1e3 / TWa_2_EJ,
           "Production|Industry|Steel|Primary (Mt/yr)"),
