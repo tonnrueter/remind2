@@ -532,7 +532,13 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
 
   if(is_PBS){
-    v37_demFEPrcb <- readGDX(gdx, name=c("v37_demFEPrcb"), field="l", restore_zeros=FALSE,format= "first_found")[,t,,]*TWa_2_EJ
+    o37_demFePrcb <- readGDX(gdx, name=c("o37_demFePrcb"), restore_zeros=FALSE,format= "first_found")
+    if (!(is.null(o37_demFePrcb) | 0 == length(o37_demFePrcb))) {
+      o37_demFePrcb <- o37_demFePrcb[,t,,]
+      o37_demFePrcb[is.na(o37_demFePrcb)] <- 0
+      # convert to EJ
+      o37_demFePrcb <- o37_demFePrcb * TWa_2_EJ
+    }
   }
 
   # ---- transformations
@@ -780,17 +786,17 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         # more detailed reporting of electricity uses available in subsectors realization
         out <- mbind(
           out,
-          setNames(dimSums(mselect(v37_demFEPrcb, all_enty = "feels", all_te = teSteelPrimary), dim = 3),
+          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelPrimary), dim = 3),
                   "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
-          setNames(dimSums(mselect(v37_demFEPrcb, all_enty = "feels", all_te = teSteelSecondary), dim = 3),
+          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelSecondary), dim = 3),
                   "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
 
         # total FE by primary/secondary Steel
         out <- mbind(
           out,
-          setNames(dimSums(mselect(v37_demFEPrcb, all_te = teSteelPrimary), dim = 3 ),
+          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelPrimary), dim = 3 ),
                   "FE|Industry|Steel|++|Primary (EJ/yr)"),
-          setNames(dimSums(mselect(v37_demFEPrcb, all_te = teSteelSecondary), dim = 3 ),
+          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelSecondary), dim = 3 ),
                   "FE|Industry|Steel|++|Secondary (EJ/yr)"))
 
         } else {
