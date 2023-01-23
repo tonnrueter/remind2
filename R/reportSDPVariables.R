@@ -207,10 +207,10 @@ reportSDPVariables <- function(
       return()
 
     tmp <- mbind(
-  if("Intensity|GDP|UE (MJ/US$2005's (EJ/yr))" %!in% getNames(output)){
+  if("Intensity|GDP|UE (MJ/US$2005)" %!in% getNames(output)){
       setNames(
         ((output[,,"UE|per capita|Transport (GJ/cap/yr)"] + output[,,"UE|per capita|Industry (GJ/cap/yr)"]+ output[,,"UE|per capita|Buildings (GJ/cap/yr)"]) / 1e3 *output[,,"Population (million)"]) / (output[,,"GDP|MER (billion US$2005/yr)"] * 1e9),
-        "Intensity|GDP|UE (MJ/US$2005's (EJ/yr))")})
+        "Intensity|GDP|UE (MJ/US$2005)")})
 
     return(tmp)
   }
