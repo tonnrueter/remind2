@@ -404,7 +404,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                            + dimSums(mselect((1 - p_weights_cp) * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty1 = se_liq), dim = 3)
                            # emissions from coupled production technologies where liquids are coupled/second product
                            + dimSums(mselect(p_weights_cp * EmiPe2Se[, , getNames(p_weights_cp, dim = 3)], all_enty2 = se_liq), dim = 3)
-                           # add energy-related extraction CO2 emissions (small!), has to be added somehwhere such that it adds up with above levels
+                           # add energy-related extraction CO2 emissions (small!), has to be added somewhere such that it adds up with above levels
                            + dimSums(v_emiEnFuelEx[, , "co2"], dim = 3)
                ) * GtC_2_MtCO2,
                "Emi|CO2|Energy|Supply|+|Liquids w/ couple prod (Mt CO2/yr)"),
@@ -1737,7 +1737,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   ## further GHG emissions variables per sector that are often needed
 
-  # Industry GHG Emissions (energy-related and process, IPCC catogory 1A2 + IPCC category 2)
+  # Industry GHG Emissions (energy-related and process, IPCC category 1A2 + IPCC category 2)
   out <- mbind(out,
                setNames(out[, , "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"]
                         + out[, , "Emi|CO2|+|Industrial Processes (Mt CO2/yr)"]
@@ -1968,8 +1968,21 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           + out[, , "Emi|CO2|Energy|Supply|+|Hydrogen w/ couple prod (Mt CO2/yr)"],
                           "Emi|CO2|Energy|Supply|++|Fuels (Mt CO2/yr)"))
 
+  # calculate autoproducer emissions based on CEDS value for 2015 and scale with Emi|...|Electricity and Heat to correct
+  # an inconsistency in attribution of emissions between energy supply and industry
+  if ("DEU" %in% getRegions(vm_co2eq)) {
+    emi_autoprod_2015 <- 9.2819  # from CEDS in Mt CO2/yr
 
-  # emissions with Grassi Correction (LULUCF emissions adjusted to national LULUCF accouting)
+    out <- mbind(out, new.magpie(getRegions(vm_co2eq), getYears(vm_co2eq),
+                                 "Emi|CO2|Energy|Supply|Electricity|Autoproducer (Mt CO2/yr)", fill = 0))
+    out["DEU",,"Emi|CO2|Energy|Supply|Electricity|Autoproducer (Mt CO2/yr)"] <-
+                        emi_autoprod_2015 *
+                          out["DEU",, "Emi|CO2|Energy|Supply|++|Electricity and Heat (Mt CO2/yr)"] /
+                          as.numeric(out["DEU", "y2015", "Emi|CO2|Energy|Supply|++|Electricity and Heat (Mt CO2/yr)"])
+  }
+
+
+  # emissions with Grassi Correction (LULUCF emissions adjusted to national LULUCF accounting)
   p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = T, react = "silent")[getRegions(out), getYears(out),]
 
   if (!is.null(p47_LULUCFEmi_GrassiShift)) {
@@ -2075,7 +2088,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                                      "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
     }
 
-    ### variables for which non-energy emissions should be substracted (and no waste fraction added)
+    ### variables for which non-energy emissions should be subtracted (and no waste fraction added)
     emi.vars.wNonEn.exclWaste <- c(
       # GHG emissions
       "Emi|GHG|+++|Energy (Mt CO2eq/yr)",
@@ -2116,12 +2129,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     names.wNonEn <- gsub("\\|\\+\\|", "\\|", names.wNonEn)
     names.wNonEn <- gsub("\\|\\++\\|", "\\|", names.wNonEn)
 
-    # calulate emissions variables with non-energy use
+    # calculate emissions variables with non-energy use
     out.wNonEn <- out[, , emi.vars.wNonEn]
-    # for aggregate emissions: substract non-energy use carbon and add waste incineration emissions
+    # for aggregate emissions: subtract non-energy use carbon and add waste incineration emissions
     out.wNonEn[, , emi.vars.wNonEn.inclWaste] <- out.wNonEn[, , emi.vars.wNonEn.inclWaste] - out[, , "Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"] + out[, , "Emi|CO2|w/o Non-energy Use|Waste Incineration (Mt CO2/yr)"]
-    # for energy related emissions: substract non-energy use carbon
-    # (waste incineration emissions are treated as a separate category here outside of energy emissions to avoid attribution compliations down the energy emissions tree)
+    # for energy related emissions: subtract non-energy use carbon
+    # (waste incineration emissions are treated as a separate category here outside of energy emissions to avoid attribution complications down the energy emissions tree)
     out.wNonEn[, , emi.vars.wNonEn.exclWaste] <- out.wNonEn[, , emi.vars.wNonEn.exclWaste] - out[, , "Emi|CO2|Non-energy Use|Energy|Demand|Industry (Mt CO2/yr)"]
 
 
@@ -2146,7 +2159,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # Bunker Correction ----
 
-  ### variables for which bunker emissions should be substracted
+  ### variables for which bunker emissions should be subtracted
 
   # international bunker emissions belong to
   # sector: energy -> demand -> transport,
@@ -2230,7 +2243,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   getNames(out.wBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.wBunkers))
   getNames(out.wBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.wBunkers))
 
-  # substract bunkers for standard emissions variables for regional values
+  # subtract bunkers for standard emissions variables for regional values
   regs.wo.glob <- getRegions(out)
   regs.wo.glob <- regs.wo.glob[regs.wo.glob != "GLO"]
   out[regs.wo.glob, , emi.vars.wBunkers] <- out[regs.wo.glob, , emi.vars.wBunkers] - out[regs.wo.glob, , "Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"]
