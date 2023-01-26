@@ -160,9 +160,6 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                                  + invM[, , "Investments|Non-ESM|Macro (billion US$2005/yr)"],
                                  "Investments|Non-ESM (billion US$2005/yr)"))
 
-    # add floorspace
-    invM <- mbind(invM, setNames(p36_floorspace[, getYears(invM), ] * 1000, "Floorspace demand (million m2)"))
-
   } else {
     cap <- setNames(vm_cesIO[, , "kap"] * 1000, "Capital Stock|Non-ESM (billion US$2005)")
     invM <- setNames(vm_invMacro[, , "kap"] * 1000, "Investments|Non-ESM (billion US$2005/yr)")

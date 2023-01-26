@@ -20,7 +20,7 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames
-#'                      dimSums getNames<- as.data.frame as.magpie
+#'                      dimSums getNames<- as.data.frame as.magpie getSets
 #' @importFrom dplyr filter %>% mutate select group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
@@ -539,7 +539,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   p36_floorspace <- readGDX(gdx, "p36_floorspace", react = "silent")[, t, ]
   if (!is.null(p36_floorspace)) {
-    out <- mbind(out, setNames(p36_floorspace, "Energy Service|Buildings|Floor Space (bn m2/yr)"))
+    if (length(dim(p36_floorspace)[3]) > 1) {
+      out <- mbind(out,
+                  setNames(p36_floorspace[, , "buildings"],   "ES|Buildings|Floor Space (bn m2)"),
+                  setNames(p36_floorspace[, , "residential"], "ES|Buildings|Residential|Floor Space (bn m2)"),
+                  setNames(p36_floorspace[, , "commercial"],  "ES|Buildings|Commercial|Floor Space (bn m2)"))
+    } else {
+      out <- mbind(out, setNames(p36_floorspace, "ES|Buildings|Floor Space (bn m2)"))
+    }
+
   }
 
   if (buil_mod == "simple") {
