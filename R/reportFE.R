@@ -539,7 +539,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   p36_floorspace <- readGDX(gdx, "p36_floorspace", react = "silent")[, t, ]
   if (!is.null(p36_floorspace)) {
-    if (length(dim(p36_floorspace)[3]) > 1) {
+    if (dim(p36_floorspace)[3] > 1) {
       out <- mbind(out,
                   setNames(p36_floorspace[, , "buildings"],   "ES|Buildings|Floor Space (bn m2)"),
                   setNames(p36_floorspace[, , "residential"], "ES|Buildings|Residential|Floor Space (bn m2)"),
@@ -547,7 +547,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     } else {
       out <- mbind(out, setNames(p36_floorspace, "ES|Buildings|Floor Space (bn m2)"))
     }
-
   }
 
   if (buil_mod == "simple") {
