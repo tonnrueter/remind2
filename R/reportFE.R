@@ -584,6 +584,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       pm_fedemand <- readGDX(gdx, "pm_fedemand")[, t, ]
       feUeEff_build <- p36_uedemand_build[,, names(carrierBuild)] /
         pm_fedemand[,, names(carrierBuild)]
+      feUeEff_build[is.na(feUeEff_build) | is.infinite(feUeEff_build)] <- 1
       # assume efficiency for all gases also for H2
       feUeEff_build[,, "feh2b"] <- setNames(feUeEff_build[,, "fegab"], "feh2b")
       # apply efficiency to get UE levels
