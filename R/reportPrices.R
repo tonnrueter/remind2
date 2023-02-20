@@ -22,7 +22,7 @@
 #' @importFrom luscale speed_aggregate
 #' @importFrom dplyr %>% case_when distinct filter inner_join tibble left_join rename
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind getYears getRegions setNames dimSums new.magpie lowpass complete_magpie getItems<- getNames
+#' @importFrom magclass mbind getYears getRegions setNames dimExists dimSums new.magpie lowpass complete_magpie getItems<- getNames
 #' @importFrom quitte df.2.named.vector getColValues
 #' @importFrom readr read_csv
 #' @importFrom madrat toolAggregate
@@ -78,14 +78,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pric_mag       <- readGDX(gdx,name="p30_pebiolc_pricemag",format="first_found")[, t,]
   pric_emu_pre   <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop",format="first_found")[, t,]
   pric_emu_pre_shifted <- readGDX(gdx,name="p30_pebiolc_price_emu_preloop_shifted",format="first_found")[, t,]
-  bio_tax_factor <- readGDX(gdx,name="p21_tau_bioenergy_tax",format="first_found")[, t,]
+  bio_tax_factor <- readGDX(gdx,name="p21_tau_bioenergy_tax",format="first_found",react="silent")[, t,]
+  if (is.null(bio_tax_factor)) bio_tax_factor <- readGDX(gdx,name="v21_tau_bio",field="l",format="first_found")[, t,]
   pm_pvp         <- readGDX(gdx,name=c("pm_pvp","p80_pvp"),format="first_found")[, t, p80_subset]
   pm_dataemi     <- readGDX(gdx,name=c("pm_emifac","pm_dataemi"),format="first_found",restore_zeros=FALSE)[,t, c("pegas.seel.ngt.co2","pecoal.seel.pc.co2")]
   pm_pvpRegi     <- readGDX(gdx,name='pm_pvpRegi',format="first_found")[, t, "perm"]
   pm_taxCO2eq    <- readGDX(gdx,name=c("pm_taxCO2eq","pm_tau_CO2_tax"),format="first_found")[, t,]
   pm_taxCO2eqSCC <- readGDX(gdx,name='pm_taxCO2eqSCC',format="first_found")[, t,]
   p21_CO2TaxSectorMarkup <- readGDX(gdx,name=c('p21_CO2TaxSectorMarkup','p21_CO2_tax_sector_markup'),format="first_found",react="silent")
-  pm_taxemiMkt   <- readGDX(gdx,name="pm_taxemiMkt",format="first_found")[, t,]
+  if (dimExists("ttot", p21_CO2TaxSectorMarkup)) p21_CO2TaxSectorMarkup <- p21_CO2TaxSectorMarkup[, t,]
+  pm_taxemiMkt   <- readGDX(gdx,name="pm_taxemiMkt",format="first_found",react="silent")[, t,]
+  p47_taxCO2eq_AggFE <- readGDX(gdx,name="p47_taxCO2eq_AggFE",format="first_found",react="silent")[, t,]
+  p47_taxCO2eq_SectorAggFE <- readGDX(gdx,name="p47_taxCO2eq_SectorAggFE",format="first_found",react="silent")[, t,]
   ## variables
   pric_emu       <- readGDX(gdx,name="vm_pebiolc_price",field="l",format="first_found")[, t,]
 
@@ -463,6 +467,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   price.investment <- vm_costTeCapital * p_teAnnuity / vm_capFac
   price.omf <- pm_data_omf * vm_costTeCapital / vm_capFac
   price.td <- collapseDim(price.investment + price.omf)  * 1e6 / 3.6 # [tr USD2005/TWh] -> [USD2005/GJ]
+  price.td[price.td == Inf] <- 0
 
   out <- mbind(
     out,
@@ -510,12 +515,12 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pm_emifac <- readGDX(gdx, "pm_emifac", field = "l", restore_zeros = F)[, YearsFrom2005, "co2"][, , tech.fossil] # [GtC CO2/TWa]
   pm_emifac <- pm_emifac * 1e9 / s_twa2mwh / 3.6 # [GtC CO2/TWa] -> [tC CO2/GJ]
 
-  pm_priceCO2 <- readGDX(gdx, "pm_priceCO2", restore_zeros = F) # [USD2005/tC CO2]
-  if(length(pm_priceCO2) > 0) {
-    pm_priceCO2 <- add_columns(pm_priceCO2, addnm = setdiff(YearsFrom2005, getYears(pm_priceCO2)), dim = 2, fill = NA)
-    pm_priceCO2 <- add_columns(pm_priceCO2, addnm = setdiff(getRegions(pm_emifac), getRegions(pm_priceCO2)), dim = 1, fill = NA)
+  p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found", restore_zeros = F) # [USD2005/tC CO2]
+  if(length(p_priceCO2) > 0) {
+    p_priceCO2 <- add_columns(p_priceCO2, addnm = setdiff(YearsFrom2005, getYears(p_priceCO2)), dim = 2, fill = NA)
+    p_priceCO2 <- add_columns(p_priceCO2, addnm = setdiff(getRegions(pm_emifac), getRegions(p_priceCO2)), dim = 1, fill = NA)
 
-    price.carbon <- collapseDim(pm_emifac * pm_priceCO2) # [USD2005/GJ]
+    price.carbon <- collapseDim(pm_emifac * p_priceCO2) # [USD2005/GJ]
 
     out <- mbind(
       out,
@@ -699,7 +704,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     setNames(pric_emu_pre * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve (US$2005/GJ)"),
     setNames(pric_emu_pre_shifted * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"),
     setNames(pric_emu * tdptwyr2dpgj, "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"),
-    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"))
+    setNames(pric_emu * bio_tax_factor * tdptwyr2dpgj, "Internal|Price|Biomass|Bioenergy sustainability tax (US$2005/GJ)"))
 
 
   # energy services
@@ -711,6 +716,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   # report GHG taxes, differentiated by sector
+  # WARNING: the below sector markup code calculation does not consider regipol sector and emission market specific CO2eq prices. If you use both markups and the model 47 formulations, you will have wrongly reported CO2 sectoral and regional prices.
   if (all(p21_CO2TaxSectorMarkup == 0)) { # then all are identical
     out <- mbind(out, setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
     for (pcname in c("Price|Carbon|Demand|Buildings (US$2005/t CO2)", "Price|Carbon|Demand|Transport (US$2005/t CO2)",
@@ -766,9 +772,17 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     out <- mbind(out,setNames(co2EUprice, "Price|Carbon|EU-wide Regulation For All Sectors (US$2005/t CO2)"))
   }
 
+  # reporting carbon prices considering sectoral and emission market differentiated taxes (it does not consider sectoral CO2 markup formulations)
   if (!is.null(pm_taxemiMkt)) {
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ETS"] * 1000 * 12/44, "Price|Carbon|ETS (US$2005/t CO2)"))
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESR (US$2005/t CO2)"))
+    if(!is.null(p47_taxCO2eq_AggFE)) { # recalculating carbon prices to take into account emi Mkt taxes
+      out <- out[,,setdiff(getNames(out),c("Price|Carbon|Demand|Buildings (US$2005/t CO2)","Price|Carbon|Demand|Industry (US$2005/t CO2)","Price|Carbon|Demand|Transport (US$2005/t CO2)","Price|Carbon (US$2005/t CO2)"))]
+      out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"build"] * 1000 * 12/44, "Price|Carbon|Demand|Buildings (US$2005/t CO2)"))
+      out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"indst"] * 1000 * 12/44, "Price|Carbon|Demand|Industry (US$2005/t CO2)"))
+      out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"trans"] * 1000 * 12/44, "Price|Carbon|Demand|Transport (US$2005/t CO2)"))
+      out <- mbind(out,setNames(p47_taxCO2eq_AggFE * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
+    }
   }
 
   if (!is.null(pm_taxCO2eqSCC)) {
@@ -804,7 +818,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Internal|Price|Biomass|Emulator presolve shifted (US$2005/GJ)"    = "Primary Energy Production|Biomass|Energy Crops MAgPIE (EJ/yr)",
     "Internal|Price|Biomass|Emulator shifted (US$2005/GJ)"             = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
     "Internal|Price|Biomass|MAgPIE (US$2005/GJ)"                       = "Primary Energy Production|Biomass|Energy Crops MAgPIE (EJ/yr)",
-    "Internal|Price|Biomass|Bioenergy tax (US$2005/GJ)"                = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
+    "Internal|Price|Biomass|Bioenergy sustainability tax (US$2005/GJ)" = "Primary Energy Production|Biomass|Energy Crops (EJ/yr)",
     "Price|N2O (US$2005/t N2O)"                                        = "Emi|N2O (kt N2O/yr)",
     "Price|CH4 (US$2005/t CH4)"                                        = "Emi|CH4 (Mt CH4/yr)",
     "Price|Secondary Energy|Electricity (US$2005/GJ)"                  = "SE|Electricity (EJ/yr)",

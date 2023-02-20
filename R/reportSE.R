@@ -368,6 +368,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   # FE production
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+  vm_demFeSector[is.na(vm_demFeSector)] <- 0
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   # conversion efficiency

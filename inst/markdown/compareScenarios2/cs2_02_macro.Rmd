@@ -3,38 +3,38 @@
 
 ## Consumption
 
-```{r}
+```{r Consumption}
 showLinePlots(data, "Consumption")
 ```
 
 
 ## Population
 
-```{r}
+```{r Population}
 showLinePlots(data, "Population")
 ```
 
 ## GDP - MER
 
-```{r}
+```{r GDP - MER}
 showLinePlots(data, "GDP|MER")
 ```
 
 ## GDP - PPP
 
-```{r}
+```{r GDP - PPP}
 showLinePlots(data, "GDP|PPP")
 ```
 
 ## GDP - MER per Capita
 
-```{r}
+```{r GDP - MER per Capita}
 showLinePlots(data, "GDP|MER pCap")
 ```
 
 ## GDP - PPP per Capita
 
-```{r}
+```{r GDP - PPP per Capita}
 showLinePlots(data, "GDP|PPP pCap")
 ```
 
@@ -43,26 +43,88 @@ showLinePlots(data, "GDP|PPP pCap")
 ## Capital Stock
 
 
-```{r}
+```{r Capital Stock}
 showLinePlots(data, "Capital Stock|Non-ESM")
 ```
 
 ## Investments
 
-```{r}
+```{r Investments}
 showLinePlots(data, "Investments|Non-ESM")
 ```
 
 
 ## Interest Rate
 
-```{r}
+```{r Interest Rate}
 showLinePlots(data, "Interest Rate (t+1)/(t-1)|Real")
 ```
 
+
+## GDP Disaggregation
+
+### Top-level GDP Disaggregation
+
+```{r GDP Disaggregation}
+
+tot <- "GDP|MER"
+items <- c(
+  "Internal|CES Function|Value|lab",
+  "Internal|CES Function|Value|kap",
+  "Internal|CES Function|Value|entrp",
+  "Internal|CES Function|Value|enb",
+  "Internal|CES Function|Value|ue_industry")
+  
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+
+### Transport Value Disaggregation
+
+```{r Transport Value Disaggregtion}
+
+tot <- "Internal|CES Function|Value|entrp"
+items <- c(
+  "Internal|CES Function|Value|entrp_pass_sm",
+  "Internal|CES Function|Value|entrp_pass_lo",
+  "Internal|CES Function|Value|entrp_frgt_sm",
+  "Internal|CES Function|Value|entrp_frgt_lo")
+
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Buildings Value Disaggregation
+
+```{r Buildings Value Disaggregtion}
+
+tot <- "Internal|CES Function|Value|enb"
+items <- c(
+  "Internal|CES Function|Value|enhb",
+  "Internal|CES Function|Value|feelcb")
+  
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+
+### Industry Value Disaggregation
+
+```{r Industry Value Disaggregtion}
+
+tot <- "Internal|CES Function|Value|ue_industry"
+items <- c(
+  "Internal|CES Function|Value|ue_steel",
+  "Internal|CES Function|Value|ue_cement",
+  "Internal|CES Function|Value|ue_chemicals",
+  "Internal|CES Function|Value|ue_otherInd")
+  
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+
+
 ## Prices
 
-```{r}
+```{r Prices preprocessing}
 # Local (this subsection) preprocessing for all price variables.
 dPrice <-
   data %>%
@@ -75,7 +137,7 @@ dPrice <-
 
 ### PE Prices
 
-```{r}
+```{r PE Prices}
 vars <-
   levels(dPrice$variable) %>%
   str_subset("^Price\\|Primary Energy\\|") %>%
@@ -86,7 +148,7 @@ walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ### SE Prices
 
 
-```{r}
+```{r SE Prices}
 vars <-
   levels(dPrice$variable) %>%
   str_subset("^Price\\|Secondary Energy\\|") %>%
@@ -96,7 +158,7 @@ walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 
 ### FE Prices
 
-```{r}
+```{r FE Prices}
 vars <-
 levels(dPrice$variable) %>%
   str_subset("^Price\\|Final Energy\\|") %>%
@@ -126,7 +188,7 @@ vars %>%
 
 ### FE LCOE Prices Transport
 
-```{r}
+```{r FE LCOE Prices Transport}
 
 groups <- c(
   "Price|Final Energy|Transport|Liquids|Petroleum",
@@ -156,7 +218,7 @@ for (g in groups) {
 
 ### FE LCOE Prices Buildings
 
-```{r}
+```{r FE LCOE Prices Buildings}
 
 groups <- c(
   "Price|Final Energy|Buildings|Liquids|Oil",
@@ -188,7 +250,7 @@ for (g in groups) {
 
 ### FE LCOE Prices Industry
 
-```{r}
+```{r FE LCOE Prices Industry}
 
 groups <- c(
   "Price|Final Energy|Industry|Liquids|Oil",
@@ -221,7 +283,7 @@ for (g in groups) {
 
 ## Trade
 
-```{r}
+```{r Trade}
 vars <-
   levels(data$variable) %>%
   str_subset("^Trade\\|[^|]*$")
@@ -230,17 +292,17 @@ walk(vars, showLinePlots, data = data)
 
 ## FE intensity of GDP
 
-```{r}
+```{r FE intensity of GDP}
 items <- c(
   "FE|Transport pGDP",
   "FE|Buildings pGDP",
   "FE|Industry pGDP")
-showAreaAndBarPlots(data, items)
+showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
 ## FE intensity of GDP, linegraph (by GDP)
 
-```{r}
+```{r FE intensity of GDP, linegraph}
 dIea <-
   data %>%
   # To make the plots less crowded, show only IEA historical data.
@@ -253,9 +315,9 @@ showMultiLinePlots(dIea, items, scales = "fixed")
 showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 ```
 
-## Kaya-Decomposition
+## Kaya Decomposition
 
-```{r}
+```{r Kaya Decomposition}
 d <-
   data %>%
   filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>%
@@ -307,22 +369,22 @@ kayaRel <-
 
 ### Absolute
 
-```{r}
+```{r Kaya Decomposition Absolute}
 showMultiLinePlots(kaya, kayaVars)
 walk(kayaVars, showRegiLinePlots, data = kaya)
 ```
 
-```{r results='asis'}
+```{r Kaya Decomposition Relative text, results='asis'}
 cat("### Relative to ", refYear, "\n")
 ```
 
-```{r}
+```{r Kaya Decomposition Relative}
 showMultiLinePlots(kayaRel, kayaVars)
 walk(kayaVars, showRegiLinePlots, data = kayaRel)
 ```
 
 ### Components
 
-```{r}
+```{r Kaya Components}
 walk(kayaVars, showLinePlots, data = kaya)
 ```

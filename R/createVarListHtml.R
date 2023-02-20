@@ -38,7 +38,7 @@ info2Html <- function(item) {
 }
 
 namedList2Html <- function(v) {
-  lines <- lapply(seq_along(v), \(i) node2Html(names(v)[i], v[[i]]))
+  lines <- lapply(seq_along(v), function(i) node2Html(names(v)[i], v[[i]]))
   html <- unlist(lines)
   return(html)
 }

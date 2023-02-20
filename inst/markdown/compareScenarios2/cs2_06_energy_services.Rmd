@@ -1,23 +1,66 @@
 # Energy Services and Products
 
-## FE|Buildings
-```{r}
+## Buildings
+### FE mix
+```{r FE demand from buildings by carriers}
 tot <- "FE|Buildings"
 items <- c(
   "FE|Buildings|non-Heating|Electricity|Conventional",
-  "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Electricity|Heat pump",
-  "FE|Buildings|Heating|District Heating",
   "FE|Buildings|Heating|Solids",
   "FE|Buildings|Heating|Liquids",
   "FE|Buildings|Heating|Gases",
+  "FE|Buildings|Heating|District Heating",
+  "FE|Buildings|Heating|Electricity|Resistance",
+  "FE|Buildings|Heating|Electricity|Heat pump",
   "FE|Buildings|Heating|Hydrogen")
-showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### UE mix
+```{r UE demand from buildings by carriers}
+tot <- "UE|Buildings"
+items <- c(
+  "UE|Buildings|non-Heating|Electricity|Conventional",
+  "UE|Buildings|Heating|Solids",
+  "UE|Buildings|Heating|Liquids",
+  "UE|Buildings|Heating|Gases",
+  "UE|Buildings|Heating|District Heating",
+  "UE|Buildings|Heating|Electricity|Resistance",
+  "UE|Buildings|Heating|Electricity|Heat pump",
+  "UE|Buildings|Heating|Hydrogen")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### FE heating
+```{r FE demand from buildings for heating by carriers}
+tot <- "FE|Buildings|Heating"
+items <- c(
+  "FE|Buildings|Heating|Solids",
+  "FE|Buildings|Heating|Liquids",
+  "FE|Buildings|Heating|Gases",
+  "FE|Buildings|Heating|District Heating",
+  "FE|Buildings|Heating|Electricity|Resistance",
+  "FE|Buildings|Heating|Electricity|Heat pump",
+  "FE|Buildings|Heating|Hydrogen")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### UE heating
+```{r UE demand from buildings for heating by carriers}
+tot <- "UE|Buildings|Heating"
+items <- c(
+  "UE|Buildings|Heating|Solids",
+  "UE|Buildings|Heating|Liquids",
+  "UE|Buildings|Heating|Gases",
+  "UE|Buildings|Heating|District Heating",
+  "UE|Buildings|Heating|Electricity|Resistance",
+  "UE|Buildings|Heating|Electricity|Heat pump",
+  "UE|Buildings|Heating|Hydrogen")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Region Intercomparison FE|Buildings
-
-```{r}
+```{r FE Buildings Region}
 items <- c(
   "FE|Buildings|Heating",
   "FE|Buildings|Appliances and Light",
@@ -33,7 +76,7 @@ showMultiLinePlotsByVariable(data, items[4:5], "GDP|PPP pCap")
 
 ## Transport
 ### Energy Services for Passenger Transport
-```{r}
+```{r ES Transport}
 items <- c(
   "ES|Transport|Pass pCap",
   "ES|Transport|Pass|Road|LDV pCap",
@@ -42,7 +85,7 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-```{r}
+```{r ES Transport passenger per capita}
 ## ---- ES passenger transport per capita (bar graph)----
 items <- c(
   "ES|Transport|Pass|Road|LDV|BEV pCap",
@@ -50,11 +93,11 @@ items <- c(
   "ES|Transport|Pass|Road|LDV|Gases pCap",
   "ES|Transport|Pass|Road|LDV|Hybrid Electric pCap",
   "ES|Transport|Pass|Road|LDV|Liquids pCap")
-showAreaAndBarPlots(data, items)
+showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
 ### Energy Services for Freight Transport per Capita
-```{r}
+```{r ES transport freight per capita}
 items <- c(
   "ES|Transport|Freight pCap")
 showMultiLinePlots(data, items)
@@ -62,53 +105,53 @@ showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
 
-```{r}
+```{r ES transport freight road per capita}
 items <- c(
   "ES|Transport|Freight|Road|Electric pCap",
   "ES|Transport|Freight|Road|FCEV pCap",
   "ES|Transport|Freight|Road|Gases pCap",
   "ES|Transport|Freight|Road|Liquids pCap")
-showAreaAndBarPlots(data, items)
+showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
 ### LDV Vehicles Stock
-```{r}
+```{r LDV Vehicles Stock}
 tot <- "Est LDV Stock"
 items <- c(
   "Est EV LDV Stock",
   "Est H2 LDV Stock",
   "Est ICE LDV Stock")
-showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 ### LDV Vehicles Sales
-```{r}
+```{r LDV Vehicles Sales}
 tot <- "Est LDV Sales"
 items <- c(
   "Est EV LDV Sales",
   "Est H2 LDV Sales",
   "Est ICE LDV Sales")
-showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 ### non-LDV Vehicles Stock
-```{r}
+```{r non-LDV Vehicles Stock}
 tot <- "Services and Products|Transport|non-LDV|Stock|uedit"
 items <- c(
   "Services and Products|Transport|non-LDV|Stock|apCarDiT",
   "Services and Products|Transport|non-LDV|Stock|apcarDiEffT",
   "Services and Products|Transport|non-LDV|Stock|apcarDiEffH2T")
-showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 ### non-LDV Vehicles Sales
-```{r}
+```{r non-LDV Vehicles Sales}
 tot <- "Services and Products|Transport|non-LDV|Sales|uedit"
 items <- c(
   "Services and Products|Transport|non-LDV|Sales|apCarDiT",
   "Services and Products|Transport|non-LDV|Sales|apcarDiEffT",
   "Services and Products|Transport|non-LDV|Sales|apcarDiEffH2T")
-showAreaAndBarPlots(data, items, tot)
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 ## Industry Production
@@ -122,7 +165,7 @@ showLinePlots(data, "Production|Industry|Steel|Secondary")
 showLinePlots(data, "Value Added|Industry|Other Industry")
 ```
 
-### Steel Produciton Mix
+### Steel Production Mix
 ```{r plot steel production mix, results = 'asis'}
 items <- c("Production|Industry|Steel|Primary",
            "Production|Industry|Steel|Secondary")
@@ -179,7 +222,7 @@ walk(items, showLinePlots, data = data, scales = "fixed")
 
 
 ### Steel accumulation
-```{r}
+```{r plot steel accumulation}
 stockT0 <- filter(data, period == 2005, model == "Mueller", variable == "Steel stock") %>% select("region", "value")
 
 population <- filter(data, period >= 2005, model == "REMIND", variable == "Population") %>%

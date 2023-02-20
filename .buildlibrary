@@ -1,11 +1,14 @@
-ValidationKey: '211730519'
+ValidationKey: '214780140'
 AcceptedWarnings:
 - 'Warning: package ''.*'' was built under R version'
 - 'Warning: namespace ''.*'' is not available and has been replaced'
 - .*qpdf.* is needed for checks on size reduction of PDFs
+- .*following variables are expected in the piamInterfaces.*
 AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
 - checking installed package size
+- Namespace in Imports field not imported from: ‘piamInterfaces’
+- Namespace in Imports field not imported from: piamInterfaces
 AutocreateReadme: yes
 allowLinterWarnings: yes

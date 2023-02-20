@@ -1,8 +1,3 @@
-getScenNamesFast <- function(outputDirs) {
-  folder <- basename(outputDirs)
-  substr(folder, start = 0, stop = nchar(folder) - 20)
-}
-
 #' Get Paths to Certain Files in the REMIND Directory
 #'
 #' \code{getMifScenPath}: get path to the scenarios' reporting mifs.
@@ -16,9 +11,9 @@ getScenNamesFast <- function(outputDirs) {
 #' @rdname getPath
 #' @export
 getMifScenPath <- function(outputDirs, mustWork = FALSE) {
-  names <- getScenNamesFast(outputDirs)
-  path <- file.path(outputDirs, paste0("REMIND_generic_", names, ".mif"))
-  normalizePath(path, mustWork = mustWork)
+  scenNames <- lucode2::getScenNames(outputDirs)
+  path <- file.path(outputDirs, paste0("REMIND_generic_", scenNames, ".mif"))
+  return(normalizePath(path, mustWork = mustWork))
 }
 
 #' @rdname getPath

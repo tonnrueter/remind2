@@ -34,7 +34,7 @@ params:
   mainReg: "World"
   figWidth: 15 
   figHeight: 10
-  warning: yes
+  warning: FALSE
 ---
 
 ```{r setup, include=FALSE}
@@ -250,7 +250,7 @@ histRefModel <- c(
 ```
 
 
-```{r calcuate pCap variables}
+```{r calculate pCap variables}
 # For all variables in following table, add a new variable to data with the name
 # "OldName pCap". Calculate its value by
 #     OldValue * conversionFactor # nolint
@@ -334,7 +334,7 @@ data <-
 ```
 
 
-```{r calcuate pGDP variables}
+```{r calculate pGDP variables}
 dataGDP <-
   data %>%
   filter(variable == "GDP|PPP pCap") %>%
@@ -380,6 +380,10 @@ data <- as.quitte(data)
 
 
 ```{r global variables}
+on.exit(options(warn = getOption("warn")))
+options(warn = 1)
+
+
 # Set global variables for use in plotting.
 options(mip.mainReg = params$mainReg) # nolint
 options(mip.yearsBarPlot = params$yearsBarPlot) # nolint
@@ -387,6 +391,9 @@ options(mip.histRefModel = histRefModel) # nolint
 
 # Reference year for Kaya decomposition is params$yearRef or the first available year therafter.
 options(kaya.refYear = min(params$yearsScen[params$yearsScen >= params$yearRef])) # nolint
+
+# allow for duplicate chunk labels
+options(knitr.duplicate.label = "allow")
 ```
 
 

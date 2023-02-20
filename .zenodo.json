@@ -1,10 +1,94 @@
 {
   "title": "remind2: The REMIND R package (2nd generation)",
-  "version": "1.101.1",
+  "version": "1.107.0",
   "description": "<p>Contains the REMIND-specific routines for data and model\n    output manipulation.<\/p>",
   "creators": [
     {
       "name": "Rodrigues, Renato"
+    },
+    {
+      "name": "Baumstark, Lavinia"
+    },
+    {
+      "name": "Benke, Falk"
+    },
+    {
+      "name": "Dietrich, Jan Philipp"
+    },
+    {
+      "name": "Dirnaichner, Alois"
+    },
+    {
+      "name": "Führlich, Pascal"
+    },
+    {
+      "name": "Giannousakis, Anastasis"
+    },
+    {
+      "name": "Hasse, Robin"
+    },
+    {
+      "name": "Hilaire, Jérome"
+    },
+    {
+      "name": "Klein, David"
+    },
+    {
+      "name": "Koch, Johannes"
+    },
+    {
+      "name": "Kowalczyk, Katarzyna"
+    },
+    {
+      "name": "Levesque, Antoine"
+    },
+    {
+      "name": "Malik, Aman"
+    },
+    {
+      "name": "Merfort, Anne"
+    },
+    {
+      "name": "Merfort, Leon"
+    },
+    {
+      "name": "Morena-Leiva, Simón"
+    },
+    {
+      "name": "Pehl, Michaja"
+    },
+    {
+      "name": "Pietzcker, Robert"
+    },
+    {
+      "name": "Rauner, Sebastian"
+    },
+    {
+      "name": "Richters, Oliver"
+    },
+    {
+      "name": "Rottoli, Marianna"
+    },
+    {
+      "name": "Schötz, Christof"
+    },
+    {
+      "name": "Schreyer, Felix"
+    },
+    {
+      "name": "Siala, Kais"
+    },
+    {
+      "name": "Sörgel, Björn"
+    },
+    {
+      "name": "Spahr, Mike"
+    },
+    {
+      "name": "Strefler, Jessica"
+    },
+    {
+      "name": "Verpoort, Philipp"
     }
   ]
 }

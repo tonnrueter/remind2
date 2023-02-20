@@ -80,6 +80,15 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
     )
   )
 
+  #filter entyFe_map to remove uncontrolled sets (e.g. fegat is not present in transport complex, solids are not used in CDR)
+  for(sector in names(sector_map)){
+    for(FinalEnergy in names(entyFe_map[[sector]])){
+      if(!(entyFe_map[[sector]][FinalEnergy] %in% getNames(vm_demFeSector[,,sector_map[sector]],dim=2))){
+        entyFe_map[[sector]] <- entyFe_map[[sector]][names(entyFe_map[[sector]]) != FinalEnergy]
+      }
+    }
+  }
+
   out <- mbind(
     out,
     do.call(
@@ -246,9 +255,9 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
   p21_taxrevFlex0 <- readGDX(gdx, name=c("p21_taxrevFlex0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevFlex0,"Net Taxes|electricity flexibility (billion US$2005/yr)"))
 
-  # bioenergy import tax
-  p21_taxrevBioImport0 <- readGDX(gdx, name=c("p21_taxrevBioImport0"), format= "first_found")[,t,]*1000
-  out <- mbind(out, setNames(p21_taxrevBioImport0,"Net Taxes|bioenergy import (billion US$2005/yr)"))
+  # import tax
+  p21_taxrevImport0 <- readGDX(gdx, name=c("p21_taxrevImport0","p21_taxrevBioImport0"), format= "first_found")[,t,]*1000
+  out <- mbind(out, setNames(dimSums(p21_taxrevImport0,dim=3),"Net Taxes|Primary energy import (billion US$2005/yr)"))
 
   # report GHG tax revenues
   out <- mbind(out,
