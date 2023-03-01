@@ -10,7 +10,7 @@ test_that("Test if REMIND reporting produces mandatory variables for SHAPE repor
                        mode = "wb", quiet = TRUE
   )
 
-  mif <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
+  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_ref = gdxPath))
 
   computedVariables <- getItems(mif, dim = 3.3)
 
