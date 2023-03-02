@@ -264,8 +264,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # only retain combinations of vm_demFeSector subdimensions which are in entyFe2Sector and sector2emiMkt
   emi.map.fe <- data.frame(all_enty = getItems(pm_emifac.co2.fe, dim = "all_enty",  full = T),
                            all_enty1 = getItems(pm_emifac.co2.fe, dim = "all_enty1",  full = T)) %>%
-    left_join(entyFe2Sector, by = "all_enty1") %>%
-    left_join(sector2emiMkt, by = "emi_sectors") %>%
+    left_join(entyFe2Sector, by = "all_enty1", multiple = "all") %>%
+    left_join(sector2emiMkt, by = "emi_sectors", multiple = "all") %>%
     mutate(name = paste(all_enty, all_enty1, emi_sectors, all_emiMkt, sep = "."))
 
 
