@@ -143,7 +143,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   sector <- emi_sectors <- emiMkt <- all_emiMkt <- NULL
   fe.entries <- entyFe2Sector %>%
-                  left_join(sector2emiMkt, by = "emi_sectors") %>%
+                  left_join(sector2emiMkt, by = "emi_sectors", multiple = "all") %>%
                   rename( sector = emi_sectors, emiMkt = all_emiMkt) %>%
                   filter( sector != "CDR")
 
@@ -310,8 +310,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     all_enty <- all_enty1 <- NULL
     se.fe.sector.emiMkt <- se2fe[,-3] %>% #remove te dimension
       rename(se = all_enty, fe = all_enty1) %>% # rename dimensions
-      left_join(entyFe2Sector %>% rename(fe = all_enty, sector = emi_sectors), by = "fe") %>% # adding sectors column
-      left_join(sector2emiMkt %>% rename(emiMkt = all_emiMkt, sector = emi_sectors), by = "sector") # adding emiMkt column
+      left_join(entyFe2Sector %>% rename(fe = all_enty, sector = emi_sectors), by = "fe", multiple = "all") %>% # adding sectors column
+      left_join(sector2emiMkt %>% rename(emiMkt = all_emiMkt, sector = emi_sectors), by = "sector", multiple = "all") # adding emiMkt column
 
     pm_FEPrice_by_SE_Sector_EmiMkt <- pm_FEPrice_by_SE_Sector_EmiMkt[,YearsFrom2005,unique(paste(se.fe.sector.emiMkt$se,se.fe.sector.emiMkt$fe,se.fe.sector.emiMkt$sector,se.fe.sector.emiMkt$emiMkt,sep="."))]*tdptwyr2dpgj
     pm_FEPrice_by_Sector_EmiMkt    <-    pm_FEPrice_by_Sector_EmiMkt[,YearsFrom2005,unique(paste(                       se.fe.sector.emiMkt$fe,se.fe.sector.emiMkt$sector,se.fe.sector.emiMkt$emiMkt,sep="."))]*tdptwyr2dpgj

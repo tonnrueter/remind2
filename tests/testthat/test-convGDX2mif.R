@@ -107,7 +107,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   for (gdxPath in gdxPaths) {
     numberOfMifs <- numberOfMifs + 1
     message("Running convGDX2MIF(", gdxPath, ")...")
-    mifContent <- suppressWarnings(convGDX2MIF(gdxPath, gdx_ref = gdxPath))
+    mifContent <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
     message("Checking integrity of created MIF...")
     checkIntegrity(mifContent, gdxPath)
     magclass::write.report(
