@@ -1,9 +1,12 @@
 test_that("Check compareScenConf", {
-  writeLines("cfg <- list()\ncfg$gms$start <- 5", "default.cfg")
-  writeLines("cfg <- list()\ncfg$gms$start <- 3", "default2.cfg")
-  file1 <- "test1.csv"
-  file2 <- "test2.csv"
-  file3 <- "test3.csv"
+  filemain <- file.path(tempdir(), "main.gms")
+  writeLines(c('Parameter start "start" / 5 /;', 'Parameter notstart "nooo" / 3 /'), filemain)
+  dir.create(file.path(tempdir(), "config"))
+  fileconfig <- file.path(tempdir(), "config", "default.cfg")
+  writeLines('cfg <- list()', fileconfig)
+  file1 <- file.path(tempdir(), "test1.csv")
+  file2 <- file.path(tempdir(), "test2.csv")
+  file3 <- file.path(tempdir(), "test3.csv")
   csv1df <- data.frame("title" = c("default", "SSP2-Base", "SSP5-Base"),
                        "start" = c(1, 0, 0),
                        "value" = c(1, 2, 3),
@@ -24,7 +27,6 @@ test_that("Check compareScenConf", {
   # normal case: should go through without a warning
   test1 <- compareScenConf(fileList = c(file1, file2), printit = FALSE)
   expect_true(is.null(test1$allwarnings))
-  expect_true(! any(grepl("No configfile", test1$out)))
   expect_true(sum(grepl("description: was changed", test1$out)) == 3)
   # check renamed column start -> startnew
   test2 <- compareScenConf(fileList = c(file1, file3), renamedCols = c(start = "startnew"),
@@ -36,18 +38,16 @@ test_that("Check compareScenConf", {
   # check renamed column and row where this didn't happen
   test3 <- suppressWarnings(compareScenConf(fileList = c(file1, file2), renamedCols = c(start = "startnew"),
                                             renamedRows = c("SSP5-Base" = "SSP6-Base"), printit = FALSE,
-                                            configfile = "default2.cfg"))
+                                            remindPath <- tempdir()))
   expect_true(all(c("oldColAlsoIn2", "newColNotIn2", "newRowNotIn2") %in% names(test3$allwarnings)) &
               ! any(c("oldColNotIn1", "newColAlsoIn1", "newRowNotIn1", "newRowAlsoIn1") %in% names(test3$allwarnings)))
   expect_true(any(grepl("Columns deleted:.*startnew", test3$out)))
   expect_true(any(grepl("Columns added:.*start", test3$out)))
-  expect_true(! any(grepl("No configfile", test3$out)))
   # check renamed column and row where old files doesn't contain them
   test4 <- suppressWarnings(compareScenConf(fileList = c(file1, file2), renamedCols = c(startwrong = "start"),
                                             renamedRows = c("SSP9-Base" = "SSP5-Base"), printit = FALSE,
-                                            configfile = "nonexisting.cfg"))
+                                            remindPath = NULL))
   expect_true(all(c("oldColNotIn1", "newColAlsoIn1", "newRowNotIn1", "newRowAlsoIn1") %in% names(test4$allwarnings)) &
               ! any(c("oldColAlsoIn2", "newColNotIn2", "newRowNotIn2") %in% names(test4$allwarnings)))
-  expect_true(any(grepl("No configfile nonexisting.cfg found in ", test4$out)))
-  unlink(c(file1, file2, file3, "default.cfg", "default2.cfg"))
+  unlink(c(file1, file2, file3, fileconfig, filemain))
 })

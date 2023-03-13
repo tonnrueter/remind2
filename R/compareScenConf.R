@@ -2,18 +2,18 @@
 #' comparing it to a default.cfg
 #'
 #' @param fileList vector containing two csv file paths as c(oldfile, newfile). If empty, user can select
-#' @param configfile path to configfile. If empty, uses './default.cfg'
+#' @param remindPath path to REMIND directory containing main.gms
 #' @param row.names column in csv used for row.names. Use NULL for mapping files
 #' @param renamedCols vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))
 #' @param renamedRows vector with old and new row names such as c("old3" = "new3", "old3" = "new4", "old5" = "new5"))
 #'        the "old" name can also remain in the new file, if you generated a variant
 #' @param printit boolean switch (default: TRUE) whether function prints its output
+#' @param expanddata fill empty cells with default values
 #' @author Oliver Richters
 #' @examples
 #'
 #'  \dontrun{
 #'     compareScenConf(fileList = c("scenario_config_old.csv", "scenario_config_new.csv"),
-#'     configfile = "default.cfg",
 #'     renamedCols = c("old1" = "new1", "old2" = "new2"),
 #'     renamedRows = c("old3" = "new3", "old4" = "new4"))
 #'   }
@@ -22,8 +22,8 @@
 #' @importFrom utils read.csv2
 #' @importFrom gms getLine
 #' @export
-compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names = 1,
-                            renamedCols = NULL, renamedRows = NULL, printit = TRUE) {
+compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
+                            renamedCols = NULL, renamedRows = NULL, printit = TRUE, expanddata = TRUE) {
   m <- c()
   folder <- getwd()
   if (length(fileList) != 2) {
@@ -41,24 +41,19 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
     if (length(identifier) < 2) stop("You must choose two files!")
     fileList <- fileList[identifier]
   }
-  if (! file.exists(configfile)) {
-    if (file.exists(paste0("config/", configfile))) {
-      configfile <- paste0("config/", configfile)
-    } else if (file.exists(paste0(folder, "/", configfile))) {
-      configfile <- paste0(folder, "/", configfile)
-    } else if (file.exists(paste0(folder, "/config/", configfile))) {
-      configfile <- paste0(folder, "/config/", configfile)
+  if (! is.null(remindPath) && ! file.exists(file.path(remindPath, "main.gms"))) {
+    if(dir.exists("..") && file.exists("../main.gms")) {
+      remindPath <- normalizePath("..")
     } else {
-      m <- c(m, paste0("No configfile ", configfile, " found in ", getwd(), " or ", folder, "."))
-      configfile <- FALSE
+      remindPath <- NULL
     }
   }
   m <- c(m, "", paste0("File comparison: ", fileList[[1]], " -> ", fileList[[2]]))
-  if (! isFALSE(configfile)) {
-    m <- c(m, paste("Using configfile", configfile, "as default."))
+  if (! is.null(remindPath)) {
     cfg <- list() # to avoid 'no visible binding' error
-    source(configfile, local = TRUE)
-    if (!length(cfg)) stop(paste0("In ", configfile, ", no 'cfg' data was found."))
+    if (! is.null(remindPath)) {
+      cfg <- gms::readDefaultConfig(remindPath)
+    }
     # enable script to match default data not in gms
     try(cfg$gms[["output"]] <- paste0(cfg$output, collapse = ","))
     try(cfg$gms[["model"]] <- cfg$model)
@@ -108,7 +103,7 @@ compareScenConf <- function(fileList = "", configfile = "default.cfg", row.names
           if (! identical(toString(settings1[sold, c]), toString(settings2[s, c]))) {
             m <- c(m, paste0("    ", ifelse(c %in% renamedCols, paste(names(which(renamedCols == c)), "-> "), ""), c,
                    ": ", ifelse(c == "description", "was changed", paste0(settings1[sold, c], " -> ", settings2[s, c])),
-                   ifelse(isFALSE(configfile) || is.null(cfg$gms[[c]]), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
+                   ifelse(is.null(remindPath) || is.null(cfg$gms[[c]]), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
           }
         }
       }
