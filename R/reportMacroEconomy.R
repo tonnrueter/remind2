@@ -84,6 +84,10 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                                         format = "first_found"),
                        "Damage factor (1)")
 
+  # Calculate net GDP using the damage factors
+  tintersect <- intersect(getYears(gdp), getYears(damageFactor))
+  gdp_net <- setNames(gdp[,tintersect,]*damageFactor[,tintersect,], "GDP|MER|Net_afterDamages (billion US$2005/yr)")  
+
   ies                     <- readGDX(gdx, c("pm_ies", "p_ies"), format = "first_found")
   c_damage                <- readGDX(gdx, "cm_damage", "c_damage", format = "first_found", react = "silent")
   if (is.null(c_damage)) c_damage <- 0
@@ -342,7 +346,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
 
 
   # define list of variables that will be exported:
-  varlist <- list(cons, gdp, gdp_ppp, invE, invM, pop, cap, inv, ces)#, damageFactor, welf) # ,curracc)
+  varlist <- list(cons, gdp, gdp_ppp, gdp_net, invE, invM, pop, cap, inv, ces)#, damageFactor, welf) # ,curracc)
   # use the same temporal resolution for all variables
   # calculate minimal temporal resolution
   tintersect <- Reduce(intersect, lapply(varlist, getYears))
