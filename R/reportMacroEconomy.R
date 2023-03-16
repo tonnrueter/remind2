@@ -342,7 +342,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
 
 
   # define list of variables that will be exported:
-  varlist <- list(cons, gdp, gdp_ppp, invE, invM, pop, cap, inv, ces, damageFactor, welf) # ,curracc)
+  varlist <- list(cons, gdp, gdp_ppp, invE, invM, pop, cap, inv, ces)#, damageFactor, welf) # ,curracc)
   # use the same temporal resolution for all variables
   # calculate minimal temporal resolution
   tintersect <- Reduce(intersect, lapply(varlist, getYears))
@@ -351,8 +351,14 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   # put all together
   out <- Reduce(mbind, varlist)
 
+  # calculate global aggregation for the damage factor, weighted by MER GDP
+  mapping <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
+  glo_damageFactor <- speed_aggregate(damageFactor[,tintersect,], mapping, weight = gdp[,tintersect,])
+
   # add global region aggregation
   out <- mbind(out, dimSums(out, dim = 1))
+  # add damageFactor, which was aggregated differently
+  out <- mbind(out, mbind(damageFactor[,tintersect,],glo_damageFactor))
   # add other region aggregations
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
