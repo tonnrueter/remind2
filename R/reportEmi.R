@@ -774,7 +774,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(sel_vm_emiAllMkt_co2, dim = 3) * GtC_2_MtCO2,
                         "Emi|CO2 (Mt CO2/yr)"))
 
-  ## 3. Carbon Management ----
+  ## 3. Carbon Management and CDR ----
 
   # all carbon management variables are defined positive (carbon capture, storage and usage)
 
@@ -1227,7 +1227,64 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
               setNames(out[, , "Carbon Management|Carbon Capture|Fossil|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"] * p_share_CCS,
                        "Carbon Management|Storage|Fossil|Pe2Se|+|Gases w/ couple prod (Mt CO2/yr)"))
 
-
+  
+  #### calculate corresponding negative emissions variables by CDR for bar plots with gross emissions
+  # same as "Carbon Management|Storage|+|DAC (Mt CO2/yr)" etc. but negative
+  
+  # only negative land-use change emissions
+  EmiCDR.LUC <- dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2
+  EmiCDR.LUC[EmiCDR.LUC > 0] <- 0
+  
+  # compute share of atmospheric carbon in total captured carbon
+  p_share_atmosco2 <- dimSums((out[, , "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"] 
+                               + out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"]
+                               + out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"])
+                              / (out[, , "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"] 
+                                 + out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"] 
+                                 + out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"]
+                                 + out[, , "Carbon Management|Carbon Capture|+|Fossil|Pe2Se (Mt CO2/yr)"]
+                                 + out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Fossil (Mt CO2/yr)"]
+                                 + out[, , "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"]) ,dim=3)
+  p_share_atmosco2[is.infinite(p_share_atmosco2)] <- 0
+  p_share_atmosco2[is.na(p_share_atmosco2)] <- 0
+  
+  # Emi|CO2|CDR is defined negative
+  out <- mbind(out,
+               # total negative land-use change emissions
+               setNames(EmiCDR.LUC,
+                        "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),
+               # total BECCS (pe2se + industry)
+               setNames(-out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                        -out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+                        "Emi|CO2|CDR|BECCS (Mt CO2/yr)"),
+               # Pe2Se BECCS
+               setNames(-out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
+                        "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)"),
+               # Industry BECCS
+               setNames(-out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+                        "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"),
+               # stored CO2 in industry from carbon-neutral fuels (synthetic fuels)
+               setNames(-out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_atmosco2 * p_share_CCS,
+                        "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"),
+               
+               # total DACCS
+               setNames(-out[, , "Carbon Management|Storage|+|DAC (Mt CO2/yr)"],
+                        "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
+               # total EW
+               # total co2 captured by EW
+               setNames(v33_emiEW * GtC_2_MtCO2,
+                        "Emi|CO2|CDR|EW (Mt CO2/yr)"))
+  
+  out <- mbind(out,
+               # total CDR
+               setNames( out[, , "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"]
+                         + out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
+                         + out[, , "Emi|CO2|CDR|DACCS (Mt CO2/yr)"]
+                         + out[, , "Emi|CO2|CDR|EW (Mt CO2/yr)"]
+                         + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],
+                         "Emi|CO2|CDR (Mt CO2/yr)"))
+  
+  
 
 
 
@@ -1322,63 +1379,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                         - out[, , "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)"))
 
-
-
-  #### calculate corresponding negative emissions variables by CDR for bar plots with gross emissions
-  # same as "Carbon Management|Storage|+|DAC (Mt CO2/yr)" etc. but negative
-
-  # only negative land-use change emissions
-  EmiCDR.LUC <- dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2
-  EmiCDR.LUC[EmiCDR.LUC > 0] <- 0
-
-  # compute share of atmospheric carbon in total captured carbon
-  p_share_atmosco2 <- dimSums((out[, , "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"] 
-                               + out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"]
-                               + out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"])
-                            / (out[, , "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"] 
-                               + out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"] 
-                               + out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                               + out[, , "Carbon Management|Carbon Capture|+|Fossil|Pe2Se (Mt CO2/yr)"]
-                               + out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Fossil (Mt CO2/yr)"]
-                               + out[, , "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"]) ,dim=3)
-  p_share_atmosco2[is.infinite(p_share_atmosco2)] <- 0
-  p_share_atmosco2[is.na(p_share_atmosco2)] <- 0
-
-  # Emi|CO2|CDR is defined negative
-  out <- mbind(out,
-               # total negative land-use change emissions
-               setNames(EmiCDR.LUC,
-                        "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),
-               # total BECCS (pe2se + industry)
-               setNames(-out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        -out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
-                        "Emi|CO2|CDR|BECCS (Mt CO2/yr)"),
-               # Pe2Se BECCS
-               setNames(-out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
-                        "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)"),
-               # Industry BECCS
-               setNames(-out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
-                        "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"),
-               # stored CO2 in industry from carbon-neutral fuels (synthetic fuels)
-               setNames(-out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_atmosco2 * p_share_CCS,
-                        "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"),
-
-               # total DACCS
-               setNames(-out[, , "Carbon Management|Storage|+|DAC (Mt CO2/yr)"],
-                        "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
-               # total EW
-               # total co2 captured by EW
-               setNames(v33_emiEW * GtC_2_MtCO2,
-                        "Emi|CO2|CDR|EW (Mt CO2/yr)"))
-
-  out <- mbind(out,
-               # total CDR
-               setNames( out[, , "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"]
-                        + out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
-                        + out[, , "Emi|CO2|CDR|DACCS (Mt CO2/yr)"]
-                        + out[, , "Emi|CO2|CDR|EW (Mt CO2/yr)"]
-                        + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],
-                        "Emi|CO2|CDR (Mt CO2/yr)"))
 
 
 
