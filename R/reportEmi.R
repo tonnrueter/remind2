@@ -1300,16 +1300,16 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   out <- mbind(out,
                # gross supply emissions across SE carriers
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"]
+                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Electricity w/ couple prod (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)"),
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Heat w/ couple prod (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"]
+                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Heat w/ couple prod (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy|Supply|+|Heat (Mt CO2/yr)"),
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Hydrogen w/ couple prod (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"]
+                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Hydrogen w/ couple prod (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy|Supply|+|Hydrogen (Mt CO2/yr)"),
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Solids w/ couple prod (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"]
+                        + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Solids w/ couple prod (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy|Supply|+|Solids (Mt CO2/yr)"),
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Liquids w/ couple prod (Mt CO2/yr)"]
                         + out[, , "Carbon Management|Storage|Biomass|Pe2Se|+|Liquids w/ couple prod (Mt CO2/yr)"],
