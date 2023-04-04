@@ -347,7 +347,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
 
 
   # define list of variables that will be exported:
-  varlist <- list(cons, gdp, gdp_ppp, gdp_net, gdp_ppp_net, invE, invM, pop, cap, inv, ces)#, damageFactor, welf) # ,curracc)
+  varlist <- list(cons, gdp, gdp_ppp, gdp_net, gdp_ppp_net, invE, invM, pop, cap, inv, ces, welf)#, damageFactor) # ,curracc)
   # use the same temporal resolution for all variables
   # calculate minimal temporal resolution
   tintersect <- Reduce(intersect, lapply(varlist, getYears))
