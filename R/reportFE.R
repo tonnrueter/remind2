@@ -50,11 +50,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   sector2emiMkt <- readGDX(gdx, "sector2emiMkt")
 
   demFemapping <- entyFe2Sector %>%
-    full_join(sector2emiMkt, by = 'emi_sectors', multiple = "all") %>%
+    full_join(sector2emiMkt, by = 'emi_sectors', relationship = "many-to-many") %>%
     # rename such that all_enty1 always signifies the FE carrier like in
     # vm_demFeSector
     rename(all_enty1 = all_enty) %>%
-    left_join(se2fe, by = 'all_enty1', multiple = "all") %>%
+    left_join(se2fe, by = 'all_enty1', relationship = "many-to-many") %>%
     select(-all_te)
 
   #sety <- readGDX(gdx,c("entySe","sety"),format="first_found")
@@ -1390,7 +1390,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                         revalue.levels(encar = map.vars.nechem) %>%
                         left_join(df.fe_nechem,
                                   by = c("region", "period", "encar"),
-                                  multiple = "all") %>%
+                                  relationship = "many-to-many") %>%
                         mutate( Value_NonEn = ifelse(value >= value_subsectors, value_subsectors, value)) %>%
                         filter( SSP == "SSP2") %>%
                         # map to non-energy use variable names
