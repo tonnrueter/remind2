@@ -45,7 +45,7 @@ Imports:
     abind,
     assertr,
     data.table,
-    dplyr,
+    dplyr (>= 1.1.1),
     gdx (>= 1.29),
     gdxdt,
     gdxrrw,
