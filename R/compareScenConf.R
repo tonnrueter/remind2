@@ -42,7 +42,7 @@ compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
     fileList <- fileList[identifier]
   }
   if (! is.null(remindPath) && ! file.exists(file.path(remindPath, "main.gms"))) {
-    if(dir.exists("..") && file.exists("../main.gms")) {
+    if (dir.exists("..") && file.exists("../main.gms")) {
       remindPath <- normalizePath("..")
     } else {
       remindPath <- NULL
@@ -61,10 +61,18 @@ compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
     try(cfg$gms[["inputRevision"]] <- cfg$inputRevision)
   }
 
-  settings1 <- read.csv2(fileList[[1]], stringsAsFactors = FALSE, row.names = row.names,
-                         comment.char = "#", na.strings = "", dec = ".")
-  settings2 <- read.csv2(fileList[[2]], stringsAsFactors = FALSE, row.names = row.names,
-                         comment.char = "#", na.strings = "", dec = ".")
+  readCheckScenarioConfig <- function(csvFile, ...) {
+    return(read.csv2(csvFile, stringsAsFactors = FALSE, row.names = row.names,
+                            comment.char = "#", na.strings = "", dec = "."))
+  }
+  if (expanddata) {
+    message("Loading path_gdx_list and readCheckScenarioConfig")
+    source(file.path(remindPath, "scripts", "start", "path_gdx_list.R"), local = TRUE)
+    # overwrite readCheckScenarioConfig
+    source(file.path(remindPath, "scripts", "start", "readCheckScenarioConfig.R"), local = TRUE)
+  }
+  settings1 <- readCheckScenarioConfig(fileList[[1]], remindPath = remindPath, fillWithDefault = TRUE)
+  settings2 <- readCheckScenarioConfig(fileList[[2]], remindPath = remindPath, fillWithDefault = TRUE)
 
   # for mapping files
   if (is.null(row.names)) {
@@ -112,7 +120,7 @@ compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
     }
   }
   if (printit) {
-    message(paste0(m, collapse = "\n"), "\n");
+    message(paste0(m, collapse = "\n"), "\n")
     if (length(allwarnings) > 0) warning(paste0(allwarnings, collapse = "\n"), "\n")
     return(list(allwarnings = allwarnings))
   } else {
