@@ -145,7 +145,6 @@ items <- c(
   "Sales|Transport|LDV|Hybrid Electric",
   "Sales|Transport|LDV|NG")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
-showMultiLinePlots(data, items)
 ```
 
 ```{r LDV Vehicles Sales}
