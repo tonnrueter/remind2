@@ -68,7 +68,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   message("running reportTechnology...")
   output <- mbind(output,reportTechnology(gdx,output,regionSubsetList,t)[,t,])    # needs output from reportSE
   message("running reportPrices...")
-  output <- mbind(output,reportPrices(gdx,output,regionSubsetList,t)[,t,]) # needs output from reportSE, reportFE, reportEmi, reportExtraction, reportMacroEconomy
+  output <- mbind(output,reportPrices(gdx,output,regionSubsetList,t,gdx_ref = gdx_ref)[,t,]) # needs output from reportSE, reportFE, reportEmi, reportExtraction, reportMacroEconomy
   message("running reportCosts...")
   output <- mbind(output,reportCosts(gdx,output,regionSubsetList,t)[,t,])  # needs output from reportEnergyInvestment, reportPrices, reportEnergyInvestments
   message("running reportTax...")

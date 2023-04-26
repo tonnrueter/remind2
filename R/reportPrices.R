@@ -11,6 +11,8 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency for Moving Avg prices before cm_startyear
 #'
 #' @return MAgPIE object - contains the price variables
 #' @author Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues, Falk Benke
@@ -30,7 +32,7 @@
 
 #' @export
 reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
-                         t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
+                         t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150),gdx_ref=NULL) {
 
   ## bind to output object
   if(is.null(output)){
@@ -100,6 +102,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found", react = "silent")[, t,]
 
   cm_emiscen     <- readGDX(gdx,name='cm_emiscen',format="first_found")
+  cm_startyear   <- readGDX(gdx,name='cm_startyear',format='simplest')
 
   q37_limit_secondary_steel_share.m <- readGDX(
     gdx, name = 'q37_limit_secondary_steel_share', types = 'equation',
@@ -672,13 +675,20 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   ## apply lowpass filter to receive moving average prices ----
   out.lowpass <- lowpass(out)
   ## add "Moving Avg" to variable name
-  getNames(out.lowpass) <- paste0(substr(getNames(out.lowpass),
-                                         1,nchar(getNames(out.lowpass))-13),
-                                  "|Moving Avg",
-                                  substr(getNames(out.lowpass),
-                                         nchar(getNames(out.lowpass))-12,
-                                         nchar(getNames(out.lowpass))))
+  getNames(out.lowpass) <- paste0(magclass::unitsplit(getNames(out))$variable,
+                                  "|Moving Avg (",
+                                  magclass::unitsplit(getNames(out))$unit, ")")
 
+  ## reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+  if (! is.null(gdx_ref)) {
+    priceRef <- try(reportPrices(gdx_ref, output=NULL, regionSubsetList=regionSubsetList, t=t))
+    fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < as.integer(cm_startyear)]
+    if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
+      out.lowpass[, fixedyears, ] <- priceRef[getRegions(out.lowpass), fixedyears, getNames(out.lowpass)]
+    }
+  }
+
+  # bind prices and moving averages together
   out <- mbind(out,out.lowpass)
 
   ## add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code)
