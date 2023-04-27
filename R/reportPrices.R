@@ -43,7 +43,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     message("- reportFE ", appendLF = FALSE)
     output <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
     message("- reportEmi ", appendLF = FALSE)
-    output <- mbind(output, reportEmi(gdx, regionSubsetList = regionSubsetList, t = t))
+    output <- mbind(output, reportEmi(gdx, output = output, regionSubsetList = regionSubsetList, t = t))
     message("- reportExtraction ", appendLF = FALSE)
     output <- mbind(output, reportExtraction(gdx,regionSubsetList = regionSubsetList, t = t))
     message("- reportMacroEconomy")
@@ -672,24 +672,27 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Industry|Heat")
   )
 
+  out.marginal <- out
+  getNames(out.marginal) <- paste0(unitsplit(getNames(out.marginal))$variable, "|Marginal (",
+                                   unitsplit(getNames(out.marginal))$unit, ")")
+
   ## apply lowpass filter to receive moving average prices ----
   out.lowpass <- lowpass(out)
-  ## add "Moving Avg" to variable name
-  getNames(out.lowpass) <- paste0(magclass::unitsplit(getNames(out))$variable,
-                                  "|Moving Avg (",
-                                  magclass::unitsplit(getNames(out))$unit, ")")
 
   ## reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+  out.reporting <- out.lowpass
   if (! is.null(gdx_ref)) {
     priceRef <- try(reportPrices(gdx_ref, output=NULL, regionSubsetList=regionSubsetList, t=t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < as.integer(cm_startyear)]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
-      out.lowpass[, fixedyears, ] <- priceRef[getRegions(out.lowpass), fixedyears, getNames(out.lowpass)]
+      out.reporting[, fixedyears, ] <- priceRef[getRegions(out), fixedyears, getNames(out)]
     }
   }
 
-  # bind prices and moving averages together
-  out <- mbind(out,out.lowpass)
+  # rename variables and bind everything together
+  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
+                                  unitsplit(getNames(out.lowpass))$unit, ")")
+  out <- mbind(out.marginal, out.lowpass, out.reporting)
 
   ## add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code)
   out2 <- new.magpie(getRegions(out), getYears(vm_demFeSector), getNames(out), fill = NA)
@@ -932,13 +935,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
 
 
-  ## moving averages
-  avgs <- grep("Moving Avg", getNames(out), value=TRUE)
+  ## moving averages and marginals
+  avgs <- getNames(out.lowpass)
+  margs <- getNames(out.marginal)
   ## exclude detailed FE prices from global aggregation
   avgs <- setdiff(avgs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", avgs, value = TRUE))
-  int2ext <- c(int2ext, stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs))
+  margs <- setdiff(margs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", margs, value = TRUE))
+  int2ext <- c(int2ext,
+               stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs),
+               stats::setNames(int2ext[gsub("\\|Marginal", "", margs)], margs)
+              )
 
-  ## filtering out vars with missing moving average weights
+  ## filtering out vars with missing moving average / marginal weights
   int2ext <- int2ext[!is.na(int2ext)]
 
   # # ---- internal price variables used for model diagnostics -----
