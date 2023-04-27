@@ -1,7 +1,8 @@
 #' take two REMIND scenario-config*.csv files and print the difference,
 #' comparing it to a default.cfg
 #'
-#' @param fileList vector containing two csv file paths as c(oldfile, newfile). If empty, user can select
+#' @param fileList vector containing one csv file paths or two paths as c(oldfile, newfile)
+#' If one, searches same filename in defaultPath. If NULL, user can select
 #' @param remindPath path to REMIND directory containing main.gms
 #' @param row.names column in csv used for row.names. Use NULL for mapping files
 #' @param renamedCols vector with old and new column names such as c("old1" = "new1", "old2" = "new2"))
@@ -22,10 +23,15 @@
 #' @importFrom utils read.csv2
 #' @importFrom gms getLine
 #' @export
-compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
-                            renamedCols = NULL, renamedRows = NULL, printit = TRUE, expanddata = TRUE) {
+compareScenConf <- function(fileList = NULL, remindPath = "/p/projects/rd3mod/github/repos/remindmodel/remind/develop",
+                            row.names = 1, renamedCols = NULL, renamedRows = NULL, printit = TRUE, expanddata = TRUE) {
   m <- c()
   folder <- getwd()
+  # if one file supplied, compare to the same file in remindPath
+  if (length(fileList) == 1 && fileList != "") {
+    partafterconfig <- gsub(file.path("config", ""), "", file.path(basename(dirname(fileList)), basename(fileList)))
+    fileList <- c(file.path(remindPath, "config", partafterconfig), fileList)
+  }
   if (length(fileList) != 2) {
     cat("Specify folder with .csv files. The script also searches in subdirectories.\n")
     cat(paste0("Press enter to use current: ", getwd(), ".\n"))
@@ -49,11 +55,9 @@ compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
     }
   }
   m <- c(m, "", paste0("File comparison: ", fileList[[1]], " -> ", fileList[[2]]))
+  cfg <- list() # to avoid 'no visible binding' error
   if (! is.null(remindPath)) {
-    cfg <- list() # to avoid 'no visible binding' error
-    if (! is.null(remindPath)) {
-      cfg <- gms::readDefaultConfig(remindPath)
-    }
+    cfg <- gms::readDefaultConfig(remindPath)
     # enable script to match default data not in gms
     try(cfg$gms[["output"]] <- paste0(cfg$output, collapse = ","))
     try(cfg$gms[["model"]] <- cfg$model)
@@ -90,7 +94,6 @@ compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
   switchnames <- sort(unique(c(names(settings1), names(settings2))))
   deletedCols <- setdiff(switchnames, names(settings2))
   addedCols <- setdiff(switchnames, names(settings1))
-  jointCols <- intersect(names(settings1), names(settings2))
   m <- c(m, paste0("Columns deleted: ", ifelse(length(deletedCols) > 0, paste(deletedCols, collapse = ", "), "-")))
   m <- c(m, paste0("Columns added:   ", ifelse(length(addedCols) > 0, paste(addedCols, collapse = ", "), "-")))
   m <- c(m, paste0("Renamed columns: ", ifelse(length(renamedCols) > 0,
@@ -98,7 +101,10 @@ compareScenConf <- function(fileList = "", remindPath = ".", row.names = 1,
   m <- c(m, paste0("Renamed rows:    ", ifelse(length(renamedRows) > 0,
                    paste(names(renamedRows), renamedRows, sep = " -> ", collapse = ", "), "-")))
 
-  settings1[, addedCols] <- ""
+  for (c in addedCols) {
+    settings1[, c] <- if (is.null(cfg$gms[[c]])) NA else cfg$gms[[c]]
+  }
+  jointCols <- intersect(names(settings1), names(settings2))
   m <- c(m, "", "Changes in the scenarios:")
   for (s in scenarios) {
     if (s %in% intersect(c(rownames(settings1), renamedRows), rownames(settings2))) {
