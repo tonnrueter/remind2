@@ -6,8 +6,8 @@
 comparing it to a default.cfg}
 \usage{
 compareScenConf(
-  fileList = "",
-  remindPath = ".",
+  fileList = NULL,
+  remindPath = "/p/projects/rd3mod/github/repos/remindmodel/remind/develop",
   row.names = 1,
   renamedCols = NULL,
   renamedRows = NULL,
@@ -16,7 +16,8 @@ compareScenConf(
 )
 }
 \arguments{
-\item{fileList}{vector containing two csv file paths as c(oldfile, newfile). If empty, user can select}
+\item{fileList}{vector containing one csv file paths or two paths as c(oldfile, newfile)
+If one, searches same filename in defaultPath. If NULL, user can select}
 
 \item{remindPath}{path to REMIND directory containing main.gms}
 
