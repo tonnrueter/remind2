@@ -663,16 +663,22 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   }
 
-
-
-
-
   # emissions from international transport bunkers
+  bunkersEmi <- dimSums(mselect(EmiFeCarrier, emi_sectors = "trans", all_emiMkt = "other"), dim = 3) * GtC_2_MtCO2
   out <- mbind(out,
-               setNames(dimSums(mselect(EmiFeCarrier, emi_sectors = "trans", all_emiMkt = "other"), dim = 3) * GtC_2_MtCO2,
-                        "Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"))
+               setNames(bunkersEmi, "Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"))
 
-
+  # intra-region bunker emissions
+  intraRegionFactor <- new.magpie(getRegions(bunkersEmi), getYears(bunkersEmi), fill = 0) #  is equal to 0 for non EU countries
+  if (is.null(regionSubsetList$EUR)) { #  is equal to 35% of total bunkers in average from 2000-2020 for EU27 + UKI countries
+    intraRegionFactor["EUR",,] <- 0.35
+  } else {
+    intraRegionFactor[regionSubsetList$EUR,,] <- 0.35
+  }
+  out <- mbind(out,
+    setNames(bunkersEmi * intraRegionFactor, "Emi|CO2|Energy|Demand|Transport|International Bunkers|+|Intra-region (Mt CO2/yr)"),
+    setNames(bunkersEmi * (1-intraRegionFactor), "Emi|CO2|Energy|Demand|Transport|International Bunkers|+|Extra-region (Mt CO2/yr)")
+  )
 
   # TODO: detailed transport, industry and buildings emissions could be appended here
   # following e.g. "Emi|CO2|Energy|Demand|Transport|Passenger|+|Liquids" etc.
@@ -2199,8 +2205,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   }
 
-
-
   # if non-energy use variables exist, also do bunker correction for variables w/o non-energy use
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
       "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) &&
@@ -2246,6 +2250,19 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   out[regs.wo.glob, , emi.vars.wBunkers] <- out[regs.wo.glob, , emi.vars.wBunkers] - out[regs.wo.glob, , "Emi|CO2|Energy|Demand|Transport|International Bunkers (Mt CO2/yr)"]
 
   out <- mbind(out, out.wBunkers)
+
+  # adding intra-regional bunker variables
+  names.wIntraRegionBunkers <- emi.vars.wBunkers
+  names.wIntraRegionBunkers <- gsub("Emi\\|CO2", "Emi|CO2|w/ Intra-region Bunkers", names.wIntraRegionBunkers)
+  names.wIntraRegionBunkers <- gsub("Emi\\|GHG", "Emi|GHG|w/ Intra-region Bunkers", names.wIntraRegionBunkers)
+
+  # emissions variables with bunkers
+  out.wIntraRegionBunkers <- setNames(out[, , emi.vars.wBunkers], names.wIntraRegionBunkers)
+  # remove all pluses from variables with intra reg bunkers
+  getNames(out.wIntraRegionBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.wIntraRegionBunkers))
+  getNames(out.wIntraRegionBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.wIntraRegionBunkers))
+
+  out <- mbind(out, out.wIntraRegionBunkers)
 
   # Cumulative Emissions ----
 
