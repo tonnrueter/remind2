@@ -677,7 +677,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
   out <- mbind(out,
     setNames(bunkersEmi * intraRegionFactor, "Emi|CO2|Energy|Demand|Transport|International Bunkers|+|Intra-region (Mt CO2/yr)"),
-    setNames(bunkersEmi * (1-intraRegionFactor), "Emi|CO2|Energy|Demand|Transport|International Bunkers|+|International (Mt CO2/yr)")
+    setNames(bunkersEmi * (1-intraRegionFactor), "Emi|CO2|Energy|Demand|Transport|International Bunkers|+|Extra-region (Mt CO2/yr)")
   )
 
   # TODO: detailed transport, industry and buildings emissions could be appended here
