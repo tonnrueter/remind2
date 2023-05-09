@@ -350,6 +350,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
         feh2s = "Hydrogen",
         feh2t = "Hydrogen",
         fegas = "Gases",
+        fegat = "Gases",
         fehes = "Heat"
       ),
       fe_sector = c(
@@ -379,8 +380,12 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     )
 
     ## add marginal price variables to the reporting
-    addVar <- function(input,var,name,fe,se,sector,emiMkt){ # function to add only variables if they were not saved already
-      if(name %in% getItems(input,3)){
+    addVar <- function(input,var,namevector,fe,se,sector,emiMkt) { # function to add only variables if they were not saved already
+      name <- paste0("Price|Final Energy|", paste(c(namevector), collapse = "|"), " (US$2005/GJ)")
+      name <- gsub("| (", " (", name, fixed = TRUE)
+      name <- gsub("||", "|", name, fixed = TRUE)
+      if (any(is.na(c(namevector)))) warning("addVar called with a NA value: ", name)
+      if(name %in% getItems(input, 3)){
         return(NULL)
       } else {
         return(setNames(var[, , paste(c(se,fe,sector,emiMkt),collapse = ".")] , name))
@@ -396,21 +401,21 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_SE_Sector_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$emiMkt[curr_emiMKt], "|", varName$fe[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                          namevector = c(varName$sector[curr_sector], varName$emiMkt[curr_emiMKt], varName$fe[curr_fe], varName$se[curr_se]),
                           fe = curr_fe, se = curr_se, sector = curr_sector, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_Sector_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$emiMkt[curr_emiMKt], "|", varName$fe[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$sector[curr_sector], varName$emiMkt[curr_emiMKt], varName$fe[curr_fe]),
                           fe = curr_fe, se = NULL, sector = curr_sector, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                     addVar(input = out,
                            var = pm_FEPrice_by_SE_Sector,
-                           name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$fe[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                           namevector = c(varName$sector[curr_sector], varName$fe[curr_fe], varName$se[curr_se]),
                            fe = curr_fe, se = curr_se, sector = curr_sector, emiMkt = NULL
                    )
       )
@@ -418,35 +423,35 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_SE_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$emiMkt[curr_emiMKt], "|", varName$fe_sector[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                          namevector = c(varName$emiMkt[curr_emiMKt], varName$fe_sector[curr_fe], varName$se[curr_se]),
                           fe = curr_fe, se = curr_se, sector = NULL, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_SE,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$fe_sector[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                          namevector = c(varName$fe_sector[curr_fe], varName$se[curr_se]),
                           fe = curr_fe, se = curr_se, sector = NULL, emiMkt = NULL
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_Sector,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$fe[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$sector[curr_sector], varName$fe[curr_fe]),
                           fe = curr_fe, se = NULL, sector = curr_sector, emiMkt = NULL
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$emiMkt[curr_emiMKt], "|", varName$fe_sector[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$emiMkt[curr_emiMKt], varName$fe_sector[curr_fe]),
                           fe = curr_fe, se = NULL, sector = NULL, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_FE,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$fe_sector[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$fe_sector[curr_fe]),
                           fe = curr_fe, se = NULL, sector = NULL, emiMkt = NULL
                    )
       )
@@ -682,7 +687,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   ## reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
   out.reporting <- out.lowpass
   if (! is.null(gdx_ref)) {
-    priceRef <- try(reportPrices(gdx_ref, output=NULL, regionSubsetList=regionSubsetList, t=t))
+    priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < as.integer(cm_startyear)]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
       out.reporting[, fixedyears, ] <- priceRef[getRegions(out), fixedyears, getNames(out)]
