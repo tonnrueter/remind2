@@ -379,20 +379,20 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       )
     )
 
-    ## add marginal price variables to the reporting
+    ## add rawdata price variables, calculated from marginals, to the reporting
     addVar <- function(input,var,namevector,fe,se,sector,emiMkt) { # function to add only variables if they were not saved already
-      name <- paste0("Price|Final Energy|", paste(c(namevector), collapse = "|"), " (US$2005/GJ)")
-      name <- gsub("| (", " (", name, fixed = TRUE)
+      name <- paste0("Price|Final Energy|", paste(namevector, collapse = "|"), " (US$2005/GJ)")
       name <- gsub("||", "|", name, fixed = TRUE)
-      if (any(is.na(c(namevector)))) warning("addVar called with a NA value: ", name)
-      if(name %in% getItems(input, 3)){
+      name <- gsub("| (", " (", name, fixed = TRUE)
+      if (any(is.na(namevector))) warning("In reportPrices, addVar called with a NA value: ", name)
+      if (name %in% getItems(input, 3)){
         return(NULL)
       } else {
         return(setNames(var[, , paste(c(se,fe,sector,emiMkt),collapse = ".")] , name))
       }
     }
 
-    for(i in 1:nrow(se.fe.sector.emiMkt)) {
+    for (i in 1:nrow(se.fe.sector.emiMkt)) {
       curr_fe = se.fe.sector.emiMkt[i,]$fe
       curr_se = se.fe.sector.emiMkt[i,]$se
       curr_sector = se.fe.sector.emiMkt[i,]$sector
@@ -677,9 +677,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Industry|Heat")
   )
 
-  out.marginal <- out
-  getNames(out.marginal) <- paste0(unitsplit(getNames(out.marginal))$variable, "|Marginal (",
-                                   unitsplit(getNames(out.marginal))$unit, ")")
+  out.rawdata <- out
+  getNames(out.rawdata) <- paste0(unitsplit(getNames(out.rawdata))$variable, "|Rawdata (",
+                                  unitsplit(getNames(out.rawdata))$unit, ")")
 
   ## apply lowpass filter to receive moving average prices ----
   out.lowpass <- lowpass(out)
@@ -697,7 +697,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   # rename variables and bind everything together
   getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
                                   unitsplit(getNames(out.lowpass))$unit, ")")
-  out <- mbind(out.marginal, out.lowpass, out.reporting)
+  out <- mbind(out.rawdata, out.lowpass, out.reporting)
 
   ## add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code)
   out2 <- new.magpie(getRegions(out), getYears(vm_demFeSector), getNames(out), fill = NA)
@@ -910,10 +910,11 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                )
 
 
-  ## weights definition for FE marginal prices region aggregation
+  ## weights definition for FE prices region aggregation
   if(length(pm_FEPrice_by_FE) > 0) {
-    margPriceVars <- getItems(out,3)[grep("Price\\|Marginal\\|Final Energy\\|", getItems(out,3))]
-    vars <- gsub("US\\$2005/GJ","EJ/yr",gsub("Price\\|Marginal\\|Final Energy\\|","FE|",margPriceVars))
+    margPriceVars <- getItems(out,3)[grep("Price|Final Energy|", getItems(out,3), fixed = TRUE)]
+    margPriceVars <- setdiff(margPriceVars, names(int2ext))
+    vars <- gsub("US\\$2005/GJ","EJ/yr",gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
     names(vars) <- margPriceVars
     vars <- gsub("Efuel","Hydrogen",vars) ###warning FE variable should be renamed and this line should be removed in the future
     # for(var in vars){ # display price variables with no matching FE weight
@@ -940,18 +941,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
 
 
-  ## moving averages and marginals
+  ## moving averages and rawdata
   avgs <- getNames(out.lowpass)
-  margs <- getNames(out.marginal)
+  rawdata <- getNames(out.rawdata)
   ## exclude detailed FE prices from global aggregation
   avgs <- setdiff(avgs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", avgs, value = TRUE))
-  margs <- setdiff(margs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", margs, value = TRUE))
+  rawdata <- setdiff(rawdata, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", rawdata, value = TRUE))
   int2ext <- c(int2ext,
                stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs),
-               stats::setNames(int2ext[gsub("\\|Marginal", "", margs)], margs)
+               stats::setNames(int2ext[gsub("\\|Rawdata", "", rawdata)], rawdata)
               )
 
-  ## filtering out vars with missing moving average / marginal weights
+  ## filtering out vars with missing moving average / rawdata weights
   int2ext <- int2ext[!is.na(int2ext)]
 
   # # ---- internal price variables used for model diagnostics -----
