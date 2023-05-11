@@ -685,7 +685,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   out.lowpass <- lowpass(out)
 
   ## reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  out.reporting <- out.lowpass
+  out.reporting <- lowpass(pmax(out, 0)) # avoid negative prices
   if (! is.null(gdx_ref)) {
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < as.integer(cm_startyear)]

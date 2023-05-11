@@ -37,11 +37,11 @@ checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
 # please add variable tests below
 checkIntegrity <- function(out, gdxPath = NULL) {
   dt <- rmndt::magpie2dt(out)
-  barspace <- grep("[\\| ]{2]", unique(dt[["variable"]]), fixed = TRUE, value = TRUE)
+  barspace <- grep("[\\| ]{2}", unique(dt[["variable"]]), value = TRUE)
   if (length(barspace) > 0) {
     warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
-  ]
-  NAname <- grep("|NA|", unique(dt[["variable"]]), fixed = TRUE, value = TRUE)
+  }
+  NAname <- grep("[\\| ]NA[\\| ]|^NA", unique(dt[["variable"]]), value = TRUE)
   if (length(NAname) > 0) {
     warning("These variable names contain NA: ", paste(fishyVarNames, collapse = ", "))
   }
