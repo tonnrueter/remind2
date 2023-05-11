@@ -38,7 +38,7 @@ checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
 checkIntegrity <- function(out, gdxPath = NULL) {
   dt <- rmndt::magpie2dt(out)
   barspace <- grep("[\\| ]{2]", unique(dt[["variable"]]), fixed = TRUE, value = TRUE)
-  if (length(barspace)) > 0) {
+  if (length(barspace) > 0) {
     warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
   ]
   NAname <- grep("|NA|", unique(dt[["variable"]]), fixed = TRUE, value = TRUE)
