@@ -670,9 +670,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # intra-region bunker emissions
   intraRegionFactor <- new.magpie(getRegions(bunkersEmi), getYears(bunkersEmi), fill = 0) #  is equal to 0 for non EU countries
-  if (is.null(regionSubsetList$EUR)) { #  is equal to 35% of total bunkers in average from 2000-2020 for EU27 + UKI countries
+  #  is equal to 35% of total bunkers in average from 2000-2020 for EU27 + UKI countries
+  if("EUR" %in% getRegions(bunkersEmi)){ 
     intraRegionFactor["EUR",,] <- 0.35
-  } else {
+  } else if (!is.null(regionSubsetList$EUR)) {
     intraRegionFactor[regionSubsetList$EUR,,] <- 0.35
   }
   out <- mbind(out,
