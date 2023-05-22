@@ -8,7 +8,5 @@ AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
 - checking installed package size
-- Namespace in Imports field not imported from: ‘piamInterfaces’
-- Namespace in Imports field not imported from: piamInterfaces
 AutocreateReadme: yes
 allowLinterWarnings: yes
