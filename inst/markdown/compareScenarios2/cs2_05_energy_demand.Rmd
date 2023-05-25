@@ -143,11 +143,10 @@ showLinePlots(data, "FE|Industry|Electricity|Share")
 ```{r FE mix Steel}
 tot <- "FE|Industry|Steel"
 items <- c(
-  "FE|Industry|Steel|Heat",
-  "FE|Industry|Steel|Hydrogen",
   "FE|Industry|Steel|Solids",
   "FE|Industry|Steel|Liquids",
   "FE|Industry|Steel|Gases",
+  "FE|Industry|Steel|Hydrogen",
   "FE|Industry|Steel|Primary|Electricity",
   "FE|Industry|Steel|Secondary|Electricity")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
@@ -157,11 +156,10 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```{r FE mix Cement}
 tot <- "FE|Industry|Cement"
 items <- c(
-  "FE|Industry|Cement|Heat",
-  "FE|Industry|Cement|Hydrogen",
   "FE|Industry|Cement|Solids",
   "FE|Industry|Cement|Liquids",
   "FE|Industry|Cement|Gases",
+  "FE|Industry|Cement|Hydrogen",
   "FE|Industry|Cement|Electricity")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
@@ -183,11 +181,10 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```{r FE mix Chemicals}
 tot <- "FE|Industry|Chemicals"
 items <- c(
-  "FE|Industry|Chemicals|Heat",
-  "FE|Industry|Chemicals|Hydrogen",
   "FE|Industry|Chemicals|Solids",
   "FE|Industry|Chemicals|Liquids",
   "FE|Industry|Chemicals|Gases",
+  "FE|Industry|Chemicals|Hydrogen",
   "FE|Industry|Chemicals|Electricity|Mechanical work and low-temperature heat",
   "FE|Industry|Chemicals|Electricity|High-temperature heat")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
@@ -197,11 +194,11 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```{r FE mix Other Industry}
 tot <- "FE|Industry|Other Industry"
 items <- c(
-  "FE|Industry|Other Industry|Heat",
-  "FE|Industry|Other Industry|Hydrogen",
   "FE|Industry|Other Industry|Solids",
   "FE|Industry|Other Industry|Liquids",
   "FE|Industry|Other Industry|Gases",
+  "FE|Industry|Other Industry|Hydrogen",
+  "FE|Industry|Other Industry|Heat",
   "FE|Industry|Other Industry|Electricity|Mechanical work and low-temperature heat",
   "FE|Industry|Other Industry|Electricity|High-temperature heat")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
@@ -219,19 +216,11 @@ showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 ```
 
 ### Specific Energy Consumption
+```{r}
+# estimated values for thermodynamic limits are hard coded here. Could be
+# improved
 
-```{r Specific Energy Consumption}
-items <- c(
-  "FE|Industry|Specific Energy Consumption|Chemicals",
-  "FE|Industry|Specific Energy Consumption|Other Industry")
-walk(items, showLinePlots, data = data)
-```
-
-### Specific Energy Consumption with thermodynamic limits
-```{r Specific Energy Consumption with thermodynamic limits}
-# estimated values for thermodynamic limits are hardcoded here. Could be improved
-
-# Cement and other non-metallic minerals
+# Cement and other non-metallic minerals ----
 var1 <- "FE|Industry|Specific Energy Consumption|Cement"
 data %>%
   filter(variable == var1) %>%
@@ -245,7 +234,10 @@ data %>%
       value = 1.8)) %>% # GJ/t. # nolint
   showLinePlots(var1)
 
-# Primary steel
+# Chemicals ----
+showLinePlots(data, 'FE|Industry|Specific Energy Consumption|Chemicals')
+
+# Primary steel ----
 var2 <- "FE|Industry|Specific Energy Consumption|Primary Steel"
 data %>%
   filter(variable == var2) %>%
@@ -259,7 +251,7 @@ data %>%
       value = 8.2)) %>% # GJ/t. # nolint
   showLinePlots(var2)
 
-# Secondary steel
+# Secondary steel ----
 var3 <- "FE|Industry|Specific Energy Consumption|Secondary Steel"
 data %>%
   filter(variable == var3) %>%
@@ -272,8 +264,10 @@ data %>%
       variable = var3,
       value = 1.3)) %>% # GJ/t. # nolint
   showLinePlots(var3)
-```
 
+# Other Industry ----
+showLinePlots(data, 'FE|Industry|Specific Energy Consumption|Other Industry')
+```
 
 ## Transport Final Energy 
 
