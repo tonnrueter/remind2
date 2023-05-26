@@ -102,7 +102,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found", react = "silent")[, t,]
 
   cm_emiscen     <- readGDX(gdx,name='cm_emiscen',format="first_found")
-  cm_startyear   <- readGDX(gdx,name='cm_startyear',format='simplest')
+  cm_startyear   <- as.integer(readGDX(gdx,name='cm_startyear',format='simplest'))
 
   q37_limit_secondary_steel_share.m <- readGDX(
     gdx, name = 'q37_limit_secondary_steel_share', types = 'equation',
@@ -677,15 +677,26 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Industry|Heat")
   )
 
+  ## save Rawdata
   out.rawdata <- out
   getNames(out.rawdata) <- paste0(unitsplit(getNames(out.rawdata))$variable, "|Rawdata (",
                                   unitsplit(getNames(out.rawdata))$unit, ")")
 
-  ## apply lowpass filter to receive moving average prices ----
+  ## apply lowpass filter to receive moving average prices
   out.lowpass <- lowpass(out)
+  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
+                                  unitsplit(getNames(out.lowpass))$unit, ")")
 
-  ## reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  out.reporting <- lowpass(pmax(out, 0)) # avoid negative prices
+  ## calculate reporting prices
+  out.reporting <- pmax(out, 0) # avoid negative prices
+
+  # for cm_startyear and non-SSP2, replace price by average of period before and after
+  if (! grepl("gdp_SSP2", readGDX(gdx, "cm_GDPscen", format = "simplest"))
+      && cm_startyear > min(getYears(out, as.integer))) {
+    out.reporting[, cm_startyear, ] <- 0.5 * (out[, cm_startyear - 5, ] + out[, cm_startyear + 5, ])
+  }
+  out.reporting <- lowpass(out.reporting)
+  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
   if (! is.null(gdx_ref)) {
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < as.integer(cm_startyear)]
@@ -694,9 +705,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     }
   }
 
-  # rename variables and bind everything together
-  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
-                                  unitsplit(getNames(out.lowpass))$unit, ")")
+  ## bind all prices together
   out <- mbind(out.rawdata, out.lowpass, out.reporting)
 
   ## add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code)
