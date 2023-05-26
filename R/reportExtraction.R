@@ -252,18 +252,10 @@ grades[is.na(grades)] <- 0
                                              filter(.data$variable == x),
                                            nameVar = x,
                                            discount = 0.0)) %>%
-      mutate(variable = paste0(gsub(" \\(.*\\)", "", x),
-                               "|Cumulated ",
-                               gsub("/yr", "",  # remove /yr
-                                    substr(x,
-                                           regexec("(\\(.*\\))", x)[[1]][1],
-                                           regexec("(\\(.*\\))", x)[[1]][1] +
-                                             attributes(regexec("(\\(.*\\))", x)[[1]])$match.length[1]))))
+      mutate(variable = paste0(x, "|Cumulated (", gsub("/yr", "", unique(filter(tmp6, .data$variable == x)$unit)[[1]], fixed = TRUE), ")"))
   })
-
   tmp6 <- do.call("rbind", mylist)
   tmp6 <- as.magpie(quitte::as.quitte(tmp6))
-  magclass::getNames(tmp6) <- paste0(magclass::getNames(tmp6), " (NA)")
 
   # PE|Production based on extraction
   tmp7 <- tmp1

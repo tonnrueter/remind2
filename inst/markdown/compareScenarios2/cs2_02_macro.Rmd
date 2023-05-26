@@ -132,8 +132,15 @@ dPrice <-
     filter(str_starts(variable, "Price")) %>%
     filter(period >= 2010) %>% # 2005 values are invalid
     droplevels()
-```
 
+# instead of post-processing variables, use Rawdata if available
+rawdata <- grep("\\|Rawdata$", levels(dPrice$variable), value = TRUE)
+dPrice <-
+  dPrice %>%
+    filter(! variable %in% gsub("\\|Rawdata$", "", rawdata)) %>%
+    mutate(variable = gsub("\\|Rawdata$", "", variable)) %>%
+    droplevels()
+```
 
 ### PE Prices
 
