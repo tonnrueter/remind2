@@ -692,7 +692,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   # for cm_startyear and non-SSP2, replace price by average of period before and after
   if (! grepl("gdp_SSP2", readGDX(gdx, "cm_GDPscen", format = "simplest"))
-      && cm_startyear > min(getYears(out, as.integer))) {
+      && cm_startyear > min(getYears(out, as.integer = TRUE))) {
     out.reporting[, cm_startyear, ] <- 0.5 * (out[, cm_startyear - 5, ] + out[, cm_startyear + 5, ])
   }
   out.reporting <- lowpass(out.reporting)
