@@ -42,6 +42,7 @@ checkIntegrity <- function(out, gdxPath = NULL) {
     warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
   }
   NAvar <- grep("[\\|\\( ]NA[\\|\\) ]|^NA", unique(dt[["variable"]]), value = TRUE)
+  NAvar <- NAvar[! grepl("^Services and Products\\|Transport\\|non-LDV\\|S", NAvar)] # unit NA, but ok, see issue #408
   if (length(NAvar) > 0) {
     warning("These variables and units contain NA: ", paste(NAvar, collapse = ", "))
   }

@@ -9,7 +9,8 @@ convGDX2MIF(
   gdx_ref = NULL,
   file = NULL,
   scenario = "default",
-  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)
+  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+  gdx_refprices = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ returned}
 
 \item{t}{temporal resolution of the reporting, default:
 t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)}
+
+\item{gdx_refprices}{reference-gdx for < cm_startyear, used for fixing the prices to this scenario}
 }
 \description{
 Read in all information from GDX file and create

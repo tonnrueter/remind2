@@ -12,6 +12,7 @@
 #' @param scenario scenario name that is used in the *.mif reporting
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_refprices reference-gdx for < cm_startyear, used for fixing the prices to this scenario
 #' @author Lavinia Baumstark
 #' @examples
 #'
@@ -22,9 +23,10 @@
 #' @importFrom magclass mbind write.report
 
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
-                        t = c(seq(2005, 2060, 5), seq(2070, 2110, 10),
-                              2130, 2150)) {
-   # Define region subsets
+                        t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+                        gdx_refprices = NULL) {
+
+  # Define region subsets
   regionSubsetList <- toolRegionSubsets(gdx)
   # ADD EU-27 region aggregation if possible
   if("EUR" %in% names(regionSubsetList)){
@@ -68,7 +70,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   message("running reportTechnology...")
   output <- mbind(output,reportTechnology(gdx,output,regionSubsetList,t)[,t,])    # needs output from reportSE
   message("running reportPrices...")
-  output <- mbind(output,reportPrices(gdx,output,regionSubsetList,t,gdx_ref = gdx_ref)[,t,]) # needs output from reportSE, reportFE, reportEmi, reportExtraction, reportMacroEconomy
+  output <- mbind(output,reportPrices(gdx,output,regionSubsetList,t,gdx_ref = gdx_refprices)[,t,]) # needs output from reportSE, reportFE, reportEmi, reportExtraction, reportMacroEconomy
   message("running reportCosts...")
   output <- mbind(output,reportCosts(gdx,output,regionSubsetList,t)[,t,])  # needs output from reportEnergyInvestment, reportPrices, reportEnergyInvestments
   message("running reportTax...")
