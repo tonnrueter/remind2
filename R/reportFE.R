@@ -1358,16 +1358,20 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       # some initializations required for building library with dplyr operations below
       encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
 
-
-
       # read in FE industry non-energy use trajectories from industry subsectors run
       df.fe_nechem <- read.csv(system.file("extdata","pm_fe_nechem.cs4r",package = "remind2"),
                                sep = ",", skip = 4, header = F)
-
-      # df.fe_nechem <- read.csv("./inst/extdata/pm_fe_nechem.cs4r",
-      #                          sep = ",", skip = 4, header = F)
-
       colnames(df.fe_nechem) <- c("period", "region","SSP","encar","value_subsectors")
+      
+      # rescaling non-energy use to match 2020 EU27 values for total non-energy use
+      df.fe_nechem <- df.fe_nechem %>%
+        mutate(value_subsectors = ifelse(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"), 
+          value_subsectors *
+           3.835 / # average between 2018-2021 = 3.835 EJ (https://ec.europa.eu/eurostat/databrowser/view/NRG_BAL_C__custom_6407922/bookmark/table?lang=en&bookmarkId=f7c8aa0e-3cf6-45d6-b85c-f2e76e90b4aa)
+           df.fe_nechem %>% filter(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"), period == 2020, SSP == "SSP2") %>% summarize(value_subsectors = sum(value_subsectors)) %>% pull(value_subsectors), # original 2020 df.fe_nechem total non-energy use
+          value_subsectors)
+          )
+
       vars.nechem <- c("FE|Industry|+|Liquids (EJ/yr)",
                        "FE|Industry|+|Gases (EJ/yr)",
                        "FE|Industry|+|Solids (EJ/yr)")
