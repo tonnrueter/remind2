@@ -20,7 +20,7 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames
-#'                      dimSums getNames<- as.data.frame as.magpie
+#'                      dimSums getNames<- as.data.frame as.magpie getSets
 #' @importFrom dplyr filter %>% mutate select group_by summarise left_join full_join
 #'                   ungroup rename
 #' @importFrom quitte inline.data.frame revalue.levels
@@ -50,11 +50,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   sector2emiMkt <- readGDX(gdx, "sector2emiMkt")
 
   demFemapping <- entyFe2Sector %>%
-    full_join(sector2emiMkt, by = 'emi_sectors') %>%
+    full_join(sector2emiMkt, by = 'emi_sectors', relationship = "many-to-many") %>%
     # rename such that all_enty1 always signifies the FE carrier like in
     # vm_demFeSector
     rename(all_enty1 = all_enty) %>%
-    left_join(se2fe, by = 'all_enty1') %>%
+    left_join(se2fe, by = 'all_enty1', relationship = "many-to-many") %>%
     select(-all_te)
 
   #sety <- readGDX(gdx,c("entySe","sety"),format="first_found")
@@ -554,7 +554,14 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   p36_floorspace <- readGDX(gdx, "p36_floorspace", react = "silent")[, t, ]
   if (!is.null(p36_floorspace)) {
-    out <- mbind(out, setNames(p36_floorspace, "Energy Service|Buildings|Floor Space (bn m2/yr)"))
+    if (dim(p36_floorspace)[3] > 1) {
+      out <- mbind(out,
+                  setNames(p36_floorspace[, , "buildings"],   "ES|Buildings|Floor Space (bn m2)"),
+                  setNames(p36_floorspace[, , "residential"], "ES|Buildings|Residential|Floor Space (bn m2)"),
+                  setNames(p36_floorspace[, , "commercial"],  "ES|Buildings|Commercial|Floor Space (bn m2)"))
+    } else {
+      out <- mbind(out, setNames(p36_floorspace, "ES|Buildings|Floor Space (bn m2)"))
+    }
   }
 
   if (buil_mod == "simple") {
@@ -592,6 +599,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       pm_fedemand <- readGDX(gdx, "pm_fedemand")[, t, ]
       feUeEff_build <- p36_uedemand_build[,, names(carrierBuild)] /
         pm_fedemand[,, names(carrierBuild)]
+      feUeEff_build[is.na(feUeEff_build) | is.infinite(feUeEff_build)] <- 1
       # assume efficiency for all gases also for H2
       feUeEff_build[,, "feh2b"] <- setNames(feUeEff_build[,, "fegab"], "feh2b")
       # apply efficiency to get UE levels
@@ -1399,16 +1407,20 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       # some initializations required for building library with dplyr operations below
       encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
 
-
-
       # read in FE industry non-energy use trajectories from industry subsectors run
       df.fe_nechem <- read.csv(system.file("extdata","pm_fe_nechem.cs4r",package = "remind2"),
                                sep = ",", skip = 4, header = F)
-
-      # df.fe_nechem <- read.csv("./inst/extdata/pm_fe_nechem.cs4r",
-      #                          sep = ",", skip = 4, header = F)
-
       colnames(df.fe_nechem) <- c("period", "region","SSP","encar","value_subsectors")
+      
+      # rescaling non-energy use to match 2020 EU27 values for total non-energy use
+      df.fe_nechem <- df.fe_nechem %>%
+        mutate(value_subsectors = ifelse(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"), 
+          value_subsectors *
+           3.835 / # average between 2018-2021 = 3.835 EJ (https://ec.europa.eu/eurostat/databrowser/view/NRG_BAL_C__custom_6407922/bookmark/table?lang=en&bookmarkId=f7c8aa0e-3cf6-45d6-b85c-f2e76e90b4aa)
+           df.fe_nechem %>% filter(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"), period == 2020, SSP == "SSP2") %>% summarize(value_subsectors = sum(value_subsectors)) %>% pull(value_subsectors), # original 2020 df.fe_nechem total non-energy use
+          value_subsectors)
+          )
+
       vars.nechem <- c("FE|Industry|+|Liquids (EJ/yr)",
                        "FE|Industry|+|Gases (EJ/yr)",
                        "FE|Industry|+|Solids (EJ/yr)")
@@ -1430,7 +1442,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                         # join current FE|Industry|Liquids etc. with non-energy use subsectors data
                         revalue.levels(encar = map.vars.nechem) %>%
                         left_join(df.fe_nechem,
-                                  by = c("region", "period", "encar")) %>%
+                                  by = c("region", "period", "encar"),
+                                  relationship = "many-to-many") %>%
                         mutate( Value_NonEn = ifelse(value >= value_subsectors, value_subsectors, value)) %>%
                         filter( SSP == "SSP2") %>%
                         # map to non-energy use variable names

@@ -283,7 +283,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   cost <- v_costfu * 1000 - setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Coal ($/GJ)"] * Xport[,,"pecoal"]  * pm_conv_TWa_EJ,NULL) -
                             setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Gas ($/GJ)"]       * Xport[,,"pegas"]   * pm_conv_TWa_EJ,NULL) - 
                             setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Oil ($/GJ)"]       * Xport[,,"peoil"]   * pm_conv_TWa_EJ,NULL) -  
-                            setNames(output[regi_on_gdx,,"Price|Primary Energy|Biomass|Modern (US$2005/GJ)"]  * Xport[,,"pebiolc"] * pm_conv_TWa_EJ,NULL) -
+                            setNames(output[regi_on_gdx,,"Price|Primary Energy|Biomass|Modern|Rawdata (US$2005/GJ)"]  * Xport[,,"pebiolc"] * pm_conv_TWa_EJ,NULL) -
                             setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Uranium ($/GJ)"]   * Xport[,,"peur"]    * pm_conv_TWa_EJ * 4.43,NULL) +
                             dimSums(Mport[,,trade_pe] * pebal.m[,,trade_pe] / (budget.m + 1.e-10), dim=3,na.rm=T) * 1000 # imports valued with domestic market price
   

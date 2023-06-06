@@ -84,6 +84,11 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                                         format = "first_found"),
                        "Damage factor (1)")
 
+  # Calculate net GDP using the damage factors
+  tintersect <- intersect(getYears(gdp), getYears(damageFactor))
+  gdp_net <- setNames(gdp[,tintersect,]*damageFactor[,tintersect,], "GDP|MER|Net_afterDamages (billion US$2005/yr)")  
+  gdp_ppp_net <- setNames(gdp_ppp[,tintersect,]*damageFactor[,tintersect,], "GDP|PPP|Net_afterDamages (billion US$2005/yr)")  
+
   ies                     <- readGDX(gdx, c("pm_ies", "p_ies"), format = "first_found")
   c_damage                <- readGDX(gdx, "cm_damage", "c_damage", format = "first_found", react = "silent")
   if (is.null(c_damage)) c_damage <- 0
@@ -159,9 +164,6 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
     invM <- mbind(invM, setNames(invM[, , "Investments|Non-ESM|End-use (billion US$2005/yr)"]
                                  + invM[, , "Investments|Non-ESM|Macro (billion US$2005/yr)"],
                                  "Investments|Non-ESM (billion US$2005/yr)"))
-
-    # add floorspace
-    invM <- mbind(invM, setNames(p36_floorspace[, getYears(invM), ] * 1000, "Floorspace demand (million m2)"))
 
   } else {
     cap <- setNames(vm_cesIO[, , "kap"] * 1000, "Capital Stock|Non-ESM (billion US$2005)")
@@ -345,7 +347,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
 
 
   # define list of variables that will be exported:
-  varlist <- list(cons, gdp, gdp_ppp, invE, invM, pop, cap, inv, ces, damageFactor, welf) # ,curracc)
+  varlist <- list(cons, gdp, gdp_ppp, gdp_net, gdp_ppp_net, invE, invM, pop, cap, inv, ces, welf)#, damageFactor) # ,curracc)
   # use the same temporal resolution for all variables
   # calculate minimal temporal resolution
   tintersect <- Reduce(intersect, lapply(varlist, getYears))
@@ -354,8 +356,14 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   # put all together
   out <- Reduce(mbind, varlist)
 
+  # calculate global aggregation for the damage factor, weighted by MER GDP
+  mapping <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
+  glo_damageFactor <- speed_aggregate(damageFactor[,tintersect,], mapping, weight = gdp[,tintersect,])
+
   # add global region aggregation
   out <- mbind(out, dimSums(out, dim = 1))
+  # add damageFactor, which was aggregated differently
+  out <- mbind(out, mbind(damageFactor[,tintersect,],glo_damageFactor))
   # add other region aggregations
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))

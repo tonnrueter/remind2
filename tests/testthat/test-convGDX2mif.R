@@ -37,6 +37,14 @@ checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
 # please add variable tests below
 checkIntegrity <- function(out, gdxPath = NULL) {
   dt <- rmndt::magpie2dt(out)
+  barspace <- grep("[\\| ]{2}", unique(dt[["variable"]]), value = TRUE)
+  if (length(barspace) > 0) {
+    warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
+  }
+  NAvar <- grep("[\\|\\( ]NA[\\|\\) ]|^NA", unique(dt[["variable"]]), value = TRUE)
+  if (length(NAvar) > 0) {
+    warning("These variables and units contain NA: ", paste(NAvar, collapse = ", "))
+  }
   stopifnot(!(c("total", "diff") %in% unique(dt[["variable"]])))
   dtWide <- data.table::dcast(dt, ... ~ variable)
   myList <- mip::extractVariableGroups(unique(dt[["variable"]]), keepOrigNames = TRUE)
