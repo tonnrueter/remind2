@@ -691,6 +691,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   out.reporting <- pmax(out, 0) # avoid negative prices
 
   # for cm_startyear and non-SSP2, replace price by average of period before and after
+  # this is a workaround to avoid spikes caused by https://github.com/remindmodel/remind/issues/1068
   if (! grepl("gdp_SSP2", readGDX(gdx, "cm_GDPscen", format = "simplest"))
       && cm_startyear > min(getYears(out, as.integer = TRUE))) {
     out.reporting[, cm_startyear, ] <- 0.5 * (out[, cm_startyear - 5, ] + out[, cm_startyear + 5, ])
@@ -698,8 +699,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   out.reporting <- lowpass(out.reporting)
   # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
   if (! is.null(gdx_ref)) {
+    message("reportPrices loads price for < cm_startyear from gdx_ref.")
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
-    fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < as.integer(cm_startyear)]
+    fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
       out.reporting[, fixedyears, ] <- priceRef[getRegions(out), fixedyears, getNames(out)]
     }
@@ -918,12 +920,22 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|Solids (EJ/yr)"
                )
 
+  # transport-specific mappings depending on realization
+  if (module2realisation["transport",2] == "complex") {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|Liquids (EJ/yr)")
+  } else if (module2realisation["transport",2] == "edge_esm") {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|Diesel Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|Pass|Liquids (EJ/yr)")
+  }
 
-  ## weights definition for FE prices region aggregation
+  ## add weights definition for region aggregation for FE prices that were added automatically
   if(length(pm_FEPrice_by_FE) > 0) {
-    margPriceVars <- getItems(out,3)[grep("Price|Final Energy|", getItems(out,3), fixed = TRUE)]
+    margPriceVars <- grep("Price|Final Energy|", getItems(out,3), fixed = TRUE, value = TRUE)
     margPriceVars <- setdiff(margPriceVars, names(int2ext))
-    vars <- gsub("US\\$2005/GJ","EJ/yr",gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
+    vars <- gsub("US\\$2005/GJ", "EJ/yr", gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
     names(vars) <- margPriceVars
     vars <- gsub("Efuel","Hydrogen",vars) ###warning FE variable should be renamed and this line should be removed in the future
     # for(var in vars){ # display price variables with no matching FE weight
@@ -934,21 +946,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     vars <- vars[vars %in% getItems(output,3)]
     int2ext <- c(int2ext, vars)
   }
-
-  # transport-specific mappings depending on realization
-
-  if (module2realisation["transport",2] == "complex") {
-    int2ext <- c(int2ext,
-                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|Liquids (EJ/yr)")
-  } else if (module2realisation["transport",2] == "edge_esm") {
-    int2ext <- c(int2ext,
-                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|Diesel Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|Pass|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|Gases (EJ/yr)")
-  }
-
-
 
   ## moving averages and rawdata
   avgs <- getNames(out.lowpass)

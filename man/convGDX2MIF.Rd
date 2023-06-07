@@ -9,13 +9,14 @@ convGDX2MIF(
   gdx_ref = NULL,
   file = NULL,
   scenario = "default",
-  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)
+  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+  gdx_refpolicycost = gdx_ref
 )
 }
 \arguments{
 \item{gdx}{a GDX as created by readGDX, or the file name of a gdx}
 
-\item{gdx_ref}{reference-gdx for policy costs, a GDX as created by readGDX, or the file name of a gdx}
+\item{gdx_ref}{reference-gdx for < cm_startyear, used for fixing the prices to this scenario}
 
 \item{file}{name of the mif file which will be written, if no name is
 provided a magpie object containing all the reporting information is
@@ -25,6 +26,8 @@ returned}
 
 \item{t}{temporal resolution of the reporting, default:
 t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)}
+
+\item{gdx_refpolicycost}{reference-gdx for policy costs, a GDX as created by readGDX, or the file name of a gdx}
 }
 \description{
 Read in all information from GDX file and create
@@ -32,7 +35,7 @@ the *.mif reporting
 }
 \examples{
 
-\dontrun{convGDX2MIF(gdx,gdx_ref,file="REMIND_generic_default.csv",scenario="default")}
+\dontrun{convGDX2MIF(gdx,gdx_refpolicycost,file="REMIND_generic_default.csv",scenario="default")}
 
 }
 \author{
