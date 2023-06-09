@@ -147,8 +147,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector )]-vm_demFENonEnergySector
   }
 
-
-
   # ---- FE total production (incl. non-energy use) ------
   out <- mbind(out,
 
@@ -1780,85 +1778,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
     )
 
-      # energy carrier split in FE energy use variables
-#####################CLEAN OUT THIS CHUNK--------------------------------------------------------
-      # out <- mbind(out,
-      #              # FE industry (without feedstocks) liquids: from fossils, biomass, hydrogen
-      #              setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Liquids|+|Hydrogen (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
-      #              setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Liquids|+|Biomass (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
-      #              setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Liquids|+|Fossil (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
-      #              # FE industry (without feedstocks) gases: from fossils, biomass, hydrogen
-      #              setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Gases|+|Hydrogen (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Gases (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
-      #              setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Gases|+|Biomass (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Gases (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
-      #              setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Gases (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"),
-      #             # FE industry (without feedstocks) solids: from fossils, biomass
-      #             setNames(out[,,"FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Solids|+|Fossil (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Solids (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"),
-      #             setNames(out[,,"FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"] *
-      #                         out[,,"FE|Industry|Solids|+|Biomass (EJ/yr)"] /
-      #                         out[,,"FE|Industry|+|Solids (EJ/yr)"],
-      #                       "FE|w/o Non-energy Use|Industry|Solids|+|Biomass (EJ/yr)"))
-#----------------------------------------------------------------------------------
-      out <- mbind(out,
-                   # FE industry (without feedstocks) liquids: from fossils, biomass, hydrogen
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Hydrogen (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Liquids|+|Hydrogen (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Biomass (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Liquids|+|Biomass (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"] *
-                              out[,,"FE|Industry|Liquids|+|Fossil (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Liquids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Liquids|+|Fossil (EJ/yr)"),
-                   # FE industry (without feedstocks) gases: from fossils, biomass, hydrogen
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-                              out[,,"FE|Industry|Gases|+|Hydrogen (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-                              out[,,"FE|Industry|Gases|+|Biomass (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
-                   setNames(out[,,"FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"] *
-                              out[,,"FE|Industry|Gases|+|Fossil (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Gases (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Gases|+|Fossil (EJ/yr)"),
-                  # FE industry (without feedstocks) solids: from fossils, biomass
-                  setNames(out[,,"FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"] *
-                              out[,,"FE|Industry|Solids|+|Fossil (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Solids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"),
-                  setNames(out[,,"FE|w/o Non-energy Use|Industry|Solids (EJ/yr)"] *
-                              out[,,"FE|Industry|Solids|+|Biomass (EJ/yr)"] /
-                              out[,,"FE|Industry|+|Solids (EJ/yr)"],
-                            "FE|w/o Non-energy Use|Industry|Solids|+|Biomass (EJ/yr)"))
-
-
-
-
       tryCatch(
         expr = {
           out <- mbind(
@@ -1888,13 +1807,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
 
   }
-
   ### FE variables without bunkers ----
-
-
-
-
-
 
   ### variables for which version without bunkers should be calculated
 
@@ -1903,10 +1816,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     "FE (EJ/yr)",
     "FE|++|Transport (EJ/yr)",
     "FE|Transport|+|Liquids (EJ/yr)")
-
-
-
-
 
   # add FE w/o non-energy use variables if available
   if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
@@ -1932,7 +1841,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # add FE w/o non-energy use variables if available
   if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
 
-
     # bunker correction for distinction of fossil, biomass, hydrogen-based liquids
     fe.vars.woBunkers.fos <- c(   fe.vars.woBunkers.fos,
                                  "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)")
@@ -1942,9 +1850,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
     fe.vars.woBunkers.syn <- c(   fe.vars.woBunkers.syn,
                                   "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)")
-
-
-
   }
 
 
@@ -1990,9 +1895,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   getNames(out.woBunkers.syn) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.syn))
 
 
-
   out <- mbind(out,  out.woBunkers, out.woBunkers.fos, out.woBunkers.bio, out.woBunkers.syn)
-
 
   ### Aggregation to global values ----
 
