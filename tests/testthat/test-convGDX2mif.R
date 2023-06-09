@@ -37,6 +37,15 @@ checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
 # please add variable tests below
 checkIntegrity <- function(out, gdxPath = NULL) {
   dt <- rmndt::magpie2dt(out)
+  barspace <- grep("[\\| ]{2}", unique(dt[["variable"]]), value = TRUE)
+  if (length(barspace) > 0) {
+    warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
+  }
+  NAvar <- grep("[\\|\\( ]NA[\\|\\) ]|^NA", unique(dt[["variable"]]), value = TRUE)
+  NAvar <- NAvar[! grepl("^Services and Products\\|Transport\\|non-LDV\\|S", NAvar)] # unit NA, but ok, see issue #408
+  if (length(NAvar) > 0) {
+    warning("These variables and units contain NA: ", paste(NAvar, collapse = ", "))
+  }
   stopifnot(!(c("total", "diff") %in% unique(dt[["variable"]])))
   dtWide <- data.table::dcast(dt, ... ~ variable)
   myList <- mip::extractVariableGroups(unique(dt[["variable"]]), keepOrigNames = TRUE)
@@ -107,7 +116,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   for (gdxPath in gdxPaths) {
     numberOfMifs <- numberOfMifs + 1
     message("Running convGDX2MIF(", gdxPath, ")...")
-    mifContent <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
+    mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
     message("Checking integrity of created MIF...")
     checkIntegrity(mifContent, gdxPath)
     magclass::write.report(

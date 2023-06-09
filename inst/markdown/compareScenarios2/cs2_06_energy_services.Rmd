@@ -118,6 +118,17 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 ```{r LDV Vehicles Stock}
 tot <- "Est LDV Stock"
 items <- c(
+  "Stock|Transport|LDV",
+  "Stock|Transport|LDV|BEV",
+  "Stock|Transport|LDV|FCEV",
+  "Stock|Transport|LDV|Hybrid Electric",
+  "Stock|Transport|LDV|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+```{r LDV Vehicles Stock}
+tot <- "Est LDV Stock"
+items <- c(
   "Est EV LDV Stock",
   "Est H2 LDV Stock",
   "Est ICE LDV Stock")
@@ -125,6 +136,17 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 ### LDV Vehicles Sales
+```{r LDV Vehicles Sales}
+tot <- "Est LDV Sales"
+items <- c(
+  "Sales|Transport|LDV",
+  "Sales|Transport|LDV|BEV",
+  "Sales|Transport|LDV|FCEV",
+  "Sales|Transport|LDV|Hybrid Electric",
+  "Sales|Transport|LDV|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
 ```{r LDV Vehicles Sales}
 tot <- "Est LDV Sales"
 items <- c(
