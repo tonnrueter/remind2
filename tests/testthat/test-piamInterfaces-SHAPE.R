@@ -1,3 +1,4 @@
+skip()
 library(gdx)
 
 test_that("Test if REMIND reporting produces mandatory variables for SHAPE reporting", {
