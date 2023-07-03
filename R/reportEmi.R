@@ -950,6 +950,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                # total co2 captured in industry from proess emissions (only cemnent process CO2 for now)
                setNames(dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"),
+               setNames(dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3) * GtC_2_MtCO2,
+                          "Carbon Management|Carbon Capture|Industry Process|+|Cement (Mt CO2/yr)"),
                # total co2 captured by DAC
                setNames(-v33_emiDAC * GtC_2_MtCO2,
                           "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"),
