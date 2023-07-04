@@ -30,3 +30,10 @@ showAreaAndBarPlotsPlus(data, "Carbon Management|Usage", scales = "fixed")
 ```{r carbon management share}
 showLinePlots(data, "Carbon Management|Share of Stored CO2 from Captured CO2")
 ```
+
+```{r}
+showAreaAndBarPlots(data, 
+                    vars = c('Carbon Management|Storage',
+                             'Carbon Management|Usage'),
+                    tot = 'Carbon Management|Carbon Capture')
+```
