@@ -241,7 +241,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
         c('t', 'regi', 'secInd37')
       ) %>%
         mutate(subsector_capture_share = .data$vm_emiIndCCS
-               / .data$subsector_total_emissions) %>%
+                                       / .data$subsector_total_emissions) %>%
         select(-'vm_emiIndCCS', -'subsector_total_emissions'),
 
       c('t', 'regi', 'secInd37')
@@ -256,6 +256,27 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   rm(vm_emiIndCCS_tibble, subsector_emissions, subsector_total_emissions,
      pm_emifac_tibble)
+
+  # utility functions ----
+  # Convert a mixer table into a list that can be passed to mselect() to
+  # select specified dimensions from a magpie object
+  .mixer_to_selector <- function(mixer) {
+    selector <- list()
+    for (i in seq_len(nrow(mixer))) {
+      selector <- c(
+        selector,
+
+        list(mixer[i,] %>%
+               as.list() %>%
+               # exclude list entries that are NULL
+               Filter(function(x) { !is.null(x[[1]]) }, x = .) %>%
+               # coerce character vector elements one level up
+               lapply(unlist))
+      )
+    }
+
+    return(selector)
+  }
 
   # Calculate Variables ----
 
@@ -576,21 +597,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
     out <- mbind(out,
 
-                 # industry solids emissions: direct solids emissions - industry CCS of solids
-                 setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = "fesos", emi_sectors = "indst"), dim = 3)
-                             - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1 = "fesos")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                            "Emi|CO2|Energy|Demand|Industry|+|Solids (Mt CO2/yr)"),
-
-                 # industry liquids emissions: direct liquids emissions - industry CCS of liquids
-                 setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = c("fehos"), emi_sectors = "indst"), dim = 3)
-                             - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1 = "fehos")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                            "Emi|CO2|Energy|Demand|Industry|+|Liquids (Mt CO2/yr)"),
-
-                 # industry gases emissions: direct gases emissions - industry CCS of gases
-                 setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegas"), emi_sectors = "indst"), dim = 3)
-                             - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1 = "fegas")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                            "Emi|CO2|Energy|Demand|Industry|+|Gases (Mt CO2/yr)"),
-
                  # buildings
                  setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = "fesos", emi_sectors = "build"), dim = 3)) * GtC_2_MtCO2,
                             "Emi|CO2|Energy|Demand|Buildings|+|Solids (Mt CO2/yr)"),
@@ -608,19 +614,54 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
     )
 
+    ##### industry ----
+    variable_prefix  <- 'Emi|CO2|Energy|Demand|Industry|'
+    variable_postfix <- ' (Mt CO2/yr)'
 
-    # reporting of emissions for industry sectors (steel, cement, etc.)
+    mixer <- tribble(
+      ~variable,                    ~secInd37,     ~all_enty1,
+      '+|Solids',                   NULL,          'fesos',
+      '+|Liquids',                  NULL,          'fehos',
+      '+|Gases',                    NULL,          'fegas',
 
-    out <- mbind(out,
-                 setNames((dimSums(mselect(EmiIndSubSec, secInd37 = "steel"), dim = 3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37 = "steel")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industry|++|Steel (Mt CO2/yr)"),
-                 setNames((dimSums(mselect(EmiIndSubSec, secInd37 = "cement"), dim = 3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37 = "cement")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industry|++|Cement (Mt CO2/yr)"),
-                 setNames((dimSums(mselect(EmiIndSubSec, secInd37 = "chemicals"), dim = 3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37 = "chemicals")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industry|++|Chemicals (Mt CO2/yr)"),
-                 setNames((dimSums(mselect(EmiIndSubSec, secInd37 = "otherInd"), dim = 3) - dimSums(mselect(vm_emiIndCCS_Sub, secInd37 = "otherInd")*p_share_CCS, dim = 3)) * GtC_2_MtCO2,
-                           "Emi|CO2|Energy|Demand|Industry|++|Other Industry (Mt CO2/yr)"))
+      '++|Cement',                  'cement',      NULL,
+      'Cement|+|Solids',            'cement',      'fesos',
+      'Cement|+|Liquids',           'cement',      'fehos',
+      'Cement|+|Gases',             'cement',      'fegas',
 
+      '++|Chemicals',               'chemicals',   NULL,
+      'Chemicals|+|Solids',         'chemicals',   'fesos',
+      'Chemicals|+|Liquids',        'chemicals',   'fehos',
+      'Chemicals|+|Gases',          'chemicals',   'fegas',
+
+      '++|Steel',                   'steel',       NULL,
+      'Steel|+|Solids',             'steel',       'fesos',
+      'Steel|+|Liquids',            'steel',       'fehos',
+      'Steel|+|Gases',              'steel',       'fegas',
+
+      '++|Other Industry',          'otherInd',    NULL,
+      'Other Industry|+|Solids',    'otherInd',    'fesos',
+      'Other Industry|+|Liquids',   'otherInd',    'fehos',
+      'Other Industry|+|Gases',     'otherInd',    'fegas') %>%
+      mutate(
+        variable = paste0(variable_prefix, .data$variable, variable_postfix))
+
+    out <- mbind(
+      out,
+
+      lapply(.mixer_to_selector(mixer), function(x) {
+        setNames(
+          ( dimSums(mselect(EmiIndSubSec, x[setdiff(names(x), 'variable')]),
+                    dim = 3)
+          - dimSums(
+              ( mselect(vm_emiIndCCS_Sub, x[setdiff(names(x), 'variable')])
+              * p_share_CCS
+              ),
+              dim = 3)
+          ) * GtC_2_MtCO2,
+          x[['variable']])
+      }) %>%
+        mbind())
   } else {
 
     # if o37_demFeIndSub not existing in GDX, calculate reporting parameter here, note: works for industry fixed_shares only
@@ -1083,43 +1124,19 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       mutate(
         variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
-    # Convert a mixer table into a list that can be passed to mselect() to
-    # select specified dimensions from a magpie object
-    .mixer_to_selector <- function(mixer) {
-      selector <- list()
-      for (i in seq_len(nrow(mixer))) {
-        selector <- c(
-          selector,
+    out <- mbind(
+      out,
 
-          list(mixer[i,] %>%
-                 as.list() %>%
-                 # exclude list entries that are NULL
-                 Filter(function(x) { !is.null(x[[1]]) }, x = .) %>%
-                 # coerce character vector elements one level up
-                 lapply(unlist))
-        )
-      }
-
-      return(selector)
-    }
-
-    # call mselect(), dimSums(), setNames(), multiply by factor and mbind()
-    .select_sum_name_multiply <- function(object, selector, factor = 1) {
-      lapply(selector, function(x) {  # for each element in <selector>
-        # call mselect() on <object>, but without the 'variable' element
-        ( mselect(object, x[setdiff(names(x), 'variable')]) %>%
-            dimSums(dim = 3) %>%
-            setNames(x[['variable']])
-          * factor
-        )
+      lapply(.mixer_to_selector(mixer), function(x) {   # for each row
+        setNames(
+            dimSums(
+              # call mselect(), but without the 'variable' column
+              mselect(pm_IndstCO2Captured, x[setdiff(names(x), 'variable')]),
+              dim = 3)
+          * GtC_2_MtCO2,
+          x[['variable']])
       }) %>%
-        mbind()
-    }
-
-    out <- mbind(out,
-                 .select_sum_name_multiply(pm_IndstCO2Captured,
-                                           .mixer_to_selector(mixer),
-                                           GtC_2_MtCO2))
+        mbind())
   } else {
 
     if (!is.null(o37_demFeIndSub)) {
