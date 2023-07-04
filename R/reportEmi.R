@@ -19,9 +19,10 @@
 #' @export
 #'
 #' @importFrom gdx readGDX
-#' @importFrom dplyr %>% left_join mutate rename
+#' @importFrom dplyr %>% filter full_join group_by inner_join left_join mutate rename select summarise
 #' @importFrom magclass mselect dimSums mselect<- collapseDim getItems getRegions getYears
 #' @importFrom madrat toolAggregate
+#' @importFrom tibble as_tibble
 
 
 reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
@@ -142,21 +143,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   if (!is.null(o37_demFeIndSub)) {
     o37_demFeIndSub[is.na(o37_demFeIndSub)] <- 0
   }
-# CO2 captured per industry subsector
-  # note: this has to be read in with restore_zeros=T because sometimes it contains only non-zero values for "ETS" emiMkt
-  # and magclass will wrongly interpret this as a region
-  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = T,
-                                 react = 'silent')[,t,]
-  # if all zero, set to NULL
-  if (length(pm_IndstCO2Captured) == 0) {
-    pm_IndstCO2Captured <- NULL
-  }
-  # subset parameter to decrease size as restore_zeros=F was not possible
-  if (!is.null(pm_IndstCO2Captured)) {
-    pm_IndstCO2Captured <- pm_IndstCO2Captured[se2fe[,c(1,2)]]
-  }
-
-
 
   # secondary energy production
   vm_prodSe <- readGDX(gdx, "vm_prodSe", field = "l", restore_zeros = F)
@@ -189,8 +175,87 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # helper variable to release captured CO2 in no CCU capacities are standing anymore to take the captured CO2
   v_co2capturevalve <- readGDX(gdx, "v_co2capturevalve", field = "l", restore_zeros = F)[, t, ]
 
+  # CO2 captured per industry subsector
+  # NOTE: The parameter pm_IndstCO2Captured was calculated without taking into
+  # account the different emission factors of energy carriers, so we recalculate
+  # it here.  Might load it again when we are reasonably sure we won't process
+  # any gdxes with the faulty parameter any more.
+  vm_emiIndCCS_tibble <- vm_emiIndCCS[,,emiInd37_fuel] %>%
+    as_tibble() %>%
+    select(t = 'ttot', regi = 'all_regi', emiInd37 = 'secInd37',
+           vm_emiIndCCS = 'value') %>%
+    left_join(secInd37_2_emiInd37, 'emiInd37') %>%
+    select(-'emiInd37')
 
+  o37_demFeIndSub_tibble <- o37_demFeIndSub %>%
+    as_tibble() %>%
+    select(t = 'ttot', regi = 'all_regi', sety = 'all_enty',
+           fety = 'all_enty1', 'secInd37', 'emiMkt' = 'all_emiMkt',
+           o37_demFEindsub = 'value')
 
+  pm_emifac_tibble <- pm_emifac %>%
+    mselect(mutate(se2fe, all_enty2 = 'co2')) %>%
+    as_tibble() %>%
+    select(t = 'tall', regi = 'all_regi', fety = 'all_enty1',
+           pm_emifac = 'value') %>%
+    # extend fossil emission factors to biomass and synfuels
+    left_join(
+      se2fe %>%
+        distinct(sety = .data$all_enty, fety = .data$all_enty1),
+
+      by = 'fety',
+
+      relationship = 'many-to-many'
+    )
+
+  subsector_total_emissions <- inner_join(
+    o37_demFeIndSub_tibble,
+    pm_emifac_tibble,
+
+    c('t', 'regi', 'sety', 'fety')
+  ) %>%
+    group_by(.data$t, .data$regi, .data$secInd37) %>%
+    summarise(
+      subsector_total_emissions = sum(.data$o37_demFEindsub * .data$pm_emifac),
+      .groups = 'drop')
+
+  subsector_emissions <- inner_join(
+    o37_demFeIndSub_tibble,
+    pm_emifac_tibble,
+
+    c('t', 'regi', 'sety', 'fety')
+  ) %>%
+    group_by(.data$t, .data$regi, .data$secInd37, .data$sety, .data$fety,
+             .data$emiMkt) %>%
+    summarise(
+      subsector_emissions = sum(.data$o37_demFEindsub * .data$pm_emifac),
+      .groups = 'drop')
+
+  pm_IndstCO2Captured <- subsector_emissions %>%
+    full_join(
+      inner_join(
+        vm_emiIndCCS_tibble,
+
+        subsector_total_emissions,
+
+        c('t', 'regi', 'secInd37')
+      ) %>%
+        mutate(subsector_capture_share = .data$vm_emiIndCCS
+               / .data$subsector_total_emissions) %>%
+        select(-'vm_emiIndCCS', -'subsector_total_emissions'),
+
+      c('t', 'regi', 'secInd37')
+    ) %>%
+    mutate(
+      value = .data$subsector_emissions * .data$subsector_capture_share) %>%
+    select(-'subsector_emissions', -'subsector_capture_share') %>%
+    select(ttot = 't', all_regi = 'regi', all_enty = 'sety', all_enty1 = 'fety',
+           'secInd37', all_emiMkt = 'emiMkt', 'value') %>%
+    as.magpie(spatial = 2, temporal = 1, data = ncol(.)) %>%
+    ifelse(is.finite(.), ., 0)   # replace NaN by 0
+
+  rm(vm_emiIndCCS_tibble, subsector_emissions, subsector_total_emissions,
+     pm_emifac_tibble)
 
   # Calculate Variables ----
 
@@ -465,18 +530,14 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   if (!is.null(o37_demFeIndSub)) {
 
     # relabel industry energy CC from CCS sectors to industry sectors
-    emiInd37 <- NULL
-    vm_emiIndCCS_Mapped <- toolAggregate(vm_emiIndCCS[, , emiInd37_fuel], rel = secInd37_2_emiInd37 %>% filter(emiInd37 %in% emiInd37_fuel),
-                                      from = "emiInd37", to = "secInd37", dim = 3)
+    vm_emiIndCCS_Mapped <- toolAggregate(
+      vm_emiIndCCS[, , emiInd37_fuel],
+      rel =  secInd37_2_emiInd37 %>% filter(.data$emiInd37 %in% emiInd37_fuel),
+      from = "emiInd37", to = "secInd37", dim = 3)
 
-
-    # calculate captured CO2 per subsector and FE carrier by multiplying subsectoral share of fesos, fehos, fegas in total FE from fesos, fehos and fegas with the captured CO2 by subsector
-    vm_emiIndCCS_Sub <- vm_emiIndCCS_Mapped * dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.4)) / dimSums(mselect(o37_demFeIndSub, all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1, 3.2, 3.4))
-    vm_emiIndCCS_Sub[is.na(vm_emiIndCCS_Sub)] <- 0
-    getSets(vm_emiIndCCS_Sub)[c(3, 4)] <- c("secInd37", "all_enty1")
-
-
-
+    # calculate captured CO2 per subsector and FE carrier
+    vm_emiIndCCS_Sub <- dimSums(pm_IndstCO2Captured,
+                                dim = c('all_enty', 'all_emiMkt'))
 
     # calculate industry emissions by subsector (before industry CO2 Capture)
     sel_pm_emifac_co2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
