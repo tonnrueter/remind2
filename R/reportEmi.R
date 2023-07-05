@@ -651,6 +651,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
       lapply(.mixer_to_selector(mixer), function(x) {
         setNames(
+          # extract relevant portions from EmiIndSubSec and vm_emiIndCCS_Sub,
+          # call mselect(), but without the 'variable' column
           ( dimSums(mselect(EmiIndSubSec, x[setdiff(names(x), 'variable')]),
                     dim = 3)
           - dimSums(
@@ -1129,8 +1131,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
       lapply(.mixer_to_selector(mixer), function(x) {   # for each row
         setNames(
+            # extract relevant portions from pm_IndstCO2Captured
+            # call mselect(), but without the 'variable' column
             dimSums(
-              # call mselect(), but without the 'variable' column
               mselect(pm_IndstCO2Captured, x[setdiff(names(x), 'variable')]),
               dim = 3)
           * GtC_2_MtCO2,
