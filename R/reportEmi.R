@@ -2240,6 +2240,25 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
   }
 
+  ## aggregate intensive variables ----
+  .regionSubsetList <- c(list('GLO' = getItems(vm_co2CCS, dim = 'all_regi')),
+                         regionSubsetList)
+
+  for (i in seq_along(.regionSubsetList)) {
+    var <- 'Carbon Management|Share of Stored CO2 from Captured CO2 (%)'
+
+    target_region  <- .regionSubsetList[i]
+    source_regions <- .regionSubsetList[[i]]
+
+    out[names(target_region),,var] <- (
+        dimSums(vm_co2CCS[source_regions,,],     dim = c(1, 3), na.rm = TRUE)
+      / dimSums(vm_co2capture[source_regions,,], dim = c(1, 3))
+      * 100
+      ) %>%
+      ifelse(is.finite(.), ., 0)   # set NaN (division by 0) to 0
+  }
+
+
   # Bunker Correction ----
 
   ### variables for which bunker emissions should be subtracted
