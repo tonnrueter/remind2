@@ -2289,6 +2289,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
     "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
     "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)",
+    "Emi|CO2|w/o Land-Use Change (Mt CO2/yr)",
 
     # Gross CO2 Emissions
     "Emi|CO2|Gross (Mt CO2/yr)",
@@ -2330,6 +2331,18 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     emi.vars.wBunkers <- c(emi.vars.wBunkers,
                                    "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)",
                                    "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
+
+    # add bunker correction for emissions variables with LULUCF national accounting and w/o non-energy use
+    if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
+        "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) &&
+        "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) &&
+        "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
+
+      emi.vars.wBunkers <- c(emi.vars.wBunkers,
+                             "Emi|GHG|w/o Non-energy Use|LULUCF national accounting (Mt CO2eq/yr)",
+                             "Emi|CO2|w/o Non-energy Use|LULUCF national accounting (Mt CO2/yr)" )
+
+    }
   }
 
   # variable names for emission variables with bunkers, insert w/ Bunkers
