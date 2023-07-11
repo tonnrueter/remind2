@@ -33,7 +33,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                      t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130,
                            2150)) {
   fedie_bioshare <- fepet_bioshare <- prodFE <- prodSE <- se_Gas <- se_Liq <-
-    all_enty <- all_enty1 <- all_te <- all_in <- mats <- NULL
+    all_enty <- all_enty1 <- all_te <- all_in <- mats <- opModesPrcb <- NULL
 
   ####### conversion factors ##########
   TWa_2_EJ     <- 31.536
@@ -534,7 +534,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   if(is_PBS){
     o37_demFePrcb <- readGDX(gdx, name=c("o37_demFePrcb"), restore_zeros=FALSE,format= "first_found")
     if (!(is.null(o37_demFePrcb) | 0 == length(o37_demFePrcb))) {
-      o37_demFePrcb <- o37_demFePrcb[,t,,]
+      o37_demFePrcb <- o37_demFePrcb[,t,]
       o37_demFePrcb[is.na(o37_demFePrcb)] <- 0
       # convert to EJ
       o37_demFePrcb <- o37_demFePrcb * TWa_2_EJ
@@ -781,30 +781,32 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       if (is_PBS) {
 
         # mapping of process to output materials
-        tePrcb2MatsOut <- readGDX(gdx, "tePrcb2MatsOut")
+        tePrcb2ue <- readGDX(gdx, "tePrcb2ue")
 
         # energy production factors for primary and secondary steel
-        teSteelPrimary <- tePrcb2MatsOut %>%
-          filter(mats == "prsteel") %>%
-          pull('tePrcb')
-        teSteelSecondary <- tePrcb2MatsOut %>%
-          filter(mats == "sesteel") %>%
-          pull('tePrcb')
+        teOmSteelPrimary <- tePrcb2ue %>%
+          filter(all_in == "ue_steel_primary")
+        teSteelPrimary <- teOmSteelPrimary %>% pull('tePrcb')
+        omSteelPrimary <- teOmSteelPrimary %>% pull('opModesPrcb')
+        teOmSteelSecondary <- tePrcb2ue %>%
+          filter(all_in == "ue_steel_secondary")
+        teSteelSecondary <- teOmSteelSecondary %>% pull('tePrcb')
+        omSteelSecondary <- teOmSteelSecondary %>% pull('opModesPrcb')
 
         # more detailed reporting of electricity uses available in subsectors realization
         out <- mbind(
           out,
-          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelPrimary), dim = 3),
+          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelPrimary, opModesPrcb = omSteelPrimary), dim = 3),
                   "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
-          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelSecondary), dim = 3),
+          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelSecondary, opModesPrcb = omSteelSecondary), dim = 3),
                   "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
 
         # total FE by primary/secondary Steel
         out <- mbind(
           out,
-          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelPrimary), dim = 3 ),
+          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelPrimary, opModesPrcb = omSteelPrimary), dim = 3 ),
                   "FE|Industry|Steel|++|Primary (EJ/yr)"),
-          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelSecondary), dim = 3 ),
+          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelSecondary, opModesPrcb = omSteelSecondary), dim = 3 ),
                   "FE|Industry|Steel|++|Secondary (EJ/yr)"))
 
         } else {
@@ -1411,10 +1413,10 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       df.fe_nechem <- read.csv(system.file("extdata","pm_fe_nechem.cs4r",package = "remind2"),
                                sep = ",", skip = 4, header = F)
       colnames(df.fe_nechem) <- c("period", "region","SSP","encar","value_subsectors")
-      
+
       # rescaling non-energy use to match 2020 EU27 values for total non-energy use
       df.fe_nechem <- df.fe_nechem %>%
-        mutate(value_subsectors = ifelse(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"), 
+        mutate(value_subsectors = ifelse(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"),
           value_subsectors *
            3.835 / # average between 2018-2021 = 3.835 EJ (https://ec.europa.eu/eurostat/databrowser/view/NRG_BAL_C__custom_6407922/bookmark/table?lang=en&bookmarkId=f7c8aa0e-3cf6-45d6-b85c-f2e76e90b4aa)
            df.fe_nechem %>% filter(region %in% c("DEU", "FRA", "ECE", "ECS", "ENC", "ESC", "ESW", "EWN"), period == 2020, SSP == "SSP2") %>% summarize(value_subsectors = sum(value_subsectors)) %>% pull(value_subsectors), # original 2020 df.fe_nechem total non-energy use
