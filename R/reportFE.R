@@ -853,11 +853,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         .select_sum_name_multiply(o37_demFeIndSub, .mixer_to_selector(mixer))
       ))
 
-      setNames(dimSums(mselect(o37_demFeIndSub, secInd37 = "steel",
-                               all_enty1 = "fegas"), dim = 3),
-               "FE|Industry|Steel|+|Gases (EJ/yr)"))
-
-
     if (indu_mod == 'subsectors') {
       if (is_PBS) {
 
@@ -903,9 +898,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           filter(all_in == "ue_steel_secondary") %>%
           pull('all_in1')
 
-      }
-
-
       mixer <- tribble(
         ~variable,                                                                                     ~all_in,
         "FE|Industry|Chemicals|Electricity|+|Mechanical work and low-temperature heat (EJ/yr)",        "feelwlth_chemicals",
@@ -922,6 +914,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         c(list(out), # pass a list of magpie objects
           .select_sum_name_multiply(vm_cesIO, .mixer_to_selector(mixer))
         ))
+        }
     }
 
     ## Industry Production/Value Added ----
