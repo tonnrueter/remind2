@@ -38,7 +38,7 @@ colorScenConf <- function(fileList = "", remindPath = ".", expanddata = FALSE) {
   try(cfg$gms[["regionmapping"]] <- cfg$regionmapping)
   try(cfg$gms[["inputRevision"]] <- cfg$inputRevision)
 
-  if (fileList == "") {
+  if (fileList == "" || length(fileList) == 0) {
     cat("Specify folder with .csv files. The script also searches in subdirectories.\n")
     cat(paste0("Press enter to use current: ", getwd(), ".\n"))
     folder <- getLine()

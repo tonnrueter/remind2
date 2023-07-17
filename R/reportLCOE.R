@@ -113,7 +113,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  pm_taxemiMkt <- readGDX(gdx,"pm_taxemiMkt") # regional co2 price
  pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F) # efficiency oftechnologies with time-dependent eta
  pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)# efficiency of technologies with time-independent eta
- p47_taxCO2eq_AggFE <- readGDX(gdx,"p47_taxCO2eq_AggFE", restore_zeros=F)
+ p47_taxCO2eq_AggFE <- readGDX(gdx,"p47_taxCO2eq_AggFE", restore_zeros=F, react = "silent")
 
  ## variables
  v_directteinv <- readGDX(gdx,name=c("v_costInvTeDir","vm_costInvTeDir","v_directteinv"),field="l",format="first_found")[,ttot,]
@@ -479,7 +479,8 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  df.lcoe.avg <- df.lcoe.avg %>%
                   mutate( unit = "US$2015/MWh") %>%
-                  select(region, period, type, output, tech, sector, unit, cost, value)
+                  select(region, period, type, output, tech, sector, unit, cost, value) %>%
+                  as.quitte()
 
  # reconvert to magpie object
  LCOE.avg.out <- as.magpie(df.lcoe.avg, spatial=1, temporal=2, datacol=9)
@@ -999,7 +1000,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   } else {
     # some dummy data, only needed to create the following data frame if CCU is off
     p39_co2_dem <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital), fill = 0)
-      }
+  }
 
   df.co2_dem <- as.quitte(p39_co2_dem) %>%
     rename(co2_dem = value, tech = all_te) %>%
@@ -1420,7 +1421,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     left_join(df.emiFac, by = c("region", "tech")) %>%
     left_join(df.emifac.se2fe, by = c("region", "tech")) %>%
     left_join(df.Co2.Capt.Price, by = c("region", "period")) %>%
-    left_join(df.co2_dem) %>% # either by = c("region", "period", "tech") or c("region", "period")
+    left_join(df.co2_dem, by = c("region", "period", if (module2realisation["CCU",2] == "on") "tech")) %>%
     left_join(df.CO2StoreShare, by = c("region", "period")) %>%
     left_join(df.secfuel, by = c("region", "period", "tech", "fuel")) %>%
     left_join(df.gridcost, by = c("region", "period", "tech")) %>%

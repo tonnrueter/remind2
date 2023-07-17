@@ -126,20 +126,25 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 
 ```{r Prices preprocessing}
 # Local (this subsection) preprocessing for all price variables.
-dPrice <-
+dAllPrices <-
   data %>%
     filter(scenario != "historical") %>%
     filter(str_starts(variable, "Price")) %>%
     filter(period >= 2010) %>% # 2005 values are invalid
     droplevels()
 
-# instead of post-processing variables, use Rawdata if available
-rawdata <- grep("\\|Rawdata$", levels(dPrice$variable), value = TRUE)
-dPrice <-
-  dPrice %>%
-    filter(! variable %in% gsub("\\|Rawdata$", "", rawdata)) %>%
-    mutate(variable = gsub("\\|Rawdata$", "", variable)) %>%
-    droplevels()
+# instead of post-processing variables, use Rawdata if available in each scenario
+dPrice <- NULL
+for (s in levels(dAllPrices$scenario)) {
+  rawdata <- grep("\\|Rawdata$", levels(filter(dAllPrices, .data$scenario == s)$variable), value = TRUE)
+  dPricescen <-
+    dAllPrices %>%
+      filter(.data$scenario == s) %>%
+      filter(! variable %in% gsub("\\|Rawdata$", "", rawdata)) %>%
+      mutate(variable = factor(gsub("\\|Rawdata$", "", variable))) %>%
+      droplevels()
+  dPrice <- rbind(dPrice, dPricescen)
+}
 ```
 
 ### PE Prices
