@@ -870,21 +870,32 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         omSteelSecondary <- teOmSteelSecondary %>% pull('opModesPrcb')
 
         # more detailed reporting of electricity uses available in subsectors realization
+        mixer <- tribble(
+          ~variable,                                               ~all_enty,        ~all_te,             ~opModesPrcb,
+          "FE|Industry|Steel|++|Primary|Electricity (EJ/yr)",       "feels",          teSteelPrimary,    omSteelPrimary,
+          "FE|Industry|Steel|++|Secondary|Electricity (EJ/yr)",     "feels",          teSteelSecondary,  omSteelSecondary,
+          "FE|Industry|Steel|++|Primary|Hydrogen (EJ/yr)",          "feh2s",           teSteelPrimary,    omSteelPrimary,
+          "FE|Industry|Steel|++|Primary|Fossil Gas (EJ/yr)",        "fegas",          teSteelPrimary,    omSteelPrimary,
+          "FE|Industry|Steel|++|Primary|Solid (EJ/yr)",             "fesos",          teSteelPrimary,    omSteelPrimary)
+    
         out <- mbind(
-          out,
-          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelPrimary, opModesPrcb = omSteelPrimary), dim = 3),
-                  "FE|Industry|Steel|Primary|Electricity (EJ/yr)"),
-          setNames(dimSums(mselect(o37_demFePrcb, all_enty = "feels", all_te = teSteelSecondary, opModesPrcb = omSteelSecondary), dim = 3),
-                  "FE|Industry|Steel|Secondary|Electricity (EJ/yr)"))
-
+          c(list(out), # pass a list of magpie objects
+            .select_sum_name_multiply(o37_demFePrcb, .mixer_to_selector(mixer))
+          ))
+        
         # total FE by primary/secondary Steel
-        out <- mbind(
-          out,
-          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelPrimary, opModesPrcb = omSteelPrimary), dim = 3 ),
-                  "FE|Industry|Steel|++|Primary (EJ/yr)"),
-          setNames(dimSums(mselect(o37_demFePrcb, all_te = teSteelSecondary, opModesPrcb = omSteelSecondary), dim = 3 ),
-                  "FE|Industry|Steel|++|Secondary (EJ/yr)"))
+        mixer <- tribble(
+          ~variable,                                    ~all_te,               ~opModesPrcb,
+          "FE|Industry|Steel|++|Primary (EJ/yr)",       teSteelPrimary,        omSteelPrimary,
+          "FE|Industry|Steel|++|Secondary (EJ/yr)",     teSteelSecondary,      omSteelSecondary)
 
+        # calculate and bind to out
+        out <- mbind(
+          c(list(out), # pass a list of magpie objects
+            .select_sum_name_multiply(o37_demFePrcb, .mixer_to_selector(mixer))
+          ))
+        
+        
         } else {
 
         # mapping of industrial output to energy production factors in CES tree
