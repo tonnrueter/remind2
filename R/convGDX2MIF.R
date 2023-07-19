@@ -56,7 +56,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportExtraction(gdx,regionSubsetList,t)[,t,])
   message("running reportCapacity...")
   output <- mbind(output,reportCapacity(gdx,regionSubsetList,t)[,t,])
-  output <- mbind(output,reportLCOE(gdx)[,t,])     now moved to additional LCOE.mif file because many variables
+  output <- mbind(output,reportLCOE(gdx)[,t,])     # now moved to additional LCOE.mif file because many variables
   message("running reportCapitalStock...")
   output <- mbind(output,reportCapitalStock(gdx,regionSubsetList,t)[,t,])
   message("running reportEnergyInvestment...")
