@@ -42,6 +42,7 @@ checkIntegrity <- function(out, gdxPath = NULL) {
     warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
   }
   NAvar <- grep("[\\|\\( ]NA[\\|\\) ]|^NA", unique(dt[["variable"]]), value = TRUE)
+  NAvar <- NAvar[! grepl("^Services and Products\\|Transport\\|non-LDV\\|S", NAvar)] # unit NA, but ok, see issue #408
   if (length(NAvar) > 0) {
     warning("These variables and units contain NA: ", paste(NAvar, collapse = ", "))
   }
@@ -115,7 +116,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   for (gdxPath in gdxPaths) {
     numberOfMifs <- numberOfMifs + 1
     message("Running convGDX2MIF(", gdxPath, ")...")
-    mifContent <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
+    mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
     message("Checking integrity of created MIF...")
     checkIntegrity(mifContent, gdxPath)
     magclass::write.report(
