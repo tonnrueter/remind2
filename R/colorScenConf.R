@@ -58,7 +58,7 @@ colorScenConf <- function(fileList = "", remindPath = ".", expanddata = FALSE) {
   for (csvFile in fileList) {
     xlsxFile <- sub(".csv", "_colorful.xlsx", csvFile, fixed = TRUE)
     cat(paste0("\nStart converting '", csvFile, "' to '..._colorful.xlsx'.\n"))
-    settings <- readCheckScenarioConfig(csvFile, remindPath = remindPath, fillWithDefault = TRUE)
+    settings <- readCheckScenarioConfig(csvFile, remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
     settings <- rbind(rep("unknown", length(names(settings))), settings)
     for (switchname in intersect(names(cfg$gms), names(settings))) {
       settings[1, switchname] <- cfg$gms[[switchname]]
