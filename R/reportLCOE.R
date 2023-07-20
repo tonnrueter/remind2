@@ -947,23 +947,22 @@ reportLCOE <- function(gdx, output.type = "both"){
                      c("Investment Cost","OMF Cost","Electricity Cost","Heat Cost","Total LCOE"), fill = 0)
 
   if ("dac" %in% te) {
-    p33_dac_fedem_el <- readGDX(gdx, "p33_dac_fedem_el", restore_zeros = F)
-    p33_dac_fedem_heat <- readGDX(gdx, "p33_dac_fedem_heat", restore_zeros = F)
-
-    if (is.null(p33_dac_fedem_el) | is.null(p33_dac_fedem_heat)) {
-      p33_dac_fedem <- readGDX(gdx, "p33_dac_fedem", restore_zeros = F)
-
-      p33_dac_fedem_el <- p33_dac_fedem[,,"feels"]
-      p33_dac_fedem_heat <- p33_dac_fedem[,,"fehes"]
+    p33_fedem <- readGDX(gdx, "p33_fedem", restore_zeros = F, react = "silent")
+    if (is.null(p33_fedem)) { # compatibility with the REMIND version prior to adding a CDR portfolio
+      p33_dac_fedem_el <- readGDX(gdx, "p33_dac_fedem_el", restore_zeros = F)
+      p33_dac_fedem_heat <- readGDX(gdx, "p33_dac_fedem_heat", restore_zeros = F)
+      p33_fedem <- new.magpie(getRegions(p33_dac_fedem_el), getYears(p33_dac_fedem_el), c("dac.feels", "dac.fehes"))
+      p33_fedem[,,"dac.feels"] <- p33_dac_fedem_el
+      p33_fedem[,,"dac.fehes"] <- p33_dac_fedem_heat[,,"fehes"]
     }
 
     # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
     LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"] * p_teAnnuity[,,"dac"]*1e3
     LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
     # elecitricty cost (convert DAC FE demand to GJ/tCO2 and fuel price to USD/GJ)
-    LCOD[,,"Electricity Cost"] <-  p33_dac_fedem_el[,,"feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
+    LCOD[,,"Electricity Cost"] <-  p33_fedem[,,"dac.feels"] / 3.66 * Fuel.Price[,,"seel"] / 3.66
     # TODO: adapt to FE prices and new CDR FE structure, temporary: conversion as above, assume for now that heat is always supplied by district heat
-    LCOD[,,"Heat Cost"] <- p33_dac_fedem_heat[,,"fehes"] / 3.66 * Fuel.Price[,,"sehe"]  / 3.66
+    LCOD[,,"Heat Cost"] <- p33_fedem[,,"dac.fehes"] / 3.66 * Fuel.Price[,,"sehe"]  / 3.66
     LCOD[,,"Total LCOE"] <- LCOD[,,"Investment Cost"]+LCOD[,,"OMF Cost"]+LCOD[,,"Electricity Cost"]+LCOD[,,"Heat Cost"]
   }
 
