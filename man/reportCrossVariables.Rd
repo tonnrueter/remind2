@@ -33,5 +33,5 @@ Read in GDX and calculate variables that need variables produced by other report
 
 }
 \author{
-Lavinia Baumstark
+Lavinia Baumstark, Falk Benke
 }
