@@ -1,5 +1,5 @@
-#' Read in GDX and calculate variables that need variables produced by other report*.R functions, used in convGDX2MIF.R for the
-#' reporting
+#' Read in GDX and calculate variables that need variables produced by other
+#' report*.R functions, used in convGDX2MIF.R for the reporting
 #'
 #' Read in GDX and calculate variables that need variables produced by other report*.R functions
 #'
@@ -398,49 +398,69 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
   projections <- mbind(projections, tmp)
 
   # check if all required regions are in projections, otherwise skip
-  if (length(setdiff(getRegions(out), getRegions(projections))) == 0) {
-
+  if (length(setdiff(getItems(out, dim = 1), getItems(projections, dim = 1))) == 0) {
     # if projections have more regions, remove extra regions
-    if (length(setdiff(getRegions(projections), getRegions(out))) > 0) {
-      projections <- projections[intersect(getRegions(projections), getRegions(out)), , ]
+    if (length(setdiff(getItems(projections, dim = 1), getItems(out, dim = 1))) > 0) {
+      projections <- projections[intersect(getItems(projections, dim = 1), getItems(out, dim = 1)), , ]
     }
 
     y <- intersect(getYears(projections), getYears(out))
     out <- mbind(out, projections[, y, ])
 
-    # SE|Electricity|Coal|Other Fossil Adjusted = max(0, SE|Electricity|Coal - SE|Electricity|Other Fossil|Projected);
-    tmp <- output[, , "SE|Electricity|Coal (EJ/yr)"] - out[, , "SE|Electricity|Other Fossil|Projected (EJ/yr)"]
+    # SE|Electricity|Other Fossil|Other Fossil Adjusted = min(
+    # SE|Electricity|Coal|w/o CC, SE|Electricity|Other Fossil|Projected);
+    tmp <- mbind(
+      output[, , "SE|Electricity|Coal|w/o CC (EJ/yr)"],
+      out[, , "SE|Electricity|Other Fossil|Projected (EJ/yr)"]
+    )
+    tmp <- mcalc(tmp, `SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)` ~
+        ifelse(`SE|Electricity|Coal|w/o CC (EJ/yr)` < `SE|Electricity|Other Fossil|Projected (EJ/yr)`,
+          `SE|Electricity|Coal|w/o CC (EJ/yr)`, `SE|Electricity|Other Fossil|Projected (EJ/yr)`
+        ),
+      append = FALSE
+    )
+    out <- mbind(out, tmp)
+
+    # SE|Electricity|Coal|w/o CC|Other Fossil Adjusted = SE|Electricity|Coal|w/o CC -
+    # SE|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "SE|Electricity|Coal|w/o CC (EJ/yr)"] -
+      out[, , "SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)"]
+    tmp[tmp < 0] <- 0
+    tmp <- setItems(tmp, 3, "SE|Electricity|Coal|w/o CC|Other Fossil Adjusted (EJ/yr)")
+    out <- mbind(out, tmp)
+
+    # SE|Electricity|Coal|Other Fossil Adjusted = SE|Electricity|Coal -
+    # SE|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "SE|Electricity|Coal (EJ/yr)"] -
+      out[, , "SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)"]
     tmp[tmp < 0] <- 0
     tmp <- setItems(tmp, 3, "SE|Electricity|Coal|Other Fossil Adjusted (EJ/yr)")
     out <- mbind(out, tmp)
 
-    # SE|Electricity|Other Fossil|Other Fossil Adjusted = min(SE|Electricity|Coal; SE|Electricity|Other Fossil|Projected);
-    tmp <- mbind(
-      output[, , "SE|Electricity|Coal (EJ/yr)"],
-      out[, , "SE|Electricity|Other Fossil|Projected (EJ/yr)"]
-    )
-    tmp <- mcalc(tmp, `SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)` ~
-      ifelse(`SE|Electricity|Coal (EJ/yr)` < `SE|Electricity|Other Fossil|Projected (EJ/yr)`,
-        `SE|Electricity|Coal (EJ/yr)`, `SE|Electricity|Other Fossil|Projected (EJ/yr)`
-      ),
-    append = FALSE
-    )
-    out <- mbind(out, tmp)
-
-    # OtherFossilShare =  SE|Electricity|Other Fossil|Other Fossil Adjusted / SE|Electricity|Coal;
+    # OtherFossilShare =  SE|Electricity|Other Fossil|Other Fossil Adjusted /
+    # SE|Electricity|Coal|w/o CC;
     share <- out[, , "SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)"] /
-      output[, , "SE|Electricity|Coal (EJ/yr)"]
+      output[, , "SE|Electricity|Coal|w/o CC (EJ/yr)"]
     share[is.na(share)] <- 0
     share <- setItems(share, 3, "OtherFossilShare")
 
-    # Cap|Electricity|Coal|Other Fossil Adjusted = Cap|Electricity|Coal * (1 - OtherFossilShare);
-    tmp <- output[, , "Cap|Electricity|Coal (GW)"] * (1 - share)
-    tmp <- setItems(tmp, 3, "Cap|Electricity|Coal|Other Fossil Adjusted (GW)")
+    # Cap|Electricity|Other Fossil|Other Fossil Adjusted = Cap|Electricity|Coal|w/o CC * OtherFossilShare;
+    tmp <- output[, , "Cap|Electricity|Coal|w/o CC (GW)"] * share
+    tmp <- setItems(tmp, 3, "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)")
     out <- mbind(out, tmp)
 
-    # Cap|Electricity|Other Fossil|Other Fossil Adjusted = Cap|Electricity|Coal * OtherFossilShare;
-    tmp <- output[, , "Cap|Electricity|Coal (GW)"] * share
-    tmp <- setItems(tmp, 3, "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)")
+    # Cap|Electricity|Coal|w/o CC|Other Fossil Adjusted = Cap|Electricity|Coal|w/o CC -
+    # Cap|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "Cap|Electricity|Coal|w/o CC (GW)"] -
+      out[, , "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)"]
+    tmp <- setItems(tmp, 3, "Cap|Electricity|Coal|w/o CC|Other Fossil Adjusted (GW)")
+    out <- mbind(out, tmp)
+
+    # Cap|Electricity|Coal|Other Fossil Adjusted = Cap|Electricity|Coal -
+    # Cap|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "Cap|Electricity|Coal (GW)"] -
+      out[, , "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)"]
+    tmp <- setItems(tmp, 3, "Cap|Electricity|Coal|Other Fossil Adjusted (GW)")
     out <- mbind(out, tmp)
   } else {
     warning("`SE|Electricity|Coal|Other Fossil Adjusted` and related variables
