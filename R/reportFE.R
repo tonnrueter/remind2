@@ -874,7 +874,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           ~variable,                                               ~all_enty,        ~all_te,             ~opModesPrcb,
           "FE|Industry|Steel|++|Primary|Electricity (EJ/yr)",       "feels",          teSteelPrimary,    omSteelPrimary,
           "FE|Industry|Steel|++|Secondary|Electricity (EJ/yr)",     "feels",          teSteelSecondary,  omSteelSecondary,
-          "FE|Industry|Steel|++|Primary|Hydrogen (EJ/yr)",          "feh2s",           teSteelPrimary,    omSteelPrimary,
+          "FE|Industry|Steel|++|Primary|Hydrogen (EJ/yr)",          "feh2s",          teSteelPrimary,    omSteelPrimary,
           "FE|Industry|Steel|++|Primary|Fossil Gas (EJ/yr)",        "fegas",          teSteelPrimary,    omSteelPrimary,
           "FE|Industry|Steel|++|Primary|Solid (EJ/yr)",             "fesos",          teSteelPrimary,    omSteelPrimary)
     
@@ -895,6 +895,41 @@ reportFE <- function(gdx, regionSubsetList = NULL,
             .select_sum_name_multiply(o37_demFePrcb, .mixer_to_selector(mixer))
           ))
         
+        # mapping of route to output materials
+        tePrcb2route2ue <- readGDX(gdx, "tePrcb2route2ue")
+        
+        # energy production factors for primary IDR-EAF, primary BF-BOF and secondary EAF routes
+        
+        teOmRtSteelPrimaryBfbof <- tePrcb2route2ue %>%
+          filter(all_in == "ue_steel_primary") %>%
+          filter(routes == "bfbof")
+        teSteelPrimaryBfbof <- teOmRtSteelPrimaryBfbof %>% pull('tePrcb')
+        omSteelPrimaryBfbof <- teOmRtSteelPrimaryBfbof %>% pull('opModesPrcb')
+        
+        teOmRtSteelPrimaryIdreaf <- tePrcb2route2ue %>%
+          filter(all_in == "ue_steel_primary") %>%
+          filter(routes == "idreaf")
+        teSteelPrimaryIdreaf <- teOmRtSteelPrimaryIdreaf %>% pull('tePrcb')
+        omSteelPrimaryIdreaf <- teOmRtSteelPrimaryIdreaf %>% pull('opModesPrcb')
+   
+        teOmRtSteelSecondaryEaf <- tePrcb2route2ue %>%
+          filter(all_in == "ue_steel_secondary")
+        teSteelSecondaryEaf <- teOmRtSteelSecondaryEaf %>% pull('tePrcb')
+        omSteelSecondaryEaf <- teOmRtSteelSecondaryEaf %>% pull('opModesPrcb')
+        
+        # more detailed reporting of electricity uses available in subsectors realization
+        mixer <- tribble(
+          ~variable,                                               ~all_te,                ~opModesPrcb,
+          "FE|Industry|Steel|++|Primary|BF-BOF (EJ/yr)",           teSteelPrimaryBfbof,    omSteelPrimaryBfbof,
+          "FE|Industry|Steel|++|Primary|IDR-EAF (EJ/yr)",          teSteelPrimaryIdreaf,   omSteelPrimaryIdreaf,
+          "FE|Industry|Steel|++|Secondary|EAF (EJ/yr)",            teSteelSecondaryEaf,    omSteelSecondaryEaf
+          )
+        
+        out <- mbind(
+          c(list(out), # pass a list of magpie objects
+            .select_sum_name_multiply(o37_demFePrcb, .mixer_to_selector(mixer))
+          ))
+      
         
         } else {
 
