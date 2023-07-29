@@ -551,6 +551,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       # convert to EJ
       o37_demFePrcb <- o37_demFePrcb * TWa_2_EJ
     }
+    # production
+    v37_prodMats <- readGDX(gdx, name=c("v37_prodMats"), field="l", restore_zeros=FALSE,format= "first_found")[,t,] #Gt
+    v37_prodVolPrcb <- readGDX(gdx, name=c("v37_prodVolPrcb"), field="l", restore_zeros=FALSE,format= "first_found")[,t,] #Gt
   }
 
   # ---- transformations
@@ -967,14 +970,43 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     # reporting of industry production and value added as given by CES nodes
     # (only available in industry subsectors)
     if (indu_mod == 'subsectors') {
+      if (is_PBS) {
+        
+      mixer <- tribble(
+        ~variable,                                                    ~all_enty,
+        "Production|Industry|Steel (Mt/yr)",                          c("prsteel", "sesteel"),
+        "Production|Industry|Steel|+|Primary (Mt/yr)",                  "prsteel",
+        "Production|Industry|Steel|+|Secondary (Mt/yr)",                "sesteel",
+        )
+
+      # calculate and bind to out
+      out <- mbind(
+        c(list(out), # pass a list of magpie objects
+          .select_sum_name_multiply(v37_prodMats, .mixer_to_selector(mixer),
+                                    # convert Gt/yr to Mt/yr
+                                    1e3) ))
+      
+      
+      mixer <- tribble(
+        ~variable,                                                          ~all_te,                ~opModesPrcb,
+        "Production|Industry|Steel|++|Primary|BF-BOF (Mt/yr)",              "bof",                  omSteelPrimaryBfbof,
+        "Production|Industry|Steel|++|Primary|IDR-EAF (Mt/yr)",             "eaf",                  omSteelPrimaryIdreaf,
+        "Production|Industry|Steel|++|Secondary|EAF (Mt/yr)",               teSteelSecondaryEaf,    omSteelSecondaryEaf
+      )
+      
+      # calculate and bind to out
+      out <- mbind(
+        c(list(out), # pass a list of magpie objects
+          .select_sum_name_multiply(v37_prodVolPrcb, .mixer_to_selector(mixer),
+                                    # convert Gt/yr to Mt/yr
+                                    1e3)))
+      } else {
+        
       mixer <- tribble(
         ~variable,                                                    ~all_in,
-        "Production|Industry|Cement (Mt/yr)",                         "ue_cement",
         "Production|Industry|Steel (Mt/yr)",                          c("ue_steel_primary", "ue_steel_secondary"),
         "Production|Industry|Steel|Primary (Mt/yr)",                  "ue_steel_primary",
-        "Production|Industry|Steel|Secondary (Mt/yr)",                "ue_steel_secondary",
-        "Value Added|Industry|Chemicals (billion US$2005/yr)",        "ue_chemicals",
-        "Value Added|Industry|Other Industry (billion US$2005/yr)",   "ue_otherInd")
+        "Production|Industry|Steel|Secondary (Mt/yr)",                "ue_steel_secondary")
 
       # calculate and bind to out
       out <- mbind(
@@ -990,7 +1022,29 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                         "Internal|Activity|Industry (arbitrary unit/yr)"))
         )
       )
-    }
+      }
+      
+      mixer <- tribble(
+        ~variable,                                                    ~all_in,
+        "Production|Industry|Cement (Mt/yr)",                         "ue_cement",
+        "Value Added|Industry|Chemicals (billion US$2005/yr)",        "ue_chemicals",
+        "Value Added|Industry|Other Industry (billion US$2005/yr)",   "ue_otherInd")
+      
+      # calculate and bind to out
+      out <- mbind(
+        c(list(out), # pass a list of magpie objects
+          # as vm_cesIO was multiplied by TWa_2_EJ in the beginning of the
+          # script, needs to be converted back to REMIND units here and then
+          # scaled by 1e3 for obtaining Mt or billion US$2005
+          .select_sum_name_multiply(vm_cesIO, .mixer_to_selector(mixer),
+                                    1e3 / TWa_2_EJ),
+          # report CES node of total industry as internal variable (for model
+          # diagnostics) to represent total industry activity
+          list(setNames(mselect(vm_cesIO, all_in = "ue_industry"),
+                        "Internal|Activity|Industry (arbitrary unit/yr)"))
+        )
+      )
+      }
   }
 
   #--- Transport reporting ---
