@@ -37,7 +37,8 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   # make the reporting
   output <- NULL
-  onlyReportFE <- TRUE
+  # onlyReportFE <- TRUE
+  onlyReportFE <- FALSE
 
   if (! onlyReportFE) {
   message("running reportMacroEconomy...")
@@ -119,8 +120,6 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
-
-
 
   # either write the *.mif or return the magpie object
   if(!is.null(file)) {

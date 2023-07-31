@@ -138,7 +138,6 @@ walk(items, showLinePlots, data = data)
 showLinePlots(data, "FE|Industry|Electricity|Share")
 ```
 
-
 ### FE mix Steel
 ```{r FE mix Steel}
 tot <- "FE|Industry|Steel"
@@ -150,6 +149,32 @@ items <- c(
   "FE|Industry|Steel|Primary|Electricity",
   "FE|Industry|Steel|Secondary|Electricity")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### FE mix Steel using process-based steel modeling
+```{r FE mix Steel}
+if ("Production|Industry|Steel|Primary|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+tot <- "FE|Industry|Steel"
+items <- c(
+  "FE|Industry|Steel|Primary|Solid",
+  "FE|Industry|Steel|Primary|Hydrogen",
+  "FE|Industry|Steel|Primary|Fossil Gas",
+  "FE|Industry|Steel|Primary|Electricity",
+  "FE|Industry|Steel|Secondary|Electricity")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+}
+```
+
+### FE mix Steel using process-based steel modeling by route
+```{r FE mix Steel route}
+if ("Production|Industry|Steel|Primary|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+tot <- "FE|Industry|Steel"
+items <- c(
+  "FE|Industry|Steel|Primary|BF-BOF",
+  "FE|Industry|Steel|Primary|IDR-EAF",
+  "FE|Industry|Steel|Secondary|EAF")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+}
 ```
 
 ### FE mix Cement
