@@ -231,6 +231,17 @@ for (regions in bin_distribute(getRegs(dPlot), 7)) {
 }
 ```
 
+### Steel mix by route using process-based steel modeling
+```{r Steel mix by route}
+if ("Production|Industry|Steel|Primary|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+tot <- "Production|Industry|Steel"
+items <- c(
+  "Production|Industry|Steel|Primary|BF-BOF",
+  "Production|Industry|Steel|Primary|IDR-EAF",
+  "Production|Industry|Steel|Secondary|EAF")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+}
+```
 ### Subsector per-Capita Production 
 ```{r plot subsector per-capita production}
 items <- c("Production|Industry|Cement|per-capita",
