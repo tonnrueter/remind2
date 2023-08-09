@@ -115,8 +115,6 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
-
-
   # either write the *.mif or return the magpie object
   if(!is.null(file)) {
     write.report(output,file=file,ndigit=7)

@@ -10,61 +10,6 @@
 library(dplyr)
 library(gdx)
 
-checkEqs <- function(dt, eqs, gdxPath = NULL, scope = "all", sens = 1e-8) {
-  if (scope == "regional") {
-    dt <- dt[all_regi != "World"]
-  } else if (scope == "world") {
-    dt <- dt[all_regi == "World"]
-  }
-
-  for (LHS in seq_along(names(eqs))) {
-    exp <- parse(text = eqs[[LHS]])
-    dt[, total := eval(exp), by = .(all_regi, ttot, scenario, model)]
-
-    dt[, diff := total - get(names(eqs)[LHS])]
-    if (nrow(dt[abs(diff) > sens]) > 0) {
-      fail(paste(
-        c(
-          gdxPath, paste("Check on data integrity failed for", names(eqs)[LHS]),
-          gsub("`", "", unlist(strsplit(eqs[[LHS]], "`+`", TRUE)))
-        ),
-        collapse = "\n"
-      ))
-    }
-  }
-}
-
-# please add variable tests below
-checkIntegrity <- function(out, gdxPath = NULL) {
-  dt <- rmndt::magpie2dt(out)
-  barspace <- grep("[\\| ]{2}", unique(dt[["variable"]]), value = TRUE)
-  if (length(barspace) > 0) {
-    warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
-  }
-  NAvar <- grep("[\\|\\( ]NA[\\|\\) ]|^NA", unique(dt[["variable"]]), value = TRUE)
-  NAvar <- NAvar[! grepl("^Services and Products\\|Transport\\|non-LDV\\|S", NAvar)] # unit NA, but ok, see issue #408
-  if (length(NAvar) > 0) {
-    warning("These variables and units contain NA: ", paste(NAvar, collapse = ", "))
-  }
-  stopifnot(!(c("total", "diff") %in% unique(dt[["variable"]])))
-  dtWide <- data.table::dcast(dt, ... ~ variable)
-  myList <- mip::extractVariableGroups(unique(dt[["variable"]]), keepOrigNames = TRUE)
-  myList <- lapply(myList, FUN = function(x) paste0("`", x, "`"))
-  myList <- lapply(myList, paste, collapse = "+")
-  # remove from the tests the variables whose totals cannot be found
-  chck <- grep(" \\(.*.\\)$", names(myList), invert = TRUE)
-  if (length(chck) > 0) {
-    warning(paste0(
-      "For this group the corresponding total could not be found and the summation check ",
-      "will not be performed: \n", myList[chck], "\n\n"
-    ))
-  }
-  myList <- myList[grep(" \\(.*.\\)$", names(myList))]
-
-  checkEqs(dtWide, myList, gdxPath)
-}
-
-
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
@@ -115,10 +60,18 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   numberOfMifs <- 0
   for (gdxPath in gdxPaths) {
     numberOfMifs <- numberOfMifs + 1
-    message("Running convGDX2MIF(", gdxPath, ")...")
+    message("Running convGDX2MIF(", gdxPath, ") and checking integrity ..")
     mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
-    message("Checking integrity of created MIF...")
-    checkIntegrity(mifContent, gdxPath)
+
+    sumChecks <- piamInterfaces::checkSummations(
+      mifFile = mifContent, outputDirectory = NULL, summationsFile = "extractVariableGroups") %>%
+      mutate(!!sym("diff") := abs(!!sym("diff"))) %>%
+      filter(!!sym("diff") > 0.00001)
+
+    if (nrow(sumChecks) > 0) {
+      warning("Some summation checks have failed! Run piamInterfaces::checkSummations")
+    }
+
     magclass::write.report(
       x = magclass::collapseNames(mifContent),
       file = file.path(tempdir(), paste0(numberOfMifs, ".mif")),
