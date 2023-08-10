@@ -763,11 +763,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       mutate(
         variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
-  #browser()
-
   # if feedstocks are represented in REMIND
     if (!is.null(vm_FeedstocksCarbon)){
 
+      Feedstock_CDR_SubSec <- add_dimension(Feedstock_CDR, dim = 3.1, add = 'secInd37', nm = 'chemicals')
       out <- mbind(
       out,
       lapply(.mixer_to_selector(mixer), function(x) {
@@ -782,9 +781,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
               ),
               dim = 3)
           # subtract carbon contained in plastics that are not incinerated
-          # FIX me: this needs to be tested, I might be breaking the reporting with this:
           - dimSums(
-              ( mselect(Feedstock_CDR,    x[setdiff(names(x), 'variable')])
+              ( mselect(Feedstock_CDR_SubSec,    x[setdiff(names(x), 'variable')])
               ),
               dim = 3)
           ) * GtC_2_MtCO2,
