@@ -215,13 +215,19 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
   # Energy shares
   tmp <- mbind(
     tmp,
-    setNames( # assume 8 % for transmission losses and autoconsumption of power plants
+    setNames(
         100
       * ( output[,,"SE|Electricity|Non-Biomass Renewables (EJ/yr)"]
         + output[,,"SE|Electricity|Biomass (EJ/yr)"]
         )
-      / 1.08
-      / output[,,"FE|Electricity (EJ/yr)"],
+        # "gross electricity demand" is just the sum of electricity generation
+        #  plus imports (excluding output from pump hydro storage that has no
+        #   natural inflows)
+      / ( output[,,"SE|Electricity (EJ/yr)"]
+          # default net imports to zero if not present in data
+        + dimSums(mselect(tmp, list(d3 = 'SE|Electricity|Net Imports (EJ/yr)')),
+                  dim = 3)
+        ),
       "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))
 
   # Energy expenditures
