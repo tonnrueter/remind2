@@ -56,6 +56,7 @@ walk(items, showLinePlots, data = data)
 ```
 
 \newpage
+
 ## SDG 7
 
 ### access
@@ -93,7 +94,6 @@ walk(items, showLinePlots, data = data)
 items <- c(
   "PE|Non-Biomass Renewables",
   "SE|Electricity|Non-Biomass Renewables",
-  "FE|Share of renewables in gross demand",
   "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation")
 walk(items, showLinePlots, data = data)
 ```
@@ -141,6 +141,7 @@ walk(items, showLinePlots, data = data)
 ```
 
 \newpage
+
 ## SDG 12
 
 ```{r SDG 12}
@@ -164,7 +165,6 @@ items <- c(
   "Natural Land Transformation|Electricity")
 walk(items, showLinePlots, data = data)
 ```
-
 
 ## SDG 13
 

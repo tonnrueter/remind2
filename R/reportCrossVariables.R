@@ -216,9 +216,6 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
   tmp <- mbind(tmp,setNames(       # assume 8% for transmission losses and autoconsumption of power plants
     100 * (output[,,"SE|Electricity|Non-Biomass Renewables (EJ/yr)"] + output[,,"SE|Electricity|Biomass (EJ/yr)"])
     / 1.08 / output[,,"FE|Electricity (EJ/yr)"],    "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))
-  tmp <- mbind(tmp,setNames(       # divide biomass by 2 to roughly account for conversion losses
-    100 * (output[,,"PE|Non-Biomass Renewables (EJ/yr)"] + output[,,"PE|Biomass (EJ/yr)"]/2)
-    / output[,,"FE (EJ/yr)"],    "Final Energy|Share of renewables in gross demand|Rough estimation (Percent)"))
 
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
