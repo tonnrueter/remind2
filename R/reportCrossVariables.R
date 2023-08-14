@@ -1,5 +1,5 @@
-#' Read in GDX and calculate variables that need variables produced by other report*.R functions, used in convGDX2MIF.R for the
-#' reporting
+#' Read in GDX and calculate variables that need variables produced by other
+#' report*.R functions, used in convGDX2MIF.R for the reporting
 #'
 #' Read in GDX and calculate variables that need variables produced by other report*.R functions
 #'
@@ -12,7 +12,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #'
-#' @author Lavinia Baumstark
+#' @author Lavinia Baumstark, Falk Benke
 #' @examples
 #'
 #' \dontrun{reportCrossVariables(gdx)}
@@ -20,7 +20,8 @@
 #' @export
 #' @importFrom assertr assert not_na
 #' @importFrom gdx readGDX
-#' @importFrom magclass getYears getRegions mbind setNames dimSums mselect new.magpie setYears
+#' @importFrom magclass getYears getRegions mbind setNames dimSums mselect
+#' new.magpie setYears mcalc
 #' @importFrom luscale speed_aggregate
 #' @importFrom tibble as_tibble
 #' @importFrom tidyselect everything
@@ -212,12 +213,22 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
       "Welfare|per capita|Real and undiscounted|Yearly (arbitrary unit/yr)"))
 
   # Energy shares
-  tmp <- mbind(tmp,setNames(       # assume 8% for transmission losses and autoconsumption of power plants
-    100 * (output[,,"SE|Electricity|Non-Biomass Renewables (EJ/yr)"] + output[,,"SE|Electricity|Biomass (EJ/yr)"])
-    / 1.08 / output[,,"FE|Electricity (EJ/yr)"],    "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))
-  tmp <- mbind(tmp,setNames(       # divide biomass by 2 to roughly account for conversion losses
-    100 * (output[,,"PE|Non-Biomass Renewables (EJ/yr)"] + output[,,"PE|Biomass (EJ/yr)"]/2)
-    / output[,,"FE (EJ/yr)"],    "Final Energy|Share of renewables in gross demand|Rough estimation (Percent)"))
+  tmp <- mbind(
+    tmp,
+    setNames(
+        100
+      * ( output[,,"SE|Electricity|Non-Biomass Renewables (EJ/yr)"]
+        + output[,,"SE|Electricity|Biomass (EJ/yr)"]
+        )
+        # "gross electricity demand" is just the sum of electricity generation
+        #  plus imports (excluding output from pump hydro storage that has no
+        #   natural inflows)
+      / ( output[,,"SE|Electricity (EJ/yr)"]
+          # default net imports to zero if not present in data
+        + dimSums(mselect(tmp, list(d3 = 'SE|Electricity|Net Imports (EJ/yr)')),
+                  dim = 3)
+        ),
+      "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))
 
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
@@ -381,6 +392,89 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
         `colnames<-`(c(getSets(out, fulldim = FALSE), 'Value')) %>%
         as.magpie(spatial = 1, temporal = 2, data = 4)
     )
+  }
+
+  # add adjusted electricity from coal and other fossils ----
+  # read in projected electricity from waste and other fossils using energy demands from IEA Energy Balances.
+  projections <- read.csv(system.file("extdata", "se_otherfoss.cs4r", package = "remind2"),
+    sep = ",", skip = 0, header = FALSE
+  ) %>%
+    mutate(!!sym("V4") := as.numeric(!!sym("V4"))) %>%
+    as.magpie(temporal = 1, spatial = 2)
+
+  # add global values
+  tmp <- dimSums(projections, dim = 1)
+  tmp <- setItems(tmp, 1, "GLO")
+  projections <- mbind(projections, tmp)
+
+  # check if all required regions are in projections, otherwise skip
+  if (length(setdiff(getItems(out, dim = 1), getItems(projections, dim = 1))) == 0) {
+    # if projections have more regions, remove extra regions
+    if (length(setdiff(getItems(projections, dim = 1), getItems(out, dim = 1))) > 0) {
+      projections <- projections[intersect(getItems(projections, dim = 1), getItems(out, dim = 1)), , ]
+    }
+
+    y <- intersect(getYears(projections), getYears(out))
+    out <- mbind(out, projections[, y, ])
+
+    # SE|Electricity|Other Fossil|Other Fossil Adjusted = min(
+    # SE|Electricity|Coal|w/o CC, SE|Electricity|Other Fossil|Projected);
+    tmp <- mbind(
+      output[, , "SE|Electricity|Coal|w/o CC (EJ/yr)"],
+      out[, , "SE|Electricity|Other Fossil|Projected (EJ/yr)"]
+    )
+    tmp <- mcalc(tmp, `SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)` ~
+        ifelse(`SE|Electricity|Coal|w/o CC (EJ/yr)` < `SE|Electricity|Other Fossil|Projected (EJ/yr)`,
+          `SE|Electricity|Coal|w/o CC (EJ/yr)`, `SE|Electricity|Other Fossil|Projected (EJ/yr)`
+        ),
+      append = FALSE
+    )
+    out <- mbind(out, tmp)
+
+    # SE|Electricity|Coal|w/o CC|Other Fossil Adjusted = SE|Electricity|Coal|w/o CC -
+    # SE|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "SE|Electricity|Coal|w/o CC (EJ/yr)"] -
+      out[, , "SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)"]
+    tmp[tmp < 0] <- 0
+    tmp <- setItems(tmp, 3, "SE|Electricity|Coal|w/o CC|Other Fossil Adjusted (EJ/yr)")
+    out <- mbind(out, tmp)
+
+    # SE|Electricity|Coal|Other Fossil Adjusted = SE|Electricity|Coal -
+    # SE|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "SE|Electricity|Coal (EJ/yr)"] -
+      out[, , "SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)"]
+    tmp[tmp < 0] <- 0
+    tmp <- setItems(tmp, 3, "SE|Electricity|Coal|Other Fossil Adjusted (EJ/yr)")
+    out <- mbind(out, tmp)
+
+    # OtherFossilShare =  SE|Electricity|Other Fossil|Other Fossil Adjusted /
+    # SE|Electricity|Coal|w/o CC;
+    share <- out[, , "SE|Electricity|Other Fossil|Other Fossil Adjusted (EJ/yr)"] /
+      output[, , "SE|Electricity|Coal|w/o CC (EJ/yr)"]
+    share[is.na(share)] <- 0
+    share <- setItems(share, 3, "OtherFossilShare")
+
+    # Cap|Electricity|Other Fossil|Other Fossil Adjusted = Cap|Electricity|Coal|w/o CC * OtherFossilShare;
+    tmp <- output[, , "Cap|Electricity|Coal|w/o CC (GW)"] * share
+    tmp <- setItems(tmp, 3, "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)")
+    out <- mbind(out, tmp)
+
+    # Cap|Electricity|Coal|w/o CC|Other Fossil Adjusted = Cap|Electricity|Coal|w/o CC -
+    # Cap|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "Cap|Electricity|Coal|w/o CC (GW)"] -
+      out[, , "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)"]
+    tmp <- setItems(tmp, 3, "Cap|Electricity|Coal|w/o CC|Other Fossil Adjusted (GW)")
+    out <- mbind(out, tmp)
+
+    # Cap|Electricity|Coal|Other Fossil Adjusted = Cap|Electricity|Coal -
+    # Cap|Electricity|Other Fossil|Other Fossil Adjusted;
+    tmp <- output[, , "Cap|Electricity|Coal (GW)"] -
+      out[, , "Cap|Electricity|Other Fossil|Other Fossil Adjusted (GW)"]
+    tmp <- setItems(tmp, 3, "Cap|Electricity|Coal|Other Fossil Adjusted (GW)")
+    out <- mbind(out, tmp)
+  } else {
+    warning("`SE|Electricity|Coal|Other Fossil Adjusted` and related variables
+            could not be calculated for this regional resolution")
   }
 
   return(out)

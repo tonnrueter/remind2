@@ -75,7 +75,7 @@ showMultiLinePlotsByVariable(data, items[4:5], "GDP|PPP pCap")
 
 
 ## Transport
-### Energy Services for Passenger Transport
+### Energy Services for Passenger Transport per Capita - LinePlot
 ```{r ES Transport}
 items <- c(
   "ES|Transport|Pass pCap",
@@ -85,8 +85,8 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-```{r ES Transport passenger per capita}
-## ---- ES passenger transport per capita (bar graph)----
+### Energy Services for Passenger Transport LDV per Capita - StackedBars
+```{r ES Transport passenger LDV per capita}
 items <- c(
   "ES|Transport|Pass|Road|LDV|BEV pCap",
   "ES|Transport|Pass|Road|LDV|FCEV pCap",
@@ -96,7 +96,7 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-### Energy Services for Freight Transport per Capita
+### Energy Services for Freight Transport per Capita - LinePlot
 ```{r ES transport freight per capita}
 items <- c(
   "ES|Transport|Freight pCap")
@@ -104,7 +104,7 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-
+### Energy Services for Freight Road Transport per Capita - StackedBars
 ```{r ES transport freight road per capita}
 items <- c(
   "ES|Transport|Freight|Road|Electric pCap",
@@ -114,11 +114,11 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-### LDV Vehicles Stock
-```{r LDV Vehicles Stock}
-tot <- "Est LDV Stock"
+### LDV Vehicles Stock - EDGE-T
+```{r LDV Vehicles Stock - EDGE-T}
+tot <- "Stock|Transport|LDV"
 items <- c(
-  "Stock|Transport|LDV",
+  "Stock|Transport|LDV|Liquids",
   "Stock|Transport|LDV|BEV",
   "Stock|Transport|LDV|FCEV",
   "Stock|Transport|LDV|Hybrid Electric",
@@ -126,7 +126,8 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-```{r LDV Vehicles Stock}
+### LDV Vehicles Stock - TransportComplex
+```{r LDV Vehicles Stock - TransportComplex}
 tot <- "Est LDV Stock"
 items <- c(
   "Est EV LDV Stock",
@@ -135,11 +136,11 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### LDV Vehicles Sales
-```{r LDV Vehicles Sales}
-tot <- "Est LDV Sales"
+### LDV Vehicles Sales - EDGE-T
+```{r LDV Vehicles Sales - EDGE-T}
+tot <- "Sales|Transport|LDV"
 items <- c(
-  "Sales|Transport|LDV",
+  "Sales|Transport|LDV|Liquids",
   "Sales|Transport|LDV|BEV",
   "Sales|Transport|LDV|FCEV",
   "Sales|Transport|LDV|Hybrid Electric",
@@ -147,7 +148,8 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-```{r LDV Vehicles Sales}
+### LDV Vehicles Sales - TransportComplex
+```{r LDV Vehicles Sales - TransportComplex}
 tot <- "Est LDV Sales"
 items <- c(
   "Est EV LDV Sales",
@@ -156,7 +158,51 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### non-LDV Vehicles Stock
+### Truck Stock - EDGE-T
+```{r Truck Stock}
+tot <- "Stock|Transport|Truck"
+items <- c(
+  "Stock|Transport|Truck|Liquids",
+  "Stock|Transport|Truck|Electric",
+  "Stock|Transport|Truck|FCEV",
+  "Stock|Transport|Truck|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Truck Sales - EDGE-T
+```{r Truck Sales}
+tot <- "Sales|Transport|Truck"
+items <- c(
+  "Sales|Transport|Truck|Liquids",
+  "Sales|Transport|Truck|Electric",
+  "Sales|Transport|Truck|FCEV",
+  "Sales|Transport|Truck|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Bus Stock - EDGE-T
+```{r Bus Stock}
+tot <- "Stock|Transport|Bus"
+items <- c(
+  "Stock|Transport|Bus|Liquids",
+  "Stock|Transport|Bus|Electric",
+  "Stock|Transport|Bus|FCEV",
+  "Stock|Transport|Bus|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Bus Sales - EDGE-T
+```{r Bus Sales}
+tot <- "Sales|Transport|Bus"
+items <- c(
+  "Sales|Transport|Bus|Liquids",
+  "Sales|Transport|Bus|Electric",
+  "Sales|Transport|Bus|FCEV",
+  "Sales|Transport|Bus|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### non-LDV Vehicles Stock - TransportComplex
 ```{r non-LDV Vehicles Stock}
 tot <- "Services and Products|Transport|non-LDV|Stock|uedit"
 items <- c(
@@ -166,7 +212,7 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### non-LDV Vehicles Sales
+### non-LDV Vehicles Sales - TransportComplex
 ```{r non-LDV Vehicles Sales}
 tot <- "Services and Products|Transport|non-LDV|Sales|uedit"
 items <- c(
