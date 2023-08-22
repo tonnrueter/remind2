@@ -240,31 +240,50 @@ items <- c("Production|Industry|Steel|Primary",
 
 dPlot <- data %>%
   filter(variable %in% items) %>%
-  mutate(foo = shorten_legend(variable)) %>%
-  order.levels(foo = rev(shorten_legend(items)))
+  mutate(variable = shorten_legend(variable)) %>%
+  order.levels(variable = rev(shorten_legend(items)),
+               scenario = unique(c('historical', levels(data$scenario))))
 
 # Show at max 5 scenario rows by 7 region column plots
 for (regions in bin_distribute(getRegs(dPlot), 7)) {
-  for (scenarios in bin_distribute(getScenarios(dPlot), 5)) {
-    suppressWarnings(
+  for (scenarios in bin_distribute(setdiff(getScenarios(dPlot), 'historical'),
+                                   5)) {
+    suppressWarnings(  
       p <- ggplot_bar_remind_vts(
         data = dPlot %>%
           filter(scenario %in% scenarios,
                  region %in% regions),
-        mapping = aes(x = period, y = value, fill = foo),
+        mapping = aes(x = period, y = value, fill = variable),
         gaps = 0) +
         scale_fill_discrete(breaks = shorten_legend(items),
                             name = attr(shorten_legend(items), "front")) +
         # fix y-axis across regions (columns)
         geom_blank(
           data = dPlot %>%
-          filter(scenario %in% scenarios,
-                 region %in% regions) %>%
+            filter(scenario %in% scenarios,
+                   region %in% regions) %>%
             group_by(region, period, scenario) %>%
             summarise(value = sum(value), .groups = "drop_last") %>%
             mutate(value = max(value)) %>%
             add_remind_timesteps_columns(),
           mapping = aes(x = xpos, y = value)) +
+        geom_step(data = dPlot %>% 
+                    filter(region %in% regions,
+                           'historical' == scenario) %>% 
+                    complete(nesting(model, region, variable, unit, period, 
+                                     value),
+                             scenario = scenarios) %>% 
+                    filter('historical' != scenario) %>% 
+                    group_by(model, scenario, region, unit, period) %>% 
+                    arrange(model, scenario, region, unit, period,
+                            desc(variable)) %>% 
+                    mutate(value = cumsum(value)) %>% 
+                    ungroup(),
+                  mapping = aes(x = period, y = value, colour = 'historic',
+                                group = interaction(region, variable)),
+                  direction = 'vh') +
+        scale_colour_manual(values = c('historic' = 'black'),
+                            name = NULL) +
         facet_wrap(~ interaction(region, scenario, sep = " "),
                    nrow = length(scenarios), scales = "free_y") +
         labs(x = NULL, y = dPlot %>% pull(unit) %>% unique()) +
@@ -275,6 +294,31 @@ for (regions in bin_distribute(getRegs(dPlot), 7)) {
     cat("\n\n")
   }
 }
+
+p <- ggplot() +
+  geom_line(data = dPlot %>% 
+              filter(2100 >= period) %>% 
+              group_by(scenario, region, period) %>% 
+              mutate(value = value / sum(value),
+                     variable = paste(variable, 'Share')) %>% 
+              ungroup(),
+            mapping = aes(x = period, y = value, colour = scenario,
+                          linetype = variable)) +
+  scale_colour_manual(
+    values = c(gg_colour_hue(setdiff(levels(dPlot$scenario), 'historical')),
+               c('historical' = 'black')),
+    name = NULL) +
+  scale_linetype_discrete(name = NULL, 
+                          guide = guide_legend(nrow = 2)) +
+  scale_y_continuous(breaks = seq(0, 1, 0.2),
+                     minor_breaks = seq(0.1, 0.9, 0.2)) +
+  facet_wrap(~ region) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(legend.position = 'bottom')
+
+plot(p)
+cat('\n\n')
 ```
 
 ### Subsector per-Capita Production 
