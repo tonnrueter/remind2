@@ -703,7 +703,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
-      out.reporting[, fixedyears, ] <- priceRef[getRegions(out), fixedyears, getNames(out)]
+      joinedNames <- intersect(getNames(out), getNames(priceRef))
+      joinedRegions <- intersect(getRegions(priceRef), getRegions(out))
+      out.reporting[joinedRegions, fixedyears, joinedNames] <- priceRef[joinedRegions, fixedyears, joinedNames]
     }
   }
 
