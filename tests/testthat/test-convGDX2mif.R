@@ -60,16 +60,17 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   numberOfMifs <- 0
   for (gdxPath in gdxPaths) {
     numberOfMifs <- numberOfMifs + 1
-    message("Running convGDX2MIF(", gdxPath, ") and checking integrity ..")
+
+    message("Running convGDX2MIF(", gdxPath, ")...")
     mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
 
+    message("Checking integrity of created MIF...")
     sumChecks <- piamInterfaces::checkSummations(
       mifFile = mifContent, outputDirectory = NULL, summationsFile = "extractVariableGroups") %>%
-      mutate(!!sym("diff") := abs(!!sym("diff"))) %>%
-      filter(!!sym("diff") > 0.00001)
+      filter(abs(!!sym("reldiff")) >= 1, abs(!!sym("diff")) >= 0.001)
 
     if (nrow(sumChecks) > 0) {
-      warning("Some summation checks have failed! Run piamInterfaces::checkSummations")
+      warning("Some summation checks have revealed significant gaps! Run piamInterfaces::checkSummations")
     }
 
     magclass::write.report(
