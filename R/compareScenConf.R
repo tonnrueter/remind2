@@ -75,8 +75,8 @@ compareScenConf <- function(fileList = NULL, remindPath = "/p/projects/rd3mod/gi
     # overwrite readCheckScenarioConfig
     source(file.path(remindPath, "scripts", "start", "readCheckScenarioConfig.R"), local = TRUE)
   }
-  settings1 <- readCheckScenarioConfig(fileList[[1]], remindPath = remindPath, fillWithDefault = TRUE)
-  settings2 <- readCheckScenarioConfig(fileList[[2]], remindPath = remindPath, fillWithDefault = TRUE)
+  settings1 <- readCheckScenarioConfig(fileList[[1]], remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
+  settings2 <- readCheckScenarioConfig(fileList[[2]], remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
 
   # for mapping files
   if (is.null(row.names)) {

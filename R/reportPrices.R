@@ -703,7 +703,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
-      out.reporting[, fixedyears, ] <- priceRef[getRegions(out), fixedyears, getNames(out)]
+      joinedNames <- intersect(getNames(out), getNames(priceRef))
+      joinedRegions <- intersect(getRegions(priceRef), getRegions(out))
+      out.reporting[joinedRegions, fixedyears, joinedNames] <- priceRef[joinedRegions, fixedyears, joinedNames]
     }
   }
 
@@ -783,7 +785,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   #
-  out <- mbind(out,setNames(abs(pm_taxCO2eq) * 1000 * 12/44, "Price|Carbon|Guardrail (US$2005/t CO2)"))
   CaptureBal_tmp <- new.magpie(getRegions(out), getYears(out), fill = NA)
   CaptureBal_tmp[,getYears(balcapture.m),] <- balcapture.m
   out <- mbind(out, setNames(CaptureBal_tmp / (budget.m+1e-10) / 3.66 * 1e3,
@@ -818,6 +819,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   if (!is.null(pm_taxCO2eqSCC)) {
       out <- mbind(out,setNames(abs(pm_taxCO2eqSCC) * 1000 * 12/44, "Price|Carbon|SCC (US$2005/t CO2)"))
+      out <- mbind(out,setNames(out[, , "Price|Carbon (US$2005/t CO2)"] - out[, , "Price|Carbon|SCC (US$2005/t CO2)"], "Price|Carbon|Guardrail (US$2005/t CO2)"))
+  } else {
+      out <- mbind(out,setNames(out[, , "Price|Carbon (US$2005/t CO2)"], "Price|Carbon|Guardrail (US$2005/t CO2)"))
   }
 
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
