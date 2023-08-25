@@ -10,6 +10,22 @@
 library(dplyr)
 library(gdx)
 
+checkVariableNames <- function(out) {
+
+  barspace <- grep("[\\| ]{2}", getNames(out, dim = 3), value = TRUE)
+
+  if (length(barspace) > 0) {
+    warning("These variable names have wrong bars and spaces: ", paste(barspace, collapse = ", "))
+  }
+
+  NAvar <- grep("[\\|\\( ]NA[\\|\\) ]|^NA", getNames(out, dim = 3), value = TRUE)
+  NAvar <- NAvar[! grepl("^Services and Products\\|Transport\\|non-LDV\\|S", NAvar)] # unit NA, but ok, see issue #408
+  if (length(NAvar) > 0) {
+    warning("These variables and units contain NA: ", paste(NAvar, collapse = ", "))
+  }
+}
+
+
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
@@ -63,6 +79,8 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
 
     message("Running convGDX2MIF(", gdxPath, ")...")
     mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
+
+    checkVariableNames(mifContent)
 
     magclass::write.report(
       x = magclass::collapseNames(mifContent),
