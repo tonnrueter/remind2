@@ -115,6 +115,18 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
+  message("Checking integrity of created MIF...")
+
+  sumChecks <- piamInterfaces::checkSummations(
+    mifFile = output, outputDirectory = NULL,
+    summationsFile = "extractVariableGroups",
+    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = FALSE
+  ) %>% filter(abs(!!sym("diff")) >= 1.5e-8)
+
+  if (nrow(sumChecks) > 0) {
+    warning("Summation checks have revealed some gaps! Run piamInterfaces::checkSummations")
+  }
+
   # either write the *.mif or return the magpie object
   if(!is.null(file)) {
     write.report(output,file=file,ndigit=7)
