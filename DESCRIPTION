@@ -62,7 +62,7 @@ Imports:
     madrat,
     mip (>= 0.139.1),
     openxlsx,
-    piamInterfaces (>= 0.0.62),
+    piamInterfaces (>= 0.0.102),
     plotly,
     quitte,
     readr,

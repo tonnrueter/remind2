@@ -115,8 +115,6 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
-  message("Checking integrity of created MIF...")
-
   sumChecks <- piamInterfaces::checkSummations(
     mifFile = output, outputDirectory = NULL,
     summationsFile = "extractVariableGroups",
@@ -139,7 +137,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   }
   else {
     # return summation errors as attribute
-    if (is.null(file)) {
+    if (nrow(sumChecks) > 0) {
       warning("Summation checks have revealed some gaps! ",
               "See `summation_errors` attribute on output for details.")
       attr(output, 'summation_errors') <- sumChecks
