@@ -212,8 +212,8 @@ showLinePlots(bind_rows(data, newRows) %>% as.quitte(), item)
 
 ```{r CO2 Transport}
 items <- c(
-  "Emi|CO2|Energy|Demand|Transport", # scenario
-  "Emi|CO2|Transport|Demand") # historical
+  "Emi|CO2|Energy|Demand|Transport"
+  ) # scenario
 showLinePlots(data, items)
 ```
 

@@ -10,7 +10,7 @@ test_that("Test if REMIND reporting produces mandatory variables for Ariadne rep
                        mode = "wb", quiet = TRUE
   )
 
-  mif <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
+  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath))
 
   computedVariables <- getItems(mif, dim = 3.3)
 

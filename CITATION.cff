@@ -1,0 +1,70 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using the metadata from this file.
+type: software
+title: 'remind2: The REMIND R package (2nd generation)'
+version: 1.115.2
+date-released: '2023-08-28'
+abstract: Contains the REMIND-specific routines for data and model output manipulation.
+authors:
+- family-names: Rodrigues
+  given-names: Renato
+  email: renato.rodrigues@pik-potsdam.de
+- family-names: Baumstark
+  given-names: Lavinia
+- family-names: Benke
+  given-names: Falk
+- family-names: Dietrich
+  given-names: Jan Philipp
+- family-names: Dirnaichner
+  given-names: Alois
+- family-names: Führlich
+  given-names: Pascal
+- family-names: Giannousakis
+  given-names: Anastasis
+- family-names: Hasse
+  given-names: Robin
+- family-names: Hilaire
+  given-names: Jérome
+- family-names: Klein
+  given-names: David
+- family-names: Koch
+  given-names: Johannes
+- family-names: Kowalczyk
+  given-names: Katarzyna
+- family-names: Levesque
+  given-names: Antoine
+- family-names: Malik
+  given-names: Aman
+- family-names: Merfort
+  given-names: Anne
+- family-names: Merfort
+  given-names: Leon
+- family-names: Morena-Leiva
+  given-names: Simón
+- family-names: Pehl
+  given-names: Michaja
+- family-names: Pietzcker
+  given-names: Robert
+- family-names: Rauner
+  given-names: Sebastian
+- family-names: Richters
+  given-names: Oliver
+- family-names: Rottoli
+  given-names: Marianna
+- family-names: Schötz
+  given-names: Christof
+- family-names: Schreyer
+  given-names: Felix
+- family-names: Siala
+  given-names: Kais
+- family-names: Sörgel
+  given-names: Björn
+- family-names: Spahr
+  given-names: Mike
+- family-names: Strefler
+  given-names: Jessica
+- family-names: Verpoort
+  given-names: Philipp
+license: LGPL-3.0
+repository-code: https://github.com/pik-piam/remind2
+

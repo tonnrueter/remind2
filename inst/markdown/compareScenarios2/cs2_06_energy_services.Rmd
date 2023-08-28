@@ -75,7 +75,7 @@ showMultiLinePlotsByVariable(data, items[4:5], "GDP|PPP pCap")
 
 
 ## Transport
-### Energy Services for Passenger Transport
+### Energy Services for Passenger Transport per Capita - LinePlot
 ```{r ES Transport}
 items <- c(
   "ES|Transport|Pass pCap",
@@ -85,8 +85,8 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-```{r ES Transport passenger per capita}
-## ---- ES passenger transport per capita (bar graph)----
+### Energy Services for Passenger Transport LDV per Capita - StackedBars
+```{r ES Transport passenger LDV per capita}
 items <- c(
   "ES|Transport|Pass|Road|LDV|BEV pCap",
   "ES|Transport|Pass|Road|LDV|FCEV pCap",
@@ -96,7 +96,7 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-### Energy Services for Freight Transport per Capita
+### Energy Services for Freight Transport per Capita - LinePlot
 ```{r ES transport freight per capita}
 items <- c(
   "ES|Transport|Freight pCap")
@@ -104,7 +104,7 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-
+### Energy Services for Freight Road Transport per Capita - StackedBars
 ```{r ES transport freight road per capita}
 items <- c(
   "ES|Transport|Freight|Road|Electric pCap",
@@ -114,8 +114,20 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-### LDV Vehicles Stock
-```{r LDV Vehicles Stock}
+### LDV Vehicles Stock - EDGE-T
+```{r LDV Vehicles Stock - EDGE-T}
+tot <- "Stock|Transport|LDV"
+items <- c(
+  "Stock|Transport|LDV|Liquids",
+  "Stock|Transport|LDV|BEV",
+  "Stock|Transport|LDV|FCEV",
+  "Stock|Transport|LDV|Hybrid Electric",
+  "Stock|Transport|LDV|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### LDV Vehicles Stock - TransportComplex
+```{r LDV Vehicles Stock - TransportComplex}
 tot <- "Est LDV Stock"
 items <- c(
   "Est EV LDV Stock",
@@ -124,8 +136,20 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### LDV Vehicles Sales
-```{r LDV Vehicles Sales}
+### LDV Vehicles Sales - EDGE-T
+```{r LDV Vehicles Sales - EDGE-T}
+tot <- "Sales|Transport|LDV"
+items <- c(
+  "Sales|Transport|LDV|Liquids",
+  "Sales|Transport|LDV|BEV",
+  "Sales|Transport|LDV|FCEV",
+  "Sales|Transport|LDV|Hybrid Electric",
+  "Sales|Transport|LDV|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### LDV Vehicles Sales - TransportComplex
+```{r LDV Vehicles Sales - TransportComplex}
 tot <- "Est LDV Sales"
 items <- c(
   "Est EV LDV Sales",
@@ -134,7 +158,51 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### non-LDV Vehicles Stock
+### Truck Stock - EDGE-T
+```{r Truck Stock}
+tot <- "Stock|Transport|Truck"
+items <- c(
+  "Stock|Transport|Truck|Liquids",
+  "Stock|Transport|Truck|Electric",
+  "Stock|Transport|Truck|FCEV",
+  "Stock|Transport|Truck|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Truck Sales - EDGE-T
+```{r Truck Sales}
+tot <- "Sales|Transport|Truck"
+items <- c(
+  "Sales|Transport|Truck|Liquids",
+  "Sales|Transport|Truck|Electric",
+  "Sales|Transport|Truck|FCEV",
+  "Sales|Transport|Truck|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Bus Stock - EDGE-T
+```{r Bus Stock}
+tot <- "Stock|Transport|Bus"
+items <- c(
+  "Stock|Transport|Bus|Liquids",
+  "Stock|Transport|Bus|Electric",
+  "Stock|Transport|Bus|FCEV",
+  "Stock|Transport|Bus|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### Bus Sales - EDGE-T
+```{r Bus Sales}
+tot <- "Sales|Transport|Bus"
+items <- c(
+  "Sales|Transport|Bus|Liquids",
+  "Sales|Transport|Bus|Electric",
+  "Sales|Transport|Bus|FCEV",
+  "Sales|Transport|Bus|NG")
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### non-LDV Vehicles Stock - TransportComplex
 ```{r non-LDV Vehicles Stock}
 tot <- "Services and Products|Transport|non-LDV|Stock|uedit"
 items <- c(
@@ -144,7 +212,7 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### non-LDV Vehicles Sales
+### non-LDV Vehicles Sales - TransportComplex
 ```{r non-LDV Vehicles Sales}
 tot <- "Services and Products|Transport|non-LDV|Sales|uedit"
 items <- c(
@@ -172,31 +240,50 @@ items <- c("Production|Industry|Steel|Primary",
 
 dPlot <- data %>%
   filter(variable %in% items) %>%
-  mutate(foo = shorten_legend(variable)) %>%
-  order.levels(foo = rev(shorten_legend(items)))
+  mutate(variable = shorten_legend(variable)) %>%
+  order.levels(variable = rev(shorten_legend(items)),
+               scenario = unique(c('historical', levels(data$scenario))))
 
 # Show at max 5 scenario rows by 7 region column plots
 for (regions in bin_distribute(getRegs(dPlot), 7)) {
-  for (scenarios in bin_distribute(getScenarios(dPlot), 5)) {
-    suppressWarnings(
+  for (scenarios in bin_distribute(setdiff(getScenarios(dPlot), 'historical'),
+                                   5)) {
+    suppressWarnings(  
       p <- ggplot_bar_remind_vts(
         data = dPlot %>%
           filter(scenario %in% scenarios,
                  region %in% regions),
-        mapping = aes(x = period, y = value, fill = foo),
+        mapping = aes(x = period, y = value, fill = variable),
         gaps = 0) +
         scale_fill_discrete(breaks = shorten_legend(items),
                             name = attr(shorten_legend(items), "front")) +
         # fix y-axis across regions (columns)
         geom_blank(
           data = dPlot %>%
-          filter(scenario %in% scenarios,
-                 region %in% regions) %>%
+            filter(scenario %in% scenarios,
+                   region %in% regions) %>%
             group_by(region, period, scenario) %>%
             summarise(value = sum(value), .groups = "drop_last") %>%
             mutate(value = max(value)) %>%
             add_remind_timesteps_columns(),
           mapping = aes(x = xpos, y = value)) +
+        geom_step(data = dPlot %>% 
+                    filter(region %in% regions,
+                           'historical' == scenario) %>% 
+                    complete(nesting(model, region, variable, unit, period, 
+                                     value),
+                             scenario = scenarios) %>% 
+                    filter('historical' != scenario) %>% 
+                    group_by(model, scenario, region, unit, period) %>% 
+                    arrange(model, scenario, region, unit, period,
+                            desc(variable)) %>% 
+                    mutate(value = cumsum(value)) %>% 
+                    ungroup(),
+                  mapping = aes(x = period, y = value, colour = 'historic',
+                                group = interaction(region, variable)),
+                  direction = 'vh') +
+        scale_colour_manual(values = c('historic' = 'black'),
+                            name = NULL) +
         facet_wrap(~ interaction(region, scenario, sep = " "),
                    nrow = length(scenarios), scales = "free_y") +
         labs(x = NULL, y = dPlot %>% pull(unit) %>% unique()) +
@@ -207,6 +294,31 @@ for (regions in bin_distribute(getRegs(dPlot), 7)) {
     cat("\n\n")
   }
 }
+
+p <- ggplot() +
+  geom_line(data = dPlot %>% 
+              filter(2100 >= period) %>% 
+              group_by(scenario, region, period) %>% 
+              mutate(value = value / sum(value),
+                     variable = paste(variable, 'Share')) %>% 
+              ungroup(),
+            mapping = aes(x = period, y = value, colour = scenario,
+                          linetype = variable)) +
+  scale_colour_manual(
+    values = c(gg_colour_hue(setdiff(levels(dPlot$scenario), 'historical')),
+               c('historical' = 'black')),
+    name = NULL) +
+  scale_linetype_discrete(name = NULL, 
+                          guide = guide_legend(nrow = 2)) +
+  scale_y_continuous(breaks = seq(0, 1, 0.2),
+                     minor_breaks = seq(0.1, 0.9, 0.2)) +
+  facet_wrap(~ region) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(legend.position = 'bottom')
+
+plot(p)
+cat('\n\n')
 ```
 
 ### Subsector per-Capita Production 

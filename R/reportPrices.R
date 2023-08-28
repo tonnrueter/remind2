@@ -11,6 +11,8 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency for Moving Avg prices before cm_startyear
 #'
 #' @return MAgPIE object - contains the price variables
 #' @author Alois Dirnaichner, Felix Schreyer, David Klein, Renato Rodrigues, Falk Benke
@@ -30,7 +32,7 @@
 
 #' @export
 reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
-                         t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
+                         t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150),gdx_ref=NULL) {
 
   ## bind to output object
   if(is.null(output)){
@@ -41,7 +43,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     message("- reportFE ", appendLF = FALSE)
     output <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
     message("- reportEmi ", appendLF = FALSE)
-    output <- mbind(output, reportEmi(gdx, regionSubsetList = regionSubsetList, t = t))
+    output <- mbind(output, reportEmi(gdx, output = output, regionSubsetList = regionSubsetList, t = t))
     message("- reportExtraction ", appendLF = FALSE)
     output <- mbind(output, reportExtraction(gdx,regionSubsetList = regionSubsetList, t = t))
     message("- reportMacroEconomy")
@@ -100,6 +102,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   esm2macro.m    <- readGDX(gdx,name='q35_esm2macro',types="equations",field="m",format="first_found", react = "silent")[, t,]
 
   cm_emiscen     <- readGDX(gdx,name='cm_emiscen',format="first_found")
+  cm_startyear   <- as.integer(readGDX(gdx,name='cm_startyear',format='simplest'))
 
   q37_limit_secondary_steel_share.m <- readGDX(
     gdx, name = 'q37_limit_secondary_steel_share', types = 'equation',
@@ -143,7 +146,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   sector <- emi_sectors <- emiMkt <- all_emiMkt <- NULL
   fe.entries <- entyFe2Sector %>%
-                  left_join(sector2emiMkt, by = "emi_sectors") %>%
+                  left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
                   rename( sector = emi_sectors, emiMkt = all_emiMkt) %>%
                   filter( sector != "CDR")
 
@@ -310,8 +313,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     all_enty <- all_enty1 <- NULL
     se.fe.sector.emiMkt <- se2fe[,-3] %>% #remove te dimension
       rename(se = all_enty, fe = all_enty1) %>% # rename dimensions
-      left_join(entyFe2Sector %>% rename(fe = all_enty, sector = emi_sectors), by = "fe") %>% # adding sectors column
-      left_join(sector2emiMkt %>% rename(emiMkt = all_emiMkt, sector = emi_sectors), by = "sector") # adding emiMkt column
+      left_join(entyFe2Sector %>% rename(fe = all_enty, sector = emi_sectors), by = "fe", relationship = "many-to-many") %>% # adding sectors column
+      left_join(sector2emiMkt %>% rename(emiMkt = all_emiMkt, sector = emi_sectors), by = "sector", relationship = "many-to-many") # adding emiMkt column
 
     pm_FEPrice_by_SE_Sector_EmiMkt <- pm_FEPrice_by_SE_Sector_EmiMkt[,YearsFrom2005,unique(paste(se.fe.sector.emiMkt$se,se.fe.sector.emiMkt$fe,se.fe.sector.emiMkt$sector,se.fe.sector.emiMkt$emiMkt,sep="."))]*tdptwyr2dpgj
     pm_FEPrice_by_Sector_EmiMkt    <-    pm_FEPrice_by_Sector_EmiMkt[,YearsFrom2005,unique(paste(                       se.fe.sector.emiMkt$fe,se.fe.sector.emiMkt$sector,se.fe.sector.emiMkt$emiMkt,sep="."))]*tdptwyr2dpgj
@@ -347,6 +350,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
         feh2s = "Hydrogen",
         feh2t = "Hydrogen",
         fegas = "Gases",
+        fegat = "Gases",
         fehes = "Heat"
       ),
       fe_sector = c(
@@ -375,16 +379,20 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       )
     )
 
-    ## add marginal price variables to the reporting
-    addVar <- function(input,var,name,fe,se,sector,emiMkt){ # function to add only variables if they were not saved already
-      if(name %in% getItems(input,3)){
+    ## add rawdata price variables, calculated from marginals, to the reporting
+    addVar <- function(input,var,namevector,fe,se,sector,emiMkt) { # function to add only variables if they were not saved already
+      name <- paste0("Price|Final Energy|", paste(namevector, collapse = "|"), " (US$2005/GJ)")
+      name <- gsub("||", "|", name, fixed = TRUE)
+      name <- gsub("| (", " (", name, fixed = TRUE)
+      if (any(is.na(namevector))) warning("In reportPrices, addVar called with a NA value: ", name)
+      if (name %in% getItems(input, 3)){
         return(NULL)
       } else {
         return(setNames(var[, , paste(c(se,fe,sector,emiMkt),collapse = ".")] , name))
       }
     }
 
-    for(i in 1:nrow(se.fe.sector.emiMkt)) {
+    for (i in 1:nrow(se.fe.sector.emiMkt)) {
       curr_fe = se.fe.sector.emiMkt[i,]$fe
       curr_se = se.fe.sector.emiMkt[i,]$se
       curr_sector = se.fe.sector.emiMkt[i,]$sector
@@ -393,21 +401,21 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_SE_Sector_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$emiMkt[curr_emiMKt], "|", varName$fe[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                          namevector = c(varName$sector[curr_sector], varName$emiMkt[curr_emiMKt], varName$fe[curr_fe], varName$se[curr_se]),
                           fe = curr_fe, se = curr_se, sector = curr_sector, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_Sector_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$emiMkt[curr_emiMKt], "|", varName$fe[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$sector[curr_sector], varName$emiMkt[curr_emiMKt], varName$fe[curr_fe]),
                           fe = curr_fe, se = NULL, sector = curr_sector, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                     addVar(input = out,
                            var = pm_FEPrice_by_SE_Sector,
-                           name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$fe[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                           namevector = c(varName$sector[curr_sector], varName$fe[curr_fe], varName$se[curr_se]),
                            fe = curr_fe, se = curr_se, sector = curr_sector, emiMkt = NULL
                    )
       )
@@ -415,35 +423,35 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_SE_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$emiMkt[curr_emiMKt], "|", varName$fe_sector[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                          namevector = c(varName$emiMkt[curr_emiMKt], varName$fe_sector[curr_fe], varName$se[curr_se]),
                           fe = curr_fe, se = curr_se, sector = NULL, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_SE,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$fe_sector[curr_fe], "|", varName$se[curr_se], " (US$2005/GJ)"))),
+                          namevector = c(varName$fe_sector[curr_fe], varName$se[curr_se]),
                           fe = curr_fe, se = curr_se, sector = NULL, emiMkt = NULL
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_Sector,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$sector[curr_sector], "|", varName$fe[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$sector[curr_sector], varName$fe[curr_fe]),
                           fe = curr_fe, se = NULL, sector = curr_sector, emiMkt = NULL
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_EmiMkt,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$emiMkt[curr_emiMKt], "|", varName$fe_sector[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$emiMkt[curr_emiMKt], varName$fe_sector[curr_fe]),
                           fe = curr_fe, se = NULL, sector = NULL, emiMkt = curr_emiMKt
                    )
       )
       out <- mbind(out,
                    addVar(input = out,
                           var = pm_FEPrice_by_FE,
-                          name = gsub("\\| \\("," \\(",gsub("\\|\\|","|",paste0("Price|Marginal|Final Energy|", varName$fe_sector[curr_fe], " (US$2005/GJ)"))),
+                          namevector = c(varName$fe_sector[curr_fe]),
                           fe = curr_fe, se = NULL, sector = NULL, emiMkt = NULL
                    )
       )
@@ -669,17 +677,40 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     .calcLCOE(out, "Price|Final Energy|Industry|Heat")
   )
 
-  ## apply lowpass filter to receive moving average prices ----
-  out.lowpass <- lowpass(out)
-  ## add "Moving Avg" to variable name
-  getNames(out.lowpass) <- paste0(substr(getNames(out.lowpass),
-                                         1,nchar(getNames(out.lowpass))-13),
-                                  "|Moving Avg",
-                                  substr(getNames(out.lowpass),
-                                         nchar(getNames(out.lowpass))-12,
-                                         nchar(getNames(out.lowpass))))
+  ## save Rawdata
+  out.rawdata <- out
+  getNames(out.rawdata) <- paste0(unitsplit(getNames(out.rawdata))$variable, "|Rawdata (",
+                                  unitsplit(getNames(out.rawdata))$unit, ")")
 
-  out <- mbind(out,out.lowpass)
+  ## apply lowpass filter to receive moving average prices
+  out.lowpass <- lowpass(out)
+  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
+                                  unitsplit(getNames(out.lowpass))$unit, ")")
+
+  ## calculate reporting prices
+  out.reporting <- pmax(out, 0) # avoid negative prices
+
+  # for cm_startyear and non-SSP2, replace price by average of period before and after
+  # this is a workaround to avoid spikes caused by https://github.com/remindmodel/remind/issues/1068
+  if (! grepl("gdp_SSP2", readGDX(gdx, "cm_GDPscen", format = "simplest"))
+      && cm_startyear > min(getYears(out, as.integer = TRUE))) {
+    out.reporting[, cm_startyear, ] <- 0.5 * (out[, cm_startyear - 5, ] + out[, cm_startyear + 5, ])
+  }
+  out.reporting <- lowpass(out.reporting)
+  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+  if (! is.null(gdx_ref)) {
+    message("reportPrices loads price for < cm_startyear from gdx_ref.")
+    priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
+    fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
+    if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
+      joinedNames <- intersect(getNames(out), getNames(priceRef))
+      joinedRegions <- intersect(getRegions(priceRef), getRegions(out))
+      out.reporting[joinedRegions, fixedyears, joinedNames] <- priceRef[joinedRegions, fixedyears, joinedNames]
+    }
+  }
+
+  ## bind all prices together
+  out <- mbind(out.rawdata, out.lowpass, out.reporting)
 
   ## add years before cm_startyear (temporary, can be adapted once prices only calculated after cm_startyear in REMIND code)
   out2 <- new.magpie(getRegions(out), getYears(vm_demFeSector), getNames(out), fill = NA)
@@ -754,7 +785,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   #
-  out <- mbind(out,setNames(abs(pm_taxCO2eq) * 1000 * 12/44, "Price|Carbon|Guardrail (US$2005/t CO2)"))
   CaptureBal_tmp <- new.magpie(getRegions(out), getYears(out), fill = NA)
   CaptureBal_tmp[,getYears(balcapture.m),] <- balcapture.m
   out <- mbind(out, setNames(CaptureBal_tmp / (budget.m+1e-10) / 3.66 * 1e3,
@@ -777,16 +807,21 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ETS"] * 1000 * 12/44, "Price|Carbon|ETS (US$2005/t CO2)"))
     out <- mbind(out,setNames(pm_taxemiMkt[,,"ES"] * 1000 * 12/44, "Price|Carbon|ESR (US$2005/t CO2)"))
     if(!is.null(p47_taxCO2eq_AggFE)) { # recalculating carbon prices to take into account emi Mkt taxes
-      out <- out[,,setdiff(getNames(out),c("Price|Carbon|Demand|Buildings (US$2005/t CO2)","Price|Carbon|Demand|Industry (US$2005/t CO2)","Price|Carbon|Demand|Transport (US$2005/t CO2)","Price|Carbon (US$2005/t CO2)"))]
+      out <- out[,,setdiff(getNames(out), c("Price|Carbon|Demand|Buildings (US$2005/t CO2)","Price|Carbon|Demand|Industry (US$2005/t CO2)",
+                                            "Price|Carbon|Demand|Transport (US$2005/t CO2)","Price|Carbon|Supply (US$2005/t CO2)","Price|Carbon (US$2005/t CO2)"))]
       out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"build"] * 1000 * 12/44, "Price|Carbon|Demand|Buildings (US$2005/t CO2)"))
       out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"indst"] * 1000 * 12/44, "Price|Carbon|Demand|Industry (US$2005/t CO2)"))
       out <- mbind(out,setNames(p47_taxCO2eq_SectorAggFE[,,"trans"] * 1000 * 12/44, "Price|Carbon|Demand|Transport (US$2005/t CO2)"))
       out <- mbind(out,setNames(p47_taxCO2eq_AggFE * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
+      out <- mbind(out,setNames(p47_taxCO2eq_AggFE * 1000 * 12/44, "Price|Carbon|Supply (US$2005/t CO2)"))
     }
   }
 
   if (!is.null(pm_taxCO2eqSCC)) {
       out <- mbind(out,setNames(abs(pm_taxCO2eqSCC) * 1000 * 12/44, "Price|Carbon|SCC (US$2005/t CO2)"))
+      out <- mbind(out,setNames(out[, , "Price|Carbon (US$2005/t CO2)"] - out[, , "Price|Carbon|SCC (US$2005/t CO2)"], "Price|Carbon|Guardrail (US$2005/t CO2)"))
+  } else {
+      out <- mbind(out,setNames(out[, , "Price|Carbon (US$2005/t CO2)"], "Price|Carbon|Guardrail (US$2005/t CO2)"))
   }
 
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
@@ -889,11 +924,22 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                "Price|Final Energy|Industry|Solids (US$2005/GJ)"       = "FE|Industry|Solids (EJ/yr)"
                )
 
+  # transport-specific mappings depending on realization
+  if (module2realisation["transport",2] == "complex") {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|Liquids (EJ/yr)")
+  } else if (module2realisation["transport",2] == "edge_esm") {
+    int2ext <- c(int2ext,
+                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|Diesel Liquids (EJ/yr)",
+                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|Pass|Liquids (EJ/yr)")
+  }
 
-  ## weights definition for FE marginal prices region aggregation
+  ## add weights definition for region aggregation for FE prices that were added automatically
   if(length(pm_FEPrice_by_FE) > 0) {
-    margPriceVars <- getItems(out,3)[grep("Price\\|Marginal\\|Final Energy\\|", getItems(out,3))]
-    vars <- gsub("US\\$2005/GJ","EJ/yr",gsub("Price\\|Marginal\\|Final Energy\\|","FE|",margPriceVars))
+    margPriceVars <- grep("Price|Final Energy|", getItems(out,3), fixed = TRUE, value = TRUE)
+    margPriceVars <- setdiff(margPriceVars, names(int2ext))
+    vars <- gsub("US\\$2005/GJ", "EJ/yr", gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
     names(vars) <- margPriceVars
     vars <- gsub("Efuel","Hydrogen",vars) ###warning FE variable should be renamed and this line should be removed in the future
     # for(var in vars){ # display price variables with no matching FE weight
@@ -905,28 +951,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     int2ext <- c(int2ext, vars)
   }
 
-  # transport-specific mappings depending on realization
-
-  if (module2realisation["transport",2] == "complex") {
-    int2ext <- c(int2ext,
-                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|non-LDV|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|LDV|Liquids (EJ/yr)")
-  } else if (module2realisation["transport",2] == "edge_esm") {
-    int2ext <- c(int2ext,
-                 "Price|Final Energy|Transport|Liquids|HDV (US$2005/GJ)"       = "FE|Transport|Diesel Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Liquids|LDV (US$2005/GJ)"       = "FE|Transport|Pass|Liquids (EJ/yr)",
-                 "Price|Final Energy|Transport|Gases (US$2005/GJ)"       = "FE|Transport|Gases (EJ/yr)")
-  }
-
-
-
-  ## moving averages
-  avgs <- grep("Moving Avg", getNames(out), value=TRUE)
+  ## moving averages and rawdata
+  avgs <- getNames(out.lowpass)
+  rawdata <- getNames(out.rawdata)
   ## exclude detailed FE prices from global aggregation
   avgs <- setdiff(avgs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", avgs, value = TRUE))
-  int2ext <- c(int2ext, stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs))
+  rawdata <- setdiff(rawdata, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", rawdata, value = TRUE))
+  int2ext <- c(int2ext,
+               stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs),
+               stats::setNames(int2ext[gsub("\\|Rawdata", "", rawdata)], rawdata)
+              )
 
-  ## filtering out vars with missing moving average weights
+  ## filtering out vars with missing moving average / rawdata weights
   int2ext <- int2ext[!is.na(int2ext)]
 
   # # ---- internal price variables used for model diagnostics -----

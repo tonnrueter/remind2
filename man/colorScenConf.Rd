@@ -3,28 +3,30 @@
 \name{colorScenConf}
 \alias{colorScenConf}
 \title{take scenario-config*.csv files and produce colorful xlsx file with values
-from configfile in first row, identical values in this column in turquoise,
+from main.gms in first row, identical values in this column in turquoise,
 and unknown column names in red}
 \usage{
-colorScenConf(fileList = "", configfile = "default.cfg")
+colorScenConf(fileList = "", remindPath = ".", expanddata = FALSE)
 }
 \arguments{
 \item{fileList}{vector containing csv file paths}
 
-\item{configfile}{path to configfile. If empty, uses './default.cfg'}
+\item{remindPath}{path to REMIND directory containing the main.gms}
+
+\item{expanddata}{fill all the data based on copyConfigFrom and main.gms}
 }
 \value{
 nothing. For each file in fileList a _colorful.xlsx file is written.
 }
 \description{
 take scenario-config*.csv files and produce colorful xlsx file with values
-from configfile in first row, identical values in this column in turquoise,
+from main.gms in first row, identical values in this column in turquoise,
 and unknown column names in red
 }
 \examples{
 
  \dontrun{
-    colorScenConf(fileList = c("scenario_config.csv"), configfile = "default.cfg")
+    colorScenConf(fileList = c("scenario_config.csv"), remindPath = ".")
   }
 
 }
