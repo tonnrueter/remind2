@@ -115,14 +115,33 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
-
+  sumChecks <- piamInterfaces::checkSummations(
+    mifFile = output, outputDirectory = NULL,
+    summationsFile = "extractVariableGroups",
+    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = FALSE
+  ) %>% filter(abs(!!sym("diff")) >= 1.5e-8)
 
   # either write the *.mif or return the magpie object
-  if(!is.null(file)) {
-    write.report(output,file=file,ndigit=7)
+  if (!is.null(file)) {
+    write.report(output, file = file, ndigit = 7)
     # write same reporting without "+" or "++" in variable names
-    deletePlus(file,writemif=TRUE)
-  } else {
+    deletePlus(file, writemif = TRUE)
+
+    # write additional file on summation errors if needed
+    if (nrow(sumChecks) > 0) {
+      summation_errors_file <- sub('(\\.[^.]+)$', '_summation_errors\\1', file)
+      warning("Summation checks have revealed some gaps! See file ",
+              summation_errors_file)
+      write.table(sumChecks, summation_errors_file, quote = FALSE, sep = ';')
+    }
+  }
+  else {
+    # return summation errors as attribute
+    if (nrow(sumChecks) > 0) {
+      warning("Summation checks have revealed some gaps! ",
+              "See `summation_errors` attribute on output for details.")
+      attr(output, 'summation_errors') <- sumChecks
+    }
     return(output)
   }
 }
