@@ -169,8 +169,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     vm_demFENonEnergySector <- NULL
   }
 
-  vm_FeedstocksCarbon <- readGDX(gdx, "vm_FeedstocksCarbon", field = "l", restore_zeros = T, react = "silent")[,t,]
-
   # secondary energy production
   vm_prodSe <- readGDX(gdx, "vm_prodSe", field = "l", restore_zeros = F)
   # parameter to calculate coupled production
@@ -333,10 +331,24 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector )]-vm_demFENonEnergySector
   }
 
-  # get CDR by feedstock carbon from non-fossil sources (biogenic or synthetic)
-  if (!is.null(vm_FeedstocksCarbon)) {
+  # Read-in plastic-related variables
+  vm_plasticsCarbon <- readGDX(gdx, "vm_plasticsCarbon", field = "l", restore_zeros = T, react = "silent")[,t,]
+  if (length(vm_plasticsCarbon) == 0) {
+    vm_plasticsCarbon <- NULL
+  }
 
-    # get combinations of SE,FE,sector,emiMkt that exist in vm_FeedstocksCarbon
+  if (!is.null(vm_plasticsCarbon)){
+    vm_feedstockEmiUnknownFate  <- readGDX(gdx, "vm_feedstockEmiUnknownFate", field = "l", restore_zeros = T, react = "silent")[,t,]
+    vm_incinerationEmi          <- readGDX(gdx, "vm_incinerationEmi", field = "l", restore_zeros = T, react = "silent")[,t,]
+    vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = T, react = "silent")[,t,]
+  }
+
+  # create new variable for carbon embbeded in non-incinerated plastics:
+  # plastics that do not get incinerated and come from biogenic sources
+  # or synfuels (regardless of syfuel origin)
+  if (!is.null(vm_nonIncineratedPlastics)) {
+
+    # get combinations of SE,FE,sector,emiMkt that exist in vm_nonIncineratedPlastics
     FE.feed.map <- se2fe %>%
       left_join(entyFe2Sector) %>%
       left_join(sector2emiMkt) %>%
@@ -344,11 +356,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                    rename(all_enty1 = all_enty)) %>%
       select( -all_te) %>%
       mutate( name = paste(all_enty,all_enty1,all_emiMkt, sep = "."))
-    Feedstock_CDR <- mselect(vm_FeedstocksCarbon[,,FE.feed.map$name],
+
+    plastic_CDR <- mselect(vm_nonIncineratedPlastics[,,FE.feed.map$name],
                              all_enty = unique(entySeBio, entySeSyn))
 
+
   } else {
-    Feedstock_CDR <- collapseDim(vm_co2eq)*0
+    Plastic_CDR <- collapseDim(vm_co2eq)*0
   }
 
   # Calculate Variables ----
@@ -486,7 +500,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                          # subtract industry CCS
                          - dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3)*p_share_CCS
                          # subtract synthetic and biogenic carbon contained in industrial feedstocks
-                         - dimSums(Feedstock_CDR, dim=3)
+                         - dimSums(plastic_CDR, dim=3)
                         )*GtC_2_MtCO2,
                         "Emi|CO2|Energy|+|Demand (Mt CO2/yr)")
 
@@ -619,7 +633,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames((dimSums(EmiFeCarrier[, , "indst"], dim = 3)
                          - dimSums(vm_emiIndCCS[, , emiInd37_fuel]* p_share_CCS, dim = 3)
                          # substract synthetic and biogenic carbon contained in industrial feedstocks
-                         - dimSums(Feedstock_CDR, dim=3)) * GtC_2_MtCO2,
+                         - dimSums(plastic_CDR, dim=3)) * GtC_2_MtCO2,
                           "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)"),
                # transport emissions: fe carrier emissions
                setNames(dimSums(EmiFeCarrier[, , "trans"], dim = 3) * GtC_2_MtCO2,
@@ -667,28 +681,28 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     EmiIndSubSec <- pm_emifac.fe.indst * o37_demFeIndSub_woNonEn[, , getNames(pm_emifac.fe.indst)]
 
     # calculate demand-side Solids, Liquids and gases emissions (after industry CO2 Capture)
-    if (!is.null(vm_FeedstocksCarbon)){
+    if (!is.null(vm_nonIncineratedPlastics)){
     out <- mbind(out,
 
                  # solids emissions: direct solids emissions of all sectors - industry CCS of solids
                  setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = "fesos"), dim = 3)
                              - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1 = "fesos")*p_share_CCS, dim = 3)
-                           # substract synthetic and biogenic carbon contained in industrial feedstocks
-                             - dimSums(mselect(vm_FeedstocksCarbon, all_enty=c("sesobio","sesosyn"), all_enty1 = "fesos"), dim=3)) * GtC_2_MtCO2,
+                           # substract synthetic and biogenic carbon contained in non-incinerated plastics
+                             - dimSums(mselect(vm_nonIncineratedPlastics, all_enty=c("sesobio","sesosyn"), all_enty1 = "fesos"), dim=3)) * GtC_2_MtCO2,
                             "Emi|CO2|Energy|Demand|++|Solids (Mt CO2/yr)"),
 
                  # liquids emissions: direct liquids emissions of all sectors - industry CCS of liquids
                  setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = c("fehos", "fepet", "fedie")), dim = 3)
                              - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1 = "fehos")*p_share_CCS, dim = 3)
-                           # substract synthetic and biogenic carbon contained in industrial feedstocks
-                           - dimSums(mselect(vm_FeedstocksCarbon, all_enty=c("seliqbio","seliqsyn"), all_enty1 = "fehos"), dim=3)) * GtC_2_MtCO2,
+                           # substract synthetic and biogenic carbon contained in non-incinerated plastics
+                           - dimSums(mselect(vm_nonIncineratedPlastics, all_enty=c("seliqbio","seliqsyn"), all_enty1 = "fehos"), dim=3)) * GtC_2_MtCO2,
                             "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)"),
 
                  # gases emissions: direct gases emissions of all sectors - industry CCS of gases
                  setNames((dimSums(mselect(EmiFeCarrier, all_enty1 = c("fegas", "fegat")), dim = 3)
                              - dimSums(mselect(vm_emiIndCCS_Sub, all_enty1 = "fegas")*p_share_CCS, dim = 3)
-                           # substract synthetic and biogenic carbon contained in industrial feedstocks
-                           - dimSums(mselect(vm_FeedstocksCarbon, all_enty=c("segabio","segasyn"), all_enty1 = "fegas"), dim=3)) * GtC_2_MtCO2,
+                           # substract synthetic and biogenic carbon contained in non-incinerated plastics
+                           - dimSums(mselect(vm_nonIncineratedPlastics, all_enty=c("segabio","segasyn"), all_enty1 = "fegas"), dim=3)) * GtC_2_MtCO2,
                             "Emi|CO2|Energy|Demand|++|Gases (Mt CO2/yr)")
                     )
     } else {
@@ -764,9 +778,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
         variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
   # if feedstocks are represented in REMIND
-    if (!is.null(vm_FeedstocksCarbon)){
+    if (!is.null(vm_nonIncineratedPlastics)){
 
-      Feedstock_CDR_SubSec <- add_dimension(Feedstock_CDR, dim = 3.1, add = 'secInd37', nm = 'chemicals')
+      plastic_CDR_SubSec <- add_dimension(plastic_CDR, dim = 3.1, add = 'secInd37', nm = 'chemicals')
       out <- mbind(
       out,
       lapply(.mixer_to_selector(mixer), function(x) {
@@ -782,7 +796,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
               dim = 3)
           # subtract carbon contained in plastics that are not incinerated
           - dimSums(
-              ( mselect(Feedstock_CDR_SubSec,    x[setdiff(names(x), 'variable')])
+              ( mselect(plastic_CDR_SubSec,    x[setdiff(names(x), 'variable')])
               ),
               dim = 3)
           ) * GtC_2_MtCO2,
@@ -1230,6 +1244,43 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Carbon Management|Carbon Capture (Mt CO2/yr)")
   )
 
+  # carbon management: flows of carbon going into materials
+  out <- mbind(out,
+
+               # carbon in plastics
+               setNames(dimSums(vm_plasticsCarbon, dim = 3) * GtC_2_MtCO2,
+                        "Carbon Management|Materials|+|Plastics (Mt CO2/yr)"),
+                              # carbon in carbon fibres
+               #setNames(dimSums( carbonfibersVariable * GtC_2_MtCO2,
+               #        "Carbon Management|Materials|+|Carbon fibers (Mt CO2/yr)"),
+               # total co2 in materials
+               setNames(vm_co2capture * GtC_2_MtCO2,
+                        "Carbon Management|Materials (Mt CO2/yr)")
+  )
+
+  # carbon management: fate of plastics
+  out <- mbind(out,
+
+            # carbon in plastics that are incinerated
+            setNames(dimSums(vm_incinerationEmi, dim = 3) * GtC_2_MtCO2,
+                    "Carbon Management|Materials|Plastics|++|Incineration (Mt CO2/yr)"),
+            # carbon in plastics with other fate
+            setNames(dimSums(vm_nonIncineratedPlastics, dim = 3) * GtC_2_MtCO2,
+                     "Carbon Management|Materials|Plastics|++|Other destination (Mt CO2/yr)")
+
+          )
+
+  # # carbon management: origin of plastics
+
+  out <- mbind(out,
+               setNames(dimSums(mselect(vm_plasticsCarbon, all_enty=c("seliqsyn","sesosyn","segasyn")))* GtC_2_MtCO2,
+                        "Carbon Management|Materials|Plastics|+|Synfuels (Mt CO2/yr)"),
+               setNames(dimSums(mselect(vm_plasticsCarbon, all_enty=c("seliqbio","sesobio","segabio")))* GtC_2_MtCO2,
+                        "Carbon Management|Materials|Plastics|+|Biomass (Mt CO2/yr)"),
+               setNames(dimSums(mselect(vm_plasticsCarbon, all_enty=c("seliqfos","sesofos","segafos")))* GtC_2_MtCO2,
+                        "Carbon Management|Materials|Plastics|+|Fossil (Mt CO2/yr)")
+                )
+
   ### report industry captured CO2 ----
   if (!is.null(pm_IndstCO2Captured)) {
     variable_prefix  <- 'Carbon Management|Carbon Capture|Industry Energy|'
@@ -1500,6 +1551,14 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   p_share_atmosco2[is.infinite(p_share_atmosco2)] <- 0
   p_share_atmosco2[is.na(p_share_atmosco2)] <- 0
 
+  # calculate share of atmospheric and biogenic carbon contained in plastic products
+  # fix me: hide in if{}
+  p_share_atmBiogco2 <- dimSums(
+                                ( out[,,"Carbon Management|Materials|Plastics|+|Biomass (Mt CO2/yr)"]
+                                  +out[,,"Carbon Management|Materials|Plastics|+|Synfuels (Mt CO2/yr)"]*p_share_atmosco2)
+                                  /(out[,,"Carbon Management|Materials|+|Plastics (Mt CO2/yr)"]+ 1e-07)
+                                )
+
   # Emi|CO2|CDR is defined negative
   out <- mbind(out,
                # total negative land-use change emissions
@@ -1519,6 +1578,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(-out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_atmosco2 * p_share_CCS,
                         "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"),
 
+               # CO2 stored in plastic products that are not incinerated and come from atmospheric or biogenic carbon
+               setNames(-out[, , "Carbon Management|Materials|Plastics|++|Other destination (Mt CO2/yr)"] *p_share_atmBiogco2,
+                         "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"),
+
                # total DACCS
                setNames(-out[, , "Carbon Management|Storage|+|DAC (Mt CO2/yr)"],
                         "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
@@ -1529,11 +1592,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   out <- mbind(out,
                # total CDR
+               # double-check: if we don't account for fossil content in plastics, the emissions might not add up?
                setNames( out[, , "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"]
                          + out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
                          + out[, , "Emi|CO2|CDR|DACCS (Mt CO2/yr)"]
                          + out[, , "Emi|CO2|CDR|EW (Mt CO2/yr)"]
-                         + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],
+                         + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                         + out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
                          "Emi|CO2|CDR (Mt CO2/yr)"))
 
 
@@ -2090,8 +2155,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                   # industry CCS
                   # TODO: adapt to industry ETS/ESR split
                   -  dimSums(vm_emiIndCCS[, , emiInd37_fuel]*p_share_CCS, dim=3)
-                  # substract synthetic and biogenic carbon contained in industrial feedstocks
-                  - dimSums(Feedstock_CDR, dim=3)
+                  # substract synthetic and biogenic carbon contained in non-incinerated plastics
+                  - dimSums(plastic_CDR, dim=3)
                   # add captured CO2 from cement process which is not stored
                   # (EmiMACEq for co2cement_process contains cement process emissions - captured cement co2 process emissions)
                   + vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2
