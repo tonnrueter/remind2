@@ -37,3 +37,19 @@ showAreaAndBarPlots(data,
                              'Carbon Management|Usage'),
                     tot = 'Carbon Management|Carbon Capture')
 ```
+
+# Materials
+
+## Total plastics production
+```{r }
+showLinePlots(data, "Carbon Management|Materials|Plastics")
+```
+
+## Plastics production by origin
+```{r }
+showAreaAndBarPlots(data, 
+                        vars = c("Carbon Management|Materials|Plastics|Fossil",
+                                 "Carbon Management|Materials|Plastics|Biomass",
+                                 "Carbon Management|Materials|Plastics|Synfuels"), 
+                        scales = "fixed")
+```

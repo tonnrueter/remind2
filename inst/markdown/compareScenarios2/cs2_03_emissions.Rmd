@@ -62,6 +62,9 @@ showLinePlots(data, "Emi|GHG|Outside ETS and ESR")
 
 ```{r CO2 by sector net incl. BECCS}
 tot <- "Emi|CO2"
+# fix me: emi categories don't add up to total from sel_vm_emiAllMkt_co2
+# this one is missing: vm_feedstockEmiUnknownFate
+# I need to re-name them also Emi|CO2|Plastics incineration and Emi|CO2|Feedstocks unknown fate
 items <- c(
   "Emi|CO2|Land-Use Change",
   "Emi|CO2|Industrial Processes",
@@ -71,7 +74,10 @@ items <- c(
   "Emi|CO2|Energy|Supply|Non-electric",
   "Emi|CO2|Energy|Supply|Electricity w/ couple prod",
   "Emi|CO2|CDR|DACCS",
-  "Emi|CO2|CDR|EW")
+  "Emi|CO2|CDR|EW",
+  "Emi|CO2|Plastics incineration",
+  "Emi|CO2|Feedstocks unknown fate"
+  )
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 

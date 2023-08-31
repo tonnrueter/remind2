@@ -338,6 +338,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   if (!is.null(vm_plasticsCarbon)){
+    #fix me: create reported variable for vm_feedstockEmiUnknownFate -> Emi|CO2|Feedstocks unknown fate
     vm_feedstockEmiUnknownFate  <- readGDX(gdx, "vm_feedstockEmiUnknownFate", field = "l", restore_zeros = T, react = "silent")[,t,]
     vm_incinerationEmi          <- readGDX(gdx, "vm_incinerationEmi", field = "l", restore_zeros = T, react = "silent")[,t,]
     vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = T, react = "silent")[,t,]
@@ -986,6 +987,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     # calculate chemical process emissions from feedstocks treatment
     EmiFac_NonEn.co2 <- collapseDim(pm_emifacNonEnergy[,,"co2"])
     EmiProcess_Feedstocks <- pm_emifacNonEnergy[,,"co2"] * vm_demFENonEnergySector[,,getNames(EmiFac_NonEn.co2)]
+    out <- mbind(out,
+                 setNames(dimSums(vm_feedstockEmiUnknownFate, dim=3)* GtC_2_MtCO2,
+                          "Emi|CO2|Feedstocks unknown fate (Mt CO2/yr)"),
+                 setNames(dimSums(vm_incinerationEmi, dim=3)* GtC_2_MtCO2,
+                          "Emi|CO2|Plastics incineration (Mt CO2/yr)")
+                 )
   } else {
     # otherwise chemical process emissions are 0
     EmiProcess_Feedstocks <- vm_co2eq * 0
@@ -1044,7 +1051,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           + vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
                          "Emi|CO2|Industrial Processes|+|Cement (Mt CO2/yr)"),
                 # chemical process emissions from feedstocks treatment
-                setNames(dimSums(EmiProcess_Feedstocks*GtC_2_MtCO2, dim = 3),
+                setNames(dimSums(EmiProcess_Feedstocks, dim = 3)*GtC_2_MtCO2,
                          "Emi|CO2|Industrial Processes|+|Chemicals (Mt CO2/yr)")
                 )
 
@@ -1060,7 +1067,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
 
-  #### total energy yand industry CO2 emissions
+  #### total energy and industry CO2 emissions
+  # Emi|CO2|Plastics incineration and Emi|CO2|Feedstocks unknown fate
+  # are accounted for in vm_emiTeMkt and therefore in Emi|CO2|+|Energy (Mt CO2/yr)
   out <- mbind(out,
                setNames(out[, , "Emi|CO2|+|Energy (Mt CO2/yr)"]
                         + out[, , "Emi|CO2|+|Industrial Processes (Mt CO2/yr)"],
@@ -1600,9 +1609,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                          + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
                          + out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
                          "Emi|CO2|CDR (Mt CO2/yr)"))
-
-
-
 
 
   ## 4. Gross Emissions (excl. negative emissions from BECCS) ----
