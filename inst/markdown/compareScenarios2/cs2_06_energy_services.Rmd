@@ -267,17 +267,17 @@ for (regions in bin_distribute(getRegs(dPlot), 7)) {
             mutate(value = max(value)) %>%
             add_remind_timesteps_columns(),
           mapping = aes(x = xpos, y = value)) +
-        geom_step(data = dPlot %>% 
+        geom_step(data = dPlot %>%
                     filter(region %in% regions,
-                           'historical' == scenario) %>% 
-                    complete(nesting(model, region, variable, unit, period, 
+                           'historical' == scenario) %>%
+                    complete(nesting(model, region, variable, unit, period,
                                      value),
-                             scenario = scenarios) %>% 
-                    filter('historical' != scenario) %>% 
-                    group_by(model, scenario, region, unit, period) %>% 
+                             scenario = scenarios) %>%
+                    filter('historical' != scenario) %>%
+                    group_by(model, scenario, region, unit, period) %>%
                     arrange(model, scenario, region, unit, period,
-                            desc(variable)) %>% 
-                    mutate(value = cumsum(value)) %>% 
+                            desc(variable)) %>%
+                    mutate(value = cumsum(value)) %>%
                     ungroup(),
                   mapping = aes(x = period, y = value, colour = 'historic',
                                 group = interaction(region, variable)),
@@ -296,11 +296,11 @@ for (regions in bin_distribute(getRegs(dPlot), 7)) {
 }
 
 p <- ggplot() +
-  geom_line(data = dPlot %>% 
-              filter(2100 >= period) %>% 
-              group_by(scenario, region, period) %>% 
+  geom_line(data = dPlot %>%
+              filter(2100 >= period) %>%
+              group_by(scenario, region, period) %>%
               mutate(value = value / sum(value),
-                     variable = paste(variable, 'Share')) %>% 
+                     variable = paste(variable, 'Share')) %>%
               ungroup(),
             mapping = aes(x = period, y = value, colour = scenario,
                           linetype = variable)) +
@@ -308,7 +308,7 @@ p <- ggplot() +
     values = c(gg_colour_hue(setdiff(levels(dPlot$scenario), 'historical')),
                c('historical' = 'black')),
     name = NULL) +
-  scale_linetype_discrete(name = NULL, 
+  scale_linetype_discrete(name = NULL,
                           guide = guide_legend(nrow = 2)) +
   scale_y_continuous(breaks = seq(0, 1, 0.2),
                      minor_breaks = seq(0.1, 0.9, 0.2)) +
@@ -323,16 +323,16 @@ cat('\n\n')
 
 ### Steel mix by route using process-based steel modeling
 ```{r Steel mix by route}
-if ("Production|Industry|Steel|Primary|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
 tot <- "Production|Industry|Steel"
 items <- c(
-  "Production|Industry|Steel|Primary|BF-BOF",
-  "Production|Industry|Steel|Primary|IDR-EAF",
-  "Production|Industry|Steel|Secondary|EAF")
+  "Production|Industry|Steel|BF-BOF",
+  "Production|Industry|Steel|IDR-EAF",
+  "Production|Industry|Steel|SEC-EAF")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 }
 ```
-### Subsector per-Capita Production 
+### Subsector per-Capita Production
 ```{r plot subsector per-capita production}
 items <- c("Production|Industry|Cement|per-capita",
            "Value Added|Industry|Chemicals|per-capita",

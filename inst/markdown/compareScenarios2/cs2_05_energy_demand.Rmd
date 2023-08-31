@@ -151,28 +151,14 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### FE mix Steel using process-based steel modeling
-```{r FE mix Steel}
-if ("Production|Industry|Steel|Primary|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
-tot <- "FE|Industry|Steel"
-items <- c(
-  "FE|Industry|Steel|Primary|Solid",
-  "FE|Industry|Steel|Primary|Hydrogen",
-  "FE|Industry|Steel|Primary|Fossil Gas",
-  "FE|Industry|Steel|Primary|Electricity",
-  "FE|Industry|Steel|Secondary|Electricity")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-}
-```
-
 ### FE mix Steel using process-based steel modeling by route
 ```{r FE mix Steel route}
-if ("Production|Industry|Steel|Primary|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
 tot <- "FE|Industry|Steel"
 items <- c(
-  "FE|Industry|Steel|Primary|BF-BOF",
-  "FE|Industry|Steel|Primary|IDR-EAF",
-  "FE|Industry|Steel|Secondary|EAF")
+  "FE|Industry|Steel|BF-BOF",
+  "FE|Industry|Steel|IDR-EAF",
+  "FE|Industry|Steel|SEC-EAF")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 }
 ```
@@ -294,7 +280,7 @@ data %>%
 showLinePlots(data, 'FE|Industry|Specific Energy Consumption|Other Industry')
 ```
 
-## Transport Final Energy 
+## Transport Final Energy
 
 ### Basics -- with Bunkers
 
