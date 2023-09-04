@@ -347,7 +347,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # create new variable for carbon embbeded in non-incinerated plastics:
   # plastics that do not get incinerated and come from biogenic sources
   # or synfuels (regardless of syfuel origin)
-  if (!is.null(vm_nonIncineratedPlastics)) {
+  if (!is.null(vm_plasticsCarbon)) {
 
     # get combinations of SE,FE,sector,emiMkt that exist in vm_nonIncineratedPlastics
     FE.feed.map <- se2fe %>%
@@ -363,7 +363,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   } else {
-    Plastic_CDR <- collapseDim(vm_co2eq)*0
+    plastic_CDR <- collapseDim(vm_co2eq)*0
   }
 
   # Calculate Variables ----
@@ -682,7 +682,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     EmiIndSubSec <- pm_emifac.fe.indst * o37_demFeIndSub_woNonEn[, , getNames(pm_emifac.fe.indst)]
 
     # calculate demand-side Solids, Liquids and gases emissions (after industry CO2 Capture)
-    if (!is.null(vm_nonIncineratedPlastics)){
+    if (!is.null(vm_plasticsCarbon)){
     out <- mbind(out,
 
                  # solids emissions: direct solids emissions of all sectors - industry CCS of solids
@@ -779,7 +779,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
         variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
   # if feedstocks are represented in REMIND
-    if (!is.null(vm_nonIncineratedPlastics)){
+    if (!is.null(vm_plasticsCarbon)){
 
       plastic_CDR_SubSec <- add_dimension(plastic_CDR, dim = 3.1, add = 'secInd37', nm = 'chemicals')
       out <- mbind(
@@ -1253,17 +1253,20 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Carbon Management|Carbon Capture (Mt CO2/yr)")
   )
 
+  # add materials-related carbon management variables only if available
+  if (!is.null(vm_plasticsCarbon)){
   # carbon management: flows of carbon going into materials
   out <- mbind(out,
 
                # carbon in plastics
                setNames(dimSums(vm_plasticsCarbon, dim = 3) * GtC_2_MtCO2,
                         "Carbon Management|Materials|+|Plastics (Mt CO2/yr)"),
-                              # carbon in carbon fibres
+               # carbon in carbon fibres
                #setNames(dimSums( carbonfibersVariable * GtC_2_MtCO2,
                #        "Carbon Management|Materials|+|Carbon fibers (Mt CO2/yr)"),
                # total co2 in materials
-               setNames(vm_co2capture * GtC_2_MtCO2,
+               # other materials need to be added here
+               setNames(dimSums(vm_plasticsCarbon, dim = 3) * GtC_2_MtCO2,
                         "Carbon Management|Materials (Mt CO2/yr)")
   )
 
@@ -1289,6 +1292,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames(dimSums(mselect(vm_plasticsCarbon, all_enty=c("seliqfos","sesofos","segafos")))* GtC_2_MtCO2,
                         "Carbon Management|Materials|Plastics|+|Fossil (Mt CO2/yr)")
                 )
+  }
 
   ### report industry captured CO2 ----
   if (!is.null(pm_IndstCO2Captured)) {
@@ -1560,15 +1564,17 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   p_share_atmosco2[is.infinite(p_share_atmosco2)] <- 0
   p_share_atmosco2[is.na(p_share_atmosco2)] <- 0
 
+  # CDR reporting if plastic-removals are considered
+  if (!is.null(vm_plasticsCarbon)){
   # calculate share of atmospheric and biogenic carbon contained in plastic products
-  # fix me: hide in if{}
   p_share_atmBiogco2 <- dimSums(
                                 ( out[,,"Carbon Management|Materials|Plastics|+|Biomass (Mt CO2/yr)"]
                                   +out[,,"Carbon Management|Materials|Plastics|+|Synfuels (Mt CO2/yr)"]*p_share_atmosco2)
-                                  /(out[,,"Carbon Management|Materials|+|Plastics (Mt CO2/yr)"]+ 1e-07)
+                                  /(out[,,"Carbon Management|Materials|+|Plastics (Mt CO2/yr)"])
                                 )
 
   # Emi|CO2|CDR is defined negative
+
   out <- mbind(out,
                # total negative land-use change emissions
                setNames(EmiCDR.LUC,
@@ -1609,7 +1615,45 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                          + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
                          + out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
                          "Emi|CO2|CDR (Mt CO2/yr)"))
+  #CDR reporting if plastic-removals are not considered
+  } else{
+    # Emi|CO2|CDR is defined negative
 
+    out <- mbind(out,
+                 # total negative land-use change emissions
+                 setNames(EmiCDR.LUC,
+                          "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"),
+                 # total BECCS (pe2se + industry)
+                 setNames(-out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
+                          -out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+                          "Emi|CO2|CDR|BECCS (Mt CO2/yr)"),
+                 # Pe2Se BECCS
+                 setNames(-out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
+                          "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)"),
+                 # Industry BECCS
+                 setNames(-out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
+                          "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"),
+                 # stored CO2 in industry from carbon-neutral fuels (synthetic fuels)
+                 setNames(-out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_atmosco2 * p_share_CCS,
+                          "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"),
+                 # total DACCS
+                 setNames(-out[, , "Carbon Management|Storage|+|DAC (Mt CO2/yr)"],
+                          "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
+                 # total EW
+                 # total co2 captured by EW
+                 setNames(v33_emi[, , "weathering"] * GtC_2_MtCO2,
+                          "Emi|CO2|CDR|EW (Mt CO2/yr)"))
+
+    out <- mbind(out,
+                 # total CDR
+                 # double-check: if we don't account for fossil content in plastics, the emissions might not add up?
+                 setNames( out[, , "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)"]
+                           + out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
+                           + out[, , "Emi|CO2|CDR|DACCS (Mt CO2/yr)"]
+                           + out[, , "Emi|CO2|CDR|EW (Mt CO2/yr)"]
+                           + out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"],
+                           "Emi|CO2|CDR (Mt CO2/yr)"))
+  }
 
   ## 4. Gross Emissions (excl. negative emissions from BECCS) ----
 
