@@ -53,3 +53,11 @@ showAreaAndBarPlots(data,
                                  "Carbon Management|Materials|Plastics|Synfuels"), 
                         scales = "fixed")
 ```
+
+## Plastics production by fate
+```{r }
+showAreaAndBarPlots(data, 
+                        vars = c("Carbon Management|Materials|Plastics|Incineration",
+                                 "Carbon Management|Materials|Plastics|Other destination"), 
+                        scales = "fixed")
+```
