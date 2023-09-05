@@ -711,7 +711,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       `[`(,,'co2cement_process.cement') %>%
       `*`(as.numeric(GtC_2_MtCO2)) %>%
       `getSets<-`(fulldim = FALSE, value = getSets(out)) %>%
-      `getNames<-`(value = 'Emi|CO2|pre-CCS|Industrial Processes|Cement'),
+      `getNames<-`(
+        value = 'Emi|CO2|pre-CCS|Industrial Processes|Cement (Mt CO2/yr)'),
 
       out)
   } else {
