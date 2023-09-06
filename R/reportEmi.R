@@ -1425,15 +1425,21 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
 
-  ## 4. Gross Emissions (excl. negative emissions from BECCS) ----
+  ## 4. Gross Emissions (excl. negative emissions from storing non-fossil carbon from bioenergy or synthetic fuels) ----
 
   #### calculate gross emissions
 
-  # all standard emissions variables "Emi|CO2|..." are defined as net emissions.
-  # This means that negative emissions  are counted in and have to be subtracted to obtain gross emissions.
+  # All standard emissions variables "Emi|CO2|..." are defined as net emissions, that is, including negative emissions from CDR technologies.
+  # We define gross emissions as net emissions plus CDR flows from capturing carbon from non-fossil energy flows. That includes carbon from biomass and
+  # synfuels from non-fossil (biomass or DAC) origin.
+  # Note: With the current definition of gross emissions (excl. carbon from fossil synfuels) and our current emissions accounting convention of CCU that
+  # accounts carbon in synthetic fuels with the CO2 provider, gross emissions can become negative under certain circumstances.
+  # Example for Emi|CO2|Gross|Energy|Demand|+|Industry: Fossil carbon is captured from industrial process or energy supply emissions.
+  # This carbon is used to produce synthetic fuels. Those synthetic fuels are then used in industry for energy purposes and captured and stored.
+  # This creates negative energy-related emissions for industry because the emissions were already accounted under industrial process emissions.
+  # However, those negative emissions from capturing and storing from fossil synfuels are not added when calculating gross emissions from net emissions because
+  # Emi|CO2|CDR|Industry CCS|Synthetic Fuels only includes non-fossil carbon.
 
-  # calculate gross emissions in energy supply sector (i.e. subtracting contribution from supply side BECCS)
-  # using the respective "Carbon Management|Storage" variables as we don't have the necessary level of detail in the "Emi|CO2|CDR" variables
   out <- mbind(out,
                # gross supply emissions across SE carriers
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"]
