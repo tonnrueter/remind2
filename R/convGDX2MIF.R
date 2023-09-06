@@ -115,6 +115,8 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
+  checkVariableNames(getNames(output, dim = 3))
+
   sumChecks <- piamInterfaces::checkSummations(
     mifFile = output, outputDirectory = NULL,
     summationsFile = "extractVariableGroups",
