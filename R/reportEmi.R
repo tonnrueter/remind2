@@ -1811,23 +1811,24 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   ## gross GHG variables (ecxl. negative emissions from BECCS and carbon storage of carbon-neutral synthetic fuels)
+  ## note Emi|CO2|CDR|... variables are negative. That's why we substract them to get from net to gross emissions.
   out <- mbind(out,
 
                # total gross supply emissions
                setNames(out[, , "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"]
-                        + out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"),
 
 
                # total gross demand emissions
                setNames(out[, , "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)"),
 
                setNames(out[, , "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)"),
 
 
@@ -1844,9 +1845,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
                # total gross energy emissions
                setNames(out[, , "Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
-                        + out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
 
 
