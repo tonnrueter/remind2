@@ -2457,6 +2457,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                      "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Demand|+|Industry (Mt CO2/yr)",
                      "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
                      "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)",
                      "Emi|CO2|CDR (Mt CO2/yr)",
