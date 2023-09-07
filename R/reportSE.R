@@ -254,7 +254,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   }
 
   tmp1 <- mbind(tmp1,
-    setNames(se.prod(vm_prodSe, dataoc, oc2te, entySe, input_gas, se_Gas),      name = "SE|Gases (EJ/yr)"),
+    se.prod(vm_prodSe, dataoc, oc2te, entySe, input_gas, se_Gas,                name = "SE|Gases (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Gas,                    name = "SE|Gases|+|Biomass (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Gas, te = teccs,        name = "SE|Gases|Biomass|+|w/ CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Gas, te = tenoccs,      name = "SE|Gases|Biomass|+|w/o CC (EJ/yr)"),
