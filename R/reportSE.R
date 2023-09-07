@@ -239,22 +239,22 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   ## Gases
   if (!(is.null(vm_macBase) & is.null(vm_emiMacSector))) {
-    ## correction for the reused gas from waste landfills
+    ## exogenous variable for representing reused gas from waste landfills (accounted in the model as segabio)
     MtCH4_2_TWa <- readGDX(gdx, "sm_MtCH4_2_TWa", react = "silent")
     if (is.null(MtCH4_2_TWa)) {
       MtCH4_2_TWa <- 0.001638
     }
     tmp1 <- mbind(tmp1,
-      setNames(MtCH4_2_TWa * (vm_macBase[, , "ch4wstl"] - vm_emiMacSector[, , "ch4wstl"]), "SE|Gases|+|Waste (EJ/yr)")
+      setNames(MtCH4_2_TWa * (vm_macBase[, , "ch4wstl"] - vm_emiMacSector[, , "ch4wstl"]), "SE|Gases|Biomass|Waste (EJ/yr)")
     )
   } else {
     tmp1 <- mbind(tmp1,
-      setNames(new.magpie(cells_and_regions = getRegions(dataoc), years = y, fill = 0), "SE|Gases|+|Waste (EJ/yr)")
+      setNames(new.magpie(cells_and_regions = getRegions(dataoc), years = y, fill = 0), "SE|Gases|Biomass|Waste (EJ/yr)")
     )
   }
 
   tmp1 <- mbind(tmp1,
-    setNames(se.prod(vm_prodSe, dataoc, oc2te, entySe, input_gas, se_Gas) + tmp1[, , "SE|Gases|+|Waste (EJ/yr)"], "SE|Gases (EJ/yr)"),
+    setNames(se.prod(vm_prodSe, dataoc, oc2te, entySe, input_gas, se_Gas),      name = "SE|Gases (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Gas,                    name = "SE|Gases|+|Biomass (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Gas, te = teccs,        name = "SE|Gases|Biomass|+|w/ CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, se_Gas, te = tenoccs,      name = "SE|Gases|Biomass|+|w/o CC (EJ/yr)"),
