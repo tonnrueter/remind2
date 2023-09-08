@@ -10,9 +10,7 @@ test_that("Test if REMIND reporting produces mandatory variables for ECEMF repor
                        mode = "wb", quiet = TRUE
   )
 
-  gdxPath <- "~/Cluster/fulldata.gdx"
-
-  mif <- convGDX2MIF(gdxPath, gdx_ref = gdxPath)
+  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_ref = gdxPath))
 
   computedVariables <- getItems(mif, dim = 3.3)
 
