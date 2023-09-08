@@ -262,8 +262,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     as.magpie(spatial = 2, temporal = 1, data = ncol(.)) %>%
     ifelse(is.finite(.), ., 0)   # replace NaN by 0
 
-  rm(vm_emiIndCCS_tibble, subsector_emissions, subsector_total_emissions,
-     pm_emifac_tibble)
+  rm(vm_emiIndCCS_tibble, subsector_total_emissions, pm_emifac_tibble)
 
   # utility functions ----
   # Convert a mixer table into a list that can be passed to mselect() to
@@ -672,6 +671,50 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           x[['variable']])
       }) %>%
         mbind())
+
+    # Baseline emission before CCS, corresponds to energy carbon content
+    out <- mbind(
+      # energy emissions
+      subsector_emissions %>%
+        mutate(
+          secInd37 = case_when(
+            'cement'    == .data$secInd37 ~ 'Cement',
+            'chemicals' == .data$secInd37 ~ 'Chemicals',
+            'steel'     == .data$secInd37 ~ 'Steel',
+            'otherInd'  == .data$secInd37 ~ 'Other Industry',
+            TRUE                          ~ NA_character_),
+          fety = case_when(
+            'fesos' == .data$fety ~ 'Solids',
+            'fehos' == .data$fety ~ 'Liquids',
+            'fegas' == .data$fety ~ 'Gases',
+            TRUE                  ~ NA_character_),
+          origin = case_when(
+            grepl('fos$', .data$sety) ~ 'Fossil',
+            grepl('bio$', .data$sety) ~ 'Biomass',
+            grepl('syn$', .data$sety) ~ 'Hydrogen',
+            TRUE                      ~ NA_character_)) %>%
+        assert(not_na, everything()) %>%
+        group_by(.data$t, .data$regi, .data$secInd37, .data$fety,
+                 .data$origin) %>%
+        summarise(value = sum(.data$subsector_emissions)
+                        * as.numeric(GtC_2_MtCO2),
+                  .groups = 'drop') %>%
+        mutate(d3 = paste0('Emi|CO2|pre-CCS|Energy|Demand|Industry|',
+                           .data$secInd37, '|', .data$fety, '|', .data$origin,
+                           ' (Mt CO2/yr)')) %>%
+        select('t', 'regi', 'd3', 'value') %>%
+        as.magpie(spatial = 2, temporal = 1, datacol = ncol(.)) %>%
+      `getSets<-`(fulldim = FALSE, value = getSets(out)),
+
+      # process emissions
+      readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE) %>%
+      `[`(,,'co2cement_process.cement') %>%
+      `*`(as.numeric(GtC_2_MtCO2)) %>%
+      `getSets<-`(fulldim = FALSE, value = getSets(out)) %>%
+      `getNames<-`(
+        value = 'Emi|CO2|pre-CCS|Industrial Processes|Cement (Mt CO2/yr)'),
+
+      out)
   } else {
 
     # if o37_demFeIndSub not existing in GDX, calculate reporting parameter here, note: works for industry fixed_shares only

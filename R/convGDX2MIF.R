@@ -115,10 +115,12 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
+  checkVariableNames(getNames(output, dim = 3))
+
   sumChecks <- piamInterfaces::checkSummations(
     mifFile = output, outputDirectory = NULL,
     summationsFile = "extractVariableGroups",
-    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = FALSE
+    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE
   ) %>% filter(abs(!!sym("diff")) >= 1.5e-8)
 
   # either write the *.mif or return the magpie object
