@@ -171,24 +171,27 @@ walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ### FE|Buildings Prices
 
 ```{r FE Buildings Prices}
-carriers <- c("Electricity", "Gases", "Heat", "Hydrogen", "Liquids", "Solids")
-vars <- intersect(levels(dPrice$variable), paste0("Price|Final Energy|Buildings|", carriers))
+carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
+vars <- intersect(paste0("Price|Final Energy|Buildings|", carriers),
+                  levels(dPrice$variable))
 walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
 ### FE|Industry Prices
 
 ```{r FE Industry Prices}
-carriers <- c("Electricity", "Gases", "Heat", "Hydrogen", "Liquids", "Solids")
-vars <- intersect(levels(dPrice$variable), paste0("Price|Final Energy|Industry|", carriers))
+carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
+vars <- intersect(paste0("Price|Final Energy|Industry|", carriers),
+                  levels(dPrice$variable))
 walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
 ### FE|Transport Prices
 
 ```{r FE Transport Prices}
-carriers <- c("Electricity", "Gases", "Heat", "Hydrogen", "Liquids", "Solids")
-vars <- intersect(levels(dPrice$variable), paste0("Price|Final Energy|Transport|", carriers))
+carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
+vars <- intersect(paste0("Price|Final Energy|Transport|", carriers),
+                  carrierslevels(dPrice$variable))
 walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
