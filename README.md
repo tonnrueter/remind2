@@ -49,7 +49,7 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P (2023). _remind2: The REMIND R package (2nd generation)_. R package version 1.117.3, <URL: https://github.com/pik-piam/remind2>.
+Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P (2023). _remind2: The REMIND R package (2nd generation)_. R package version 1.117.3, <https://github.com/pik-piam/remind2>.
 
 A BibTeX entry for LaTeX users is
 
