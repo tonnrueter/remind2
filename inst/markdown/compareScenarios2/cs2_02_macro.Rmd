@@ -74,7 +74,7 @@ items <- c(
   "Internal|CES Function|Value|entrp",
   "Internal|CES Function|Value|enb",
   "Internal|CES Function|Value|ue_industry")
-  
+
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
@@ -101,7 +101,7 @@ tot <- "Internal|CES Function|Value|enb"
 items <- c(
   "Internal|CES Function|Value|enhb",
   "Internal|CES Function|Value|feelcb")
-  
+
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
@@ -116,7 +116,7 @@ items <- c(
   "Internal|CES Function|Value|ue_cement",
   "Internal|CES Function|Value|ue_chemicals",
   "Internal|CES Function|Value|ue_otherInd")
-  
+
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
@@ -168,129 +168,31 @@ vars <-
 walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
-### FE Prices
+### FE|Buildings Prices
 
-```{r FE Prices}
-vars <-
-levels(dPrice$variable) %>%
-  str_subset("^Price\\|Final Energy\\|") %>%
-  str_subset(
-    "\\|Moving Avg|\\|Total LCOE|\\|Fuel Cost|\\|Transport and Distribution|\\|Carbon Price Component|\\|Other Taxes$",
-    negate = TRUE)
-
-vars %>%
-  str_subset("Liquids") %>%
-  walk(showLinePlots, data = dPrice, scale = "fixed")
-vars %>%
-  str_subset("Gases") %>%
-  walk(showLinePlots, data = dPrice, scale = "fixed")
-vars %>%
-  str_subset("Solids") %>%
-  walk(showLinePlots, data = dPrice, scale = "fixed")
-vars %>%
-  str_subset("Electricity") %>%
-  walk(showLinePlots, data = dPrice, scale = "fixed")
-vars %>%
-  str_subset("Hydrogen") %>%
-  walk(showLinePlots, data = dPrice, scale = "fixed")
-vars %>%
-  str_subset("Heat") %>%
-  walk(showLinePlots, data = dPrice, scale = "fixed")
-``` 
-
-### FE LCOE Prices Transport
-
-```{r FE LCOE Prices Transport}
-
-groups <- c(
-  "Price|Final Energy|Transport|Liquids|Petroleum",
-  "Price|Final Energy|Transport|Liquids|Diesel",
-  "Price|Final Energy|Transport|Liquids|Biomass",
-  "Price|Final Energy|Transport|Liquids|Efuel",
-  "Price|Final Energy|Transport|Gases|Natural Gas",
-  "Price|Final Energy|Transport|Gases|Efuel",
-  "Price|Final Energy|Transport|Electricity",
-  "Price|Final Energy|Transport|Hydrogen"
-)
-
-for (g in groups) {
-
-  items <- c(
-    paste0(g, "|Fuel Cost"),
-    paste0(g, "|Transport and Distribution"),
-    paste0(g, "|Carbon Price Component"),
-    paste0(g, "|Other Taxes")
-  )
-
-  tot <- paste0(g, "|Total LCOE")
-
-  showAreaAndBarPlots(dPrice, intersect(items, unique(dPrice$variable)), tot)
-}
+```{r FE Buildings Prices}
+carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
+vars <- intersect(paste0("Price|Final Energy|Buildings|", carriers),
+                  levels(dPrice$variable))
+walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
-### FE LCOE Prices Buildings
+### FE|Industry Prices
 
-```{r FE LCOE Prices Buildings}
-
-groups <- c(
-  "Price|Final Energy|Buildings|Liquids|Oil",
-  "Price|Final Energy|Buildings|Liquids|Biomass",
-  "Price|Final Energy|Buildings|Liquids|Efuel",
-  "Price|Final Energy|Buildings|Gases|Natural Gas",
-  "Price|Final Energy|Buildings|Gases|Biomass",
-  "Price|Final Energy|Buildings|Gases|Efuel",
-  "Price|Final Energy|Buildings|Solids|Biomass",
-  "Price|Final Energy|Buildings|Electricity",
-  "Price|Final Energy|Buildings|Heat",
-  "Price|Final Energy|Buildings|Hydrogen"
-)
-
-for (g in groups) {
-
-  items <- c(
-    paste0(g, "|Fuel Cost"),
-    paste0(g, "|Transport and Distribution"),
-    paste0(g, "|Carbon Price Component"),
-    paste0(g, "|Other Taxes")
-  )
-
-  tot <- paste0(g, "|Total LCOE")
-
-  showAreaAndBarPlots(dPrice, intersect(items, unique(dPrice$variable)), tot)
-}
+```{r FE Industry Prices}
+carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
+vars <- intersect(paste0("Price|Final Energy|Industry|", carriers),
+                  levels(dPrice$variable))
+walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
-### FE LCOE Prices Industry
+### FE|Transport Prices
 
-```{r FE LCOE Prices Industry}
-
-groups <- c(
-  "Price|Final Energy|Industry|Liquids|Oil",
-  "Price|Final Energy|Industry|Liquids|Biomass",
-  "Price|Final Energy|Industry|Liquids|Efuel",
-  "Price|Final Energy|Industry|Gases|Natural Gas",
-  "Price|Final Energy|Industry|Gases|Biomass",
-  "Price|Final Energy|Industry|Gases|Efuel",
-  "Price|Final Energy|Industry|Solids|Coal",
-  "Price|Final Energy|Industry|Solids|Biomass",
-  "Price|Final Energy|Industry|Electricity",
-  "Price|Final Energy|Industry|Heat",
-  "Price|Final Energy|Industry|Hydrogen"
-)
-
-for (g in groups) {
-
-  items <- c(
-    paste0(g, "|Fuel Cost"),
-    paste0(g, "|Transport and Distribution"),
-    paste0(g, "|Carbon Price Component"),
-    paste0(g, "|Other Taxes")
-  )
-
-  tot <- paste0(g, "|Total LCOE")
-
-  showAreaAndBarPlots(dPrice, intersect(items, unique(dPrice$variable)), tot)
-}
+```{r FE Transport Prices}
+carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
+vars <- intersect(paste0("Price|Final Energy|Transport|", carriers),
+                  carrierslevels(dPrice$variable))
+walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
 ## Trade
