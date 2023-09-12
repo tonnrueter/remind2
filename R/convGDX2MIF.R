@@ -131,10 +131,10 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
     # write additional file on summation errors if needed
     if (nrow(sumChecks) > 0) {
-      summation_errors_file <- sub('(\\.[^.]+)$', '_summation_errors\\1', file)
+      summation_errors_file <- sub('(\\.[^.]+)$', '_summation_errors.csv', file)
       warning("Summation checks have revealed some gaps! See file ",
               summation_errors_file)
-      write.table(sumChecks, summation_errors_file, quote = FALSE, sep = ';')
+      write.csv(sumChecks, summation_errors_file, quote = FALSE, row.names = FALSE)
     }
   }
   else {
