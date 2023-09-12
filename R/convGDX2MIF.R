@@ -19,9 +19,12 @@
 #' \dontrun{convGDX2MIF(gdx,gdx_refpolicycost,file="REMIND_generic_default.csv",scenario="default")}
 #'
 #' @export
+#' @importFrom dplyr %>% bind_rows filter
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind write.report
+#' @importFrom piamInterfaces checkSummations
 #' @importFrom utils write.csv
+
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
                         t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
                         gdx_refpolicycost = gdx_ref) {
@@ -117,11 +120,31 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   checkVariableNames(getNames(output, dim = 3))
 
-  sumChecks <- piamInterfaces::checkSummations(
+  .reportSummationErrors <- function(msg) {
+    if (!any(grepl('All summation checks were fine', msg)))
+      message(paste(msg, collapse = '\n'))
+  }
+
+  capture.output(
+    sumChecks <- checkSummations(
+      mifFile = output, outputDirectory = NULL,
+      summationsFile = "extractVariableGroups",
+      absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE
+    ) %>%
+      filter(abs(.data$diff) >= 1.5e-8),
+    type = 'message') %>%
+    .reportSummationErrors()
+
+  capture.output(sumChecks <- checkSummations(
     mifFile = output, outputDirectory = NULL,
-    summationsFile = "extractVariableGroups",
-    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE
-  ) %>% filter(abs(!!sym("diff")) >= 1.5e-8)
+    summationsFile = system.file('extdata/additional_summation_checks.csv',
+                                 package = 'remind2'),
+    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE) %>%
+      filter(abs(.data$diff) >= 1.5e-8) %>%
+      bind_rows(sumChecks),
+    type = 'message'
+  ) %>%
+    .reportSummationErrors()
 
   # either write the *.mif or return the magpie object
   if (!is.null(file)) {

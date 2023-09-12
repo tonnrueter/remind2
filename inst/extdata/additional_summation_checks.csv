@@ -1,0 +1,11 @@
+parent;                           child;                                     factor
+
+# total FE primary steel production
+FE|Industry|Steel|++|Primary;     FE|Industry|Steel|+|Solids;                1
+FE|Industry|Steel|++|Primary;     FE|Industry|Steel|+|Liquids;               1
+FE|Industry|Steel|++|Primary;     FE|Industry|Steel|+|Gases;                 1
+FE|Industry|Steel|++|Primary;     FE|Industry|Steel|+|Hydrogen;              1
+FE|Industry|Steel|++|Primary;     FE|Industry|Steel|Primary|Electricity;     1
+
+# total FE secondary steel production
+FE|Industry|Steel|++|Secondary;   FE|Industry|Steel|Secondary|Electricity;   1
