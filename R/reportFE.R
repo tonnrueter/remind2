@@ -1672,7 +1672,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # in case the current non-energy use implementation creates negative values, set them to 0
   if (any(out < 0)) {
     out[out < 0] <- 0
-    warning("Negative values found in one or more FE variables (likely non-energy use related). They were set to 0.")
   }
 
   # add global values
