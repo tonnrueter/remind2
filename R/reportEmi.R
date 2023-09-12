@@ -1432,14 +1432,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # All standard emissions variables "Emi|CO2|..." are defined as net emissions, that is, including negative emissions from CDR technologies.
   # We define gross emissions as net emissions plus CDR flows from capturing carbon from non-fossil energy flows. That includes carbon from biomass and
   # synfuels from non-fossil (biomass or DAC) origin.
-  # Note: With the current definition of gross emissions (excl. carbon from fossil synfuels) and our current emissions accounting convention of CCU that
-  # accounts carbon in synthetic fuels with the CO2 provider, gross emissions can become negative under certain circumstances.
-  # Example for Emi|CO2|Gross|Energy|Demand|+|Industry: Fossil carbon is captured from industrial process or energy supply emissions.
-  # This carbon is used to produce synthetic fuels. Those synthetic fuels are then used in industry for energy purposes and captured and stored.
-  # This creates negative energy-related emissions for industry because the emissions were already accounted under industrial process emissions.
-  # However, those negative emissions from capturing and storing from fossil synfuels are not added when calculating gross emissions from net emissions because
-  # Emi|CO2|CDR|Industry CCS|Synthetic Fuels only includes non-fossil carbon.
-
+  # Note: With the current definition of gross emissions (only including non-fossil CCS) and our current emissions accounting convention of CCU that
+  # accounts carbon in synthetic fuels with the CO2 provider, gross industry emissions (Emi|CO2|Gross|Energy|Demand|+|Industry)
+  # can become negative under certain circumstances. This reason is: Using synthetic fuels is always accounted as emissions-free for the industry sector
+  # regardless of whether the carbon of the synfuels comes from fossil or non-fossil origin. Moreover, carbon from all origins (non-fossil and fossil) is subtracted
+  # from the industry emissions in case industry CCS is applied to those emissions. However, the variable Emi|CO2|CDR|Industry CCS|Synthetic Fuels
+  # used to calculate the gross industry emissions only contains the carbon from non-fossil synfuels, though. This is following the principle
+  # that only non-fossil carbon should be accounted as CDR variables as only non-fossil removals are negative emissions from a full-system perspective.
+  # So, the carbon from fossil-based synfuels which is captured and stored in industry is still accounted as negative emissions for industry
+  # in Emi|CO2|Gross|Energy|Demand|+|Industry. The corresponding fossil emissions are accounted with the sector that captured the fossil CO2 in the first place.
   out <- mbind(out,
                # gross supply emissions across SE carriers
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"]
