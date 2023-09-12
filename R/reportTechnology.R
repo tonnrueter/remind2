@@ -105,7 +105,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "biochp" = "Electricity|Biomass|Combined Heat and Power w/o CC",
     "igccc" = "Electricity|Coal|Gasification Combined Cycle w/ CC",
     "igcc" = "Electricity|Coal|Gasification Combined Cycle w/o CC",
-    "pcc" = "Electricity|Coal|Pulverised Coal w/ CC",
     "pc" = "Electricity|Coal|Pulverised Coal w/o CC",
     "coalchp" = "Electricity|Coal|Combined Heat and Power w/o CC",
     "ngccc" = "Electricity|Gas|Combined Cycle w/ CC",
