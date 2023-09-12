@@ -154,12 +154,21 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ### FE mix Steel using process-based steel modeling by route
 ```{r FE mix Steel route}
 if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
-tot <- "FE|Industry|Steel"
-items <- c(
-  "FE|Industry|Steel|BF-BOF",
-  "FE|Industry|Steel|IDR-EAF",
-  "FE|Industry|Steel|SEC-EAF")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  tot <- "FE|Industry|Steel"
+  items <- c(
+    "FE|Industry|Steel|BF-BOF",
+    "FE|Industry|Steel|IDR-EAF",
+    "FE|Industry|Steel|SEC-EAF")
+  # Non-process based scenarios have tot variable, but not items, which leads to errors in display;
+  # Therefore, filter data by scenarios that have the 'items' variables.
+  dscens <- data %>%
+    filter(.data$variable %in% items, .data$scenario != "historical") %>%
+    droplevels() %>%
+    pull('scenario') %>%
+    unique()
+  droute <- data %>%
+    filter(.data$scenario %in% dscens)
+showAreaAndBarPlots(droute, items, tot, scales = "fixed")
 }
 ```
 
