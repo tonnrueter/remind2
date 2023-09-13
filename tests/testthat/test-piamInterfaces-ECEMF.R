@@ -1,24 +1,22 @@
 library(gdx)
 
-test_that("Test if REMIND reporting produces mandatory variables for NGFS reporting", {
+test_that("Test if REMIND reporting produces mandatory variables for ECEMF reporting", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
   gdxPath <- file.path(tempdir(), "fulldata.gdx")
-  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-NGFS_fulldata_oneRegi.gdx",
-    gdxPath,
-    mode = "wb", quiet = TRUE
+
+  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-ECEMF_fulldata.gdx",
+                       gdxPath,
+                       mode = "wb", quiet = TRUE
   )
 
-  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath))
+  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_ref = gdxPath))
 
   computedVariables <- getItems(mif, dim = 3.3)
 
   computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
 
-  templateVariables <- unique(
-    piamInterfaces::getREMINDTemplateVariables("AR6"),
-    piamInterfaces::getREMINDTemplateVariables("AR6_NGFS")
-  )
+  templateVariables <- piamInterfaces::getREMINDTemplateVariables("ECEMF")
 
   expect_true(any(computedVariables %in% templateVariables))
 
@@ -31,7 +29,6 @@ test_that("Test if REMIND reporting produces mandatory variables for NGFS report
       paste(missingVariables, collapse = ",\n ")
     )
   }
-  # expect_true(length(missingVariables) == 0)
   unlink(tempdir(), recursive = TRUE)
   tempdir(TRUE)
 })

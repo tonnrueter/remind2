@@ -682,11 +682,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   getNames(out.rawdata) <- paste0(unitsplit(getNames(out.rawdata))$variable, "|Rawdata (",
                                   unitsplit(getNames(out.rawdata))$unit, ")")
 
-  ## apply lowpass filter to receive moving average prices
-  out.lowpass <- lowpass(out)
-  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
-                                  unitsplit(getNames(out.lowpass))$unit, ")")
-
   ## calculate reporting prices
   out.reporting <- pmax(out, 0) # avoid negative prices
 
@@ -703,11 +698,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
-      joinedNames <- intersect(getNames(out), getNames(priceRef))
+      joinedNamesRep <- intersect(getNames(out), getNames(priceRef))
       joinedRegions <- intersect(getRegions(priceRef), getRegions(out))
-      out.reporting[joinedRegions, fixedyears, joinedNames] <- priceRef[joinedRegions, fixedyears, joinedNames]
+      out.reporting[joinedRegions, fixedyears, joinedNamesRep] <- priceRef[joinedRegions, fixedyears, joinedNamesRep]
+      joinedNamesRaw <- intersect(getNames(out.rawdata), getNames(priceRef))
+      out.rawdata[joinedRegions, fixedyears, joinedNamesRaw] <- priceRef[joinedRegions, fixedyears, joinedNamesRaw]
     }
   }
+
+  ## apply lowpass filter to receive moving average prices
+  out.lowpass <- lowpass(out)
+  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
+                                  unitsplit(getNames(out.lowpass))$unit, ")")
 
   ## bind all prices together
   out <- mbind(out.rawdata, out.lowpass, out.reporting)
