@@ -1741,5 +1741,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     )
   }
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

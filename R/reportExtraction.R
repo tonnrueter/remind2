@@ -282,5 +282,6 @@ grades[is.na(grades)] <- 0
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

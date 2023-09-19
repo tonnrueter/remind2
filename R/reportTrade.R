@@ -132,13 +132,8 @@ reportTrade <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,
   tmp <- mbind(tmp,setNames(trade[,,"perm"] * price[,,"perm"] * 1000,                         "Trade|Emi Allowances|Value (billion US$2005/yr)"))
   tmp <- mbind(tmp,setNames(dimSums( trade[,,set_trade] * price[,,set_trade],dim = 3) * 1000, "Trade|All|Value (billion US$2005/yr)"))
   tmp <- mbind(tmp,setNames(dimSums( trade[,,set_trade] * price[,,set_trade],dim = 3),        "Current Account (billion US$2005/yr)"))
-  
-  
-  
-  
-  
-  # rename dimensions in the magpie object 
-  names(dimnames(tmp))[3] = 'variable'
-  
+
+  # rename dimensions in the magpie object
+  getSets(tmp)[3] <- "variable"
   return(tmp)
 }
