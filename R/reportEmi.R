@@ -626,30 +626,67 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     variable_postfix <- ' (Mt CO2/yr)'
 
     mixer <- tribble(
-      ~variable,                    ~secInd37,     ~all_enty1,
-      '+|Solids',                   NULL,          'fesos',
-      '+|Liquids',                  NULL,          'fehos',
-      '+|Gases',                    NULL,          'fegas',
+      ~variable,                            ~secInd37,     ~all_enty,    ~all_enty1,
+      '+|Solids',                           NULL,          NULL,         'fesos',
+      '+|Liquids',                          NULL,          NULL,         'fehos',
+      '+|Gases',                            NULL,          NULL,         'fegas',
 
-      '++|Cement',                  'cement',      NULL,
-      'Cement|+|Solids',            'cement',      'fesos',
-      'Cement|+|Liquids',           'cement',      'fehos',
-      'Cement|+|Gases',             'cement',      'fegas',
+      'Solids|+|Fossil',                    NULL,          'sesofos',    'fesos',
+      'Solids|+|Biomass',                   NULL,          'sesobio',    'fesos',
+      'Liquids|+|Fossil',                   NULL,          'seliqfos',   'fehos',
+      'Liquids|+|Biomass',                  NULL,          'seliqbio',   'fehos',
+      'Liquids|+|Synfuel',                  NULL,          'seliqsyn',   'fehos',
+      'Gases|+|Fossil',                     NULL,          'segafos',    'fegas',
+      'Gases|+|Biomass',                    NULL,          'segabio',    'fegas',
+      'Gases|+|Synfuel',                    NULL,          'segasyn',    'fegas',
 
-      '++|Chemicals',               'chemicals',   NULL,
-      'Chemicals|+|Solids',         'chemicals',   'fesos',
-      'Chemicals|+|Liquids',        'chemicals',   'fehos',
-      'Chemicals|+|Gases',          'chemicals',   'fegas',
+      '++|Cement',                          'cement',      NULL,         NULL,
+      'Cement|+|Solids',                    'cement',      NULL,         'fesos',
+      'Cement|Solids|+|Fossil',             'cement',      'sesofos',    'fesos',
+      'Cement|Solids|+|Biomass',            'cement',      'sesobio',    'fesos',
+      'Cement|+|Liquids',                   'cement',      NULL,         'fehos',
+      'Cement|Liquids|+|Fossil',            'cement',      'seliqfos',   'fehos',
+      'Cement|Liquids|+|Biomass',           'cement',      'seliqbio',   'fehos',
+      'Cement|Liquids|+|Synfuel',           'cement',      'seliqsyn',   'fehos',
+      'Cement|+|Gases',                     'cement',      NULL,         'fegas',
+      'Cement|Gases|+|Fossil',              'cement',      'segafos',    'fegas',
+      'Cement|Gases|+|Biomass',             'cement',      'segabio',    'fegas',
+      'Cement|Gases|+|Synfuel',             'cement',      'segasyn',    'fegas',
 
-      '++|Steel',                   'steel',       NULL,
-      'Steel|+|Solids',             'steel',       'fesos',
-      'Steel|+|Liquids',            'steel',       'fehos',
-      'Steel|+|Gases',              'steel',       'fegas',
+      '++|Chemicals',                       'chemicals',   NULL,         NULL,
+      'Chemicals|+|Solids',                 'chemicals',   NULL,         'fesos',
+      'Chemicals|Solids|+|Fossil',          'chemicals',   'sesofos',    'fesos',
+      'Chemicals|Solids|+|Biomass',         'chemicals',   'sesobio',    'fesos',
+      'Chemicals|+|Liquids',                'chemicals',   NULL,         'fehos',
+      'Chemicals|Liquids|+|Fossil',         'chemicals',   'seliqfos',   'fehos',
+      'Chemicals|Liquids|+|Biomass',        'chemicals',   'seliqbio',   'fehos',
+      'Chemicals|Liquids|+|Synfuel',        'chemicals',   'seliqsyn',   'fehos',
+      'Chemicals|+|Gases',                  'chemicals',   NULL,         'fegas',
+      'Chemicals|Gases|+|Fossil',           'chemicals',   'segafos',    'fegas',
+      'Chemicals|Gases|+|Biomass',          'chemicals',   'segabio',    'fegas',
+      'Chemicals|Gases|+|Synfuel',          'chemicals',   'segasyn',    'fegas',
 
-      '++|Other Industry',          'otherInd',    NULL,
-      'Other Industry|+|Solids',    'otherInd',    'fesos',
-      'Other Industry|+|Liquids',   'otherInd',    'fehos',
-      'Other Industry|+|Gases',     'otherInd',    'fegas') %>%
+      '++|Steel',                           'steel',       NULL,         NULL,
+      'Steel|+|Solids',                     'steel',       NULL,         'fesos',
+      'Steel|Solids|+|Fossil',              'steel',       'sesofos',    'fesos',
+      'Steel|Solids|+|Biomass',             'steel',       'sesobio',    'fesos',
+      'Steel|+|Liquids',                    'steel',       NULL,         'fehos',
+      'Steel|Liquids|+|Fossil',             'steel',       'seliqfos',   'fehos',
+      'Steel|Liquids|+|Biomass',            'steel',       'seliqbio',   'fehos',
+      'Steel|Liquids|+|Synfuel',            'steel',       'seliqsyn',   'fehos',
+      'Steel|+|Gases',                      'steel',       NULL,         'fegas',
+      'Steel|Gases|+|Fossil',               'steel',       'segafos',    'fegas',
+      'Steel|Gases|+|Biomass',              'steel',       'segabio',    'fegas',
+      'Steel|Gases|+|Synfuel',              'steel',       'segasyn',    'fegas',
+
+      '++|Other Industry',                  'otherInd',    NULL,         NULL,
+      'Other Industry|+|Solids',            'otherInd',    NULL,         'fesos',
+      'Other Industry|Solids|+|Fossil',     'otherInd',    'sesofos',    'fesos',
+      'Other Industry|+|Liquids',           'otherInd',    NULL,         'fehos',
+      'Other Industry|Liquids|+|Fossil',    'otherInd',    'seliqfos',   'fehos',
+      'Other Industry|+|Gases',             'otherInd',    NULL,         'fegas',
+      'Other Industry|Gases|+|Fossil',      'otherInd',    'segafos',    'fegas'
+) %>%
       mutate(
         variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
@@ -663,14 +700,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           ( dimSums(mselect(EmiIndSubSec, x[setdiff(names(x), 'variable')]),
                     dim = 3)
           - dimSums(
-              ( mselect(vm_emiIndCCS_Sub, x[setdiff(names(x), 'variable')])
+              ( mselect(pm_IndstCO2Captured, x[setdiff(names(x), 'variable')])
               * p_share_CCS
               ),
               dim = 3)
           ) * GtC_2_MtCO2,
           x[['variable']])
       }) %>%
-        mbind())
+        mbind()
+      )
 
     # Baseline emission before CCS, corresponds to energy carbon content
     out <- mbind(
