@@ -904,9 +904,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         # more detailed reporting of electricity uses available in subsectors realization
         mixer <- tribble(
           ~variable,                               ~all_te,        ~opmoPrc,
-          "FE|Industry|Steel|++|BF-BOF (EJ/yr)",   teSteelBfbof,   opmoSteelBfbof,
-          "FE|Industry|Steel|++|IDR-EAF (EJ/yr)",  teSteelIdreaf,  opmoSteelIdreaf,
-          "FE|Industry|Steel|++|SEC-EAF (EJ/yr)",  teSteelEaf,     opmoSteelEaf
+          "FE|Industry|Steel|+++|BF-BOF (EJ/yr)",   teSteelBfbof,   opmoSteelBfbof,
+          "FE|Industry|Steel|+++|IDR-EAF (EJ/yr)",  teSteelIdreaf,  opmoSteelIdreaf,
+          "FE|Industry|Steel|+++|SEC-EAF (EJ/yr)",  teSteelEaf,     opmoSteelEaf
           )
 
         out <- mbind(
