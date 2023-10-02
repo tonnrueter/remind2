@@ -513,7 +513,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   OMF <- NULL
   OMV <- NULL
   lifetime <- NULL
-  disc.fac <- NULL
+  annuity.fac <- NULL
   CapFac <- NULL
   fuel.price.weighted.mean <- NULL
   `Investment Cost` <- NULL
@@ -733,13 +733,13 @@ reportLCOE <- function(gdx, output.type = "both"){
   #   as.magpie()
 
   # read lifetime of technology
-  # calculate annuity factor to annuitize CAPEX and OMF (annuity factor labeled "disc.fac")
+  # calculate annuity factor to annuitize CAPEX and OMF (annuity factor labeled "annuity.fac")
   lt <- readGDX(gdx, name="fm_dataglob", restore_zeros = F)[,,"lifetime"][,,te_LCOE_Inv][,,"lifetime"]
 
   df.lifetime <- as.quitte(lt) %>%
     select(all_te, value) %>%
     rename(tech = all_te, lifetime = value) %>%
-    mutate( disc.fac = r * (1+r)^lifetime/(-1+(1+r)^lifetime))
+    mutate( annuity.fac = r * (1+r)^lifetime/(-1+(1+r)^lifetime))
 
   ### note: just take LCOE investment cost formula with fix lifetime, ignoring that in REMIND capacity is drepeciating over time
   ### actually you would need to divide CAPEX by CapFac * 8760 * p_omeg and then add a discounting.
@@ -1059,9 +1059,9 @@ reportLCOE <- function(gdx, output.type = "both"){
  #                              # conversion from tr USD 2005/TW to USD2015/kW
  #                              mutate(CAPEX = CAPEX *1.2 * 1e3) %>%
  #                              # calculate annuity factor for investment cost
- #                              mutate( disc.fac = r * (1+r)^lifetime/(-1+(1+r)^lifetime)) %>%
+ #                              mutate( annuity.fac = r * (1+r)^lifetime/(-1+(1+r)^lifetime)) %>%
  #                              # investment cost LCOE in USD/MWh
- #                              mutate( `Investment Cost` = CAPEX * disc.fac / (CapFac*8760)*1e3) %>%
+ #                              mutate( `Investment Cost` = CAPEX * annuity.fac / (CapFac*8760)*1e3) %>%
  #                              # OMF cost LCOE in USD/MWh
  #                              mutate( `OMF Cost` = CAPEX * OMF / (CapFac*8760)*1e3) %>%
  #                              # calculate pre-loss VRE LCOE as investment cost + OMF cost LCOE
@@ -1185,7 +1185,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  #  #### calculate LCOE
  #  df.LCOE <- df.LCOE %>%
  #    # investment cost LCOE in USD/MWh
- #    mutate( `Investment Cost` = CAPEX * disc.fac / (CapFac*8760)*1e3) %>%
+ #    mutate( `Investment Cost` = CAPEX * annuity.fac / (CapFac*8760)*1e3) %>%
  #    # OMF cost LCOE in USD/MWh
  #    mutate( `OMF Cost` = CAPEX * OMF / (CapFac*8760)*1e3) %>%
  #    mutate( `OMV Cost` = OMV) %>%
@@ -1206,7 +1206,7 @@ reportLCOE <- function(gdx, output.type = "both"){
                     left_join(df.gridfactor, by = "region") %>%
                     filter(tech == "gridwind") %>%
                     rename(gridtech = tech) %>%
-                    mutate(`Investment Cost` = CAPEX *1e12*1.2/s_twa2mwh * disc.fac) %>%
+                    mutate(`Investment Cost` = CAPEX *1e12*1.2/s_twa2mwh * annuity.fac) %>%
                     mutate(`OMF Cost` = CAPEX*1e12*1.2/s_twa2mwh * OMF) %>%
                     mutate(grid.cost = (`Investment Cost` + `OMF Cost`) / grid.factor) %>%
                     full_join(teVRE.grid, by = "gridtech") %>%
@@ -1247,7 +1247,7 @@ reportLCOE <- function(gdx, output.type = "both"){
                       left_join(df.eff, by=c("region"="region","period"="period","teStor"="tech")) %>%
                       left_join(df.CapFac, by=c("region"="region","period"="period","teStor"="tech")) %>%
                       # cost per MWh v32_storloss
-                      mutate(`Investment Cost` = CAPEX *1e12*1.2/s_twa2mwh * disc.fac) %>%
+                      mutate(`Investment Cost` = CAPEX *1e12*1.2/s_twa2mwh * annuity.fac) %>%
                       mutate(`OMF Cost` = CAPEX*1e12*1.2/s_twa2mwh * OMF) %>%
                       # cost per MWh VRE,
                       #assuming that for one additional unit of VRE ratio of
@@ -1459,28 +1459,46 @@ reportLCOE <- function(gdx, output.type = "both"){
     # conversion from tr USD 2005/TW to USD2015/kW
     mutate(CAPEX = CAPEX *1.2 * 1e3) %>%
     # conversion from tr USD 2005/TWa to USD2015/MWh
-    mutate(OMV = OMV * 1.2 / s_twa2mwh * 1e12) %>%
+    mutate(OMV = OMV * 1.2 / as.numeric(s_twa2mwh) * 1e12) %>%
     # share of stored carbon from captured carbon is only relevant for CCS technologies, others -> 1
     mutate( CO2StoreShare = ifelse(tech %in% teCCS, CO2StoreShare, 1)) %>%
-    # calculate discount factor for investment cost
-    mutate( disc.fac = r * (1+r)^lifetime/(-1+(1+r)^lifetime))
+    # calculate annuity factor for annualizing investment cost over lifetime
+    mutate( annuity.fac = r * (1+r)^lifetime/(-1+(1+r)^lifetime))
+
 
   #### calculate LCOE
   df.LCOE <- df.LCOE %>%
+
     # investment cost LCOE in USD/MWh
-    mutate( `Investment Cost` = CAPEX * disc.fac / (CapFac*8760)*1e3) %>%
+    mutate( `Investment Cost` = CAPEX * annuity.fac / (CapFac*8760)*1e3) %>%
     # OMF cost LCOE in USD/MWh
     mutate( `OMF Cost` = CAPEX * OMF / (CapFac*8760)*1e3) %>%
     mutate( `OMV Cost` = OMV) %>%
     mutate( `Fuel Cost` = fuel.price / eff) %>%
+    # CO2 Tax cost on SE level refer to (supply-side) emissions of pe2se technologies
+    # CO2 Tax cost on FE level refer to (demand-side) emissions of FE carriers
     mutate( `CO2 Tax Cost` = co2.price * (emiFac / eff) * CO2StoreShare) %>%
     mutate( `CO2 Provision Cost` = Co2.Capt.Price * co2_dem) %>%
+    # fuel cost of second fuel if technology has two inputs or outputs
+    # is positive for cost of second input
+    # is negative for benefit of a second output
     mutate( `Second Fuel Cost` = -(secfuel.prod * secfuel.price)) %>%
-    mutate( `VRE Storage Cost` = VREstor.cost, `Grid Cost` = grid.cost) %>%
+    # VRE integration cost (grid, storage, curtailment cost)
+    # note: marginal grid and storage cost are set to 0 for now, needs to be checked again
+    mutate( `VRE Storage Cost` = VREstor.cost,
+            `Grid Cost` = grid.cost) %>%
+    # curtailment cost are generation LCOE of VRE technologies of curtailed generation
     mutate( `Curtailment Cost` = curtShare / (1-curtShare) * (`Investment Cost` + `OMF Cost` + `OMV Cost`)) %>%
+    # CCS Tax cost as defined in 21_tax module
     mutate( `CCS Tax Cost` = CCStax.cost, `CCS Cost` = CCSCost) %>%
+    # Flex Tax benefit for electrolysis
+    # FlexPriceShare denotes share of the electricity price that electrolysis sees
     mutate( `Flex Tax` = -(1-FlexPriceShare) * `Fuel Cost`) %>%
-    mutate( `FE Tax` = FEtax, `Additional H2 t&d Cost` = AddH2TdCost) %>%
+    # se2fe technologies come with FE tax
+    mutate( `FE Tax` = FEtax,
+    # FE H2 has some additional t&d cost at low H2 shares (phase-in cost) in REMIND
+            `Additional H2 t&d Cost` = AddH2TdCost) %>%
+    # calculate total LCOE by adding all components
     mutate( `Total LCOE` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Fuel Cost` + `CO2 Tax Cost` +
               `CO2 Provision Cost` + `Second Fuel Cost` + `VRE Storage Cost` + `Grid Cost` + `CCS Tax Cost` + `Curtailment Cost` + `CCS Cost` + `Flex Tax` + `FE Tax` + `Additional H2 t&d Cost`)
 
