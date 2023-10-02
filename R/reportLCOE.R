@@ -64,11 +64,20 @@ reportLCOE <- function(gdx, output.type = "both"){
  LCOE.out <- NULL
 
 
- # read in general data
+ # read in general data (needed for average and marginal LCOE calculation)
  s_twa2mwh <- readGDX(gdx,c("sm_TWa_2_MWh","s_TWa_2_MWh","s_twa2mwh"),format="first_found")
  ttot     <- as.numeric(readGDX(gdx,"ttot"))
  ttot_before2005 <- paste0("y",ttot[which(ttot <= 2000)])
  ttot_from2005 <- paste0("y",ttot[which(ttot >= 2005)])
+ te        <- readGDX(gdx,"te")
+ te <- te[!te %in% c("lng_liq","gas_pipe", "lng_gas", "lng_ves", "coal_ves", "pipe_gas", "termX_lng", "termM_lng", "vess_lng")]
+ p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found") # co2 price
+
+
+ ## equations
+ qm_pebal  <- readGDX(gdx,name=c("q_balPe"),field="m",format="first_found")
+ qm_budget <- readGDX(gdx,name=c("qm_budget"),field="m",format="first_found")
+
 
 
  ########################################################
@@ -84,8 +93,6 @@ reportLCOE <- function(gdx, output.type = "both"){
  temapse  <- readGDX(gdx,"en2se")
  temapall <- readGDX(gdx,c("en2en","temapall"),format="first_found")
  teall2rlf <- readGDX(gdx,c("te2rlf","teall2rlf"),format="first_found")
- te        <- readGDX(gdx,"te")
- te <- te[!te %in% c("lng_liq","gas_pipe", "lng_gas", "lng_ves", "coal_ves", "pipe_gas", "termX_lng", "termM_lng", "vess_lng")]
  te2stor   <- readGDX(gdx,"VRE2teStor")
  te2grid   <- readGDX(gdx,"VRE2teGrid")
  teVRE   <- readGDX(gdx,"teVRE")
@@ -109,7 +116,6 @@ reportLCOE <- function(gdx, output.type = "both"){
  pm_ts   <- readGDX(gdx,"pm_ts")
  pm_data <- readGDX(gdx,"pm_data")
  pm_emifac <- readGDX(gdx,"pm_emifac", restore_zeros=F) # emission factor per technology
- p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found") # co2 price
  pm_taxemiMkt <- readGDX(gdx,"pm_taxemiMkt") # regional co2 price
  pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F) # efficiency oftechnologies with time-dependent eta
  pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)# efficiency of technologies with time-independent eta
@@ -126,11 +132,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  vm_cap        <- readGDX(gdx,name=c("vm_cap"),field="l",format="first_found")
  vm_prodFe     <- readGDX(gdx,name=c("vm_prodFe"),field="l",restore_zeros=FALSE,format="first_found")
  v_emiTeDetail <- readGDX(gdx,name=c("vm_emiTeDetail","v_emiTeDetail"),field="l",restore_zeros=FALSE,format="first_found")
- 
-   
- ## equations
- qm_pebal  <- readGDX(gdx,name=c("q_balPe"),field="m",format="first_found")
- qm_budget <- readGDX(gdx,name=c("qm_budget"),field="m",format="first_found")
+
 
  # module-specific
  # amount of curtailed electricity
@@ -141,13 +143,6 @@ reportLCOE <- function(gdx, output.type = "both"){
    } else{
    v32_curt <- 0
    }
-
- # # sensitivites (only for investment cost sensitivity runs)
- # p_costFac  <- readGDX(gdx,name=c("p_costFac"),react = "silent") # sensitivity factor
- # if (is.null(p_costFac)) {
- #   p_costFac <- new.magpie(getRegions(v_directteinv),getYears(v_directteinv),getNames(p_omeg,dim=2), fill=1)
- # }
-
 
 
 
@@ -183,7 +178,7 @@ reportLCOE <- function(gdx, output.type = "both"){
      v_investcost[,ttot_before2005,te] * dimSums(vm_deltaCap[teall2rlf][,ttot_before2005,te],dim=3.2),
      v_directteinv_wadj[,ttot_from2005,te]
    )
- 
+
  ########## calculation of LCOE of standing system #######
  ######## (old annuities included) ######################
 
@@ -223,7 +218,7 @@ reportLCOE <- function(gdx, output.type = "both"){
      te_annual_inv_cost[,t0,a] <- dimSums(pm_ts[,t_id,] * te_inv_annuity[,t_id,a] * p_omeg_h[,t_id,a] ,dim=2)
    } # a
  }  # t0
- 
+
  te_annual_inv_cost_wadj <- new.magpie(getRegions(te_inv_annuity_wadj[,ttot,]),getYears(te_inv_annuity_wadj[,ttot,]),magclass::getNames(te_inv_annuity_wadj[,ttot,]))
  # loop over ttot
  for(t0 in ttot){
@@ -239,7 +234,7 @@ reportLCOE <- function(gdx, output.type = "both"){
      te_annual_inv_cost_wadj[,t0,a] <- dimSums(pm_ts[,t_id,] * te_inv_annuity_wadj[,t_id,a] * p_omeg_h[,t_id,a] ,dim=2)
    } # a
  }  # t0
- 
+
  ####### 2. sub-part: fuel cost #################################
 
  # fuel cost = PE price * PE demand of technology
@@ -457,7 +452,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  # convert to better dimensional format
  df.lcoe.avg <- as.quitte(LCOE.avg) %>%
                   select(region, period, data, value) %>%
-                  rename(variable = data) %>% 
+                  rename(variable = data) %>%
                   replace(is.na(.), 0)
 
 
@@ -479,11 +474,10 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  df.lcoe.avg <- df.lcoe.avg %>%
                   mutate( unit = "US$2015/MWh") %>%
-                  select(region, period, type, output, tech, sector, unit, cost, value) %>%
-                  as.quitte()
+                  select(region, period, type, output, tech, sector, unit, cost, value)
 
  # reconvert to magpie object
- LCOE.avg.out <- as.magpie(df.lcoe.avg, spatial=1, temporal=2, datacol=9)
+ LCOE.avg.out <- suppressWarnings(as.magpie(df.lcoe.avg, spatial=1, temporal=2, datacol=9))
  # bind to output file
  LCOE.out <- mbind(LCOE.out, LCOE.avg.out)
  }
@@ -593,6 +587,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   pe2se <- readGDX(gdx,"pe2se") # pe2se technology mappings
   se2se <- readGDX(gdx,"se2se") # hydrogen <--> electricity technologies
   se2fe <- readGDX(gdx,"se2fe") # se2fe technology mappings
+  te <- readGDX(gdx, "te") # all technologies
   teStor <- readGDX(gdx, "teStor") # storage technologies for VREs
   teGrid <- readGDX(gdx, "teGrid") # grid technologies for VREs
   ccs2te <-  readGDX(gdx, "ccs2te") # ccsinje technology
@@ -781,6 +776,8 @@ reportLCOE <- function(gdx, output.type = "both"){
 
 
   ### 7. retrieve carbon price
+  p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found") # co2 price
+
   df.co2price <- as.quitte(p_priceCO2) %>%
     select(region, period, value) %>%
     # where carbon price is NA, it is zero
@@ -1429,7 +1426,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     left_join(df.CCStax, by = c("region", "period", "tech")) %>%
     left_join(df.CCSCost, by = c("region", "period", "tech")) %>%
     left_join(df.flexPriceShare, by = c("region", "period", "tech")) %>%
-    left_join(df.FEtax, by = c("region", "period", "output")) %>%
+    left_join(df.FEtax,relationship =  "many-to-many", by = c("region", "period", "output")) %>%
     left_join(df.AddTeInvH2, by = c("region", "period", "tech", "sector")) %>%
     # filter to only have LCOE technologies
     filter( tech %in% c(te_LCOE))
