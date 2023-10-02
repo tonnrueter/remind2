@@ -1129,5 +1129,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   #   out <- mbind(out, tmp2)
   # }
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

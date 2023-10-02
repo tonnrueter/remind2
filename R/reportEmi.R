@@ -2524,9 +2524,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   out <- mbind(out, out.cumul)
 
-
-
-
+  getSets(out)[3] <- "variable"
   return(out)
-
 }
