@@ -547,13 +547,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     }
     # production
     v37_outflowPrc <- readGDX(gdx, name=c("v37_outflowPrc"), field="l", restore_zeros=FALSE, format="first_found", react='silent') #Gt
-    message("H1")
-    message(v37_outflowPrc)
     # backwards compatability
     if (is.null(v37_outflowPrc)) {
       v37_outflowPrc <- readGDX(gdx, name=c("v37_prodVolPrc"), field="l", restore_zeros=FALSE, format="first_found") #Gt
-      message("H2")
-      message(v37_outflowPrc)
     }
     v37_outflowPrc <- v37_outflowPrc[,t,]
   }
