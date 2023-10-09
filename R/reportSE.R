@@ -363,27 +363,37 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
         "SE|Gases|Hydrogen|Net Imports (EJ/yr)"))
   }
 
-  ## FS: SE Demand Reporting
+  # SE Demand Flows ----
+  # SE|Input|X|Y variables denote the demand of energy carrier X
+  # flowing into sector/production of Y.
 
-  # FE production
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+  # SE demand of specific energy system technologies
+  vm_demSeOth <- readGDX(gdx, "vm_demSeOth", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   # conversion efficiency
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
 
+  # hydrogen used for electricity production via H2 turbines
   tmp1 <- mbind(tmp1,
     setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel"), dim = 3), "SE|Input|Hydrogen|Electricity (EJ/yr)"),
     setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel", all_te = "h2turb"), dim = 3), "SE|Input|Hydrogen|Electricity|+|Normal Turbines (EJ/yr)"),
     setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel", all_te = "h2turbVRE"), dim = 3), "SE|Input|Hydrogen|Electricity|+|Forced VRE Turbines (EJ/yr)")
   )
 
+  # hydrogen used for synthetic fuels
   tmp1 <- mbind(tmp1,
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = c("seliqsyn", "segasyn"), all_te = c("MeOH", "h22ch4")), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels (EJ/yr)"),
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seliqsyn", all_te = "MeOH"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Liquids (EJ/yr)"),
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "segasyn", all_te = "h22ch4"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Gases (EJ/yr)")
-    )
+  )
+  # hydrogen used for other energy system technologies subsumed in vm_demSeOth
+  # e.g. co-firing of h2 in csp
+      tmp1 <- mbind(tmp1,
+                    setNames(dimSums(mselect(vm_demSeOth, all_enty = "seh2"), dim = 3),
+                    "SE|Input|Hydrogen|Other Energy System Consumption (EJ/yr)"))
 
 
   # SE electricity use
