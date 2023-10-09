@@ -546,7 +546,16 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       o37_demFePrc <- o37_demFePrc * TWa_2_EJ
     }
     # production
-    v37_prodVolPrc <- readGDX(gdx, name=c("v37_prodVolPrc"), field="l", restore_zeros=FALSE,format= "first_found")[,t,] #Gt
+    v37_outflowPrc <- readGDX(gdx, name=c("v37_outflowPrc"), field="l", restore_zeros=FALSE, format="first_found", react='silent') #Gt
+    message("H1")
+    message(v37_outflowPrc)
+    # backwards compatability
+    if (is.null(v37_outflowPrc)) {
+      v37_outflowPrc <- readGDX(gdx, name=c("v37_prodVolPrc"), field="l", restore_zeros=FALSE, format="first_found") #Gt
+      message("H2")
+      message(v37_outflowPrc)
+    }
+    v37_outflowPrc <- v37_outflowPrc[,t,]
   }
 
   # ---- transformations
@@ -997,7 +1006,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         # calculate and bind to out
         out <- mbind(
           c(list(out), # pass a list of magpie objects
-            .select_sum_name_multiply(v37_prodVolPrc, .mixer_to_selector(mixer),
+            .select_sum_name_multiply(v37_outflowPrc, .mixer_to_selector(mixer),
                                       # convert Gt/yr to Mt/yr
                                       1e3)))
       }

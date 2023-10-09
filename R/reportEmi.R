@@ -706,8 +706,16 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
         as.magpie(spatial = 2, temporal = 1, datacol = ncol(.)) %>%
       `getSets<-`(fulldim = FALSE, value = getSets(out)),
 
-      # process emissions
-      readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE) %>%
+      out)
+
+    # process emissions
+    emiIndBase <- readGDX(gdx, 'vm_emiIndBase', field = 'l', restore_zeros = FALSE, react='silent')
+    # for backwards compatibility
+    if (is.null(emiIndBase)) {
+      emiIndBase <- readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE)
+    }
+    out <- mbind(
+      emiIndBase %>%
       `[`(,,'co2cement_process.cement') %>%
       `*`(as.numeric(GtC_2_MtCO2)) %>%
       `getSets<-`(fulldim = FALSE, value = getSets(out)) %>%
