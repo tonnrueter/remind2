@@ -130,6 +130,8 @@ reportPE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,211
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",teccs,               name="PE|Biomass|Electricity|w/ CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seel",tenoccs,             name="PE|Biomass|Electricity|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Gas,                     name="PE|Biomass|Gases (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Gas,teccs,               name="PE|Biomass|Gases|w/ CC (EJ/yr)"),
+                pe_carrier(demPE,dataoc,oc2te,sety,pebio,se_Gas,tenoccs,             name="PE|Biomass|Gases|w/o CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",                     name="PE|Biomass|Hydrogen (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",teccs,               name="PE|Biomass|Hydrogen|w/ CC (EJ/yr)"),
                 pe_carrier(demPE,dataoc,oc2te,sety,pebio,"seh2",tenoccs,             name="PE|Biomass|Hydrogen|w/o CC (EJ/yr)"),
