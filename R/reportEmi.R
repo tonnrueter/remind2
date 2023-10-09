@@ -180,7 +180,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # CO2 released by CCU
   vm_co2CCUshort <- readGDX(gdx, "vm_co2CCUshort", field = "l", restore_zeros = F)[, t, ]
-  # helper variable to release captured CO2 in no CCU capacities are standing anymore to take the captured CO2
+  # variable to release captured CO2 when no CCU capacities are standing anymore vent captured CO2
   v_co2capturevalve <- readGDX(gdx, "v_co2capturevalve", field = "l", restore_zeros = F)[, t, ]
 
   # CO2 captured per industry subsector
@@ -993,6 +993,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # (also adding first and second product emissions of coupled production technologies)
 
 
+  ### carbon capture
+
   # calculate captured CO2 per pe2se technology
   sel_pm_emifac_pe2seCCO2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
                               mselect(pm_emifac, all_te = pe2se$all_te, emiAll = "cco2")
@@ -1308,7 +1310,14 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   }
 
-
+  ### venting of captured carbon ----
+  # This occurs when carbon capture capacities are still operating,
+  # while CCS/CCU capacities are deprecated and reach end of their lifetime.
+  # Then, captured carbon needs to be vented to the atmosphere.
+  out <- mbind(out,
+               # venting of captured carbon
+               setNames(dimSums(v_co2capturevalve, dim = 3, na.rm = T) * GtC_2_MtCO2,
+                        "Carbon Management|Venting of Captured Carbon (Mt CO2/yr)"))
 
 
   ### carbon usage ----
