@@ -412,5 +412,6 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
   }
   # add interest rate
   out <- mbind(out, inteRate)
+  getSets(out)[3] <- "variable"
   return(out)
 }

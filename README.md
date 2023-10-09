@@ -1,6 +1,6 @@
 # The REMIND R package (2nd generation)
 
-R package **remind2**, version **1.117.5**
+R package **remind2**, version **1.119.5**
 
 [![CRAN status](https://www.r-pkg.org/badges/version/remind2)](https://cran.r-project.org/package=remind2)  [![R build status](https://github.com/pik-piam/remind2/workflows/check/badge.svg)](https://github.com/pik-piam/remind2/actions) [![codecov](https://codecov.io/gh/pik-piam/remind2/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/remind2) [![r-universe](https://pik-piam.r-universe.dev/badges/remind2)](https://pik-piam.r-universe.dev/builds)
 
@@ -49,16 +49,16 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P (2023). _remind2: The REMIND R package (2nd generation)_. R package version 1.117.5, <https://github.com/pik-piam/remind2>.
+Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P, Weigmann P (2023). _remind2: The REMIND R package (2nd generation)_. R package version 1.119.5, <https://github.com/pik-piam/remind2>.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Manual{,
   title = {remind2: The REMIND R package (2nd generation)},
-  author = {Renato Rodrigues and Lavinia Baumstark and Falk Benke and Jan Philipp Dietrich and Alois Dirnaichner and Pascal Führlich and Anastasis Giannousakis and Robin Hasse and Jérome Hilaire and David Klein and Johannes Koch and Katarzyna Kowalczyk and Antoine Levesque and Aman Malik and Anne Merfort and Leon Merfort and Simón Morena-Leiva and Michaja Pehl and Robert Pietzcker and Sebastian Rauner and Oliver Richters and Marianna Rottoli and Christof Schötz and Felix Schreyer and Kais Siala and Björn Sörgel and Mike Spahr and Jessica Strefler and Philipp Verpoort},
+  author = {Renato Rodrigues and Lavinia Baumstark and Falk Benke and Jan Philipp Dietrich and Alois Dirnaichner and Pascal Führlich and Anastasis Giannousakis and Robin Hasse and Jérome Hilaire and David Klein and Johannes Koch and Katarzyna Kowalczyk and Antoine Levesque and Aman Malik and Anne Merfort and Leon Merfort and Simón Morena-Leiva and Michaja Pehl and Robert Pietzcker and Sebastian Rauner and Oliver Richters and Marianna Rottoli and Christof Schötz and Felix Schreyer and Kais Siala and Björn Sörgel and Mike Spahr and Jessica Strefler and Philipp Verpoort and Pascal Weigmann},
   year = {2023},
-  note = {R package version 1.117.5},
+  note = {R package version 1.119.5},
   url = {https://github.com/pik-piam/remind2},
 }
 ```
