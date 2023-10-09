@@ -425,6 +425,30 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
       (dimSums(CoeffOwnConsSeel_woCCS[, , "geohe"] * prodOwnCons[, , "geohe"], dim = 3)),
     "SE|Input|Electricity|Self Consumption Energy System|Central Ground Heat Pump (EJ/yr)"))
 
+  # electricity for fuel extraction, e.g. electricity used for oil and gas extraction
+  pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = F)
+  vm_fuExtr <- readGDX(gdx, "vm_fuExtr", field = "l", restore_zeros = F)[,y,]
+  pe2rlf <- readGDX(gdx, "pe2rlf")
+  pe2rlfemi <- pe2rlf %>% filter(all_enty %in% getNames(pm_fuExtrOwnCons, dim=2))
+
+
+
+  # calculate electricity for fuel extraction as in q32_balSe
+  # by multiplying fuel consumption of extraction with extraction quantities
+  tmp1 <- mbind(tmp1,
+                setNames(
+                  # sum over all PE carriers and extraction grades
+                  dimSums(
+                    # sum over pm_fuExtrOwnCons to reduce all_enty dimensions
+                    dimSums(mselect( pm_fuExtrOwnCons, all_enty = "seel"), dim = 3.1)
+                    * vm_fuExtr[,,getNames(pm_fuExtrOwnCons, dim=2)], dim=3)
+                    * pm_conv_TWa_EJ,
+                  "SE|Input|Electricity|PE Production (EJ/yr)"))
+
+  # set to zero in 2005 as the fuel production electricity demand is not included in the SE balance equation in this year
+  # due to incompatibilities with the InitialCap module
+  tmp1[,"y2005","SE|Input|Electricity|PE Production (EJ/yr)"] <- 0
+
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[, , "SE|Hydrogen|+|Electricity (EJ/yr)"] / tmp1[, , "SE|Hydrogen (EJ/yr)"])
   p_shareElec_H2[is.na(p_shareElec_H2)] <- 0
