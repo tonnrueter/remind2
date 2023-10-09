@@ -22,6 +22,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass mselect getSets getSets<- getYears dimSums getNames<- mbind
 #' @importFrom abind abind
+#' @importFrom rlang sym
 
 reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
 
@@ -429,7 +430,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = F)
   vm_fuExtr <- readGDX(gdx, "vm_fuExtr", field = "l", restore_zeros = F)[,y,]
   pe2rlf <- readGDX(gdx, "pe2rlf")
-  pe2rlfemi <- pe2rlf %>% filter(all_enty %in% getNames(pm_fuExtrOwnCons, dim=2))
+  pe2rlfemi <- pe2rlf %>% filter(!!sym("all_enty") %in% getNames(pm_fuExtrOwnCons, dim=2))
 
 
 
