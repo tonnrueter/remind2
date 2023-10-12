@@ -427,11 +427,14 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     "SE|Input|Electricity|Self Consumption Energy System|Central Ground Heat Pump (EJ/yr)"))
 
   # electricity for fuel extraction, e.g. electricity used for oil and gas extraction
-  pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = F)
+
+  # read in with restore_zero = F first, to get non-zero third dimension
+  pm_fuExtrOwnCons_reduced <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = F)
+  # read in again with restore_zero = T to get all regions in case the parameter is zero for some regions
+  pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = T)[,,getNames(pm_fuExtrOwnCons_reduced)]
   vm_fuExtr <- readGDX(gdx, "vm_fuExtr", field = "l", restore_zeros = F)[,y,]
   pe2rlf <- readGDX(gdx, "pe2rlf")
   pe2rlfemi <- pe2rlf %>% filter(!!sym("all_enty") %in% getNames(pm_fuExtrOwnCons, dim=2))
-
 
 
   # calculate electricity for fuel extraction as in q32_balSe
