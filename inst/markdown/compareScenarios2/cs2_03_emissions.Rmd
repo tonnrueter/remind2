@@ -232,17 +232,28 @@ showLinePlots(data, "Emi|CO2|Energy|Demand|Transport|International Bunkers")
 
 ```{r CO2 Process Emissions}
 items <- c(
-  "Emi|CO2|Industrial Processes", # scenario
-  "Emi|CO2|FFaI|Industry|Process") # historical
+  "Emi|CO2|Industrial Processes"#, # scenario
+  # "Emi|CO2|FFaI|Industry|Process"
+  ) # historical
 showLinePlots(data, items)
 ```
 
+```{r CO2 Process Emissions}
+tot <- c("Emi|CO2|Industrial Processes")
+items <- c(
+      "Emi|CO2|Industrial Processes|Chemicals",
+      "Emi|CO2|Industrial Processes|Cement"
+      )
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
 
 ### Process Emissions Cement
 
 ```{r}
 items <- c(
-  "Emi|CO2|Industrial Processes|Cement") 
+  "Emi|CO2|Industrial Processes|Cement",
+  "Emi|CO2|Industrial Processes|Minerals" # to display historical data from UNFCCC
+  ) 
 showLinePlots(data, items)
 ```
 
@@ -252,6 +263,14 @@ showLinePlots(data, items)
 ```{r}
 items <- c(
   "Emi|CO2|Industrial Processes|Chemicals") 
+showLinePlots(data, items)
+```
+
+### Process Emissions Metals
+
+```{r}
+items <- c(
+  "Emi|CO2|Industrial Processes|Metals") 
 showLinePlots(data, items)
 ```
 

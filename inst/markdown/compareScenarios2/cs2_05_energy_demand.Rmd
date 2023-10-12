@@ -190,6 +190,13 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
+### FE Total Chemicals
+```{r FE Total Chemicals}
+items <- c(
+  "FE|Industry|Chemicals") 
+showLinePlots(data, items)
+```
+
 ### FE mix Other Industry
 ```{r FE mix Other Industry}
 tot <- "FE|Industry|Other Industry"
