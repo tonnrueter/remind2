@@ -10,6 +10,7 @@ FE|Industry|Steel|++|Primary;     FE|Industry|Steel|Primary|Electricity;1
 # total FE secondary steel production;;
 FE|Industry|Steel|++|Secondary;   FE|Industry|Steel|Secondary|Electricity;1
 ;;
+# total GHG emissions by sectors with separation into gross and negative emissions;;
 Emi|GHG;Emi|GHG|Gross|Energy|Supply|Electricity;1
 Emi|GHG;Emi|GHG|Gross|Energy|Supply|Non-electric;1
 Emi|GHG;Emi|GHG|Energy|Demand|+|Buildings;1
@@ -25,20 +26,22 @@ Emi|GHG;Emi|CO2|CDR|DACCS;1
 Emi|GHG;Emi|CO2|CDR|Industry CCS|Synthetic Fuels;1
 Emi|GHG;Emi|CO2|CDR|EW;1
 ;;
-Emi|CO2;Emi|CO2|+|Land-Use Change;1
-Emi|CO2;Emi|CO2|+|Industrial Processes;1
+# total CO2 emissions by sectors with separation into gross and negative emissions;;
+Emi|CO2;Emi|CO2|Gross|Energy|Supply|+|Electricity;1
+Emi|CO2;Emi|CO2|Gross|Energy|Supply|Non-electric;1
 Emi|CO2;Emi|CO2|Energy|Demand|+|Transport;1
 Emi|CO2;Emi|CO2|Gross|Energy|Demand|+|Industry;1
 Emi|CO2;Emi|CO2|Energy|Demand|+|Buildings;1
 Emi|CO2;Emi|CO2|Energy|Demand|+|CDR;1
-Emi|CO2;Emi|CO2|Gross|Energy|Supply|Non-electric;1
-Emi|CO2;Emi|CO2|Gross|Energy|Supply|+|Electricity;1
+Emi|CO2;Emi|CO2|+|Land-Use Change;1
+Emi|CO2;Emi|CO2|+|Industrial Processes;1
 Emi|CO2;Emi|CO2|CDR|BECCS;1
 Emi|CO2;Emi|CO2|CDR|Industry CCS|Synthetic Fuels;1
 Emi|CO2;Emi|CO2|CDR|DACCS;1
 Emi|CO2;Emi|CO2|CDR|EW;1
-Emi|GHG;Emi|CO2|+|Energy;1
 ;;
+# total GHG emissions by CO2 sectors and non-CO2 gases;;
+Emi|GHG 1;Emi|CO2|+|Energy;1
 Emi|GHG 1;Emi|CO2|+|Industrial Processes;1
 Emi|GHG 1;Emi|CO2|+|Land-Use Change;1
 Emi|GHG 1;Emi|GHG|+|CH4;1
@@ -46,6 +49,7 @@ Emi|GHG 1;Emi|GHG|+|N2O;1
 Emi|GHG 1;Emi|GHG|+|F-Gases;1
 Emi|GHG 1;Emi|CO2|+|non-BECCS CDR;1
 ;;
+# cumulated total CO2 emissions by sectors with separation into gross and negative emissions;;
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|Land-Use Change;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|Industrial Processes;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|Energy|Demand|Transport;1
@@ -59,6 +63,7 @@ Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|Industry CCS|Synthetic Fuels;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|DACCS;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|EW;1
 ;;
+# total CDR;;
 Emi|CO2|CDR;Emi|CO2|CDR|Land-Use Change;1
 Emi|CO2|CDR;Emi|CO2|CDR|BECCS|Pe2Se;1
 Emi|CO2|CDR;Emi|CO2|CDR|BECCS|Industry;1
@@ -66,6 +71,7 @@ Emi|CO2|CDR;Emi|CO2|CDR|Industry CCS|Synthetic Fuels;1
 Emi|CO2|CDR;Emi|CO2|CDR|DACCS;1
 Emi|CO2|CDR;Emi|CO2|CDR|EW;1
 ;;
+# check balance of SE|Electricity electricity generation with the electricity demand variables by sector;;
 SE|Electricity;SE|Input|Electricity|Hydrogen|Synthetic Fuels|+|Liquids;1
 SE|Electricity;SE|Input|Electricity|Hydrogen|Synthetic Fuels|+|Gases;1
 SE|Electricity;SE|Input|Electricity|Hydrogen|direct FE H2;1
@@ -75,6 +81,9 @@ SE|Electricity;SE|Input|Electricity|Industry;1
 SE|Electricity;SE|Input|Electricity|Transport;1
 SE|Electricity;SE|Input|Electricity|CDR;1
 SE|Electricity;SE|Input|Electricity|Self Consumption Energy System;1
+SE|Electricity;SE|Input|Electricity|PE Production;1
+;;
+# check balance of SE|Hydrogen hydrogen generation with the hydrogen demand variables by sector;;
 SE|Hydrogen;FE|Industry|+|Hydrogen;1
 SE|Hydrogen;FE|Buildings|+|Hydrogen;1
 SE|Hydrogen;FE|Transport|+|Hydrogen;1
@@ -83,6 +92,9 @@ SE|Hydrogen;SE|Input|Hydrogen|Electricity|+|Normal Turbines;1
 SE|Hydrogen;SE|Input|Hydrogen|Electricity|+|Forced VRE Turbines;1
 SE|Hydrogen;SE|Input|Hydrogen|Synthetic Fuels|+|Liquids;1
 SE|Hydrogen;SE|Input|Hydrogen|Synthetic Fuels|+|Gases;1
+SE|Hydrogen;SE|Input|Hydrogen|Other Energy System Consumption;1
 ;;
+# check balance of carbon sources and carbon sinks for carbon management variables;;
 Carbon Management|Carbon Capture;Carbon Management|Storage;1
 Carbon Management|Carbon Capture;Carbon Management|Usage;1
+Carbon Management|Carbon Capture;Carbon Management|Venting of Captured Carbon;1
