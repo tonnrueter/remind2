@@ -12,9 +12,9 @@ test_that("Test if REMIND reporting produces mandatory variables for Ariadne rep
 
   mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath))
 
-  computedVariables <- getItems(mif, dim = 3.3)
+  computedVariables <- deletePlus(getItems(mif, dim = 3.3))
 
-  templateVariables <- piamInterfaces::getREMINDTemplateVariables("ARIADNE")
+  templateVariables <- deletePlus(piamInterfaces::getREMINDTemplateVariables("ARIADNE"))
 
   expect_true(any(computedVariables %in% templateVariables))
 
