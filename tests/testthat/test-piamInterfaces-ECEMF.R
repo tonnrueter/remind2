@@ -12,11 +12,11 @@ test_that("Test if REMIND reporting produces mandatory variables for ECEMF repor
 
   mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_ref = gdxPath))
 
-  computedVariables <- getItems(mif, dim = 3.3)
+  computedVariables <- deletePlus(getItems(mif, dim = 3.3))
 
   computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
 
-  templateVariables <- piamInterfaces::getREMINDTemplateVariables("ECEMF")
+  templateVariables <- deletePlus(piamInterfaces::getREMINDTemplateVariables("ECEMF"))
 
   expect_true(any(computedVariables %in% templateVariables))
 

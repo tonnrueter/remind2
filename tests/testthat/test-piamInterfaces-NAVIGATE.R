@@ -12,11 +12,11 @@ test_that("Test if REMIND reporting produces mandatory variables for NAVIGATE re
 
   mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath))
 
-  computedVariables <- getItems(mif, dim = 3.3)
+  computedVariables <- deletePlus(getItems(mif, dim = 3.3))
 
   computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
 
-  templateVariables <- piamInterfaces::getREMINDTemplateVariables("NAVIGATE")
+  templateVariables <- deletePlus(piamInterfaces::getREMINDTemplateVariables("NAVIGATE"))
 
   expect_true(any(computedVariables %in% templateVariables))
 
