@@ -355,7 +355,7 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
   p80ConvNashTaxrevIter <- readGDX(gdx, name = "p80_convNashTaxrev_iter", restore_zeros = FALSE) %>%
     as.quitte() %>%
     select("region", "period", "iteration", "value") %>%
-    mutate("failed" = .data$value > 1e-4)
+    mutate("failed" = abs(.data$value) > 1e-4)
 
   data <- p80ConvNashTaxrevIter %>%
     group_by(.data$iteration) %>%
