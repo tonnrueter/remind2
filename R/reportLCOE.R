@@ -24,7 +24,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie dimSums getRegions getYears getNames setNames clean_magpie dimReduce as.magpie magpie_expand
 #' @importFrom dplyr %>% mutate select rename group_by ungroup right_join filter full_join arrange summarise
-#' @importFrom quitte as.quitte overwrite getRegs
+#' @importFrom quitte as.quitte overwrite getRegs getPeriods
 #' @importFrom tidyr spread gather expand fill
 
 
@@ -779,110 +779,104 @@ LCOE.avg <- NULL
     mutate(value = ifelse(is.na(value), 0, value*1.2/3.66)) %>%
     rename(co2.price = value)
 
-  
+  # Calculate weighted averages of fuel and carbon prices over time ----
 
-  ### TODO: maybe deleted if not necessary anymore:this is the old section where
-  # capacity-weighted/discounted averages of fuel and co2 prices are calculated
-  # over the lifetime of the plant
-
-  #
-  # # Fuel price
-  # df.Fuel.Price <- as.quitte(Fuel.Price) %>%
-  #   select(region, period, all_enty, value) %>%
-  #   rename(fuel = all_enty, fuel.price = value, opTimeYr = period) %>%
-  #   # replace zeros by last or (if not available) next value of time series (marginals are sometimes zero if there are other constriants)
-  #   mutate( fuel.price = ifelse(fuel.price == 0, NA, fuel.price)) %>%
-  #   group_by(region, fuel) %>%
-  #   tidyr::fill(fuel.price, .direction = "downup") %>%
-  #   ungroup()
-  #
-  #
-
-  #
-  # ### 8. calculate capacity distribution weighted prices over lifetimes of plant
-  #
-  # # capacity distribution over lifetime
-  # df.pomeg <- as.quitte(p_omeg) %>%
-  #   rename(tech = all_te, pomeg = value) %>%
-  #   # to save run time, only take p_omeg in ten year time steps only up to lifetimes of 50 years,
-  #   # erase region dimension, pomeg same across all regions, only se generating technologies
-  #   filter(opTimeYr %in% c(1,seq(5,50,5)), region %in% getRegions(vm_costTeCapital)[1]
-  #          , tech %in% te_LCOE) %>%
-  #   select(opTimeYr, tech, pomeg)
-  #
-  # # expanded df.omeg, with additional period dimension combined with opTimeYr dimensions,
-  # # period will be year of building the plant,
-  # # opTimeYr will be year within lifetime of plant (where only a certain fraction, pomeg, of capacity is still standing)
-  # df.pomeg.expand <- df.pomeg %>%
-  #   expand(opTimeYr, period = seq(2005,2150,5)) %>%
-  #   full_join(df.pomeg) %>%
-  #   mutate( opTimeYr = as.numeric(opTimeYr)) %>%
-  #   mutate( opTimeYr = ifelse(opTimeYr > 1, opTimeYr + period, period)) %>%
-  #   left_join(en2en) %>%
-  #   arrange(tech, period, opTimeYr)
-  #
+  # This section calculates weighted-average of the prices seen by a plant over
+  # its time of operation. It takes into account that fuel cost are discounted over time
+  # and that capacities depreciate over time such that near-term prices
+  # should be weighted higher in the LCOE than long-term prices.
+  # Weighted average fuel prices FP_avg are calculated
+  # from fuel prices over period t FP_t as:
+  # FP_avg = sum_t (  (discount_t * pomeg_t * FP_t) / (sum_t (discount_t * pomeg_t))
+  # discount_t: discounting factor
+  # pomeg_t: depreciation factor, gives fraction of operating capacity over lifetime of plant
 
 
-  ### 9. weight fuel price and carbon price with capacity density over liftime
+  # retrieve capacity distribution over lifetime
+  # (fraction of capacity still standing in that year of plant lifetime)
+  p_omeg  <- readGDX(gdx,c("pm_omeg","p_omeg"),format="first_found")
 
-  # ### TODO: Is that correct ?fuel price and co2 price with capacity-weighting and discounting
-  #
-  # # join fuel price to df.omeg and weigh fuel price by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
-  # df.fuel.price.weighted <- df.Fuel.Price %>%
-  #   full_join(df.pomeg.expand) %>%
-  #   # calculate discount factor over years at 5%/yr
-  #   mutate( discount = 0.95^(as.numeric(opTimeYr)-as.numeric(period))) %>%
-  #   # mean of fuel prices over first 50-years of plant lifetime weighted by pomeg and discount factor
-  #   group_by(region, period, fuel, tech) %>%
-  #   summarise( fuel.price.weighted.mean = mean(fuel.price * pomeg  * discount)) %>%
-  #   ungroup()
+  # operation time steps of plant, only take every 5 years and limit calculation to 50 years as
+  # by then most of the capacity of all technologies is already retired
+  set_operation_period <- c(1,seq(5,50,5))
 
 
-  # ### 7. retrieve carbon price
-  # df.co2price <- as.quitte(p_priceCO2) %>%
-  #   select(region, period, value) %>%
-  #   # where carbon price is NA, it is zero
-  #   # convert from USD2005/tC CO2 to USD2015/tCO2
-  #   mutate(value = ifelse(is.na(value), 0, value*1.2/3.66)) %>%
-  #   rename(co2.price = value, opTimeYr = period)
+  # capacity distribution over lifetime
+  df.pomeg <- as.quitte(p_omeg) %>%
+    rename(tech = all_te, pomeg = value) %>%
+    # to save run time, only take p_omeg in ten year time steps only up to lifetimes of 50 years,
+    # erase region dimension, pomeg same across all regions
+    filter(opTimeYr %in% set_operation_period,
+           region %in% getRegions(vm_costTeCapital)[1],
+           tech %in% te_LCOE) %>%
+    select(opTimeYr, tech, pomeg)
 
-  #
-  # # join carbon price to df.omeg and weigh it by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
-  # df.co2price.weighted <- df.co2price %>%
-  #   full_join(df.pomeg.expand) %>%
-  #   filter( !is.na(tech)) %>%
-  #   # calculate discount factor over years at 5%/yr
-  #   mutate( discount = 0.95^(as.numeric(opTimeYr)-as.numeric(period))) %>%
-  #   # mean of carbon price over first 50-years of plant lifetime weighted by pomeg and discount factor
-  #   group_by(region, period, tech) %>%
-  #   summarise( co2.price.weighted.mean = mean(co2.price * pomeg * discount)) %>%
-  #   ungroup()
-  #
-  #
-  #
+  # create dataframe with all combinations of time steps "period" in which plant was built (commissioning period)
+  # time steps "operationPeriod" in which production takes place, year of operation "opTimeYr" in lifetime of plant
+  df.period_operationPeriod <- expand.grid(opTimeYr = unique(df.pomeg$opTimeYr),
+                                           period = getPeriods(df.Fuel.Price)) %>%
+                                  # operationPeriod is commissioning period + years of operation (opTimeYr)
+                                  # for comissioning period take value of first year of operation
+                                  mutate( operationPeriod = ifelse(as.numeric(opTimeYr) > 1,
+                                                                   as.numeric(opTimeYr) + period,
+                                                                   period)) %>%
+                                  # remove time steps from operationPeriod that are not remind_timesteps
+                                  filter( operationPeriod %in% unique(remind_timesteps$period))
 
-  # # join fuel price to df.omeg and weigh fuel price by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
-  # df.fuel.price.weighted <- df.Fuel.Price %>%
-  #   full_join(df.pomeg.expand) %>%
-  #   # mean of fuel prices over first 50-years of plant lifetime weighted by pomeg
-  #   group_by(region, period, fuel, tech) %>%
-  #   summarise( fuel.price.weighted.mean = sum(fuel.price * pomeg / sum(pomeg))) %>%
-  #   ungroup()
-  #
-  # # join carbon price to df.omeg and weigh it by df.pomeg (pomeg = fraction of capacity still standing in that year of plant lifetime)
-  # df.co2price.weighted <- df.co2price %>%
-  #   full_join(df.pomeg.expand) %>%
-  #   filter( !is.na(tech)) %>%
-  #   # mean of carbon price over first 50-years of plant lifetime weighted by pomeg
-  #   group_by(region, period, tech) %>%
-  #   summarise( co2.price.weighted.mean = sum(co2.price * pomeg / sum(pomeg))) %>%
-  #   ungroup()
+  # Join capacity distribution with above dataframe to get
+  # capacity distribution over all commissioning years (period) and
+  # operation years (operationPeriod)
+  df.pomeg.expand <- df.pomeg %>%
+                        # only take capacity distribution of 5-year time steps and up to 50 years of operation
+                        right_join(df.period_operationPeriod,
+                                   relationship = "many-to-many") %>%
+                        # add energy input and output carrier dimension
+                        left_join(en2en)
+
+# calculate average capacity-weighted and discounted fuel price over lifetime of plant
+df.fuel.price.weighted <- df.pomeg.expand %>%
+                              left_join(df.Fuel.Price,
+                                        by = c("operationPeriod" = "period",
+                                               "fuel" = "fuel"),
+                                        relationship = "many-to-many") %>%
+                              # calculate discount factor
+                              mutate( discount =1 / (1+r)^(operationPeriod - period)) %>%
+                              # calculate weights over lifetime as operational capacity * discount factor,
+                              # normalize by sum over all time steps for weights to add up to one
+                              group_by(region, period, tech) %>%
+                              mutate( weight = pomeg * discount / sum(pomeg * discount)) %>%
+                              # calculate average weighted fuel price over lifetime as
+                              # the sum of the capacity-discount weights
+                              summarise( fuel.price.weighted = sum(fuel.price * weight)) %>%
+                              ungroup()
+
+
+df.fuel.price.weighted.check <- df.fuel.price.weighted %>%
+                                  filter(period == 2040,
+                                         region == "MEA",
+                                         tech == "refliq")
+
+# calculate average capacity-weighted and discounted fuel price over lifetime of plant
+df.co2price.weighted <- df.pomeg.expand %>%
+                              left_join(df.co2price,
+                                    by = c("operationPeriod" = "period"),
+                                    relationship = "many-to-many") %>%
+                              # calculate discount factor
+                              mutate( discount =1 / (1+r)^(operationPeriod - period)) %>%
+                              # calculate weights over lifetime as operational capacity * discount factor,
+                              # normalize by sum over all time steps for weights to add up to one
+                              group_by(region, period, tech) %>%
+                              mutate( weight = pomeg * discount / sum(pomeg * discount)) %>%
+                              # calculate average weighted fuel price over lifetime as
+                              # the sum of the capacity-discount weights
+                              summarise( co2.price.weighted = sum(co2.price * weight)) %>%
+                              ungroup()
 
 
 
 
 
-  ### 10. get fuel conversion efficiencies
+  ### Read conversion efficiencies ----
   pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F)[,ttot_from2005,] # efficiency oftechnologies with time-independent eta
   pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)[,ttot_from2005,]# efficiency of technologies with time-dependent eta
 
@@ -1182,6 +1176,8 @@ LCOE.avg <- NULL
     left_join(df.lifetime, by = "tech") %>%
     left_join(df.Fuel.Price, by = c("region", "period", "fuel")) %>%
     left_join(df.co2price, by = c("region", "period")) %>%
+    left_join(df.fuel.price.weighted, by = c("region", "period", "tech")) %>%
+    left_join(df.co2price.weighted, by = c("region", "period", "tech")) %>%
     left_join(df.eff, by = c("region", "period", "tech")) %>%
     left_join(df.emiFac, by = c("region", "tech")) %>%
     left_join(df.emifac.se2fe, by = c("region", "tech")) %>%
@@ -1242,10 +1238,18 @@ LCOE.avg <- NULL
     # OMF cost LCOE in USD/MWh
     mutate( `OMF Cost` = CAPEX * OMF / (CapFac*8760)*1e3) %>%
     mutate( `OMV Cost` = OMV) %>%
-    mutate( `Fuel Cost` = fuel.price / eff) %>%
+    # Fuel Cost
+    # # Fuel cost with fuel price in commissioning time step of plant
+    # mutate( `Fuel Cost` = fuel.price / eff) %>%
+    # Fuel cost with weighted average fuel price over plant lifetime
+    mutate(  `Fuel Cost` = fuel.price.weighted / eff) %>%
+    # CO2 Tax cost
     # CO2 Tax cost on SE level refer to (supply-side) emissions of pe2se technologies
     # CO2 Tax cost on FE level refer to (demand-side) emissions of FE carriers
-    mutate( `CO2 Tax Cost` = co2.price * (emiFac / eff) * CO2StoreShare) %>%
+    # # CO2 Tax cost with co2 price in commissioning time step of plant
+    # mutate( `CO2 Tax Cost` = co2.price * (emiFac / eff) * CO2StoreShare) %>%
+    # CO2 Tax cost with weighted average co2 price over plant lifetime
+    mutate(  `CO2 Tax Cost` = co2.price.weighted * (emiFac / eff) * CO2StoreShare) %>%
     mutate( `CO2 Provision Cost` = Co2.Capt.Price * co2_dem) %>%
     # fuel cost of second fuel if technology has two inputs or outputs
     # is positive for cost of second input
