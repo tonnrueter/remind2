@@ -127,5 +127,6 @@ reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),se
     if (!is.null(regionSubsetList))
       tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
+    getSets(tmp)[3] <- "variable"
     return(tmp)
 }

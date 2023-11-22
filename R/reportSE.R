@@ -22,6 +22,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass mselect getSets getSets<- getYears dimSums getNames<- mbind
 #' @importFrom abind abind
+#' @importFrom rlang sym
 
 reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
 
@@ -363,27 +364,37 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
         "SE|Gases|Hydrogen|Net Imports (EJ/yr)"))
   }
 
-  ## FS: SE Demand Reporting
+  # SE Demand Flows ----
+  # SE|Input|X|Y variables denote the demand of energy carrier X
+  # flowing into sector/production of Y.
 
-  # FE production
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+  # SE demand of specific energy system technologies
+  vm_demSeOth <- readGDX(gdx, "vm_demSeOth", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   # conversion efficiency
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
 
+  # hydrogen used for electricity production via H2 turbines
   tmp1 <- mbind(tmp1,
     setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel"), dim = 3), "SE|Input|Hydrogen|Electricity (EJ/yr)"),
     setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel", all_te = "h2turb"), dim = 3), "SE|Input|Hydrogen|Electricity|+|Normal Turbines (EJ/yr)"),
     setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seel", all_te = "h2turbVRE"), dim = 3), "SE|Input|Hydrogen|Electricity|+|Forced VRE Turbines (EJ/yr)")
   )
 
+  # hydrogen used for synthetic fuels
   tmp1 <- mbind(tmp1,
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = c("seliqsyn", "segasyn"), all_te = c("MeOH", "h22ch4")), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels (EJ/yr)"),
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seliqsyn", all_te = "MeOH"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Liquids (EJ/yr)"),
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "segasyn", all_te = "h22ch4"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Gases (EJ/yr)")
-    )
+  )
+  # hydrogen used for other energy system technologies subsumed in vm_demSeOth
+  # e.g. co-firing of h2 in csp
+      tmp1 <- mbind(tmp1,
+                    setNames(dimSums(mselect(vm_demSeOth, all_enty = "seh2"), dim = 3),
+                    "SE|Input|Hydrogen|Other Energy System Consumption (EJ/yr)"))
 
 
   # SE electricity use
@@ -414,6 +425,33 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     -pm_conv_TWa_EJ *
       (dimSums(CoeffOwnConsSeel_woCCS[, , "geohe"] * prodOwnCons[, , "geohe"], dim = 3)),
     "SE|Input|Electricity|Self Consumption Energy System|Central Ground Heat Pump (EJ/yr)"))
+
+  # electricity for fuel extraction, e.g. electricity used for oil and gas extraction
+
+  # read in with restore_zero = F first, to get non-zero third dimension
+  pm_fuExtrOwnCons_reduced <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = F)
+  # read in again with restore_zero = T to get all regions in case the parameter is zero for some regions
+  pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = T)[,,getNames(pm_fuExtrOwnCons_reduced)]
+  vm_fuExtr <- readGDX(gdx, "vm_fuExtr", field = "l", restore_zeros = F)[,y,]
+  pe2rlf <- readGDX(gdx, "pe2rlf")
+  pe2rlfemi <- pe2rlf %>% filter(!!sym("all_enty") %in% getNames(pm_fuExtrOwnCons, dim=2))
+
+
+  # calculate electricity for fuel extraction as in q32_balSe
+  # by multiplying fuel consumption of extraction with extraction quantities
+  tmp1 <- mbind(tmp1,
+                setNames(
+                  # sum over all PE carriers and extraction grades
+                  dimSums(
+                    # sum over pm_fuExtrOwnCons to reduce all_enty dimensions
+                    dimSums(mselect( pm_fuExtrOwnCons, all_enty = "seel"), dim = 3.1)
+                    * vm_fuExtr[,,getNames(pm_fuExtrOwnCons, dim=2)], dim=3)
+                    * pm_conv_TWa_EJ,
+                  "SE|Input|Electricity|PE Production (EJ/yr)"))
+
+  # set to zero in 2005 as the fuel production electricity demand is not included in the SE balance equation in this year
+  # due to incompatibilities with the InitialCap module
+  tmp1[,"y2005","SE|Input|Electricity|PE Production (EJ/yr)"] <- 0
 
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[, , "SE|Hydrogen|+|Electricity (EJ/yr)"] / tmp1[, , "SE|Hydrogen (EJ/yr)"])
@@ -490,5 +528,6 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

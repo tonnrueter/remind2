@@ -1,7 +1,7 @@
 #' Read in GDX and calculate LCOE reporting used in convGDX2MIF_LCOE.
 #'
 #' This function provides a post-processing calculation of LCOE (Levelized Cost of Energy) for energy conversion technologies in REMIND.
-#' In incluldes most technologies that generate secondary energy and the distribution technologies which convert secondary energy to final energy.
+#' It includes most technologies that generate secondary energy and the distribution technologies which convert secondary energy to final energy.
 #' This script calculates two different types of LCOE: average LCOE (standing system) and marginal LCOE (new plant).
 #' The average LCOE reflect the total cost incurred by the technology deployment in a specific time step divided by its energy output.
 #' The marginal LCOE estimate the per-unit lifetime cost of the output if the model added another capacity of that technology in the respective time step.
@@ -1467,8 +1467,3 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
  return(LCOE.out)
 }
-
-
-
-
-

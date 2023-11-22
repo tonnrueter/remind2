@@ -385,5 +385,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   tmp[is.na(tmp)] <- 0  # tmp is NA if weight is zero for all regions within the GLO or the specific region aggregation. Therefore, we replace all NAs with zeros.
 
+  getSets(tmp)[3] <- "variable"
   return(tmp)
 }

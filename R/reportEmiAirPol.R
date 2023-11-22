@@ -618,5 +618,6 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
 
   } else {stop("not allowed AP-realization")}  
 
+  getSets(out)[3] <- "variable"
   return(out)
 }
