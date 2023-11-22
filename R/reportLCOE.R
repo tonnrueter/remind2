@@ -5,6 +5,8 @@
 #' This script calculates two different types of LCOE: average LCOE (standing system) and marginal LCOE (new plant).
 #' The average LCOE reflect the total cost incurred by the technology deployment in a specific time step divided by its energy output.
 #' The marginal LCOE estimate the per-unit lifetime cost of the output if the model added another capacity of that technology in the respective time step.
+#' The marginal LCOE are calculate in two versions: 1) with fuel prices and co2 taxes of the time step for which the LCOE are calculated (time step prices),
+#' or 2) with an intertemporal weighted-average of fuel price and co2 taxes over the lifetime of the plant (intertemporal prices).
 #'
 #'
 #'
@@ -78,6 +80,9 @@ reportLCOE <- function(gdx, output.type = "both"){
  qm_pebal  <- readGDX(gdx,name=c("q_balPe"),field="m",format="first_found")
  qm_budget <- readGDX(gdx,name=c("qm_budget"),field="m",format="first_found")
 
+ ## variables
+ vm_prodSe  <- readGDX(gdx,name=c("vm_prodSe"),field="l",restore_zeros=FALSE,format="first_found")
+
 
 
 #### A) Calculation of average (standing system) LCOE ----
@@ -126,7 +131,6 @@ reportLCOE <- function(gdx, output.type = "both"){
  vm_capEarlyReti <- readGDX(gdx,name=c("vm_capEarlyReti"),field="l",format="first_found")[,ttot,]
  vm_deltaCap   <- readGDX(gdx,name=c("vm_deltaCap"),field="l",format="first_found")[,ttot,]
  vm_demPe      <- readGDX(gdx,name=c("vm_demPe","v_pedem"),field="l",restore_zeros=FALSE,format="first_found")
- vm_prodSe     <- readGDX(gdx,name=c("vm_prodSe"),field="l",restore_zeros=FALSE,format="first_found")
  v_investcost  <- readGDX(gdx,name=c("vm_costTeCapital","v_costTeCapital","v_investcost"),field="l",format="first_found")[,ttot,]
  vm_cap        <- readGDX(gdx,name=c("vm_cap"),field="l",format="first_found")
  vm_prodFe     <- readGDX(gdx,name=c("vm_prodFe"),field="l",restore_zeros=FALSE,format="first_found")
@@ -606,10 +610,10 @@ LCOE.avg <- NULL
 
 
   # all technologies to calculate LCOE for
-  te_LCOE <- c(pe2se$all_te, se2se$all_te,se2fe$all_te)
+  te_LCOE <- c(pe2se$all_te, se2se$all_te,se2fe$all_te, "ccsinje")
 
-  # all technologies to calculate investment and O&M LCOE for (needed for CCS, storage, grid cost)
-  te_LCOE_Inv <- c(te_LCOE, as.vector(teStor), as.vector(teGrid), ccs2te$all_te, te[te %in% c("dac")])
+  # all technologies to calculate investment, adjustment and O&M LCOE for (needed for storage, grid cost)
+  te_LCOE_Inv <- c(te_LCOE, as.vector(teStor), as.vector(teGrid), te[te %in% c("dac")])
 
   # technologies to produce SE
   te_SE_gen <- c(pe2se$all_te, se2se$all_te)
@@ -790,7 +794,7 @@ LCOE.avg <- NULL
     mutate(value = ifelse(is.na(value), 0, value*1.2/3.66)) %>%
     rename(co2.price = value)
 
-  # Calculate weighted averages of fuel and carbon prices over time ----
+  # Calculate intertemporal fuel and carbon prices ----
 
   # This section calculates weighted-average of the prices seen by a plant over
   # its time of operation. It takes into account that fuel cost are discounted over time
@@ -891,7 +895,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
   pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F)[,ttot_from2005,] # efficiency oftechnologies with time-independent eta
   pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)[,ttot_from2005,]# efficiency of technologies with time-dependent eta
 
-  df.eff <- as.quitte(mbind(pm_eta_conv, pm_dataeta)) %>%
+  df.eff <- as.quitte(mbind(pm_eta_conv, pm_dataeta[,,setdiff(getNames(pm_dataeta),getNames(pm_eta_conv))])) %>%
     rename(tech = all_te, eff = value) %>%
     select(region, period, tech, eff)
 
@@ -970,7 +974,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
     add_dimension(add = "tech", nm = "dac") %>%
     add_dimension(add = "output", nm = "cco2") %>%
     add_dimension(add = "type", nm = "marginal") %>%
-    add_dimension(add = "sector", dim=3.4, nm = "supply-side")
+    add_dimension(add = "sector", dim=3.4, nm = "carbon management")
 
 
   # Co2 Capture price, marginal of q_balcapture,  convert from tr USD 2005/GtC to USD2015/tCO2
@@ -1061,6 +1065,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
       v32_curt <- 0
     }
 
+
     curt_share <- v32_curt[,,teVRE] / vm_prodSe[,,teVRE]
 
     df.curtShare <- as.quitte(curt_share) %>%
@@ -1090,6 +1095,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
     pm_eff <- mbind(pm_eta_conv, pm_dataeta[,, setdiff(getNames(pm_dataeta), getNames(pm_eta_conv)) ])
     vm_co2CCS_m <- pm_emifac_cco2/pm_eff[,,getNames(pm_emifac_cco2, dim=3)]*collapseNames(p_share_carbonCapture_stor)
 
+
     # calculate CCS tax markup following q21_taxrevCCS, convert to USD2015/MWh
     CCStax <- dimReduce(pm_data_omf[,,"ccsinje"]*vm_costTeCapital[,,"ccsinje"]*vm_co2CCS_m^2/pm_dataccs[,,"quan.1"]/pm_ccsinjecrate/s_twa2mwh*1e12*1.2)
 
@@ -1103,9 +1109,6 @@ df.co2price.weighted <- df.pomeg.expand %>%
                   mutate( CCStax.cost = 0)
 
 
-
-
-#                     mutate( CCSCost = 0)
 
 ### Read Flexibility Tax ----
 
@@ -1127,23 +1130,36 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
 ### Read Final Energy Taxes ----
 
+
+
     entyFe2Sector <- readGDX(gdx, "entyFe2Sector")
-
-    pm_tau_fe_tax <- readGDX(gdx, "pm_tau_fe_tax")[,ttot_from2005,entyFe2Sector$all_enty]
-    pm_tau_fe_sub <- readGDX(gdx, "pm_tau_fe_sub")[,ttot_from2005,entyFe2Sector$all_enty]
-
-
     sector.mapping <- c("build" = "buildings", "indst" = "industry", "trans" = "transport")
 
 
-    df.FEtax <- as.quitte((pm_tau_fe_tax+pm_tau_fe_sub)* 1.2 / s_twa2mwh * 1e12) %>%
+    pm_tau_fe_tax <- readGDX(gdx, "pm_tau_fe_tax", restore_zeros = F)
+    pm_tau_fe_sub <- readGDX(gdx, "pm_tau_fe_sub", restore_zeros = F)
+
+    df.taxrate <- as.quitte(pm_tau_fe_tax * 1.2 / s_twa2mwh * 1e12) %>%
+                    rename(taxrate = value)
+
+    df.subrate <- as.quitte(pm_tau_fe_sub * 1.2 / s_twa2mwh * 1e12) %>%
+                      rename(subrate = value)
+
+    df.FEtax <- df.taxrate %>%
+                  full_join(df.subrate) %>%
+                  # set NA to 0
+                  mutate(subrate = ifelse(is.na(subrate),0,subrate),
+                         taxrate = ifelse(is.na(taxrate),0,taxrate)) %>%
+                  # taxrate + subsidy rate = net FE tax
+                  mutate( FEtax = taxrate + subrate) %>%
                   filter(emi_sectors %in% names(sector.mapping)) %>%
                   revalue.levels(emi_sectors = sector.mapping) %>%
-                  rename( sector = emi_sectors, output = all_enty, FEtax = value)
+                  rename( sector = emi_sectors, output = all_enty) %>%
+                  select(region,period,sector,output,FEtax)
 
 
 
-### read H2 Phase-in cost for buildings and industry ----
+### Read H2 Phase-in cost for buildings and industry ----
 
     ### for buildings and industry (calculate average cost for simplicity, not marginal)
 
@@ -1200,7 +1216,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
     left_join(df.curtShare, by = c("region", "period", "tech")) %>%
     left_join(df.CCStax, by = c("region", "period", "tech")) %>%
     left_join(df.flexPriceShare, by = c("region", "period", "tech")) %>%
-    left_join(df.FEtax,relationship =  "many-to-many", by = c("region", "period", "output")) %>%
+    left_join(df.FEtax, relationship = "many-to-many", by = c("region", "period", "output")) %>%
     left_join(df.AddTeInvH2, by = c("region", "period", "tech", "sector")) %>%
     # filter to only have LCOE technologies
     filter( tech %in% c(te_LCOE))
@@ -1208,12 +1224,12 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
   # only retain unique region, period, tech combinations
   df.LCOE <- df.LCOE %>%
-              unique(by=c("region", "period", "tech"))
+              unique(by=c("region", "period", "tech","sector"))
 
 
   # replace NA by 0 in certain columns
   # columns where NA should be replaced by 0
-  col.NA.zero <- c("OMF","OMV", "co2.price", "fuel.price","co2_dem","emiFac.se2fe","Co2.Capt.Price",
+  col.NA.zero <- c("OMF","OMV", "AdjCost","co2.price","co2.price.weighted", "fuel.price","fuel.price.weighted", "co2_dem","emiFac.se2fe","Co2.Capt.Price",
                    "secfuel.prod", "secfuel.price", "curtShare","CCStax.cost","FEtax","AddH2TdCost")
   df.LCOE[,col.NA.zero][is.na(df.LCOE[,col.NA.zero])] <- 0
 
@@ -1223,18 +1239,44 @@ df.co2price.weighted <- df.pomeg.expand %>%
   df.LCOE[,col.NA.one][is.na(df.LCOE[,col.NA.one])] <- 1
 
   # replace NA for sectors by "supply-side" (for all SE generating technologies)
+  # Carbon management for all technologies handling CO2
   df.LCOE <- df.LCOE %>%
-              mutate( sector = ifelse(is.na(sector), "supply-side", as.character(sector)))
+              mutate( sector = ifelse(tech %in% c(ccs2te$all_te),
+                                            "carbon management",
+                                            sector)) %>%
+              mutate( sector = ifelse(tech %in% c(pe2se$all_te,
+                                                  se2se$all_te),
+                                             "supply-side",
+                                              sector)) %>%
+              filter( !is.na(sector))
 
-  ### data preparation before LCOE calculation
+
+
+
+  ### unit conversion and data preparation before LCOE calculation
   df.LCOE <- df.LCOE %>%
     # remove some unnecessary columns
     select(-model, -scenario, -variable, -unit) %>%
-    # unit conversions for CAPEX and OMV cost
+    # unit conversions for CAPEX and OMV cost, adjustment cost
     # conversion from tr USD 2005/TW to USD2015/kW
-    mutate(CAPEX = CAPEX *1.2 * 1e3) %>%
+    # in case of CCS technologies convert from tr USD2005/GtC to USD2015/tCO2
+    mutate(CAPEX = ifelse(tech %in% ccs2te$all_te,
+                          # CCS technology unit conversion
+                          CAPEX *1.2*1e3/3.66,
+                          # energy technology unit conversion
+                          CAPEX *1.2 * 1e3),
+           AdjCost = ifelse(tech %in% ccs2te$all_te,
+                            # CCS technology unit conversion
+                            AdjCost *1.2*1e3/3.66,
+                            # energy technology unit conversion
+                            AdjCost *1.2 * 1e3)) %>%
     # conversion from tr USD 2005/TWa to USD2015/MWh
-    mutate(OMV = OMV * 1.2 / as.numeric(s_twa2mwh) * 1e12) %>%
+    # in case of CCS technologies convert from tr USD2005/GtC to USD2015/tCO2
+    mutate(OMV = ifelse(tech %in% ccs2te$all_te,
+                        # CCS technology unit conversion
+                        OMV * 1.2 * 1e3 / 3.66,
+                        # energy technology unit conversion
+                        OMV * 1.2 / as.numeric(s_twa2mwh) * 1e12)) %>%
     # share of stored carbon from captured carbon is only relevant for CCS technologies, others -> 1
     mutate( CO2StoreShare = ifelse(tech %in% teCCS, CO2StoreShare, 1)) %>%
     # calculate annuity factor for annualizing investment cost over lifetime
@@ -1245,23 +1287,39 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
 
   df.LCOE <- df.LCOE %>%
-    # investment cost LCOE in USD/MWh
-    mutate( `Investment Cost` = CAPEX * annuity.fac / (CapFac*8760)*1e3) %>%
-    # OMF cost LCOE in USD/MWh
-    mutate( `OMF Cost` = CAPEX * OMF / (CapFac*8760)*1e3) %>%
+    # investment cost LCOE in USD/MWh or USD/tCO2
+    mutate( `Investment Cost` = ifelse(tech %in% ccs2te$all_te,
+                                       # CCS technology, CAPEX in USD/tCO2
+                                       CAPEX * annuity.fac / CapFac,
+                                       # energy technology, CAPEX in USD/kW(out)
+                                       CAPEX * annuity.fac / (CapFac*8760)*1e3)) %>%
+    # OMF cost LCOE in USD/MWh, OMF are defined as share of CAPEX
+    mutate( `OMF Cost` = ifelse(tech %in% ccs2te$all_te,
+                                # CCS technology, CAPEX in USD/tCO2
+                                CAPEX * OMF / CapFac,
+                                # energy technology, CAPEX in USD/kW(out)
+                                CAPEX * OMF / (CapFac*8760)*1e3)) %>%
     mutate( `OMV Cost` = OMV) %>%
+    # adjustment cost LCOE in USD/MWh or USD/tCO2
+    # (parallel to investment cost calculation)
+    mutate( `Adjustment Cost` = ifelse(tech %in% ccs2te$all_te,
+                                       # CCS technology, CAPEX in USD/tCO2
+                                       AdjCost * annuity.fac / CapFac,
+                                       # energy technology, CAPEX in USD/kW(out)
+                                       AdjCost * annuity.fac / (CapFac*8760)*1e3)) %>%
     # Fuel Cost
-    # # Fuel cost with fuel price in commissioning time step of plant
-    # mutate( `Fuel Cost` = fuel.price / eff) %>%
+    # # Fuel cost with fuel price of time step for which LCOE are calculated
+    mutate( `Fuel Cost (time step prices)` = fuel.price / eff) %>%
     # Fuel cost with weighted average fuel price over plant lifetime
-    mutate(  `Fuel Cost` = fuel.price.weighted / eff) %>%
+    mutate(  `Fuel Cost (intertemporal prices)` = fuel.price.weighted / eff) %>%
     # CO2 Tax cost
     # CO2 Tax cost on SE level refer to (supply-side) emissions of pe2se technologies
     # CO2 Tax cost on FE level refer to (demand-side) emissions of FE carriers
-    # # CO2 Tax cost with co2 price in commissioning time step of plant
-    # mutate( `CO2 Tax Cost` = co2.price * (emiFac / eff) * CO2StoreShare) %>%
+    # # CO2 Tax cost with co2 price of time step for which LCOE are calculated
+    mutate( `CO2 Tax Cost (time step prices)` = co2.price * (emiFac / eff) * CO2StoreShare) %>%
     # CO2 Tax cost with weighted average co2 price over plant lifetime
-    mutate(  `CO2 Tax Cost` = co2.price.weighted * (emiFac / eff) * CO2StoreShare) %>%
+    # These are the  CO2 tax cost that feature the total LCOE calculate below
+    mutate(  `CO2 Tax Cost (intertemporal prices)` = co2.price.weighted * (emiFac / eff) * CO2StoreShare) %>%
     mutate( `CO2 Provision Cost` = Co2.Capt.Price * co2_dem) %>%
     # fuel cost of second fuel if technology has two inputs or outputs
     # is positive for cost of second input
@@ -1273,15 +1331,19 @@ df.co2price.weighted <- df.pomeg.expand %>%
     mutate( `CCS Tax Cost` = CCStax.cost) %>%
     # Flex Tax benefit for electrolysis
     # FlexPriceShare denotes share of the electricity price that electrolysis sees
-    mutate( `Flex Tax` = -(1-FlexPriceShare) * `Fuel Cost`) %>%
+    mutate( `Flex Tax` = -(1-FlexPriceShare) * `Fuel Cost (time step prices)`) %>%
     # se2fe technologies come with FE tax
     mutate( `FE Tax` = FEtax,
     # FE H2 has some additional t&d cost at low H2 shares (phase-in cost) in REMIND
             `Additional H2 t&d Cost` = AddH2TdCost) %>%
     # calculate total LCOE by adding all components
-    mutate( `Total LCOE` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Fuel Cost` + `CO2 Tax Cost` +
+    mutate(
+            # Total LCOE with fuel cost and co2 tax cost based on fuel prices and carbon prices of time step for which LCOE are calculated
+            `Total LCOE (time step prices)` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Adjustment Cost` + `Fuel Cost (time step prices)` + `CO2 Tax Cost (time step prices)` +
+              `CO2 Provision Cost` + `Second Fuel Cost` + `CCS Tax Cost` + `Curtailment Cost` + `Flex Tax` + `FE Tax` + `Additional H2 t&d Cost`,
+            # Total LCOE with fuel cost and co2 tax cost based on fuel prices and carbon prices that are intertemporally weighted and averaged over the plant lifetime
+            `Total LCOE (intertemporal prices)` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Adjustment Cost` + `Fuel Cost (intertemporal prices)` + `CO2 Tax Cost (intertemporal prices)` +
               `CO2 Provision Cost` + `Second Fuel Cost` + `CCS Tax Cost` + `Curtailment Cost` + `Flex Tax` + `FE Tax` + `Additional H2 t&d Cost`)
-
 
 
   # Levelized Cost of UE in Buildings Putty Realization ----
@@ -1358,11 +1420,20 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
   # transform marginal LCOE to mif output format
     df.LCOE.out <- df.LCOE %>%
-      select(region, period, tech, output, sector, `Investment Cost`, `OMF Cost`, `OMV Cost`, `Fuel Cost` ,
-             `CO2 Tax Cost`,`CO2 Provision Cost`,`Second Fuel Cost`,`VRE Storage Cost` ,`Grid Cost`, `Curtailment Cost`,
-             `CCS Tax Cost`, `CCS Cost`,`Flex Tax`,`FE Tax`,`Additional H2 t&d Cost`,`Total LCOE`) %>%
+      select(region, period, tech, output, sector,
+             `Investment Cost`, `Adjustment Cost`, `OMF Cost`, `OMV Cost`,
+             `Fuel Cost (time step prices)` , `CO2 Tax Cost (time step prices)`,
+             `Fuel Cost (intertemporal prices)`, `CO2 Tax Cost (intertemporal prices)`,
+             `CO2 Provision Cost`,`Second Fuel Cost`, `Curtailment Cost`,
+             `CCS Tax Cost`, `Flex Tax`,`FE Tax`,`Additional H2 t&d Cost`,
+             `Total LCOE (time step prices)`,
+             `Total LCOE (intertemporal prices)`
+              ) %>%
       gather(cost, value, -region, -period, -tech, -output, -sector) %>%
-      mutate(unit = "US$2015/MWh", type="marginal") %>%
+      mutate(unit = ifelse(tech %in% ccs2te$all_te,
+                           "US$2015/tCO2",
+                           "US$2015/MWh"),
+             type="marginal") %>%
       filter( value != 0) %>%
       select(region, period, type, output, tech, sector, unit, cost, value)
 
