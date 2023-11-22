@@ -489,6 +489,7 @@ LCOE.avg <- NULL
  if (output.type %in% c("marginal", "both", "marginal detail")) {
 
 # variable definitions for dplyr operations in the following section
+# avoids error of "no visible binding for global variable for X" in buildLibrary()
   region <- NULL
   period <- NULL
   all_te <- NULL
@@ -570,6 +571,23 @@ LCOE.avg <- NULL
    emi_sectors <- NULL
    fe2es.buildings <- pm_tau_fe_tax_ES_st <- pm_tau_fe_sub_ES_st <- NULL
    model <- scenario <- variable <- unit <- NULL
+   AdjCost <- NULL
+   operationPeriod <- NULL
+   discount <- NULL
+   weight <- NULL
+   p_teAnnuity <- NULL
+   subrate <- NULL
+   taxrate <- NULL
+   fuel.price.weighted <- NULL
+   co2.price.weighted <- NULL
+   `Fuel Cost (time step prices)` <- NULL
+   `Fuel Cost (intertemporal prices)` <- NULL
+   `CO2 Tax Cost (time step prices)` <- NULL
+   `CO2 Tax Cost (intertemporal prices)` <- NULL
+   `Total LCOE (time step prices)` <- NULL
+   `Total LCOE (intertemporal prices)` <- NULL
+   `Adjustment Cost` <- NULL
+
 
 
 
@@ -742,7 +760,8 @@ LCOE.avg <- NULL
 
   # # annuity factor from REMIND,
   # TODO: check whether this is the same as calculated above
-  # p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)
+  # so far only used in levelized cost of DAC calculation below
+  p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)
 
   ### Read marginal adjustment costs ----
 
@@ -836,7 +855,7 @@ LCOE.avg <- NULL
                                                                    as.numeric(opTimeYr) + period,
                                                                    period)) %>%
                                   # remove time steps from operationPeriod that are not remind_timesteps
-                                  filter( operationPeriod %in% unique(remind_timesteps$period))
+                                  filter( operationPeriod %in% unique(quitte::remind_timesteps$period))
 
   # Join capacity distribution with above dataframe to get
   # capacity distribution over all commissioning years (period) and
