@@ -740,6 +740,17 @@ LCOE.avg <- NULL
   # TODO: check whether this is the same as calculated above
   # p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)
 
+  ### Read marginal adjustment costs ----
+
+  # Read marginal adjustment cost calculated in core/postsolve.gms
+  # It is calculated as d(v_costInvTeAdj) / d(vm_deltaCap).
+  # Unit: trUSD2005/ (TW(out)/yr).
+  o_margAdjCostInv <- readGDX(gdx, "o_margAdjCostInv", restore_zeros = F)
+
+  df.margAdjCostInv <- as.quitte(o_margAdjCostInv) %>%
+                        rename(tech = all_te,
+                               AdjCost = value) %>%
+                        select( region, period, tech, AdjCost)
 
   ### Read fuel price ----
 
@@ -1174,6 +1185,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
     left_join(df.OMV, by = c("region", "tech")) %>%
     left_join(df.CapFac, by = c("region", "period", "tech")) %>%
     left_join(df.lifetime, by = "tech") %>%
+    left_join(df.margAdjCostInv, by = c("region", "period", "tech")) %>%
     left_join(df.Fuel.Price, by = c("region", "period", "fuel")) %>%
     left_join(df.co2price, by = c("region", "period")) %>%
     left_join(df.fuel.price.weighted, by = c("region", "period", "tech")) %>%
