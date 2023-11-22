@@ -23,6 +23,8 @@ It includes most technologies that generate secondary energy and the distributio
 This script calculates two different types of LCOE: average LCOE (standing system) and marginal LCOE (new plant).
 The average LCOE reflect the total cost incurred by the technology deployment in a specific time step divided by its energy output.
 The marginal LCOE estimate the per-unit lifetime cost of the output if the model added another capacity of that technology in the respective time step.
+The marginal LCOE are calculate in two versions: 1) with fuel prices and co2 taxes of the time step for which the LCOE are calculated (time step prices),
+or 2) with an intertemporal weighted-average of fuel price and co2 taxes over the lifetime of the plant (intertemporal prices).
 }
 \examples{
 
