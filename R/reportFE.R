@@ -1840,7 +1840,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       )
 
 
-  }
   ### FE variables without bunkers ----
 
   ### variables for which version without bunkers should be calculated
