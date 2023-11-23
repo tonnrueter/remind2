@@ -477,5 +477,6 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
             could not be calculated for this regional resolution")
   }
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

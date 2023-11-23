@@ -312,5 +312,6 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
   out["GLO",,vars] <- NA
   out[names(regionSubsetList),,vars] <- NA
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

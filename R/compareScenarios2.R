@@ -150,8 +150,15 @@ compareScenarios2 <- function(
   } else if (outputFormat == "rmd") {
     return(.compareScenarios2Rmd(yamlParams, outputDir, outputFile))
   }
+
+  # copy the template directory from the package to the outputDir because rmarkdown writes to the folder
+  # containing the template.
+  templateInOutputDir <- file.path(outputDir, "compareScenarios2", "cs2_main.Rmd")
+  file.copy(system.file("markdown/compareScenarios2/", package = "remind2"),
+            outputDir, recursive = TRUE)
+
   rmarkdown::render(
-    system.file("markdown/compareScenarios2/cs2_main.Rmd", package = "remind2"),
+    templateInOutputDir,
     intermediates_dir = outputDir,
     output_dir = outputDir,
     output_file = outputFile,
@@ -159,6 +166,7 @@ compareScenarios2 <- function(
     params = yamlParams,
     envir = envir,
     quiet = quiet)
+  unlink(file.path(outputDir, "compareScenarios2"), recursive = TRUE)
 }
 
 # Copies the CompareScenarios2-Rmds to the specified location and modifies

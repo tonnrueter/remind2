@@ -17,7 +17,7 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-## GHG by sector (w/ gross emissions, excl. BECCS)
+## GHG by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)
 
 ```{r summary GHG by sector}
 tot <- "Emi|GHG"
@@ -27,6 +27,7 @@ items <- c(
   "Emi|GHG|Energy|Demand|Transport",
   "Emi|GHG|Energy|Demand|Buildings",
   "Emi|GHG|Gross|Energy|Demand|Industry",
+  "Emi|GHG|Energy|Demand|CDR",
   "Emi|GHG|Industrial Processes",
   "Emi|GHG|Agriculture",
   "Emi|GHG|Land-Use Change",
@@ -44,7 +45,7 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"), scales = "fixed")
 ```
 
-## CO2 by sector (w/ gross emissions, excl. BECCS)
+## CO2 by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)
 
 ```{r CO2 by sector}
 tot <- "Emi|CO2"
@@ -54,6 +55,7 @@ items <- c(
   "Emi|CO2|Energy|Demand|Transport",
   "Emi|CO2|Gross|Energy|Demand|Industry",
   "Emi|CO2|Energy|Demand|Buildings",
+  "Emi|CO2|Energy|Demand|CDR",
   "Emi|CO2|Gross|Energy|Supply|Non-electric",
   "Emi|CO2|Gross|Energy|Supply|Electricity",
   "Emi|CO2|CDR|BECCS",
@@ -70,7 +72,7 @@ showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"), scales = "fi
 ```
 
 
-###  CO2 cumulated by sector
+###  CO2 cumulated by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)
 
 ```{r CO2 cumulated by sector}
 tot <- "Emi|CO2|Cumulated"
@@ -78,11 +80,13 @@ items <- c(
   "Emi|CO2|Cumulated|Land-Use Change",
   "Emi|CO2|Cumulated|Industrial Processes",
   "Emi|CO2|Cumulated|Energy|Demand|Transport",
-  "Emi|CO2|Cumulated|Energy|Demand|Industry",
+  "Emi|CO2|Cumulated|Gross|Energy|Demand|Industry",
   "Emi|CO2|Cumulated|Energy|Demand|Buildings",
+  "Emi|CO2|Cumulated|Energy|Demand|CDR",
   "Emi|CO2|Cumulated|Gross|Energy|Supply|Non-electric",
   "Emi|CO2|Cumulated|Gross|Energy|Supply|Electricity",
   "Emi|CO2|Cumulated|CDR|BECCS",
+  "Emi|CO2|Cumulated|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|Cumulated|CDR|DACCS",
   "Emi|CO2|Cumulated|CDR|EW")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")

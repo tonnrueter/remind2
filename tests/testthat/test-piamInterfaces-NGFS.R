@@ -3,22 +3,23 @@ library(gdx)
 test_that("Test if REMIND reporting produces mandatory variables for NGFS reporting", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
+  # File is from NGFS4, scenario C_d_strain_d95high-rem-17
   gdxPath <- file.path(tempdir(), "fulldata.gdx")
-  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-NGFS_fulldata_oneRegi.gdx",
+  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-NGFS_fulldata.gdx",
     gdxPath,
     mode = "wb", quiet = TRUE
   )
 
-  mif <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
+  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath))
 
-  computedVariables <- getItems(mif, dim = 3.3)
+  computedVariables <- deletePlus(getItems(mif, dim = 3.3))
 
   computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
 
-  templateVariables <- unique(
+  templateVariables <- deletePlus(unique(
     piamInterfaces::getREMINDTemplateVariables("AR6"),
     piamInterfaces::getREMINDTemplateVariables("AR6_NGFS")
-  )
+  ))
 
   expect_true(any(computedVariables %in% templateVariables))
 

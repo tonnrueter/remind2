@@ -203,7 +203,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # CO2 released by CCU
   vm_co2CCUshort <- readGDX(gdx, "vm_co2CCUshort", field = "l", restore_zeros = F)[, t, ]
-  # helper variable to release captured CO2 in no CCU capacities are standing anymore to take the captured CO2
+  # variable to release captured CO2 when no CCU capacities are standing anymore vent captured CO2
   v_co2capturevalve <- readGDX(gdx, "v_co2capturevalve", field = "l", restore_zeros = F)[, t, ]
 
   # CO2 captured per industry subsector
@@ -285,8 +285,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     as.magpie(spatial = 2, temporal = 1, data = ncol(.)) %>%
     ifelse(is.finite(.), ., 0)   # replace NaN by 0
 
-  rm(vm_emiIndCCS_tibble, subsector_emissions, subsector_total_emissions,
-     pm_emifac_tibble)
+  rm(vm_emiIndCCS_tibble, subsector_total_emissions, pm_emifac_tibble)
 
   # utility functions ----
   # Convert a mixer table into a list that can be passed to mselect() to
@@ -751,30 +750,67 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     variable_postfix <- ' (Mt CO2/yr)'
 
     mixer <- tribble(
-      ~variable,                    ~secInd37,     ~all_enty1,
-      '+|Solids',                   NULL,          'fesos',
-      '+|Liquids',                  NULL,          'fehos',
-      '+|Gases',                    NULL,          'fegas',
+      ~variable,                            ~secInd37,     ~all_enty,    ~all_enty1,
+      '+|Solids',                           NULL,          NULL,         'fesos',
+      '+|Liquids',                          NULL,          NULL,         'fehos',
+      '+|Gases',                            NULL,          NULL,         'fegas',
 
-      '++|Cement',                  'cement',      NULL,
-      'Cement|+|Solids',            'cement',      'fesos',
-      'Cement|+|Liquids',           'cement',      'fehos',
-      'Cement|+|Gases',             'cement',      'fegas',
+      'Solids|+|Fossil',                    NULL,          'sesofos',    'fesos',
+      'Solids|+|Biomass',                   NULL,          'sesobio',    'fesos',
+      'Liquids|+|Fossil',                   NULL,          'seliqfos',   'fehos',
+      'Liquids|+|Biomass',                  NULL,          'seliqbio',   'fehos',
+      'Liquids|+|Synfuel',                  NULL,          'seliqsyn',   'fehos',
+      'Gases|+|Fossil',                     NULL,          'segafos',    'fegas',
+      'Gases|+|Biomass',                    NULL,          'segabio',    'fegas',
+      'Gases|+|Synfuel',                    NULL,          'segasyn',    'fegas',
 
-      '++|Chemicals',               'chemicals',   NULL,
-      'Chemicals|+|Solids',         'chemicals',   'fesos',
-      'Chemicals|+|Liquids',        'chemicals',   'fehos',
-      'Chemicals|+|Gases',          'chemicals',   'fegas',
+      '++|Cement',                          'cement',      NULL,         NULL,
+      'Cement|+|Solids',                    'cement',      NULL,         'fesos',
+      'Cement|Solids|+|Fossil',             'cement',      'sesofos',    'fesos',
+      'Cement|Solids|+|Biomass',            'cement',      'sesobio',    'fesos',
+      'Cement|+|Liquids',                   'cement',      NULL,         'fehos',
+      'Cement|Liquids|+|Fossil',            'cement',      'seliqfos',   'fehos',
+      'Cement|Liquids|+|Biomass',           'cement',      'seliqbio',   'fehos',
+      'Cement|Liquids|+|Synfuel',           'cement',      'seliqsyn',   'fehos',
+      'Cement|+|Gases',                     'cement',      NULL,         'fegas',
+      'Cement|Gases|+|Fossil',              'cement',      'segafos',    'fegas',
+      'Cement|Gases|+|Biomass',             'cement',      'segabio',    'fegas',
+      'Cement|Gases|+|Synfuel',             'cement',      'segasyn',    'fegas',
 
-      '++|Steel',                   'steel',       NULL,
-      'Steel|+|Solids',             'steel',       'fesos',
-      'Steel|+|Liquids',            'steel',       'fehos',
-      'Steel|+|Gases',              'steel',       'fegas',
+      '++|Chemicals',                       'chemicals',   NULL,         NULL,
+      'Chemicals|+|Solids',                 'chemicals',   NULL,         'fesos',
+      'Chemicals|Solids|+|Fossil',          'chemicals',   'sesofos',    'fesos',
+      'Chemicals|Solids|+|Biomass',         'chemicals',   'sesobio',    'fesos',
+      'Chemicals|+|Liquids',                'chemicals',   NULL,         'fehos',
+      'Chemicals|Liquids|+|Fossil',         'chemicals',   'seliqfos',   'fehos',
+      'Chemicals|Liquids|+|Biomass',        'chemicals',   'seliqbio',   'fehos',
+      'Chemicals|Liquids|+|Synfuel',        'chemicals',   'seliqsyn',   'fehos',
+      'Chemicals|+|Gases',                  'chemicals',   NULL,         'fegas',
+      'Chemicals|Gases|+|Fossil',           'chemicals',   'segafos',    'fegas',
+      'Chemicals|Gases|+|Biomass',          'chemicals',   'segabio',    'fegas',
+      'Chemicals|Gases|+|Synfuel',          'chemicals',   'segasyn',    'fegas',
 
-      '++|Other Industry',          'otherInd',    NULL,
-      'Other Industry|+|Solids',    'otherInd',    'fesos',
-      'Other Industry|+|Liquids',   'otherInd',    'fehos',
-      'Other Industry|+|Gases',     'otherInd',    'fegas') %>%
+      '++|Steel',                           'steel',       NULL,         NULL,
+      'Steel|+|Solids',                     'steel',       NULL,         'fesos',
+      'Steel|Solids|+|Fossil',              'steel',       'sesofos',    'fesos',
+      'Steel|Solids|+|Biomass',             'steel',       'sesobio',    'fesos',
+      'Steel|+|Liquids',                    'steel',       NULL,         'fehos',
+      'Steel|Liquids|+|Fossil',             'steel',       'seliqfos',   'fehos',
+      'Steel|Liquids|+|Biomass',            'steel',       'seliqbio',   'fehos',
+      'Steel|Liquids|+|Synfuel',            'steel',       'seliqsyn',   'fehos',
+      'Steel|+|Gases',                      'steel',       NULL,         'fegas',
+      'Steel|Gases|+|Fossil',               'steel',       'segafos',    'fegas',
+      'Steel|Gases|+|Biomass',              'steel',       'segabio',    'fegas',
+      'Steel|Gases|+|Synfuel',              'steel',       'segasyn',    'fegas',
+
+      '++|Other Industry',                  'otherInd',    NULL,         NULL,
+      'Other Industry|+|Solids',            'otherInd',    NULL,         'fesos',
+      'Other Industry|Solids|+|Fossil',     'otherInd',    'sesofos',    'fesos',
+      'Other Industry|+|Liquids',           'otherInd',    NULL,         'fehos',
+      'Other Industry|Liquids|+|Fossil',    'otherInd',    'seliqfos',   'fehos',
+      'Other Industry|+|Gases',             'otherInd',    NULL,         'fegas',
+      'Other Industry|Gases|+|Fossil',      'otherInd',    'segafos',    'fegas'
+) %>%
       mutate(
         variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
@@ -791,7 +827,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           ( dimSums(mselect(EmiIndSubSec, x[setdiff(names(x), 'variable')]),
                     dim = 3)
           - dimSums(
-              ( mselect(vm_emiIndCCS_Sub, x[setdiff(names(x), 'variable')])
+              ( mselect(pm_IndstCO2Captured, x[setdiff(names(x), 'variable')])
               * p_share_CCS
               ),
               dim = 3)
@@ -804,7 +840,50 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           x[['variable']])
       }) %>%
         mbind())
+        
+      # Baseline emission before CCS, corresponds to energy carbon content
+          out <- mbind(
+          # energy emissions
+            subsector_emissions %>%
+            mutate(
+              secInd37 = case_when(
+                'cement'    == .data$secInd37 ~ 'Cement',
+                'chemicals' == .data$secInd37 ~ 'Chemicals',
+                'steel'     == .data$secInd37 ~ 'Steel',
+                'otherInd'  == .data$secInd37 ~ 'Other Industry',
+                TRUE                          ~ NA_character_),
+              fety = case_when(
+                'fesos' == .data$fety ~ 'Solids',
+                'fehos' == .data$fety ~ 'Liquids',
+                'fegas' == .data$fety ~ 'Gases',
+                TRUE                  ~ NA_character_),
+              origin = case_when(
+                grepl('fos$', .data$sety) ~ 'Fossil',
+                grepl('bio$', .data$sety) ~ 'Biomass',
+                grepl('syn$', .data$sety) ~ 'Hydrogen',
+                TRUE                      ~ NA_character_)) %>%
+            assert(not_na, everything()) %>%
+            group_by(.data$t, .data$regi, .data$secInd37, .data$fety,
+                 .data$origin) %>%
+            summarise(value = sum(.data$subsector_emissions)
+                           * as.numeric(GtC_2_MtCO2),
+                      .groups = 'drop') %>%
+            mutate(d3 = paste0('Emi|CO2|pre-CCS|Energy|Demand|Industry|',
+                               .data$secInd37, '|', .data$fety, '|', .data$origin,
+                               ' (Mt CO2/yr)')) %>%
+            select('t', 'regi', 'd3', 'value') %>%
+            as.magpie(spatial = 2, temporal = 1, datacol = ncol(.)) %>%
+          `getSets<-`(fulldim = FALSE, value = getSets(out)),
 
+          # process emissions for cement subsector
+          readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE) %>%
+          `[`(,,'co2cement_process.cement') %>%
+          `*`(as.numeric(GtC_2_MtCO2)) %>%
+          `getSets<-`(fulldim = FALSE, value = getSets(out)) %>%
+          `getNames<-`(
+            value = 'Emi|CO2|pre-CCS|Industrial Processes|Cement (Mt CO2/yr)'),
+
+         out)
       }
       else {
         out <- mbind(
@@ -824,6 +903,50 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
           x[['variable']])
           }) %>%
         mbind())
+
+        # Baseline emission before CCS, corresponds to energy carbon content
+        out <- mbind(
+          # energy emissions
+          subsector_emissions %>%
+            mutate(
+              secInd37 = case_when(
+                'cement'    == .data$secInd37 ~ 'Cement',
+                'chemicals' == .data$secInd37 ~ 'Chemicals',
+                'steel'     == .data$secInd37 ~ 'Steel',
+                'otherInd'  == .data$secInd37 ~ 'Other Industry',
+                TRUE                          ~ NA_character_),
+              fety = case_when(
+                'fesos' == .data$fety ~ 'Solids',
+                'fehos' == .data$fety ~ 'Liquids',
+                'fegas' == .data$fety ~ 'Gases',
+                TRUE                  ~ NA_character_),
+              origin = case_when(
+                grepl('fos$', .data$sety) ~ 'Fossil',
+                grepl('bio$', .data$sety) ~ 'Biomass',
+                grepl('syn$', .data$sety) ~ 'Hydrogen',
+                TRUE                      ~ NA_character_)) %>%
+            assert(not_na, everything()) %>%
+            group_by(.data$t, .data$regi, .data$secInd37, .data$fety,
+                    .data$origin) %>%
+            summarise(value = sum(.data$subsector_emissions)
+                            * as.numeric(GtC_2_MtCO2),
+                      .groups = 'drop') %>%
+            mutate(d3 = paste0('Emi|CO2|pre-CCS|Energy|Demand|Industry|',
+                              .data$secInd37, '|', .data$fety, '|', .data$origin,
+                              ' (Mt CO2/yr)')) %>%
+            select('t', 'regi', 'd3', 'value') %>%
+            as.magpie(spatial = 2, temporal = 1, datacol = ncol(.)) %>%
+          `getSets<-`(fulldim = FALSE, value = getSets(out)),
+
+          # process emissions
+          readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE) %>%
+          `[`(,,'co2cement_process.cement') %>%
+          `*`(as.numeric(GtC_2_MtCO2)) %>%
+          `getSets<-`(fulldim = FALSE, value = getSets(out)) %>%
+          `getNames<-`(
+            value = 'Emi|CO2|pre-CCS|Industrial Processes|Cement (Mt CO2/yr)'),
+
+          out)
           }
 
   } else {
@@ -1092,6 +1215,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # same calculation as for supply emissions per SE, only for captured CO2 ("cco2")
   # (also adding first and second product emissions of coupled production technologies)
 
+
+  ### carbon capture
 
   # calculate captured CO2 per pe2se technology
   sel_pm_emifac_pe2seCCO2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
@@ -1449,7 +1574,14 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   }
 
-
+  ### venting of captured carbon ----
+  # This occurs when carbon capture capacities are still operating,
+  # while CCS/CCU capacities are deprecated and reach end of their lifetime.
+  # Then, captured carbon needs to be vented to the atmosphere.
+  out <- mbind(out,
+               # venting of captured carbon
+               setNames(dimSums(v_co2capturevalve, dim = 3, na.rm = T) * GtC_2_MtCO2,
+                        "Carbon Management|Venting of Captured Carbon (Mt CO2/yr)"))
 
 
   ### carbon usage ----
@@ -1655,15 +1787,22 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                            "Emi|CO2|CDR (Mt CO2/yr)"))
   }
 
-  ## 4. Gross Emissions (excl. negative emissions from BECCS) ----
+  ## 4. Gross Emissions (excl. negative emissions from storing non-fossil carbon from bioenergy or synthetic fuels) ----
 
   #### calculate gross emissions
 
-  # all standard emissions variables "Emi|CO2|..." are defined as net emissions.
-  # This means that negative emissions  are counted in and have to be subtracted to obtain gross emissions.
-
-  # calculate gross emissions in energy supply sector (i.e. subtracting contribution from supply side BECCS)
-  # using the respective "Carbon Management|Storage" variables as we don't have the necessary level of detail in the "Emi|CO2|CDR" variables
+  # All standard emissions variables "Emi|CO2|..." are defined as net emissions, that is, including negative emissions from CDR technologies.
+  # We define gross emissions as net emissions plus CDR flows from capturing carbon from non-fossil energy flows. That includes carbon from biomass and
+  # synfuels from non-fossil (biomass or DAC) origin.
+  # Note: With the current definition of gross emissions (only including non-fossil CCS) and our current emissions accounting convention of CCU that
+  # accounts carbon in synthetic fuels with the CO2 provider, gross industry emissions (Emi|CO2|Gross|Energy|Demand|+|Industry)
+  # can become negative under certain circumstances. This reason is: Using synthetic fuels is always accounted as emissions-free for the industry sector
+  # regardless of whether the carbon of the synfuels comes from fossil or non-fossil origin. Moreover, carbon from all origins (non-fossil and fossil) is subtracted
+  # from the industry emissions in case industry CCS is applied to those emissions. However, the variable Emi|CO2|CDR|Industry CCS|Synthetic Fuels
+  # used to calculate the gross industry emissions only contains the carbon from non-fossil synfuels, though. This is following the principle
+  # that only non-fossil carbon should be accounted as CDR variables as only non-fossil removals are negative emissions from a full-system perspective.
+  # So, the carbon from fossil-based synfuels which is captured and stored in industry is still accounted as negative emissions for industry
+  # in Emi|CO2|Gross|Energy|Demand|+|Industry. The corresponding fossil emissions are accounted with the sector that captured the fossil CO2 in the first place.
   out <- mbind(out,
                # gross supply emissions across SE carriers
                setNames(out[, , "Emi|CO2|Energy|Supply|+|Electricity w/ couple prod (Mt CO2/yr)"]
@@ -2041,23 +2180,24 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   ## gross GHG variables (ecxl. negative emissions from BECCS and carbon storage of carbon-neutral synthetic fuels)
+  ## note Emi|CO2|CDR|... variables are negative. That's why we substract them to get from net to gross emissions.
   out <- mbind(out,
 
                # total gross supply emissions
                setNames(out[, , "Emi|GHG|Energy|+|Supply (Mt CO2eq/yr)"]
-                        + out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|+|Supply (Mt CO2eq/yr)"),
 
 
                # total gross demand emissions
                setNames(out[, , "Emi|GHG|Energy|+|Demand (Mt CO2eq/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|+|Demand (Mt CO2eq/yr)"),
 
                setNames(out[, , "Emi|GHG|Energy|Demand|+|Industry (Mt CO2eq/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                        +  out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy|Demand|+|Industry (Mt CO2eq/yr)"),
 
 
@@ -2074,9 +2214,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
                # total gross energy emissions
                setNames(out[, , "Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
-                        + out[, , "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"]
-                        + out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"],
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
 
 
@@ -2685,6 +2824,8 @@ if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "f
                      "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
                      "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Demand|+|Industry (Mt CO2/yr)",
                      "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
                      "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)",
                      "Emi|CO2|CDR (Mt CO2/yr)",
@@ -2711,9 +2852,6 @@ if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "f
 
   out <- mbind(out, out.cumul)
 
-
-
-
+  getSets(out)[3] <- "variable"
   return(out)
-
 }

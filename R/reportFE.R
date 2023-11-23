@@ -1683,10 +1683,13 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                    setNames(out[,,"FE|Solids|+|Fossil (EJ/yr)"] -
                               out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
-
+  }
+    # in case the current non-energy use implementation creates negative values, set them to 0
+  if (any(out < 0)) {
+    out[out < 0] <- 0
   }
 
-
+# report feedstocks use by carrier when available
   if (!is.null(vm_demFENonEnergySector)) {
     # FE non-energy use variables
     out <- mbind(out,
@@ -1723,8 +1726,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                            "FE|Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
                   setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segasyn"), dim=3),
                            "FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)")
-
-    )
+                  ) 
+  } 
 
 
     ### FE without non-energy use
@@ -1751,25 +1754,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                  setNames(dimSums(vm_demFeSector_woNonEn[,,"sesobio"],dim=3),                                                       "FE|w/o Non-energy Use|Solids|+|Biomass (EJ/yr)"),
                  setNames(dimSums(vm_demFeSector_woNonEn[,,"sesofos"],dim=3),                                                       "FE|w/o Non-energy Use|Solids|+|Fossil (EJ/yr)")
     )
-
-      # out <- mbind(out,
-      #            setNames(out[,,"FE (EJ/yr)"]
-      #                     - out[,,"FE|Transport|Bunkers (EJ/yr)"]
-      #                     - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
-      #                     "FE|w/o Non-energy Use w/o Bunkers (EJ/yr)"),
-      #            setNames(out[,,"FE|++|Industry (EJ/yr)"]
-      #                     - out[,,"FE|Non-energy Use|+|Industry (EJ/yr)"],
-      #                     "FE|w/o Non-energy Use|Industry (EJ/yr)"),
-      #            setNames(out[,,"FE|Industry|+|Liquids (EJ/yr)"]
-      #                     - out[,,"FE|Non-energy Use|Industry|+|Liquids (EJ/yr)"],
-      #                     "FE|w/o Non-energy Use|Industry|Liquids (EJ/yr)"),
-      #            setNames(out[,,"FE|Industry|+|Gases (EJ/yr)"]
-      #                     - out[,,"FE|Non-energy Use|Industry|+|Gases (EJ/yr)"],
-      #                     "FE|w/o Non-energy Use|Industry|Gases (EJ/yr)"),
-      #            setNames(out[,,"FE|Industry|+|Solids (EJ/yr)"]
-      #                     - out[,,"FE|Non-energy Use|Industry|+|Solids (EJ/yr)"],
-      #                     "FE|w/o Non-energy Use|Industry|Solids (EJ/yr)") )
-      
 
     #FE per sector and per emission market (ETS and ESR)
     out <- mbind(out,
@@ -1902,53 +1886,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                   "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)")
   }
 
-
-
-  # variable names for FE variables without bunkers
-  names.woBunkers <- fe.vars.woBunkers
-  names.woBunkers <- gsub("FE", "FE|w/o Bunkers", names.woBunkers)
-
-  names.woBunkers.fos <- fe.vars.woBunkers.fos
-  names.woBunkers.fos <- gsub("FE", "FE|w/o Bunkers", names.woBunkers.fos)
-
-  names.woBunkers.bio <- fe.vars.woBunkers.bio
-  names.woBunkers.bio <- gsub("FE", "FE|w/o Bunkers", names.woBunkers.bio)
-
-  names.woBunkers.syn <- fe.vars.woBunkers.syn
-  names.woBunkers.syn <- gsub("FE", "FE|w/o Bunkers", names.woBunkers.syn)
-
-
-  # calculate FE w/o Bunkers (for now we only have liquids energy use in bunkers)
-  out.woBunkers <- setNames(out[, , fe.vars.woBunkers], names.woBunkers)
-  out.woBunkers[, , names.woBunkers] <-  out.woBunkers[,,names.woBunkers] - out[, , "FE|Transport|Bunkers (EJ/yr)"]
-
-  out.woBunkers.fos <- setNames(out[, , fe.vars.woBunkers.fos], names.woBunkers.fos)
-  out.woBunkers.fos[, , names.woBunkers.fos] <-  out.woBunkers.fos[,,names.woBunkers.fos] - out[, , "FE|Transport|Bunkers|Liquids|+|Fossil (EJ/yr)"]
-
-  out.woBunkers.bio <- setNames(out[, , fe.vars.woBunkers.bio], names.woBunkers.bio)
-  out.woBunkers.bio[, , names.woBunkers.bio] <- out.woBunkers.bio[,,names.woBunkers.bio] - out[, , "FE|Transport|Bunkers|Liquids|+|Biomass (EJ/yr)"]
-
-  out.woBunkers.syn <- setNames(out[, , fe.vars.woBunkers.syn], names.woBunkers.syn)
-  out.woBunkers.syn[, , names.woBunkers.syn] <-  out.woBunkers.syn[,,names.woBunkers.syn] - out[, , "FE|Transport|Bunkers|Liquids|+|Hydrogen (EJ/yr)"]
-
-  # remove all pluses from variables of bunker correction
-  getNames(out.woBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers))
-  getNames(out.woBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers))
-
-  getNames(out.woBunkers.fos) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers.fos))
-  getNames(out.woBunkers.fos) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.fos))
-
-  getNames(out.woBunkers.bio) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers.bio))
-  getNames(out.woBunkers.bio) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.bio))
-
-  getNames(out.woBunkers.syn) <- gsub("\\|\\+\\|", "\\|", getNames(out.woBunkers.syn))
-  getNames(out.woBunkers.syn) <- gsub("\\|\\++\\|", "\\|", getNames(out.woBunkers.syn))
-
-
-  out <- mbind(out,  out.woBunkers, out.woBunkers.fos, out.woBunkers.bio, out.woBunkers.syn)
-
-  ### Aggregation to global values ----
-
   # add global values
   out <- mbind(out,dimSums(out,dim=1))
   # add other region aggregations
@@ -2028,5 +1965,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     )
   }
 
+  getSets(out)[3] <- "variable"
   return(out)
 }
