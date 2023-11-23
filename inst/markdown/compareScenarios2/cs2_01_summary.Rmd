@@ -181,7 +181,7 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-## FE Transport by carrier (incl. international bunkers)
+## FE Transport by carrier
 
 ```{r FE Transport by carrier}
 items <- c(
