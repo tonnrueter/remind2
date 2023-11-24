@@ -1727,8 +1727,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                   setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segasyn"), dim=3),
                            "FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)")
                   ) 
-  } 
-
 
     ### FE without non-energy use
     out <- mbind(out,
@@ -1838,7 +1836,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           warning(e)
         }
       )
-
+  }
 
   ### FE variables without bunkers ----
 
