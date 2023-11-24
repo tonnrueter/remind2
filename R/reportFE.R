@@ -1375,9 +1375,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   if ("DEU" %in% getRegions(vm_prodFe) & indu_mod == 'subsectors' & is.null(vm_demFENonEnergySector)) {
 
-      # some initializations required for building library with dplyr operations below
-      encar <- data <- value <- value_subsectors <- SSP <- Value_NonEn <- encar <- region <- period <- NULL
-
       # read in FE industry non-energy use trajectories from industry subsectors run
       df.fe_nechem <- read.csv(system.file("extdata","pm_fe_nechem.cs4r",package = "remind2"),
                                sep = ",", skip = 4, header = F)
