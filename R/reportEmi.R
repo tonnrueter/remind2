@@ -93,10 +93,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
   se_sol <- c("sesofos", "sesobio")
 
-  # sets of hydrocarbon SE carriers
-  entySeFos <- readGDX(gdx, "entySeFos")
-  entySeBio <- readGDX(gdx, "entySeBio")
-  entySeSyn <- readGDX(gdx, "entySeSyn")
 
   # SE carriers by origin
   if (is.null(entySEfos <- readGDX(gdx, 'entySEfos', react = 'silent')))
@@ -357,7 +353,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       mutate( name = paste(all_enty,all_enty1,all_emiMkt, sep = "."))
 
     plastic_CDR <- mselect(vm_nonIncineratedPlastics[,,FE.feed.map$name],
-                             all_enty = unique(entySeBio, entySeSyn))
+                             all_enty = unique(entySEbio, entySEsyn))
 
 
   } else {
