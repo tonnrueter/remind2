@@ -552,6 +552,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       v37_outflowPrc <- readGDX(gdx, name=c("v37_prodVolPrc"), field="l", restore_zeros=FALSE, format="first_found") #Gt
     }
     v37_outflowPrc <- v37_outflowPrc[,t,]
+
+    # # specific material demand
+    # p37_specMatDem <- readGDX(gdx, name=c("p37_specMatDem"), field="l", restore_zeros=FALSE, format="first_found", react='silent') #Gt
+
+    o37_ProdIndRoute <- readGDX(gdx, name=c("o37_ProdIndRoute"), field="l", restore_zeros=FALSE, format="first_found", react='silent') #Gt
+    o37_ProdIndRoute <- o37_ProdIndRoute[,t,]
+
+    o37_demFeIndRoute <- readGDX(gdx, name=c("o37_demFeIndRoute"), field="l", restore_zeros=FALSE, format="first_found", react='silent') #Gt
+    o37_demFeIndRoute <- o37_demFeIndRoute[,t,] * TWa_2_EJ
   }
 
   # ---- transformations
@@ -888,35 +897,19 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
         # energy production factors for primary IDR-EAF, primary BF-BOF and secondary EAF routes
 
-        # mapping of technology to route
-        tePrc2route <- readGDX(gdx, "tePrc2route")
-
-        teOmRtSteelBfbof <- tePrc2route %>%
-          filter(routes == "bfbof")
-        teSteelBfbof <- teOmRtSteelBfbof %>% pull('tePrc')
-        opmoSteelBfbof <- teOmRtSteelBfbof %>% pull('opmoPrc')
-
-        teOmRtSteelIdreaf <- tePrc2route %>%
-          filter(routes == "idreaf")
-        teSteelIdreaf <- teOmRtSteelIdreaf %>% pull('tePrc')
-        opmoSteelIdreaf <- teOmRtSteelIdreaf %>% pull('opmoPrc')
-
-        teOmRtSteelEaf <- tePrc2route %>%
-          filter(routes == "seceaf")
-        teSteelEaf <- teOmRtSteelEaf %>% pull('tePrc')
-        opmoSteelEaf <- teOmRtSteelEaf %>% pull('opmoPrc')
-
         # more detailed reporting of electricity uses available in subsectors realization
         mixer <- tribble(
-          ~variable,                               ~all_te,        ~opmoPrc,
-          "FE|Industry|Steel|+++|BF-BOF (EJ/yr)",   teSteelBfbof,   opmoSteelBfbof,
-          "FE|Industry|Steel|+++|IDR-EAF (EJ/yr)",  teSteelIdreaf,  opmoSteelIdreaf,
-          "FE|Industry|Steel|+++|SEC-EAF (EJ/yr)",  teSteelEaf,     opmoSteelEaf
-          )
+          ~variable,                                      ~all_enty,  ~all_te,  ~route,           ~secInd37,
+          "FE|Industry|Steel|+++|BF-BOF (EJ/yr)",         NULL,       NULL,     "bfbof",          "steel",
+          "FE|Industry|Steel|+++|BF-BOF-CCS (EJ/yr)",     NULL,       NULL,     "bfbof_ccs",      "steel",
+          "FE|Industry|Steel|+++|DRI-NG-EAF (EJ/yr)",     NULL,       NULL,     "idreaf_ng",      "steel",
+          "FE|Industry|Steel|+++|DRI-NG-EAF-CCS (EJ/yr)", NULL,       NULL,     "idreaf_ng_ccs",  "steel",
+          "FE|Industry|Steel|+++|DRI-H2-EAF (EJ/yr)",     NULL,       NULL,     "idreaf_h2",      "steel",
+          "FE|Industry|Steel|+++|SCRAP-EAF (EJ/yr)",      NULL,       NULL,     "seceaf",         "steel")
 
         out <- mbind(
           c(list(out), # pass a list of magpie objects
-            .select_sum_name_multiply(o37_demFePrc, .mixer_to_selector(mixer))
+            .select_sum_name_multiply(o37_demFeIndRoute, .mixer_to_selector(mixer))
           ))
 
 
@@ -993,16 +986,18 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       # reporting of process-based industry production per process-route
       if (is_PBS) {
         mixer <- tribble(
-          ~variable,                                      ~all_te,   ~opmoPrc,
-          "Production|Industry|Steel|+|BF-BOF (Mt/yr)",   "bof",     opmoSteelBfbof,
-          "Production|Industry|Steel|+|IDR-EAF (Mt/yr)",  "eaf",     opmoSteelIdreaf,
-          "Production|Industry|Steel|+|SEC-EAF (Mt/yr)",  "eaf",     opmoSteelEaf
+          ~variable,                                            ~mat,          ~route,
+          "Production|Industry|Steel|+|BF-BOF (Mt/yr)",         "prsteel",     "bfbof",
+          "Production|Industry|Steel|+|BF-BOF-CCS (Mt/yr)",     "prsteel",     "bfbof_ccs",
+          "Production|Industry|Steel|+|DRI-NG-EAF (Mt/yr)",     "prsteel",     "idreaf_ng",
+          "Production|Industry|Steel|+|DRI-NG-EAF-CCS (Mt/yr)", "prsteel",     "idreaf_ng_ccs",
+          "Production|Industry|Steel|+|DRI-H2-EAF (Mt/yr)",     "prsteel",     "idreaf_h2",
+          "Production|Industry|Steel|+|SCRAP-EAF (Mt/yr)",      "sesteel",     "seceaf"
         )
 
         # calculate and bind to out
-        out <- mbind(
-          c(list(out), # pass a list of magpie objects
-            .select_sum_name_multiply(v37_outflowPrc, .mixer_to_selector(mixer),
+        out <- mbind(c(list(out),
+                     .select_sum_name_multiply(o37_ProdIndRoute, .mixer_to_selector(mixer),
                                       # convert Gt/yr to Mt/yr
                                       1e3)))
       }
@@ -1780,6 +1775,12 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   }
 
   # in case the current non-energy use implementation creates negative values, set them to 0
+
+  # TODO: remove below three lines and fix errors if there are any, not catching this is bad behaviour
+  if (any(is.na(out))) {
+    out[is.na(out)] <- 0
+  }
+
   if (any(out < 0)) {
     out[out < 0] <- 0
   }
