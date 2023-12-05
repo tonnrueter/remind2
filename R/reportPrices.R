@@ -786,6 +786,25 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                                 "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)")) # AggregatedByEmiGHGGross
   }
 
+  tradeFossil <- c("pecoal", "pegas", "peoil")
+  p21_tau_Import <- readGDX(gdx, name = "p21_tau_Import", react = "silent")[, t, tradeFossil]
+  tax_import_type_21 <- readGDX(gdx, name = "tax_import_type_21", react = "silent")
+  if (! is.null(p21_tau_Import) && ! is.null(tax_import_type_21)) {
+    pm_taxCO2eqMport <- 0
+    if ("c02taxmarkup" %in% tax_import_type_21) {
+      pm_taxCO2eqMport <- pm_taxCO2eqMport + dimSums(p21_tau_Import[,,"c02taxmarkup"], dim = 3.2) * pm_taxCO2eqSum
+    }
+    if ("avC02taxmarkup" %in% tax_import_type_21) {
+      pm_taxCO2eqMport <- pm_taxCO2eqMport + dimSums(p21_tau_Import[,, "avC02taxmarkup"], dim = 3.2) * pmax(pm_taxCO2eqSum, magpie_expand(colMeans(pm_taxCO2eqSum), pm_taxCO2eqSum))
+    }
+    pm_taxCO2eqMport <- pm_taxCO2eqMport * 1000 * 12/44
+    out <- mbind(out, setNames(pm_taxCO2eqMport[,, "pecoal"], "Price|Carbon|Imported|Coal (US$2005/t CO2)"))
+    out <- mbind(out, setNames(pm_taxCO2eqMport[,, "pegas" ], "Price|Carbon|Imported|Gas (US$2005/t CO2)"))
+    out <- mbind(out, setNames(pm_taxCO2eqMport[,, "peoil" ], "Price|Carbon|Imported|Oil (US$2005/t CO2)"))
+    # use unweighted average, because weighing according to import volumes might lead to big jumps
+    out <- mbind(out, setNames(dimSums(pm_taxCO2eqMport, dim = 3.1)/3, "Price|Carbon|Imported (US$2005/t CO2)"))
+  }
+
   #
   CaptureBal_tmp <- new.magpie(getRegions(out), getYears(out), fill = NA)
   CaptureBal_tmp[,getYears(balcapture.m),] <- balcapture.m
@@ -886,6 +905,10 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Carbon|Demand|Transport (US$2005/t CO2)"                   = "FE (EJ/yr)",
     "Price|Carbon|Demand|Industry (US$2005/t CO2)"                    = "FE (EJ/yr)",
     "Price|Carbon|Supply (US$2005/t CO2)"                             = "FE (EJ/yr)",
+    "Price|Carbon|Imported (US$2005/t CO2)"                           = "FE (EJ/yr)",
+    "Price|Carbon|Imported|Coal (US$2005/t CO2)"                      = "FE (EJ/yr)",
+    "Price|Carbon|Imported|Gas (US$2005/t CO2)"                       = "FE (EJ/yr)",
+    "Price|Carbon|Imported|Oil (US$2005/t CO2)"                       = "FE (EJ/yr)",
 
     "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)"               = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
     "Price|Carbon|Captured|AggregatedByGrossCO2 (US$2005/t CO2)"      = "Emi|GHG|Gross|Energy (Mt CO2eq/yr)",
@@ -1015,7 +1038,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   map <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
   tmp_GLO <- new.magpie("GLO",getYears(out),getNames(out),fill=0)
 
-  for (i2e in names(int2ext)){
+  int2ext <- int2ext[intersect(names(int2ext), getNames(out))] # select only data that exists
+
+  for (i2e in names(int2ext)) {
     tmp_GLO["GLO",,i2e] <- speed_aggregate(out[,,i2e],map,weight=output[map$region,,int2ext[i2e]])
     for(t in getYears(out)){
       if(all(output[map$region,t,int2ext[i2e]]==0)){
