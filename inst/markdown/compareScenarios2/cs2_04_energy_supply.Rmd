@@ -311,8 +311,7 @@ items <- c(
   "SE|Gases|Biomass|w/o CC",
   "SE|Gases|Fossil|Coal|w/ CC",
   "SE|Gases|Fossil|Coal|w/o CC",
-  "SE|Gases|Hydrogen",
-  "SE|Gases|Waste")
+  "SE|Gases|Hydrogen")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 

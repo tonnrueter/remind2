@@ -84,8 +84,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   if (is.null(bio_tax_factor)) bio_tax_factor <- readGDX(gdx,name="v21_tau_bio",field="l",format="first_found")[, t,]
   pm_pvp         <- readGDX(gdx,name=c("pm_pvp","p80_pvp"),format="first_found")[, t, p80_subset]
   pm_dataemi     <- readGDX(gdx,name=c("pm_emifac","pm_dataemi"),format="first_found",restore_zeros=FALSE)[,t, c("pegas.seel.ngt.co2","pecoal.seel.pc.co2")]
-  pm_pvpRegi     <- readGDX(gdx,name='pm_pvpRegi',format="first_found")[, t, "perm"]
   pm_taxCO2eq    <- readGDX(gdx,name=c("pm_taxCO2eq","pm_tau_CO2_tax"),format="first_found")[, t,]
+  pm_taxCO2eqSum <- readGDX(gdx,name="pm_taxCO2eqSum",format="first_found")[, t,]
   pm_taxCO2eqSCC <- readGDX(gdx,name='pm_taxCO2eqSCC',format="first_found")[, t,]
   p21_CO2TaxSectorMarkup <- readGDX(gdx,name=c('p21_CO2TaxSectorMarkup','p21_CO2_tax_sector_markup'),format="first_found",react="silent")
   if (dimExists("ttot", p21_CO2TaxSectorMarkup)) p21_CO2TaxSectorMarkup <- p21_CO2TaxSectorMarkup[, t,]
@@ -682,11 +682,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   getNames(out.rawdata) <- paste0(unitsplit(getNames(out.rawdata))$variable, "|Rawdata (",
                                   unitsplit(getNames(out.rawdata))$unit, ")")
 
-  ## apply lowpass filter to receive moving average prices
-  out.lowpass <- lowpass(out)
-  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
-                                  unitsplit(getNames(out.lowpass))$unit, ")")
-
   ## calculate reporting prices
   out.reporting <- pmax(out, 0) # avoid negative prices
 
@@ -703,9 +698,18 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
     fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
     if (! inherits(priceRef, "try-error") && length(fixedyears) > 0) {
-      out.reporting[, fixedyears, ] <- priceRef[getRegions(out), fixedyears, getNames(out)]
+      joinedNamesRep <- intersect(getNames(out), getNames(priceRef))
+      joinedRegions <- intersect(getRegions(priceRef), getRegions(out))
+      out.reporting[joinedRegions, fixedyears, joinedNamesRep] <- priceRef[joinedRegions, fixedyears, joinedNamesRep]
+      joinedNamesRaw <- intersect(getNames(out.rawdata), getNames(priceRef))
+      out.rawdata[joinedRegions, fixedyears, joinedNamesRaw] <- priceRef[joinedRegions, fixedyears, joinedNamesRaw]
     }
   }
+
+  ## apply lowpass filter to receive moving average prices
+  out.lowpass <- lowpass(out)
+  getNames(out.lowpass) <- paste0(unitsplit(getNames(out.lowpass))$variable, "|Moving Avg (",
+                                  unitsplit(getNames(out.lowpass))$unit, ")")
 
   ## bind all prices together
   out <- mbind(out.rawdata, out.lowpass, out.reporting)
@@ -747,7 +751,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   # report GHG taxes, differentiated by sector
   # WARNING: the below sector markup code calculation does not consider regipol sector and emission market specific CO2eq prices. If you use both markups and the model 47 formulations, you will have wrongly reported CO2 sectoral and regional prices.
   if (all(p21_CO2TaxSectorMarkup == 0)) { # then all are identical
-    out <- mbind(out, setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
+    out <- mbind(out, setNames(pm_taxCO2eqSum * 1000 * 12/44, "Price|Carbon (US$2005/t CO2)"))
     for (pcname in c("Price|Carbon|Demand|Buildings (US$2005/t CO2)", "Price|Carbon|Demand|Transport (US$2005/t CO2)",
                      "Price|Carbon|Demand|Industry (US$2005/t CO2)", "Price|Carbon|Supply (US$2005/t CO2)",
                      "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)")) {
@@ -755,35 +759,34 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     }
   } else {  # currently p21_CO2TaxSectorMarkup is only implemented for build and trans in REMIND
     out <- mbind(out,
-                 setNames((1 + p21_CO2TaxSectorMarkup[, , "build"]) * abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
+                 setNames((1 + p21_CO2TaxSectorMarkup[, , "build"]) * pm_taxCO2eqSum * 1000 * 12/44,
                            "Price|Carbon|Demand|Buildings (US$2005/t CO2)"),
-                 setNames((1 + p21_CO2TaxSectorMarkup[, , "trans"]) * abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
+                 setNames((1 + p21_CO2TaxSectorMarkup[, , "trans"]) * pm_taxCO2eqSum * 1000 * 12/44,
                            "Price|Carbon|Demand|Transport (US$2005/t CO2)"),
-                 setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
+                 setNames(pm_taxCO2eqSum * 1000 * 12/44,
                            "Price|Carbon|Demand|Industry (US$2005/t CO2)"),
-                 setNames(abs(pm_pvpRegi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
+                 setNames(pm_taxCO2eqSum * 1000 * 12/44,
                            "Price|Carbon|Supply (US$2005/t CO2)")
                 )
-    pm_pvpRegi_FE <- pm_pvpRegi * (1 +
+    pm_taxCO2eq_FE <- pm_taxCO2eqSum * (1 +
                                     (
                                        p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "FE|Buildings (EJ/yr)"]
                                      + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "FE|Transport (EJ/yr)"]
                                     ) / output_wo_GLO[, , "FE (EJ/yr)"]
     )
-    pm_pvpRegi_Emi <- pm_pvpRegi * (1 +
+    pm_taxCO2eq_Emi <- pm_taxCO2eqSum * (1 +
                                      (
                                          p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|Buildings (Mt CO2eq/yr)"]
                                        + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|Transport (Mt CO2eq/yr)"]
                                      ) / output_wo_GLO[, , "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"]
     )
-    out <- mbind(out, setNames(abs(pm_pvpRegi_FE  / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
+    out <- mbind(out, setNames(pm_taxCO2eq_FE * 1000 * 12/44,
                                 "Price|Carbon (US$2005/t CO2)")) # AggregatedbyFE
-    out <- mbind(out, setNames(abs(pm_pvpRegi_Emi / (pm_pvp[,,"good"] + 1e-10)) * 1000 * 12/44,
+    out <- mbind(out, setNames(pm_taxCO2eq_Emi * 1000 * 12/44,
                                 "Price|Carbon|AggregatedByGrossCO2 (US$2005/t CO2)")) # AggregatedByEmiGHGGross
   }
 
   #
-  out <- mbind(out,setNames(abs(pm_taxCO2eq) * 1000 * 12/44, "Price|Carbon|Guardrail (US$2005/t CO2)"))
   CaptureBal_tmp <- new.magpie(getRegions(out), getYears(out), fill = NA)
   CaptureBal_tmp[,getYears(balcapture.m),] <- balcapture.m
   out <- mbind(out, setNames(CaptureBal_tmp / (budget.m+1e-10) / 3.66 * 1e3,
@@ -818,6 +821,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   if (!is.null(pm_taxCO2eqSCC)) {
       out <- mbind(out,setNames(abs(pm_taxCO2eqSCC) * 1000 * 12/44, "Price|Carbon|SCC (US$2005/t CO2)"))
+      out <- mbind(out,setNames(out[, , "Price|Carbon (US$2005/t CO2)"] - out[, , "Price|Carbon|SCC (US$2005/t CO2)"], "Price|Carbon|Guardrail (US$2005/t CO2)"))
+  } else {
+      out <- mbind(out,setNames(out[, , "Price|Carbon (US$2005/t CO2)"], "Price|Carbon|Guardrail (US$2005/t CO2)"))
   }
 
   out <- mbind(out,setNames(out[,,"Price|Carbon (US$2005/t CO2)"] * s_GWP_N2O, "Price|N2O (US$2005/t N2O)"))
@@ -1123,5 +1129,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   #   out <- mbind(out, tmp2)
   # }
 
+  getSets(out)[3] <- "variable"
   return(out)
 }

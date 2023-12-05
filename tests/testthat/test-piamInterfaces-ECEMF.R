@@ -1,20 +1,22 @@
 library(gdx)
 
-test_that("Test if REMIND reporting produces mandatory variables for Ariadne reporting", {
+test_that("Test if REMIND reporting produces mandatory variables for ECEMF reporting", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
   gdxPath <- file.path(tempdir(), "fulldata.gdx")
 
-  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-Ariadne_fulldata.gdx",
+  utils::download.file("https://rse.pik-potsdam.de/data/example/remind2_test-ECEMF_fulldata.gdx",
                        gdxPath,
                        mode = "wb", quiet = TRUE
   )
 
-  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath))
+  mif <- suppressWarnings(convGDX2MIF(gdxPath, gdx_ref = gdxPath))
 
   computedVariables <- deletePlus(getItems(mif, dim = 3.3))
 
-  templateVariables <- deletePlus(piamInterfaces::getREMINDTemplateVariables("ARIADNE"))
+  computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
+
+  templateVariables <- deletePlus(piamInterfaces::getREMINDTemplateVariables("ECEMF"))
 
   expect_true(any(computedVariables %in% templateVariables))
 

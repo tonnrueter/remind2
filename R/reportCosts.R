@@ -102,7 +102,6 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   v_costom         <- readGDX(gdx,name=c("v_costOM","v_costom"),         field="l",                    format="first_found")
   v_costin         <- readGDX(gdx,name=c("v_costInv","v_costin"),         field = "l",format = "first_found")
   vm_omcosts_cdr   <- readGDX(gdx,name=c("vm_omcosts_cdr"),   field="l",                  format="first_found")
-  vm_otherFEdemand <- readGDX(gdx,name=c("vm_otherFEdemand"), field="l",restore_zeros=FALSE,format="first_found")
   v_investcost     <- readGDX(gdx,name=c("vm_costTeCapital","v_costTeCapital","v_investcost"),     field="l",format="first_found")
   vm_cap           <- readGDX(gdx,name=c("vm_cap"),           field="l",format="first_found")
   vm_cap[is.na(vm_cap)]    <- 0
@@ -110,9 +109,18 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   vm_prodFe        <- readGDX(gdx,name=c("vm_prodFe"),        field="l",restore_zeros=FALSE,format="first_found")
   cost_emu         <- readGDX(gdx,name=c("v30_pebiolc_costs"),field="l",format="first_found")
   bio_cost_adjfac  <- readGDX(gdx,name=c("v30_multcost"),field="l",format="first_found")
-  vm_cesIO         <- readGDX(gdx, name = c('vm_cesIO'), field = 'l', 
+  vm_cesIO         <- readGDX(gdx, name = c('vm_cesIO'), field = 'l',
                               restore_zeros = FALSE)
-  
+
+  v33_FEdemand <- readGDX(gdx, name = c("v33_FEdemand"), field = "l", restore_zeros = F, react = "silent")
+  # v33_FEdemand has two FE dimensions, 2nd is used to determine the overall FE demand (e.g., DAC requires heat and el),
+  # the 1st dim is FE that is actually used to supply the demand
+  # (e.g., heat for DAC can be supplied by feels, feh2s, fehes or fegas)
+  CDR_FEdemand <- dimSums(v33_FEdemand, dim=c(3.2, 3.3)) # FE summed over all CDR
+  if (is.null(v33_FEdemand)) { # compatibility with the CDR module before the portfolio was added
+    CDR_FEdemand <- readGDX(gdx, name = c("vm_otherFEdemand"), field = "l", restore_zeros = F, format = "first_found")
+  }
+
   # Equations
   finenbal     <- readGDX(gdx,name=c("fe2ppfEn","finenbal"),  types="sets",format="first_found")
   pebal.m      <- readGDX(gdx,name=c("q_balPe","qm_pebal"),  types="equations",field="m",format="first_found")
@@ -155,7 +163,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   v_costfu         <- v_costfu[,y,]
   v_costom         <- v_costom[,y,]
   v_costin         <- v_costin[,y,]
-  vm_otherFEdemand <- vm_otherFEdemand[,y,]
+  CDR_FEdemand     <- CDR_FEdemand[,y,]
   v_investcost     <- v_investcost[,y,]
   vm_cap           <- vm_cap[,y,]       
   vm_prodSe        <- vm_prodSe[,y,]
@@ -414,16 +422,14 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   }
   
   price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
+
+  tmp  <- mbind(tmp, setNames(price_feeli * CDR_FEdemand[,,"feels"] * pm_conv_TWa_EJ, "Energy costs CDR|Electricity (billion US$2005/yr)"))
+  tmp  <- mbind(tmp, setNames(price_fedie * CDR_FEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"))
+  tmp  <- mbind(tmp, setNames((price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
+                     "Energy costs CDR|Heat (billion US$2005/yr)"))
   
-  tmp  <- mbind(tmp,setNames(price_feeli * vm_otherFEdemand[,,"feels"] * pm_conv_TWa_EJ , "Energy costs CDR|Electricity (billion US$2005/yr)"))   
-  tmp  <- mbind(tmp,setNames(price_fedie * vm_otherFEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"))
-  tmp  <- mbind(tmp,setNames(price_fegai * vm_otherFEdemand[,,"fegas"] * pm_conv_TWa_EJ + 
-                               price_feh2i * vm_otherFEdemand[,,"feh2s"] * pm_conv_TWa_EJ, "Energy costs CDR|Heat (billion US$2005/yr)"))
-  
-  tmp  <- mbind(tmp,setNames(price_feeli * vm_otherFEdemand[,,"feels"] * pm_conv_TWa_EJ +
-                               price_fedie * vm_otherFEdemand[,,"fedie"] * pm_conv_TWa_EJ +
-                               price_fegai * vm_otherFEdemand[,,"fegas"] * pm_conv_TWa_EJ +
-                               price_feh2i * vm_otherFEdemand[,,"feh2s"] * pm_conv_TWa_EJ,
+  tmp  <- mbind(tmp, setNames((price_feeli * CDR_FEdemand[,,"feels"] + price_fedie * CDR_FEdemand[,,"fedie"] +
+                               price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
                              "Energy costs CDR (billion US$2005/yr)"))
 
   #######################################
@@ -650,6 +656,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   # add other region aggregations
   if (!is.null(regionSubsetList))
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
-  
+
+  getSets(tmp)[3] <- "variable"
   return(tmp)
 }

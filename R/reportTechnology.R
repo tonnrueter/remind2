@@ -36,7 +36,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     )
   }
 
-  ## Check realisations
+  # Check realisations ----
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   tran_mod <- module2realisation[module2realisation$modules == "transport", 2]
 
@@ -45,7 +45,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   sety       <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
   te <- readGDX(gdx, "te")
 
-  # calculate maximal temporal resolution
+  # calculate maximal temporal resolution ----
   p_dataeta    <- readGDX(gdx, name = c("pm_dataeta", "p_dataeta"), format = "first_found")
   p_eta_conv   <- readGDX(gdx, name = c("pm_eta_conv", "p_eta_conv"), format = "first_found")
   pm_inco0_t   <- readGDX(gdx, name = c("pm_inco0_t", "p_inco0_t"), format = "first_found")
@@ -97,7 +97,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     v_adjustteinv_avg <- v_investcost[,,]*0
   }
 
-  ############ build reporting #####################
+  # build reporting ----
 
   techmap <- c(
     "bioigccc" = "Electricity|Biomass|Gasification Combined Cycle w/ CC",
@@ -105,7 +105,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     "biochp" = "Electricity|Biomass|Combined Heat and Power w/o CC",
     "igccc" = "Electricity|Coal|Gasification Combined Cycle w/ CC",
     "igcc" = "Electricity|Coal|Gasification Combined Cycle w/o CC",
-    "pcc" = "Electricity|Coal|Pulverised Coal w/ CC",
     "pc" = "Electricity|Coal|Pulverised Coal w/o CC",
     "coalchp" = "Electricity|Coal|Combined Heat and Power w/o CC",
     "ngccc" = "Electricity|Gas|Combined Cycle w/ CC",
@@ -155,7 +154,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   # add synfuel technologies
   techmap <- append(techmap, c("MeOH" = "Liquids|Hydrogen",
                                "h22ch4" = "Gases|Hydrogen"))
-
 
   if (CDR_mod != "off") {
     cdrmap <- c("dac" = "DAC",
@@ -213,7 +211,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     ## For cars (technically a Energy Service), we use FEs.
     int2ext <- c()
     if (all(map %in% techmap)) {
-      for (label in techmap) {
+      for (label in map) {
         int2ext[[report_str(label, category, unit)]] <- report_str(label, unit = "EJ/yr", predicate = "SE")
       }
       ## storage needs a special mapping
@@ -244,7 +242,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   tmp <- NULL
 
-  ### capital costs ###
+  ## capital costs ----
 
   category <- "Capital Costs"
   unit <- "US$2005/kW"
@@ -253,7 +251,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   tmp <- bind_category(tmp, v_investcost, category, unit, factor, techmap)
   int2ext <- get_global_mapping(category, unit, techmap)
 
-  ### Capital cost including adjustment cost ###
+  ### Capital cost including adjustment cost ----
   if (!is.null(v_adjustteinv_avg)) {
     category <- "Capital Costs|w/ Adj Costs"
     unit <- "US$2005/kW"
@@ -276,7 +274,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
   }
 
-  ### efficiency ###
+  ## efficiency ----
   ## efficiency variables can be found in both p_dataeta and p_eta_conv, so do it one-by-one
   ## for cars, efficiencies are not given
 
@@ -286,7 +284,9 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   in_dataeta <- c("bioigccc", "bioigcc", "igccc", "igcc", "pc", "ngccc", "ngcc", "ngt")
 
-  for (key in names(techmap)) {
+  tech_exclude <- techmap[setdiff(names(techmap), 'tnrs')]   # exclude nuclear
+
+  for (key in names(tech_exclude)) {
     if (key %in% in_dataeta) {
       tmp <- bind_element(tmp, p_dataeta, key, category, unit, factor)
     } else {
@@ -294,10 +294,9 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     }
   }
 
-  int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
+  int2ext <- c(int2ext, get_global_mapping(category, unit, tech_exclude))
 
-
-  ### lifetime ###
+  ## lifetime ----
 
   category <- "Lifetime"
   unit <- "years"
@@ -316,7 +315,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
 
 
-  ### o&m fix costs ###
+  ## o&m fix costs ----
   category <- "OM Cost|fixed"
   unit <- "US$2005/kW/yr"
   tmp <- bind_category(tmp, omf * v_investcost, category, unit, 1000.)
@@ -330,7 +329,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     int2ext <- c(int2ext, get_global_mapping(category, unit, carmap))
   }
 
-
   if (CDR_mod != "off") {
     ## op costs for CDR technologies ###
     category <- "OM Cost|fixed"
@@ -339,14 +337,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
   }
 
-  ### o&m variable costs ###
+  ## o&m variable costs ----
   category <- "OM Cost|variable"
   unit <- "US$2005/GJ"
   tmp <- bind_category(tmp, omv, category, unit, 1000. / 31.7098)
   int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
 
 
-  ### write to output ###
+  # write to output ----
   ## substitute NA by 1E-30 to avoid that if in 2005, 2010, 2015, 2130, 2150,
   ## output is 0 in each region, the sum is returned by speed_aggregate
   output[is.na(output) | output == 0] <- 1E-30
@@ -354,7 +352,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   output <- deletePlus(output)
 
 
-  # add global values
+  # add global values ----
   map <- data.frame(region = getRegions(tmp), world = "GLO", stringsAsFactors = FALSE)
   y <- Reduce(intersect, list(getYears(tmp), getYears(output)))
   tmp <- tmp[, y, ]
@@ -365,7 +363,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   }
   tmp <- mbind(tmp, tmp_GLO)
 
-  # add other region aggregations
+  # add other region aggregations ----
   if (!is.null(regionSubsetList)) {
     tmp_RegAgg <- new.magpie(names(regionSubsetList), getYears(tmp), magclass::getNames(tmp), fill = 0)
     for (region in names(regionSubsetList)) {
@@ -387,5 +385,6 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   tmp[is.na(tmp)] <- 0  # tmp is NA if weight is zero for all regions within the GLO or the specific region aggregation. Therefore, we replace all NAs with zeros.
 
+  getSets(tmp)[3] <- "variable"
   return(tmp)
 }
