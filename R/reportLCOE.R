@@ -116,8 +116,9 @@ reportLCOE <- function(gdx, output.type = "both"){
  p47_taxCO2eq_AggFE <- readGDX(gdx,"p47_taxCO2eq_AggFE", restore_zeros=F, react = "silent")
 
  ## variables
- v_directteinv <- readGDX(gdx,name=c("v_costInvTeDir","vm_costInvTeDir","v_directteinv"),field="l",format="first_found")[,ttot,]
- v_directteinv_wadj <- readGDX(gdx,name=c("o_avgAdjCostInv"),field="l",format="first_found")[,ttot,]
+ v_directteinv <- readGDX(gdx,name=c("v_costInvTeDir","vm_costInvTeDir","v_directteinv"),field="l",format="first_found")[,ttot,] ## Total direct Investment Cost in Timestep
+ #v_directteinv_wadj <- readGDX(gdx,name=c("o_avgAdjCostInv"),field="l",format="first_found")[,ttot,] ## average adjustment cost per unit installed in period
+ v_adjteinv <- readGDX(gdx,name=c("v_costInvTeAdj"),field="l",format="first_found")[,ttot,] ## total adjustment cost in period
  vm_capEarlyReti <- readGDX(gdx,name=c("vm_capEarlyReti"),field="l",format="first_found")[,ttot,]
  vm_deltaCap   <- readGDX(gdx,name=c("vm_deltaCap"),field="l",format="first_found")[,ttot,]
  vm_demPe      <- readGDX(gdx,name=c("vm_demPe","v_pedem"),field="l",restore_zeros=FALSE,format="first_found")
@@ -181,7 +182,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_inv_annuity_wadj <- 1e+12 * te_annuity[,,te] *
    mbind(
      v_investcost[,ttot_before2005,te] * dimSums(vm_deltaCap[teall2rlf][,ttot_before2005,te],dim=3.2),
-     v_directteinv_wadj[,ttot_from2005,te]
+     v_adjteinv[,ttot_from2005,te] + v_directteinv[,ttot_from2005,te]
    )
  
  ########## calculation of LCOE of standing system #######
@@ -325,7 +326,9 @@ reportLCOE <- function(gdx, output.type = "both"){
  # calculate total ccsinjection cost for all techs
  total_ccsInj_cost <- dimReduce(te_annual_inv_cost[getRegions(te_annual_OMF_cost),getYears(te_annual_OMF_cost),"ccsinje"] +
                                                      te_annual_OMF_cost[,,"ccsinje"])
- # distribute ccs injection cost over techs
+ total_ccsInj_costWAdj <- dimReduce(te_annual_inv_cost_wadj[getRegions(te_annual_OMF_cost),getYears(te_annual_OMF_cost),"ccsinje"] +
+                                  te_annual_OMF_cost[,,"ccsinje"])
+ # distribute ccs injection cost over techs => this does not include adjustment cost incurred! => what is the reasoning behind it?
  te_annual_ccsInj_cost[,,teCCS] <- setNames(total_ccsInj_cost * dimSums(v_emiTeDetail[,,"cco2"][,,teCCS], dim = c(3.1,3.2,3.4), na.rm = T) /
                                                                 dimSums( v_emiTeDetail[,,"cco2"], dim = 3, na.rm = T),
                                                                 teCCS)
@@ -389,7 +392,7 @@ reportLCOE <- function(gdx, output.type = "both"){
    te_annual_ccsInj_cost +
    te_annual_co2_cost
 
- # calculate total energy production
+ ####### 10. sub-part: calculate total energy production and carbon storage #################################
  # SE and FE production in MWh
  total_te_energy <- new.magpie(getRegions(vm_prodSe),getYears(vm_prodSe),
                                c(magclass::getNames(collapseNames(vm_prodSe[temapse],collapsedim = c(1,2))),
@@ -411,7 +414,9 @@ reportLCOE <- function(gdx, output.type = "both"){
  total_te_energy_usable <- total_te_energy
  total_te_energy_usable[,,teVRE] <- total_te_energy[,,teVRE] - v32_storloss[,ttot_from2005,teVRE]*s_twa2mwh
 
-
+ # change unit of stored CO2 from GtC to tCO2
+ s_GtC2tCO2 <-  10^9 * readGDX(gdx,c("sm_c_2_co2","s_c_2_co2"),format="first_found")
+ vm_co2CCS_tCO2 <- vm_co2CCS*s_GtC2tCO2
 
  ####################################################
  ######### calculate average LCOE  ##################
@@ -420,13 +425,14 @@ reportLCOE <- function(gdx, output.type = "both"){
 
 # calculate standing system LCOE
 # divide total cost of standing system in that time step by total generation (before curtailment) in that time step
-# exception: grid and storage cost are calculate by dividing by generation after curtailment
-# convert from USD2005/MWh to USD2015/MWh (*1.2)
+# exceptions: grid and storage cost are calculate by dividing by generation after curtailment
+# convert from USD2005/MWh (or tCO2) to USD2015/MWh (or tCO2) (*1.2)
  LCOE.avg <- mbind(
-              setNames(te_annual_inv_cost[,getYears(te_annual_fuel_cost),pe2se$all_te]/
+              #### Energy technologies (pe2se$all_te)
+              setNames(te_annual_inv_cost[,ttot_from2005,pe2se$all_te]/
                          total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te,"|supply-side", "|Investment Cost")),
-              setNames(te_annual_inv_cost_wadj[,getYears(te_annual_fuel_cost),pe2se$all_te]/
+              setNames(te_annual_inv_cost_wadj[,ttot_from2005,pe2se$all_te]/
                          total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te,"|supply-side", "|Investment Cost w/ Adj Cost")),
               setNames(te_annual_fuel_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
@@ -451,7 +457,17 @@ reportLCOE <- function(gdx, output.type = "both"){
               setNames(te_annual_co2_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|CO2 Cost")),
               setNames(te_curt_cost[,,pe2se$all_te],
-                       paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Curtailment Cost"))
+                       paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Curtailment Cost")),
+              
+              #### Carbon Transport and storage ("ccsinje")
+              setNames(te_annual_inv_cost[,ttot_from2005,"ccsinje"]/
+                         vm_co2CCS_tCO2[,,"ccsinje.1"],
+                       paste0("LCOx|average|","cco2_stored|","ccsinje","|supply-side", "|Investment Cost")),
+              setNames(te_annual_inv_cost_wadj[,ttot_from2005,"ccsinje"]/
+                         vm_co2CCS_tCO2[,,"ccsinje.1"],
+                       paste0("LCOx|average|","cco2_stored|","ccsinje","|supply-side", "|Investment Cost w/ Adj Cost")),
+              setNames(te_annual_OMF_cost[,,"ccsinje"]/vm_co2CCS_tCO2[,,"ccsinje.1"],
+                       paste0("LCOx|average|","cco2_stored|","ccsinje", "|supply-side","|OMF Cost"))
 )*1.2
 
  # convert to better dimensional format
@@ -478,7 +494,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  df.lcoe.avg$cost <- sapply(df.lcoe.avg$cost, "[[", 6)
 
  df.lcoe.avg <- df.lcoe.avg %>%
-                  mutate( unit = "US$2015/MWh") %>%
+                  mutate( unit = "US$2015/MWh") %>% 
+                  mutate(unit = case_when(tech=="ccsinje" & output=="cco2_stored" ~ "US$2015/tCO2", TRUE ~ unit)) %>%
                   select(region, period, type, output, tech, sector, unit, cost, value) %>%
                   as.quitte()
 
