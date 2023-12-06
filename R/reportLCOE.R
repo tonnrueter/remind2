@@ -68,6 +68,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  # read in general data (needed for average and marginal LCOE calculation)
  s_twa2mwh <- readGDX(gdx,c("sm_TWa_2_MWh","s_TWa_2_MWh","s_twa2mwh"),format="first_found")
+ s_GtC2tCO2 <-  10^9 * readGDX(gdx,c("sm_c_2_co2","s_c_2_co2"),format="first_found")
  ttot     <- as.numeric(readGDX(gdx,"ttot"))
  ttot_before2005 <- paste0("y",ttot[which(ttot <= 2000)])
  ttot_from2005 <- paste0("y",ttot[which(ttot >= 2005)])
@@ -238,11 +239,27 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  # 2. sub-part: fuel cost ----
 
- # fuel cost = PE price * PE demand of technology
+ # 2.1 primary fuel cost = PE price * PE demand of technology
 
  te_annual_fuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,magclass::getNames(te_inv_annuity), fill=0)
  te_annual_fuel_cost[,,pe2se$all_te] <- setNames(1e+12 * qm_pebal[,ttot_from2005,pe2se$all_enty] / qm_budget[,ttot_from2005,] *
            setNames(vm_demPe[,,pe2se$all_te], pe2se$all_enty), pe2se$all_te)
+
+ # 2.2 second fuel cost - !only CCSinje for now! 
+    # pm_prodCouple: Second fuel production or demand per unit output of technology. Negative values mean own consumption, positive values mean coupled product. 
+      pm_prodCouple <- readGDX(gdx, "pm_prodCouple", restore_zeros = F)
+    # potential fuels and prices: not needed in this detail here, but copying approach in marginal section
+      fuels <- c("peoil","pegas","pecoal","peur", "pebiolc" , "pebios","pebioil",
+                 "seel","seliqbio", "seliqfos","seliqsyn", "sesobio","sesofos","seh2","segabio" ,
+                 "segafos","segasyn","sehe")
+      pm_PEPrice <- readGDX(gdx, "pm_PEPrice", restore_zeros = F) 
+      pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = F)
+      Fuel.Price <- mbind(pm_PEPrice,pm_SEPrice )[,,fuels]*1e12 # convert from trUSD2005/TWa to USD2005/TWa
+
+    # calculate secondary Fuel cost for ccsinje 
+      te_annual_secFuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005, "ccsinje" , fill=0)  
+      te_annual_secFuel_cost[,,"ccsinje"] <- setNames(-pm_prodCouple[,,"ccsinje"] * Fuel.Price[,,"seel"] * vm_co2CCS[,,"ccsinje.1"], "ccsinje") 
+          # units: pm_prodCouple[,,"ccsinje"] = [TWa/GtC]; Fuel.Price = [USD2005/GtC]; vm_co2CCS= [GtC]; te_annual_secFuel_cost = [USD2005]
 
  # 3. sub-part: OMV cost ----
 
@@ -309,7 +326,7 @@ reportLCOE <- function(gdx, output.type = "both"){
    vm_VRE_prodSe_grid
 
 
- # 7. sub-part: ccs injection cost ----
+ # 7. sub-part: ccs injection cost (for technologies capturing CO2) ----
 
  # same as for storage/grid but with ccs inejection technology
  # distributed to technolgies according to share of total captured co2 of ccs technology
@@ -320,9 +337,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  # calculate total ccsinjection cost for all techs
  total_ccsInj_cost <- dimReduce(te_annual_inv_cost[getRegions(te_annual_OMF_cost),getYears(te_annual_OMF_cost),"ccsinje"] +
-                                                     te_annual_OMF_cost[,,"ccsinje"])
- total_ccsInj_costWAdj <- dimReduce(te_annual_inv_cost_wadj[getRegions(te_annual_OMF_cost),getYears(te_annual_OMF_cost),"ccsinje"] +
-                                  te_annual_OMF_cost[,,"ccsinje"])
+                                                     te_annual_OMF_cost[,,"ccsinje"] + te_annual_secFuel_cost[,,"ccsinje"])
  # distribute ccs injection cost over techs => this does not include adjustment cost incurred! => what is the reasoning behind it?
  te_annual_ccsInj_cost[,,teCCS] <- setNames(total_ccsInj_cost * dimSums(v_emiTeDetail[,,"cco2"][,,teCCS], dim = c(3.1,3.2,3.4), na.rm = T) /
                                                                 dimSums( v_emiTeDetail[,,"cco2"], dim = 3, na.rm = T),
@@ -410,7 +425,6 @@ reportLCOE <- function(gdx, output.type = "both"){
  total_te_energy_usable[,,teVRE] <- total_te_energy[,,teVRE] - v32_storloss[,ttot_from2005,teVRE]*s_twa2mwh
 
  # change unit of stored CO2 from GtC to tCO2
- s_GtC2tCO2 <-  10^9 * readGDX(gdx,c("sm_c_2_co2","s_c_2_co2"),format="first_found")
  vm_co2CCS_tCO2 <- vm_co2CCS*s_GtC2tCO2
 
  ####################################################
@@ -453,7 +467,6 @@ reportLCOE <- function(gdx, output.type = "both"){
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|CO2 Cost")),
               setNames(te_curt_cost[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Curtailment Cost")),
-              
               #### Carbon Transport and storage ("ccsinje")
               setNames(te_annual_inv_cost[,ttot_from2005,"ccsinje"]/
                          vm_co2CCS_tCO2[,,"ccsinje.1"],
@@ -462,7 +475,9 @@ reportLCOE <- function(gdx, output.type = "both"){
                          vm_co2CCS_tCO2[,,"ccsinje.1"],
                        paste0("LCOx|average|","cco2_stored|","ccsinje","|supply-side", "|Investment Cost w/ Adj Cost")),
               setNames(te_annual_OMF_cost[,,"ccsinje"]/vm_co2CCS_tCO2[,,"ccsinje.1"],
-                       paste0("LCOx|average|","cco2_stored|","ccsinje", "|supply-side","|OMF Cost"))
+                       paste0("LCOx|average|","cco2_stored|","ccsinje", "|supply-side","|OMF Cost")),
+              setNames(te_annual_secFuel_cost[,,"ccsinje"]/vm_co2CCS_tCO2[,,"ccsinje.1"],
+                       paste0("LCOE|average|","cco2_stored|","ccsinje", "|supply-side","|Second Fuel Cost"))
 )*1.2
 
  # convert to better dimensional format
