@@ -766,7 +766,7 @@ LCOE.avg <- NULL
   ### Read marginal adjustment costs ----
 
   # Read marginal adjustment cost calculated in core/postsolve.gms
-  # It is calculated as d(v_costInvTeAdj) / d(vm_deltaCap).
+  # It is calculated as d(vm_costInvTeAdj) / d(vm_deltaCap).
   # Unit: trUSD2005/ (TW(out)/yr).
   o_margAdjCostInv <- readGDX(gdx, "o_margAdjCostInv", restore_zeros = F)
 
