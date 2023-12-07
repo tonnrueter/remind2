@@ -1,0 +1,407 @@
+---
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    warning: false
+    message: false
+    fig.width: 7
+    fig.height: 5
+title: Nash Iterations
+---
+
+
+```{r loading_libraries, include=FALSE}
+library(knitr)
+library(dplyr)
+library(magclass)
+library(ggplot2)
+library(quitte)
+library(plotly)
+library(remind2)
+```
+
+## Setup
+```{r}
+runPath <- "/home/benke/dev/pik-piam/miptemplate/SSP2EU-EU21-NDC_2023-11-01_19.58.36/"
+
+m2r <- gdx::readGDX(file.path(runPath, "/fulldata.gdx"), "module2realisation", restore_zeros = FALSE)
+if (m2r[m2r$module == "optimization", "*"] != "nash") {
+  print("Warning: this script only supports nash optimizations")
+}
+
+adjustSliderAnimation <- function(p){
+  return(list(p[[1]] %>% animation_opts(frame = 1)))
+}
+
+```
+
+## p80_surplus
+
+### Read Data from gdx
+```{r p80_surplus___READ}
+p80_surplus <- mip::getPlotData("p80_surplus", runPath) %>%
+  mutate(tall := as.numeric(tall))
+str(p80_surplus)
+```
+
+
+### Option 1
+```{r}
+
+p <- mip::mipIterations(
+  plotData = p80_surplus,
+  xAxis = "tall", facets = "all_enty", color = NULL, slider = "iteration",
+  facetScales = "free_y"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+
+```
+
+### Option 2
+```{r  results = "asis"}
+p <- mip::mipIterations(
+  plotData = filter(p80_surplus, tall > 2005), # for this to work, we starting year must be available for all facets
+  xAxis = "iteration", slider = "tall", color = NULL, facets = "all_enty", facetScales = "free_y"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+```
+
+### Option 3
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  plotData = p80_surplus,
+  xAxis = "tall", facets = NULL, color = "all_enty", slider = "iteration"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+```
+
+
+### Option 4
+```{r  results = "asis"}
+p <- mip::mipIterations(
+  plotData = p80_surplus,
+  returnGgplots = TRUE,
+  xAxis = "iteration", facets = "tall", color = NULL, slider = NULL
+)
+
+print(p)
+```
+
+
+## p80_pvp_itr
+
+### Read Data from gdx
+```{r p80_pvp_itr___READ}
+p80_pvp_itr <- mip::getPlotData("p80_pvp_itr", runPath) %>%
+  mutate(ttot := as.numeric(ttot)) %>%
+  filter(ttot >= 2005)
+str(p80_pvp_itr)
+```
+
+
+### Option 1
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  plotData = p80_pvp_itr,
+  xAxis = "ttot", facets = "all_enty", color = NULL, slider = "iteration",
+  facetScales = "free_y"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+
+```
+
+### Option 2
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  filter(p80_pvp_itr, ttot > 2005), # for this to work, we starting year must be available for all facets
+  xAxis = "iteration", slider = "ttot", color = NULL, facets = "all_enty", facetScales = "free_y"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+
+```
+
+### Option 3
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  plotData = p80_pvp_itr,
+  xAxis = "ttot", facets = NULL, color = "all_enty", slider = "iteration"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+
+```
+
+
+### Option 4
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  plotData = p80_pvp_itr,
+  returnGgplots = TRUE,
+  xAxis = "iteration", facets = "ttot", color = NULL, slider = NULL,
+  facetScales = "free_y"
+)
+
+print(p)
+
+```
+
+## price not discounted
+
+### Read Data from gdx
+```{r results = "asis"}
+price_not_discounted_itr <- left_join(p80_pvp_itr,
+  filter(p80_pvp_itr, all_enty == "good"),
+  by = c("ttot", "iteration")
+) %>%
+  mutate(
+    all_enty = all_enty.x,
+    p80_pvp_itr_no_discount = p80_pvp_itr.x / p80_pvp_itr.y
+  ) %>%
+  select("ttot", "iteration", "all_enty", "p80_pvp_itr_no_discount")
+```
+
+### Option 1
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  plotData = price_not_discounted_itr,
+  xAxis = "ttot", facets = "all_enty", color = NULL, slider = "iteration",
+  facetScales = "free_y"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+
+```
+
+### Option 2
+```{r  results = "asis"}
+p <- mip::mipIterations(
+  filter(price_not_discounted_itr, ttot > 2005), # for this to work, we starting year must be available for all facets
+  xAxis = "iteration", slider = "ttot", color = NULL, facets = "all_enty", facetScales = "free_y"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+```
+
+### Option 3
+```{r  results = "asis"}
+
+p <- mip::mipIterations(
+  plotData = price_not_discounted_itr,
+  xAxis = "ttot", facets = NULL, color = "all_enty", slider = "iteration"
+) %>% adjustSliderAnimation()
+
+htmltools::tagList(p)
+
+```
+
+### Option 4
+```{r  results = "asis"}
+p <- mip::mipIterations(
+  plotData = price_not_discounted_itr,
+  returnGgplots = TRUE,
+  xAxis = "iteration", facets = "ttot", color = NULL, slider = NULL,
+  facetScales = "free_y"
+)
+
+print(p)
+```
+
+## prices and surplus in one plot
+
+### Read Data from gdx
+```{r  results = "asis"}
+prices_and_surplus <- left_join(p80_surplus, price_not_discounted_itr, by = c("tall" = "ttot", "all_enty", "iteration")) %>%
+  filter(!is.na(p80_pvp_itr_no_discount)) %>%
+  reshape2::melt(id.vars = c(1, 2, 3))
+```
+
+### Option 1
+```{r  results = "asis"}
+for (v in unique(prices_and_surplus$all_enty)) {
+  p <- mip::mipIterations(
+    plotData = filter(prices_and_surplus, all_enty == v, tall >= 2005),
+    xAxis = "tall", facets = "variable", color = NULL, slider = "iteration", facetScales = "free_y"
+  ) %>% adjustSliderAnimation()
+
+  print(htmltools::tagList(p))
+}
+```
+
+### Option 2
+```{r  results = "asis"}
+for (v in unique(prices_and_surplus$all_enty)) {
+  p <- mip::mipIterations(
+    plotData = filter(prices_and_surplus, all_enty == v, tall >= 2005),
+    xAxis = "iteration", facets = "variable", color = NULL, slider = "tall", facetScales = "free_y"
+  ) %>% adjustSliderAnimation()
+
+  print(htmltools::tagList(p))
+}
+```
+
+### Option 3
+```{r  results = "asis", fig.width=12, fig.height=5}
+prices_and_surplus_scaled <- left_join(p80_surplus, price_not_discounted_itr, by = c("tall" = "ttot", "all_enty", "iteration")) %>%
+  filter(!is.na(p80_pvp_itr_no_discount))
+
+for (v in unique(prices_and_surplus_scaled$all_enty)) {
+  df <- prices_and_surplus_scaled %>%
+    filter(all_enty == v)
+
+  # scale factor per all_enty value
+  scale_factor <- round(select(df, "p80_surplus") %>% max() /
+    select(df, "p80_pvp_itr_no_discount") %>% max(), digits = 1)
+
+  df <- df %>%
+    mutate(p80_pvp_itr_no_discount := p80_pvp_itr_no_discount * scale_factor) %>%
+    reshape2::melt(id.vars = c(1, 2, 3))
+
+  p <- mip::mipIterations(
+    plotData = df, returnGgplots = TRUE,
+    xAxis = "iteration", facets = "tall", color = "variable", slider = NULL,
+    facetScales = "free_y"
+  )
+
+  lapply(p, function(plot) {
+    plot <- plot + scale_y_continuous("p80_surplus", sec.axis = sec_axis(~ . / scale_factor, name = "p80_pvp_itr_no_discount"))
+    print(plot)
+  })
+}
+```
+
+## Convergence Plots
+```{r results = "asis"}
+diag <- plotNashConvergence(gdx = file.path(runPath, "/fulldata.gdx"))
+htmltools::tagList(diag$plot)
+htmltools::tagList(diag$tradeDetailPlot)
+```
+
+## Price Anticipation Plots
+
+### p80_DevPriceAnticipGlobMax2100Iter
+p80_DevPriceAnticipGlobMax2100Iter(all_enty,iteration)  "Track the 2100 value of p80_DevPriceAnticipGlobMax over iterations. [Unit: trillion Dollar]"
+p80_DevPriceAnticipGlobAllMax2100Iter(iteration)        "Track the 2100 value of p80_DevPriceAnticipGlobAllMax over iterations. [Unit: trillion Dollar]"
+
+```{r results = "asis"}
+
+df <- mip::getPlotData("p80_DevPriceAnticipGlobMax2100Iter", runPath)
+
+df.all <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax2100Iter", runPath) %>%
+  mutate(all_enty = "all") %>%
+  rename(p80_DevPriceAnticipGlobMax2100Iter = p80_DevPriceAnticipGlobAllMax2100Iter)
+
+df <- rbind(df, df.all)
+
+p <- mip::mipIterations(
+  plotData = df, returnGgplots = TRUE, facetScales = "free_y", 
+  xAxis = "iteration", facets = "all_enty", color = NULL, slider = NULL)
+
+# add logarithmic scale
+p[[1]] + scale_y_log10()
+```
+
+
+### p80_DevPriceAnticipGlobIter
+
+p80_DevPriceAnticipGlobIter(ttot,all_enty,iteration)    "Track p80_DevPriceAnticipGlob over iterations. [Unit: trillion Dollar]"
+
+```{r results = "asis"}
+df <- mip::getPlotData("p80_DevPriceAnticipGlobIter", runPath) %>%
+  mutate(ttot := as.numeric(ttot))
+
+p <- mip::mipIterations(
+  plotData = df,
+  xAxis = "ttot", facets = "all_enty", slider = "iteration",
+  facetScales = "free_y", returnGgplots = TRUE
+) %>% adjustSliderAnimation()
+
+# add logarithmic scale and then convert to plotly
+plots <- p[[1]] + scale_y_log10()
+plots <- list(plots)
+plots <- lapply(plots, ggplotly)
+
+print(htmltools::tagList(plots))
+```
+
+
+### p80_PriceChangePriceAnticipReg
+
+p80_PriceChangePriceAnticipReg(ttot,all_enty,all_regi)  "Price change of a trade good due to the price anticipation effect. [Unit: Percent]"
+
+```{r results = "asis"}
+df <- mip::getPlotData("p80_PriceChangePriceAnticipReg", runPath) %>%
+  mutate(ttot := as.numeric(ttot)) %>%
+  select(-"iteration")
+
+mip::mipIterations(
+  plotData = df, returnGgplots = TRUE,
+  xAxis = "ttot", facets = "all_regi", color = "all_enty", slider = NULL,
+  facetScales = "free_y"
+)
+```
+### p80_DevPriceAnticipReg
+
+p80_DevPriceAnticipReg(ttot,all_enty,all_regi)          "Deviation of the yearly monetary export/import expenditure due to price change anticipation effect. [Unit: trillion Dollar]"
+
+```{r results = "asis"}
+df <- mip::getPlotData("p80_DevPriceAnticipReg", runPath) %>%
+  mutate(ttot := as.numeric(ttot)) %>%
+  select(-"iteration")
+
+mip::mipIterations(
+  plotData = df, returnGgplots = TRUE,
+  xAxis = "ttot", facets = "all_regi", color = "all_enty", slider = NULL,
+  facetScales = "free_y"
+)
+```
+
+### p80_DevPriceAnticipGlob
+p80_DevPriceAnticipGlob(ttot,all_enty)                  "Global sum of p80_DevPriceAnticipReg. [Unit: trillion Dollar]"
+p80_DevPriceAnticipGlobAll(ttot)                        "p80_DevPriceAnticipGlob summed over all trade goods. [Units: trillion Dollar]"
+p80_DevPriceAnticipGlobAllMax(ttot)                     "Max of p80_DevPriceAnticipGlobAll until the given year. [Unit: trillion Dollar]"
+p80_DevPriceAnticipGlobMax(ttot,all_enty)               "Max of p80_DevPriceAnticipGlob until the given year. [Unit: trillion Dollar]"
+
+```{r results = "asis"}
+df <- mip::getPlotData("p80_DevPriceAnticipGlob", runPath) %>%
+  mutate(ttot := as.numeric(ttot)) %>%
+  select(-"iteration")
+
+df.all <- mip::getPlotData("p80_DevPriceAnticipGlobAll", runPath) %>%
+  mutate(ttot := as.numeric(ttot), all_enty = "all") %>%
+  rename(p80_DevPriceAnticipGlob = p80_DevPriceAnticipGlobAll) %>%
+  select(-"iteration")
+
+df.allmax <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax", runPath) %>%
+  mutate(ttot := as.numeric(ttot), all_enty = "allmax") %>%
+  rename(p80_DevPriceAnticipGlob = p80_DevPriceAnticipGlobAllMax) %>%
+  select(-"iteration")
+
+df <- rbind(df, df.all, df.allmax)
+
+mip::mipIterations(
+  plotData = df, returnGgplots = TRUE,
+  xAxis = "ttot", facets = "all_enty", color = NULL, slider = NULL,
+  facetScales = "free_y"
+)
+
+df.max <- mip::getPlotData("p80_DevPriceAnticipGlobMax", runPath) %>%
+  select(-"iteration")
+
+mip::mipIterations(
+  plotData = df.max, returnGgplots = TRUE,
+  xAxis = "ttot", facets = "all_enty", color = NULL, slider = NULL,
+  facetScales = "free_y"
+)
+```
