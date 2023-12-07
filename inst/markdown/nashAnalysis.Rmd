@@ -45,8 +45,7 @@ p80_surplus <- mip::getPlotData("p80_surplus", runPath) %>%
 str(p80_surplus)
 ```
 
-
-### Option 1
+### x: time, slider: iter, facet: enty
 ```{r}
 
 p <- mip::mipIterations(
@@ -59,7 +58,7 @@ htmltools::tagList(p)
 
 ```
 
-### Option 2
+### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
 p <- mip::mipIterations(
   plotData = filter(p80_surplus, tall > 2005), # for this to work, we starting year must be available for all facets
@@ -69,7 +68,7 @@ p <- mip::mipIterations(
 htmltools::tagList(p)
 ```
 
-### Option 3
+### x: time, slider: iter, color: enty
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -81,7 +80,7 @@ htmltools::tagList(p)
 ```
 
 
-### Option 4
+### x: iter, facets: time
 ```{r  results = "asis"}
 p <- mip::mipIterations(
   plotData = p80_surplus,
@@ -93,7 +92,7 @@ print(p)
 ```
 
 
-## p80_pvp_itr
+## trade price: p80_pvp_itr
 
 ### Read Data from gdx
 ```{r p80_pvp_itr___READ}
@@ -104,7 +103,7 @@ str(p80_pvp_itr)
 ```
 
 
-### Option 1
+### x: time, slider: iter, facet: enty
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -117,7 +116,7 @@ htmltools::tagList(p)
 
 ```
 
-### Option 2
+### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -129,7 +128,7 @@ htmltools::tagList(p)
 
 ```
 
-### Option 3
+### x: time, slider: iter, color: enty
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -141,8 +140,7 @@ htmltools::tagList(p)
 
 ```
 
-
-### Option 4
+### x: iter, facets: time
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -171,7 +169,7 @@ price_not_discounted_itr <- left_join(p80_pvp_itr,
   select("ttot", "iteration", "all_enty", "p80_pvp_itr_no_discount")
 ```
 
-### Option 1
+### x: time, slider: iter, facet: enty
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -184,7 +182,7 @@ htmltools::tagList(p)
 
 ```
 
-### Option 2
+### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
 p <- mip::mipIterations(
   filter(price_not_discounted_itr, ttot > 2005), # for this to work, we starting year must be available for all facets
@@ -194,7 +192,7 @@ p <- mip::mipIterations(
 htmltools::tagList(p)
 ```
 
-### Option 3
+### x: time, slider: iter, color: enty
 ```{r  results = "asis"}
 
 p <- mip::mipIterations(
@@ -206,7 +204,7 @@ htmltools::tagList(p)
 
 ```
 
-### Option 4
+### x: iter, facets: time
 ```{r  results = "asis"}
 p <- mip::mipIterations(
   plotData = price_not_discounted_itr,
@@ -227,7 +225,7 @@ prices_and_surplus <- left_join(p80_surplus, price_not_discounted_itr, by = c("t
   reshape2::melt(id.vars = c(1, 2, 3))
 ```
 
-### Option 1
+### x: time, slider: iter, facet: var
 ```{r  results = "asis"}
 for (v in unique(prices_and_surplus$all_enty)) {
   p <- mip::mipIterations(
@@ -239,7 +237,7 @@ for (v in unique(prices_and_surplus$all_enty)) {
 }
 ```
 
-### Option 2
+### x: iter, slider: time, facet: var
 ```{r  results = "asis"}
 for (v in unique(prices_and_surplus$all_enty)) {
   p <- mip::mipIterations(
@@ -251,7 +249,7 @@ for (v in unique(prices_and_surplus$all_enty)) {
 }
 ```
 
-### Option 3
+### x: iter, facet: time, color: var
 ```{r  results = "asis", fig.width=12, fig.height=5}
 prices_and_surplus_scaled <- left_join(p80_surplus, price_not_discounted_itr, by = c("tall" = "ttot", "all_enty", "iteration")) %>%
   filter(!is.na(p80_pvp_itr_no_discount))
