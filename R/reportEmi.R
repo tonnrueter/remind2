@@ -747,11 +747,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       out)
 
     # process emissions
-    emiIndBase <- readGDX(gdx, 'vm_emiIndBase', field = 'l', restore_zeros = FALSE, react='silent')
-    # for backwards compatibility
-    if (is.null(emiIndBase)) {
-      emiIndBase <- readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE)
-    }
+    emiIndBase <- readGDX(gdx, c('vm_emiIndBase', 'vm_macBaseInd'), field = 'l', restore_zeros = FALSE)
     out <- mbind(
       emiIndBase %>%
       `[`(,,'co2cement_process.cement') %>%
