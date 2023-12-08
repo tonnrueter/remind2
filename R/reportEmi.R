@@ -498,10 +498,23 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                          - dimSums(plastic_CDR, dim=3)
                         )*GtC_2_MtCO2,
                         "Emi|CO2|Energy|+|Demand (Mt CO2/yr)")
-
+    
   )
 
-
+ # CO2 emissions from the end-of-life of carbon-bearing products
+if (!is.null(vm_plasticsCarbon)) {
+    out <- mbind(out,
+               setNames(dimSums(vm_feedstockEmiUnknownFate, dim=3)* GtC_2_MtCO2,
+                        "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"),
+               setNames(dimSums(vm_incinerationEmi, dim=3)* GtC_2_MtCO2,
+                        "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)")
+                        )
+    out <- mbind(out,
+              setNames(out[, , "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"]
+                        + out[, , "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)"],
+                        "Emi|CO2|Energy|+|Waste (Mt CO2/yr)")
+                        )                               
+}
   #### 2.1.2 Energy Supply ----
 
   #### calculations required for coupled production
@@ -1107,12 +1120,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
     # calculate chemical process emissions from feedstocks treatment
     EmiFac_NonEn.co2 <- collapseDim(pm_emifacNonEnergy[,,"co2"])
     EmiProcess_Feedstocks <- pm_emifacNonEnergy[,,"co2"] * vm_demFENonEnergySector[,,getNames(EmiFac_NonEn.co2)]
-    out <- mbind(out,
-                 setNames(dimSums(vm_feedstockEmiUnknownFate, dim=3)* GtC_2_MtCO2,
-                          "Emi|CO2|Feedstocks unknown fate (Mt CO2/yr)"),
-                 setNames(dimSums(vm_incinerationEmi, dim=3)* GtC_2_MtCO2,
-                          "Emi|CO2|Plastics incineration (Mt CO2/yr)")
-                 )
+
   } else {
     # otherwise chemical process emissions are 0
     EmiProcess_Feedstocks <- vm_co2eq * 0
@@ -1188,7 +1196,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
 
   #### total energy and industry CO2 emissions
-  # Emi|CO2|Plastics incineration and Emi|CO2|Feedstocks unknown fate
+  # Emi|CO2|Energy|Waste|+|Plastics Incineration and Emi|CO2|Energy|Waste|+|Feedstocks unknown fate
   # are accounted for in vm_emiTeMkt and therefore in Emi|CO2|+|Energy (Mt CO2/yr)
   out <- mbind(out,
                setNames(out[, , "Emi|CO2|+|Energy (Mt CO2/yr)"]
@@ -2525,7 +2533,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "fixed_shares")) {
  # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
-  #Note (SM): I'm not sure if I got these notes so I created the condition above to tra to make sure that this will work anyways
+  #Note (SM): I'm not sure if I got these notes so I created the condition above to try to make sure that this will work anyways
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
