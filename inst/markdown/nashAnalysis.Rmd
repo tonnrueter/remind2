@@ -6,7 +6,6 @@ output:
     warning: false
     message: false
     fig.width: 7
-    fig.height: 5
 title: Nash Iterations
 ---
 
@@ -284,6 +283,7 @@ for (v in unique(prices_and_surplus_scaled$all_enty)) {
 diag <- plotNashConvergence(gdx = file.path(runPath, "/fulldata.gdx"))
 htmltools::tagList(diag$plot)
 htmltools::tagList(diag$tradeDetailPlot)
+
 ```
 
 ## Price Anticipation Plots
