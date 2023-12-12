@@ -51,8 +51,8 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   pebio  <- readGDX(gdx, c("peBio", "pebio"), format = "first_found")
   ttot        <- readGDX(gdx, name = "ttot", format = "first_found")
   # read variables
-  v_directteinv <- readGDX(gdx, name = c("v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")
-  v_adjustteinv <- readGDX(gdx, name = c("v_costInvTeAdj", "v_adjustteinv"), field = "l", format = "first_found")
+  v_directteinv <- readGDX(gdx, name = c("v_costInvTeDir", "vm_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")
+  v_adjustteinv <- readGDX(gdx, name = c("v_costInvTeAdj", "vm_costInvTeAdj", "v_adjustteinv"), field = "l", format = "first_found")
 
   # read parameters for additional calculations:
   pm_data   <- readGDX(gdx, c("pm_data"), format = "first_found")
