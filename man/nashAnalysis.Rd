@@ -4,12 +4,23 @@
 \alias{nashAnalysis}
 \title{Nash Analysis}
 \usage{
-nashAnalysis(gdx = "fulldata.gdx", outputFile = NULL)
+nashAnalysis(
+  gdx = "fulldata.gdx",
+  outputDir = getwd(),
+  outputFile = "Nash Analysis.html"
+)
 }
 \arguments{
-\item{gdx}{file path to a gdx file (default fulldata.gdx)}
+\item{gdx}{a GDX object as created by readGDX, or the path to a gdx}
 
-\item{outputFile}{file name to save the html dashboard}
+\item{outputDir}{\code{character(1)}. The directory where the output document
+and intermediary files are created.}
+
+\item{outputFile}{\code{character(1)}. File name (without extension) of the
+output document to be created.}
+}
+\value{
+The value returned by \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 }
 \description{
 Create plots visualizing nash convergence of a given REMIND run

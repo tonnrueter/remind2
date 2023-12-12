@@ -3,24 +3,26 @@
 #'
 #' @author Falk Benke
 #'
-#' @param gdx file path to a gdx file (default fulldata.gdx)
-#' @param outputFile file name to save the html dashboard
+#' @param gdx a GDX object as created by readGDX, or the path to a gdx
+#' @param outputDir \code{character(1)}. The directory where the output document
+#'   and intermediary files are created.
+#' @param outputFile \code{character(1)}. File name (without extension) of the
+#'   output document to be created.
+#' @return The value returned by \code{\link[rmarkdown:render]{rmarkdown::render()}}.
 #'
 #' @importFrom rmarkdown render
 #'
 #' @export
-nashAnalysis <- function(gdx = "fulldata.gdx", outputFile = NULL) {
+nashAnalysis <- function(gdx = "fulldata.gdx", outputDir = getwd(), outputFile = "Nash Analysis.html") {
 
-  if (!file.exists(gdx)) {
-    warning("Gdx file not found.")
-    return()
-  }
 
-  markdownPath <- system.file("markdown", "nashAnalysis.Rmd", package = "remind2")
+  yamlParams <- list(gdx = normalizePath(gdx, mustWork = TRUE))
 
-  if (is.null(outputFile)) {
-    outputFile <- file.path(getwd(), "Nash Analysis.html")
-  }
-
-  rmarkdown::render(markdownPath, output_file = outputFile, params = list(gdx = gdx))
+  rmarkdown::render(
+    system.file("markdown", "nashAnalysis.Rmd", package = "remind2"),
+    output_dir = outputDir,
+    output_file = outputFile,
+    output_format = "html_document",
+    params = yamlParams
+  )
 }
