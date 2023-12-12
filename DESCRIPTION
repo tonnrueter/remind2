@@ -51,6 +51,7 @@ Imports:
     gdxrrw,
     ggplot2,
     gms,
+    htmltools,
     iamc,
     knitr,
     lucode2 (>= 0.43.0),

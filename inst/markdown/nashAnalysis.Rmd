@@ -9,7 +9,7 @@ params:
   gdx: "fulldata.gdx"
   warning: false
   message: false
-  figWidth: 7
+  figWidth: 8
 ---
 
 
@@ -329,7 +329,7 @@ p <- mip::mipIterations(
 )
 
 # add logarithmic scale
-p[[1]] + ggplot2::scale_y_log10()
+p[[1]] + ggplot2::scale_y_log10(limits = c(1e-4, 1e+1))
 ```
 
 
@@ -348,7 +348,7 @@ p <- mip::mipIterations(
 )
 
 # add logarithmic scale and then convert to plotly
-plots <- p[[1]] + ggplot2::scale_y_log10()
+plots <- p[[1]] + ggplot2::scale_y_log10(limits = c(1e-4, 1e+1))
 plots <- list(plots)
 plots <- lapply(plots, plotly::ggplotly) %>% adjustSliderAnimation()
 
@@ -371,6 +371,7 @@ mip::mipIterations(
   facetScales = "free_y"
 )
 ```
+
 ### p80_DevPriceAnticipReg
 
 - p80_DevPriceAnticipReg(ttot,all_enty,all_regi)          "Deviation of the yearly monetary export/import expenditure due to price change anticipation effect. [Unit: trillion Dollar]"
