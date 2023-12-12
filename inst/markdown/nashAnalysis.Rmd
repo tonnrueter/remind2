@@ -1,27 +1,38 @@
 ---
+title: "REMIND Nash Convergence"
 output:
   html_document:
     toc: true
     toc_float: true
-    warning: false
-    message: false
     code_folding: hide
-    fig.width: 7
-title: Nash Iterations
+params:
+  gdx: "fulldata.gdx"
+  warning: false
+  message: false
+  figWidth: 7
 ---
 
 
 ```{r loading_libraries, include=FALSE}
-library(dplyr)
-library(remind2)
-library(ggplot2)
+library(knitr) # nolint
+library(dplyr) # nolint
+library(remind2) # nolint
+library(ggplot2) # nolint
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  error = TRUE,
+  fig.width = params$figWidth,
+  message = params$message,
+  warning = params$warning
+)
+
 ```
 
 ## Setup
 ```{r}
-runPath <- "/home/benke/dev/pik-piam/miptemplate/SSP2EU-EU21-NDC_2023-11-01_19.58.36/"
 
-m2r <- gdx::readGDX(file.path(runPath, "/fulldata.gdx"), "module2realisation", restore_zeros = FALSE)
+m2r <- gdx::readGDX(params$gdx, "module2realisation", restore_zeros = FALSE)
 if (m2r[m2r$module == "optimization", "*"] != "nash") {
   print("Warning: this script only supports nash optimizations")
 }
@@ -35,7 +46,7 @@ adjustSliderAnimation <- function(p) {
 
 ### Read Data from gdx
 ```{r p80_surplus___READ}
-p80_surplus <- mip::getPlotData("p80_surplus", runPath) %>%
+p80_surplus <- mip::getPlotData("p80_surplus", params$gdx) %>%
   mutate(tall := as.numeric(tall))
 str(p80_surplus)
 ```
@@ -87,7 +98,7 @@ print(p)
 
 ### Read Data from gdx
 ```{r p80_pvp_itr___READ}
-p80_pvp_itr <- mip::getPlotData("p80_pvp_itr", runPath) %>%
+p80_pvp_itr <- mip::getPlotData("p80_pvp_itr", params$gdx) %>%
   mutate(ttot := as.numeric(ttot)) %>%
   filter(ttot >= 2005)
 str(p80_pvp_itr)
@@ -291,7 +302,7 @@ for (v in unique(prices_and_surplus_scaled$all_enty)) {
 
 ## Convergence Plots
 ```{r results = "asis"}
-diag <- remind2::plotNashConvergence(gdx = file.path(runPath, "/fulldata.gdx"))
+diag <- remind2::plotNashConvergence(gdx = params$gdx)
 htmltools::tagList(diag$plot)
 htmltools::tagList(diag$tradeDetailPlot)
 ```
@@ -299,13 +310,14 @@ htmltools::tagList(diag$tradeDetailPlot)
 ## Price Anticipation Plots
 
 ### p80_DevPriceAnticipGlobMax2100Iter
-p80_DevPriceAnticipGlobMax2100Iter(all_enty,iteration)  "Track the 2100 value of p80_DevPriceAnticipGlobMax over iterations. [Unit: trillion Dollar]"
-p80_DevPriceAnticipGlobAllMax2100Iter(iteration)        "Track the 2100 value of p80_DevPriceAnticipGlobAllMax over iterations. [Unit: trillion Dollar]"
+
+- p80_DevPriceAnticipGlobMax2100Iter(all_enty,iteration)  "Track the 2100 value of p80_DevPriceAnticipGlobMax over iterations. [Unit: trillion Dollar]"
+- p80_DevPriceAnticipGlobAllMax2100Iter(iteration)        "Track the 2100 value of p80_DevPriceAnticipGlobAllMax over iterations. [Unit: trillion Dollar]"
 
 ```{r results = "asis"}
-df <- mip::getPlotData("p80_DevPriceAnticipGlobMax2100Iter", runPath)
+df <- mip::getPlotData("p80_DevPriceAnticipGlobMax2100Iter", params$gdx)
 
-df.all <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax2100Iter", runPath) %>%
+df.all <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax2100Iter", params$gdx) %>%
   mutate(all_enty = "all") %>%
   rename(p80_DevPriceAnticipGlobMax2100Iter = p80_DevPriceAnticipGlobAllMax2100Iter)
 
@@ -323,17 +335,17 @@ p[[1]] + ggplot2::scale_y_log10()
 
 ### p80_DevPriceAnticipGlobIter
 
-p80_DevPriceAnticipGlobIter(ttot,all_enty,iteration)    "Track p80_DevPriceAnticipGlob over iterations. [Unit: trillion Dollar]"
+- p80_DevPriceAnticipGlobIter(ttot,all_enty,iteration)    "Track p80_DevPriceAnticipGlob over iterations. [Unit: trillion Dollar]"
 
 ```{r results = "asis"}
-df <- mip::getPlotData("p80_DevPriceAnticipGlobIter", runPath) %>%
+df <- mip::getPlotData("p80_DevPriceAnticipGlobIter", params$gdx) %>%
   mutate(ttot := as.numeric(ttot))
 
 p <- mip::mipIterations(
   plotData = df,
   xAxis = "ttot", facets = "all_enty", slider = "iteration",
   facetScales = "free_y", returnGgplots = TRUE
-) 
+)
 
 # add logarithmic scale and then convert to plotly
 plots <- p[[1]] + ggplot2::scale_y_log10()
@@ -346,10 +358,10 @@ print(htmltools::tagList(plots))
 
 ### p80_PriceChangePriceAnticipReg
 
-p80_PriceChangePriceAnticipReg(ttot,all_enty,all_regi)  "Price change of a trade good due to the price anticipation effect. [Unit: Percent]"
+- p80_PriceChangePriceAnticipReg(ttot,all_enty,all_regi)  "Price change of a trade good due to the price anticipation effect. [Unit: Percent]"
 
 ```{r results = "asis"}
-df <- mip::getPlotData("p80_PriceChangePriceAnticipReg", runPath) %>%
+df <- mip::getPlotData("p80_PriceChangePriceAnticipReg", params$gdx) %>%
   mutate(ttot := as.numeric(ttot)) %>%
   select(-"iteration")
 
@@ -361,10 +373,10 @@ mip::mipIterations(
 ```
 ### p80_DevPriceAnticipReg
 
-p80_DevPriceAnticipReg(ttot,all_enty,all_regi)          "Deviation of the yearly monetary export/import expenditure due to price change anticipation effect. [Unit: trillion Dollar]"
+- p80_DevPriceAnticipReg(ttot,all_enty,all_regi)          "Deviation of the yearly monetary export/import expenditure due to price change anticipation effect. [Unit: trillion Dollar]"
 
 ```{r results = "asis"}
-df <- mip::getPlotData("p80_DevPriceAnticipReg", runPath) %>%
+df <- mip::getPlotData("p80_DevPriceAnticipReg", params$gdx) %>%
   mutate(ttot := as.numeric(ttot)) %>%
   select(-"iteration")
 
@@ -376,22 +388,22 @@ mip::mipIterations(
 ```
 
 ### p80_DevPriceAnticipGlob
-p80_DevPriceAnticipGlob(ttot,all_enty)                  "Global sum of p80_DevPriceAnticipReg. [Unit: trillion Dollar]"
-p80_DevPriceAnticipGlobAll(ttot)                        "p80_DevPriceAnticipGlob summed over all trade goods. [Units: trillion Dollar]"
-p80_DevPriceAnticipGlobAllMax(ttot)                     "Max of p80_DevPriceAnticipGlobAll until the given year. [Unit: trillion Dollar]"
-p80_DevPriceAnticipGlobMax(ttot,all_enty)               "Max of p80_DevPriceAnticipGlob until the given year. [Unit: trillion Dollar]"
+- p80_DevPriceAnticipGlob(ttot,all_enty)                  "Global sum of p80_DevPriceAnticipReg. [Unit: trillion Dollar]"
+- p80_DevPriceAnticipGlobAll(ttot)                        "p80_DevPriceAnticipGlob summed over all trade goods. [Units: trillion Dollar]"
+- p80_DevPriceAnticipGlobAllMax(ttot)                     "Max of p80_DevPriceAnticipGlobAll until the given year. [Unit: trillion Dollar]"
+- p80_DevPriceAnticipGlobMax(ttot,all_enty)               "Max of p80_DevPriceAnticipGlob until the given year. [Unit: trillion Dollar]"
 
 ```{r results = "asis"}
-df <- mip::getPlotData("p80_DevPriceAnticipGlob", runPath) %>%
+df <- mip::getPlotData("p80_DevPriceAnticipGlob", params$gdx) %>%
   mutate(ttot := as.numeric(ttot)) %>%
   select(-"iteration")
 
-df.all <- mip::getPlotData("p80_DevPriceAnticipGlobAll", runPath) %>%
+df.all <- mip::getPlotData("p80_DevPriceAnticipGlobAll", params$gdx) %>%
   mutate(ttot := as.numeric(ttot), all_enty = "all") %>%
   rename(p80_DevPriceAnticipGlob = p80_DevPriceAnticipGlobAll) %>%
   select(-"iteration")
 
-df.allmax <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax", runPath) %>%
+df.allmax <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax", params$gdx) %>%
   mutate(ttot := as.numeric(ttot), all_enty = "allmax") %>%
   rename(p80_DevPriceAnticipGlob = p80_DevPriceAnticipGlobAllMax) %>%
   select(-"iteration")
@@ -404,7 +416,7 @@ mip::mipIterations(
   facetScales = "free_y"
 )
 
-df.max <- mip::getPlotData("p80_DevPriceAnticipGlobMax", runPath) %>%
+df.max <- mip::getPlotData("p80_DevPriceAnticipGlobMax", params$gdx) %>%
   select(-"iteration")
 
 mip::mipIterations(
