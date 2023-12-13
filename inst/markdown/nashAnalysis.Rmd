@@ -65,7 +65,7 @@ htmltools::tagList(p)
 ### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
 p <- mip::mipIterations(
-  plotData = filter(p80_surplus, tall > 2005), # for this to work, we starting year must be available for all facets
+  plotData = filter(p80_surplus, tall >= 2025), # for this to work, we starting year must be available for all facets
   xAxis = "iteration", slider = "tall", color = NULL, facets = "all_enty", facetScales = "free_y"
 ) %>% adjustSliderAnimation()
 
@@ -119,7 +119,7 @@ htmltools::tagList(p)
 ### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
 p <- mip::mipIterations(
-  filter(p80_pvp_itr, ttot > 2005), # for this to work, we starting year must be available for all facets
+  filter(p80_pvp_itr, ttot >= 2025), # for this to work, we starting year must be available for all facets
   xAxis = "iteration", slider = "ttot", color = NULL, facets = "all_enty", facetScales = "free_y"
 ) %>% adjustSliderAnimation()
 
@@ -177,7 +177,7 @@ htmltools::tagList(p)
 ### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
 p <- mip::mipIterations(
-  filter(price_not_discounted_itr, ttot > 2005), # for this to work, we starting year must be available for all facets
+  filter(price_not_discounted_itr, ttot >= 2025), # for this to work, we starting year must be available for all facets
   xAxis = "iteration", slider = "ttot", color = NULL, facets = "all_enty", facetScales = "free_y"
 ) %>% adjustSliderAnimation()
 
@@ -231,7 +231,8 @@ prices_and_surplus <- left_join(p80_surplus, price_not_discounted_itr,
 prices_and_surplus_steps <- rbind(
   prices_and_surplus,
   .step(prices_and_surplus, 1),
-  .step(prices_and_surplus, 2)
+  .step(prices_and_surplus, 2),
+  .step(prices_and_surplus, 3)
 ) %>%
   mutate(
     "group" = ifelse(grepl("^p80_surplus", .data$variable), "p80_surplus", "p80_pvp_itr_no_discount"),
@@ -244,13 +245,22 @@ prices_and_surplus_steps <- rbind(
 
 ### x: time, slider: iter, facet: var
 ```{r  results = "asis"}
+
 for (v in unique(prices_and_surplus_steps$all_enty)) {
   p <- mip::mipIterations(
-    plotData = filter(prices_and_surplus_steps, all_enty == v, tall >= 2005),
+    plotData = filter(prices_and_surplus_steps, all_enty == v, tall >= 2005), returnGgplots = TRUE,
     xAxis = "tall", facets = "group", color = "step", slider = "iteration", facetScales = "free_y"
-  ) %>% adjustSliderAnimation()
+  )
 
-  print(htmltools::tagList(p))
+  # manually override colors
+  plots <- p[[1]] +
+    ggplot2::scale_colour_manual(values = c("iter" = "#08519c", "iter+1" = "#3182bd",
+                                            "iter+2" = "#6baed6", "iter+3" = "#bdd7e7"))
+  plots <- list(plots)
+  plots <- lapply(plots, plotly::ggplotly) %>% adjustSliderAnimation()
+
+  print(htmltools::tagList(plots))
+
 }
 ```
 
