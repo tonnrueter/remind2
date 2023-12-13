@@ -22,7 +22,7 @@ items <- c(
 #### FE|* Area Plots
 
 ```{r FE|* Area Plots}
-showAreaAndBarPlots(data, items, orderVars = "user", tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
 ```
 
@@ -217,7 +217,7 @@ items <- c(
   "FE|Industry|Other Industry|Liquids",  
   "FE|Industry|Other Industry|Solids",
   NULL)
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### FE|Industry|* line plots

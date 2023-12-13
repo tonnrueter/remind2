@@ -325,7 +325,7 @@ items <- c(
   "SE|Gases|Fossil|Coal|w/o CC",
   NULL)
 
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 
