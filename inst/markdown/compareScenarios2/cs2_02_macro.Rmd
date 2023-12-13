@@ -206,25 +206,25 @@ walk(vars, showLinePlots, data = data)
 
 ## FE intensity of GDP
 
-```{r FE intensity of GDP}
+```{r FE intensity of GDP_PPP}
 items <- c(
-  "FE|Transport pGDP",
-  "FE|Buildings pGDP",
-  "FE|Industry pGDP")
+  "FE|Transport pGDP_PPP",
+  "FE|Buildings pGDP_PPP",
+  "FE|Industry pGDP_PPP")
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-## FE intensity of GDP, linegraph (by GDP)
+## FE intensity of GDP_PPP, linegraph (by pGDP_PPP)
 
-```{r FE intensity of GDP, linegraph}
+```{r FE intensity of GDP_PPP, linegraph}
 dIea <-
   data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA")
 items <- c(
-  "FE|Transport pGDP",
-  "FE|Buildings pGDP",
-  "FE|Industry pGDP")
+  "FE|Transport pGDP_PPP",
+  "FE|Buildings pGDP_PPP",
+  "FE|Industry pGDP_PPP")
 showMultiLinePlots(dIea, items, scales = "fixed")
 showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 ```
