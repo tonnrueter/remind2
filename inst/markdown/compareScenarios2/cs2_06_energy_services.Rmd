@@ -5,29 +5,30 @@
 ```{r FE demand from buildings by carriers}
 tot <- "FE|Buildings"
 items <- c(
-  "FE|Buildings|non-Heating|Electricity|Conventional",
-  "FE|Buildings|Heating|Solids",
-  "FE|Buildings|Heating|Liquids",
-  "FE|Buildings|Heating|Gases",
-  "FE|Buildings|Heating|District Heating",
+  "FE|Buildings|non-Heating|Electricity|Conventional",  
+  "FE|Buildings|Heating|Electricity|Heat pump",  
+  "FE|Buildings|Heating|District Heating",  
   "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Electricity|Heat pump",
-  "FE|Buildings|Heating|Hydrogen")
+  "FE|Buildings|Heating|Hydrogen",  
+  "FE|Buildings|Heating|Gases",
+  "FE|Buildings|Heating|Liquids",
+  "FE|Buildings|Heating|Solids",
+  NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### UE mix
 ```{r UE demand from buildings by carriers}
 tot <- "UE|Buildings"
-items <- c(
-  "UE|Buildings|non-Heating|Electricity|Conventional",
-  "UE|Buildings|Heating|Solids",
-  "UE|Buildings|Heating|Liquids",
-  "UE|Buildings|Heating|Gases",
-  "UE|Buildings|Heating|District Heating",
+  "UE|Buildings|non-Heating|Electricity|Conventional",  
+  "UE|Buildings|Heating|Electricity|Heat pump",  
+  "UE|Buildings|Heating|District Heating",  
   "UE|Buildings|Heating|Electricity|Resistance",
-  "UE|Buildings|Heating|Electricity|Heat pump",
-  "UE|Buildings|Heating|Hydrogen")
+  "UE|Buildings|Heating|Hydrogen",  
+  "UE|Buildings|Heating|Gases",
+  "UE|Buildings|Heating|Liquids",
+  "UE|Buildings|Heating|Solids",
+  NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
@@ -35,13 +36,14 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```{r FE demand from buildings for heating by carriers}
 tot <- "FE|Buildings|Heating"
 items <- c(
-  "FE|Buildings|Heating|Solids",
-  "FE|Buildings|Heating|Liquids",
-  "FE|Buildings|Heating|Gases",
-  "FE|Buildings|Heating|District Heating",
+  "FE|Buildings|Heating|Electricity|Heat pump",  
+  "FE|Buildings|Heating|District Heating",  
   "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Electricity|Heat pump",
-  "FE|Buildings|Heating|Hydrogen")
+  "FE|Buildings|Heating|Hydrogen",  
+  "FE|Buildings|Heating|Gases",
+  "FE|Buildings|Heating|Liquids",
+  "FE|Buildings|Heating|Solids",
+  NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
@@ -49,13 +51,14 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```{r UE demand from buildings for heating by carriers}
 tot <- "UE|Buildings|Heating"
 items <- c(
-  "UE|Buildings|Heating|Solids",
-  "UE|Buildings|Heating|Liquids",
-  "UE|Buildings|Heating|Gases",
-  "UE|Buildings|Heating|District Heating",
+  "UE|Buildings|Heating|Electricity|Heat pump",  
+  "UE|Buildings|Heating|District Heating",  
   "UE|Buildings|Heating|Electricity|Resistance",
-  "UE|Buildings|Heating|Electricity|Heat pump",
-  "UE|Buildings|Heating|Hydrogen")
+  "UE|Buildings|Heating|Hydrogen",  
+  "UE|Buildings|Heating|Gases",
+  "UE|Buildings|Heating|Liquids",
+  "UE|Buildings|Heating|Solids",
+  NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
@@ -93,7 +96,7 @@ items <- c(
   "ES|Transport|Pass|Road|LDV|Gases pCap",
   "ES|Transport|Pass|Road|LDV|Hybrid Electric pCap",
   "ES|Transport|Pass|Road|LDV|Liquids pCap")
-showAreaAndBarPlots(data, items, scales = "fixed")
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ### Energy Services for Freight Transport per Capita - LinePlot
@@ -107,23 +110,24 @@ showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ### Energy Services for Freight Road Transport per Capita - StackedBars
 ```{r ES transport freight road per capita}
 items <- c(
-  "ES|Transport|Freight|Road|Electric pCap",
+  "ES|Transport|Freight|Road|BEV pCap",
   "ES|Transport|Freight|Road|FCEV pCap",
   "ES|Transport|Freight|Road|Gases pCap",
   "ES|Transport|Freight|Road|Liquids pCap")
-showAreaAndBarPlots(data, items, scales = "fixed")
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ### LDV Vehicles Stock - EDGE-T
 ```{r LDV Vehicles Stock - EDGE-T}
 tot <- "Stock|Transport|LDV"
 items <- c(
-  "Stock|Transport|LDV|Liquids",
   "Stock|Transport|LDV|BEV",
+  "Stock|Transport|LDV|Hybrid Electric",  
   "Stock|Transport|LDV|FCEV",
-  "Stock|Transport|LDV|Hybrid Electric",
-  "Stock|Transport|LDV|NG")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "Stock|Transport|LDV|NG",
+  "Stock|Transport|LDV|Liquids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### LDV Vehicles Stock - TransportComplex
@@ -133,19 +137,21 @@ items <- c(
   "Est EV LDV Stock",
   "Est H2 LDV Stock",
   "Est ICE LDV Stock")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### LDV Vehicles Sales - EDGE-T
 ```{r LDV Vehicles Sales - EDGE-T}
 tot <- "Sales|Transport|LDV"
 items <- c(
-  "Sales|Transport|LDV|Liquids",
-  "Sales|Transport|LDV|BEV",
-  "Sales|Transport|LDV|FCEV",
+  "Sales|Transport|LDV|BEV",  
   "Sales|Transport|LDV|Hybrid Electric",
-  "Sales|Transport|LDV|NG")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "Sales|Transport|LDV|FCEV",  
+  "Sales|Transport|LDV|NG",
+  "Sales|Transport|LDV|Liquids",
+  NULL
+)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### LDV Vehicles Sales - TransportComplex
@@ -162,44 +168,48 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```{r Truck Stock}
 tot <- "Stock|Transport|Truck"
 items <- c(
-  "Stock|Transport|Truck|Liquids",
-  "Stock|Transport|Truck|Electric",
+  "Stock|Transport|Truck|Electric",  
   "Stock|Transport|Truck|FCEV",
-  "Stock|Transport|Truck|NG")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "Stock|Transport|Truck|NG",
+  "Stock|Transport|Truck|Liquids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Truck Sales - EDGE-T
 ```{r Truck Sales}
 tot <- "Sales|Transport|Truck"
 items <- c(
-  "Sales|Transport|Truck|Liquids",
-  "Sales|Transport|Truck|Electric",
+  "Sales|Transport|Truck|Electric",  
   "Sales|Transport|Truck|FCEV",
-  "Sales|Transport|Truck|NG")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "Sales|Transport|Truck|NG",
+  "Sales|Transport|Truck|Liquids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Bus Stock - EDGE-T
 ```{r Bus Stock}
 tot <- "Stock|Transport|Bus"
 items <- c(
-  "Stock|Transport|Bus|Liquids",
   "Stock|Transport|Bus|Electric",
   "Stock|Transport|Bus|FCEV",
-  "Stock|Transport|Bus|NG")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "Stock|Transport|Bus|NG",
+  "Stock|Transport|Bus|Liquids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Bus Sales - EDGE-T
 ```{r Bus Sales}
 tot <- "Sales|Transport|Bus"
 items <- c(
-  "Sales|Transport|Bus|Liquids",
-  "Sales|Transport|Bus|Electric",
+  "Sales|Transport|Bus|Electric",  
   "Sales|Transport|Bus|FCEV",
-  "Sales|Transport|Bus|NG")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "Sales|Transport|Bus|NG",
+  "Sales|Transport|Bus|Liquids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### non-LDV Vehicles Stock - TransportComplex
