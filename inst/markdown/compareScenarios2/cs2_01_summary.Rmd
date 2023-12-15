@@ -161,22 +161,22 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 
 ```{r FE by carrier (detailed)}
 items <- c(
+  "FE|Transport|Electricity",
+  "FE|Buildings|Electricity",
   "FE|Industry|Electricity",
+  "FE|Transport|Hydrogen",
+  "FE|Buildings|Hydrogen",
   "FE|Industry|Hydrogen",
   "FE|Industry|Heat",
-  "FE|Industry|Gases",
-  "FE|Industry|Liquids",
-  "FE|Industry|Solids",
-  "FE|Buildings|Electricity",
-  "FE|Buildings|Hydrogen",
   "FE|Buildings|Heat",
-  "FE|Buildings|Gases",
-  "FE|Buildings|Liquids",
-  "FE|Buildings|Solids", 
-  "FE|Transport|Electricity",
-  "FE|Transport|Hydrogen",
   "FE|Transport|Gases",
+  "FE|Buildings|Gases",
+  "FE|Industry|Gases",
   "FE|Transport|Liquids", 
+  "FE|Buildings|Liquids",
+  "FE|Industry|Liquids",
+  "FE|Buildings|Solids", 
+  "FE|Industry|Solids",
   NULL)
 
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
