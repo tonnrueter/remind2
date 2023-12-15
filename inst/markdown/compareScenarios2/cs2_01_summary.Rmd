@@ -146,39 +146,44 @@ showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 
 ```{r FE by carrier}
 items <- c(
-  "FE|Solids",
-  "FE|Liquids",
-  "FE|Gases",
-  "FE|Heat",
+  "FE|Electricity",
   "FE|Hydrogen",
-  "FE|Electricity")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "FE|Heat",
+  "FE|Gases",
+  "FE|Liquids",
+  "FE|Solids",
+  NULL
+)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## FE Industry by carrier
 
 ```{r FE Industry by carrier}
 items <- c(
-  "FE|Industry|Solids",
-  "FE|Industry|Liquids",
-  "FE|Industry|Gases",
-  "FE|Industry|Heat",
+  "FE|Industry|Electricity",
   "FE|Industry|Hydrogen",
-  "FE|Industry|Electricity")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "FE|Industry|Heat",
+  "FE|Industry|Gases",
+  "FE|Industry|Liquids",
+  "FE|Industry|Solids",
+  NULL
+  )
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## FE Buildings by carrier
 
 ```{r FE Buildings by carrier}
 items <- c(
-  "FE|Buildings|Solids",
-  "FE|Buildings|Liquids",
-  "FE|Buildings|Gases",
-  "FE|Buildings|Heat",
+  "FE|Buildings|Electricity",
   "FE|Buildings|Hydrogen",
-  "FE|Buildings|Electricity")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "FE|Buildings|Heat",
+  "FE|Buildings|Gases",
+  "FE|Buildings|Liquids",
+  "FE|Buildings|Solids",
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## FE Transport by carrier
@@ -187,9 +192,10 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 items <- c(
   "FE|Transport|Electricity",
   "FE|Transport|Hydrogen",
+  "FE|Transport|Gases",
   "FE|Transport|Liquids",
-  "FE|Transport|Gases")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## FE CDR by carrier
@@ -197,11 +203,13 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 
 ```{r FE CDR by carrier}
 items <- c(
-  "FE|CDR|Liquids",
-  "FE|CDR|Gases",
+  "FE|CDR|Electricity",
   "FE|CDR|Hydrogen",
-  "FE|CDR|Electricity")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "FE|CDR|Gases",
+  "FE|CDR|Liquids",
+  NULL
+  )
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## SE Electricity by carrier
@@ -211,24 +219,25 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 tot <- "SE|Electricity"
 
 items <- c(
-  "SE|Electricity|Coal|w/ CC",
-  "SE|Electricity|Coal|w/o CC",
-  "SE|Electricity|Oil",
-  "SE|Electricity|Gas|w/ CC",
-  "SE|Electricity|Gas|w/o CC",
-  "SE|Electricity|Geothermal",
-  "SE|Electricity|Hydro",
-  "SE|Electricity|Nuclear",
-  "SE|Electricity|Biomass|w/ CC",
-  "SE|Electricity|Biomass|w/o CC",
+  "SE|Electricity|Net Imports",
   "SE|Electricity|Solar|CSP",
   "SE|Electricity|Solar|PV",
   "SE|Electricity|Wind|Onshore",
   "SE|Electricity|Wind|Offshore",
+  "SE|Electricity|Hydro",  
   "SE|Electricity|Hydrogen",
-  "SE|Electricity|Net Imports")
+  "SE|Electricity|Nuclear",  
+  "SE|Electricity|Geothermal",  
+  "SE|Electricity|Biomass|w/ CC",
+  "SE|Electricity|Biomass|w/o CC",
+  "SE|Electricity|Oil",  
+  "SE|Electricity|Gas|w/ CC",
+  "SE|Electricity|Gas|w/o CC",
+  "SE|Electricity|Coal|w/ CC",
+  "SE|Electricity|Coal|w/o CC",
+  NULL)
 
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, orderVars = "user", tot, scales = "fixed")
 ```
 
 
@@ -237,16 +246,18 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 
 ```{r PE by carrier}
 items <- c(
-  "PE|Coal",
-  "PE|Oil",
-  "PE|Gas",
-  "PE|Biomass",
-  "PE|Nuclear",
   "PE|Solar",
   "PE|Wind",
-  "PE|Hydro",
-  "PE|Geothermal")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "PE|Hydro",  
+  "PE|Nuclear",  
+  "PE|Geothermal",
+  "PE|Biomass",  
+  "PE|Oil",
+  "PE|Gas",  
+  "PE|Coal",
+  NULL)
+
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 
