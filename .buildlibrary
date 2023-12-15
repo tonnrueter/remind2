@@ -9,5 +9,6 @@ AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
 - checking installed package size
+- Namespace in Imports field not imported from: ‘htmltools’
 AutocreateReadme: yes
 allowLinterWarnings: yes

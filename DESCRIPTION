@@ -42,7 +42,6 @@ URL: https://github.com/pik-piam/remind2
 Depends:
     magclass (>= 3.37)
 Imports:
-    RColorBrewer,
     abind,
     assertr,
     data.table,
@@ -52,10 +51,9 @@ Imports:
     gdxrrw,
     ggplot2,
     gms,
-    highcharter,
+    htmltools,
     iamc,
     knitr,
-    lubridate,
     lucode2 (>= 0.43.0),
     luplot,
     luscale,
@@ -72,7 +70,6 @@ Imports:
     rlang,
     rmarkdown,
     rmndt,
-    scales,
     tibble,
     tidyr,
     tidyselect,
