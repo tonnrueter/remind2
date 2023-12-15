@@ -91,7 +91,10 @@ p <- mip::mipIterations(
   xAxis = "iteration", facets = "tall", color = NULL, slider = NULL
 )
 
-print(p)
+for (i in p) {
+  print(i)
+}
+
 ```
 
 
@@ -146,7 +149,9 @@ p <- mip::mipIterations(
   facetScales = "free_y"
 )
 
-print(p)
+for (i in p) {
+  print(i)
+}
 ```
 
 ## price not discounted
@@ -204,7 +209,9 @@ p <- mip::mipIterations(
   facetScales = "free_y"
 )
 
-print(p)
+for (i in p) {
+  print(i)
+}
 ```
 
 ## prices and surplus in one plot
@@ -266,9 +273,7 @@ for (v in unique(prices_and_surplus_steps$all_enty)) {
 }
 ```
 
-
 ### x: time, slider: iter, facet: var + all_enty
-
 ```{r  results = "asis"}
 
 df <- prices_and_surplus_steps %>%
@@ -331,7 +336,8 @@ for (v in unique(prices_and_surplus_scaled$all_enty)) {
   lapply(p, function(plot) {
     plot <- plot +
       ggplot2::scale_y_continuous("p80_surplus", sec.axis =
-                                    ggplot2::sec_axis(~ . / scale_factor, name = "p80_pvp_itr_no_discount"))
+                                    ggplot2::sec_axis(~ . / scale_factor, name = "p80_pvp_itr_no_discount")) +
+      theme(legend.position = "bottom")
     print(plot)
   })
 }
@@ -389,7 +395,7 @@ plots <- p[[1]] + ggplot2::scale_y_log10(limits = c(1e-4, 1e+1))
 plots <- list(plots)
 plots <- lapply(plots, plotly::ggplotly) %>% adjustSliderAnimation()
 
-print(htmltools::tagList(plots))
+htmltools::tagList(plots)
 ```
 
 
@@ -402,11 +408,14 @@ df <- mip::getPlotData("p80_PriceChangePriceAnticipReg", params$gdx) %>%
   mutate(ttot := as.numeric(ttot)) %>%
   select(-"iteration")
 
-mip::mipIterations(
+plots <- mip::mipIterations(
   plotData = df, returnGgplots = TRUE,
   xAxis = "ttot", facets = "all_regi", color = "all_enty", slider = NULL,
   facetScales = "free_y"
 )
+
+plots[[1]]
+
 ```
 
 ### p80_DevPriceAnticipReg
@@ -418,11 +427,13 @@ df <- mip::getPlotData("p80_DevPriceAnticipReg", params$gdx) %>%
   mutate(ttot := as.numeric(ttot)) %>%
   select(-"iteration")
 
-mip::mipIterations(
+plots <- mip::mipIterations(
   plotData = df, returnGgplots = TRUE,
   xAxis = "ttot", facets = "all_regi", color = "all_enty", slider = NULL,
   facetScales = "free_y"
 )
+
+plots[[1]]
 ```
 
 ### p80_DevPriceAnticipGlob
@@ -448,18 +459,22 @@ df.allmax <- mip::getPlotData("p80_DevPriceAnticipGlobAllMax", params$gdx) %>%
 
 df <- rbind(df, df.all, df.allmax)
 
-mip::mipIterations(
+plots <- mip::mipIterations(
   plotData = df, returnGgplots = TRUE,
   xAxis = "ttot", facets = "all_enty", color = NULL, slider = NULL,
   facetScales = "free_y"
 )
 
+plots[[1]]
+
 df.max <- mip::getPlotData("p80_DevPriceAnticipGlobMax", params$gdx) %>%
   select(-"iteration")
 
-mip::mipIterations(
+plots <- mip::mipIterations(
   plotData = df.max, returnGgplots = TRUE,
   xAxis = "ttot", facets = "all_enty", color = NULL, slider = NULL,
   facetScales = "free_y"
 )
+
+plots[[1]]
 ```
