@@ -12,7 +12,9 @@
 #' @importFrom gdx readGDX
 #' @importFrom dplyr summarise group_by mutate filter distinct case_when
 #' @importFrom quitte as.quitte
-#' @importFrom ggplot2 scale_y_continuous scale_y_discrete geom_rect
+#' @importFrom ggplot2 scale_y_continuous scale_x_continuous scale_y_discrete
+#'              scale_fill_manual scale_color_manual coord_cartesian aes_ geom_rect
+#'              theme geom_point geom_hline
 #' @importFrom plotly ggplotly config hide_legend subplot layout
 #' @importFrom reshape2 dcast
 #'
@@ -158,6 +160,7 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
       as.quitte() %>%
       select(c("period", "value", "all_enty", "iteration")) %>%
       mutate(
+        "iteration" := as.numeric(.data$iteration),
         "value" := ifelse(is.na(.data$value), 0, .data$value),
         "type" := case_when(
           .data$all_enty == "good" ~ "Goods trade surplus",
@@ -173,24 +176,17 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
     surplus <- left_join(surplus, p80SurplusMaxTolerance, by = "all_enty") %>%
       mutate(
         "maxTol" := ifelse(.data$period == 2150, .data$maxTol * 10, .data$maxTol),
-        "withinLimits" := ifelse(abs(.data$value) > .data$maxTol, "no", "yes")
+        "withinLimits" := ifelse(.data$value > .data$maxTol, "no", "yes")
       )
 
     data <- surplus
 
     data$tooltip <- paste0(
       ifelse(data$withinLimits == "no",
-        ifelse(data$value > data$maxTol,
-          paste0(
-            data$all_enty, " trade surplus (", data$value,
-            ") is greater than maximum tolerance (", data$maxTol, ")."
-          ),
-          paste0(
-            data$all_enty, " trade surplus (", data$value,
-            ") is lower than maximum tolerance (-", data$maxTol, ")."
-          )
-        ),
-        paste0(data$all_enty, " is within tolerance.")
+        paste0(data$all_enty, " trade surplus (", data$value,
+               ") is greater than maximum tolerance (", data$maxTol, ")."),
+        paste0(data$all_enty, " trade surplus (", data$value,
+               ") is within tolerance (", data$maxTol, ").")
       ),
       "<br>Iteration: ", data$iteration
     )
@@ -202,8 +198,8 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
       select("type", "period", "iteration", "maxTol", "withinLimits") %>%
       distinct() %>%
       mutate(
-        "rectXmin" = as.numeric(.data$iteration) - 0.5,
-        "rectXmax" = as.numeric(.data$iteration) + 0.5,
+        "rectXmin" = .data$iteration - 0.5,
+        "rectXmax" = .data$iteration + 0.5,
         "tooltip" = paste0(
           .data$type,
           ifelse(.data$withinLimits == "no",
@@ -223,6 +219,16 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
     )
 
     surplusConvergence <- ggplot() +
+      suppressWarnings(geom_rect(
+        data = limits,
+        aes_(
+          xmin = ~rectXmin, xmax = ~rectXmax,
+          ymin = 0, ymax = ~maxTol,
+          fill = ~withinLimits, text = ~tooltip
+        ),
+        inherit.aes = FALSE,
+        alpha = aestethics$alpha
+      )) +
       suppressWarnings(geom_line(
         data = data,
         aes_(
@@ -232,16 +238,6 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
         alpha = aestethics$alpha,
         linewidth = aestethics$line$size
       )) +
-      suppressWarnings(geom_rect(
-        data = limits,
-        aes_(
-          xmin = ~rectXmin, xmax = ~rectXmax,
-          ymin = ~ -maxTol, ymax = ~maxTol,
-          fill = ~withinLimits, text = ~tooltip
-        ),
-        inherit.aes = FALSE,
-        alpha = aestethics$alpha
-      )) +
       theme_minimal() +
       ggtitle("Tradable goods surplus") +
       facet_grid(type ~ period, scales = "free_y") +
@@ -250,9 +246,10 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
       labs(x = NULL, y = NULL) +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-    surplusConvergencePlotly <- ggplotly(surplusConvergence, tooltip = c("text")) %>%
+    surplusConvergencePlotly <- ggplotly(surplusConvergence, tooltip = c("text"), height = 700) %>%
       hide_legend() %>%
-      config(displayModeBar = FALSE, displaylogo = FALSE)
+      config(displayModeBar = TRUE, displaylogo = FALSE) %>%
+      layout(hovermode = "closest")
 
     # Trade surplus summary ----
 
