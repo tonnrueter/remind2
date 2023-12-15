@@ -20,6 +20,7 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ### UE mix
 ```{r UE demand from buildings by carriers}
 tot <- "UE|Buildings"
+items <- c(
   "UE|Buildings|non-Heating|Electricity|Conventional",  
   "UE|Buildings|Heating|Electricity|Heat pump",  
   "UE|Buildings|Heating|District Heating",  
@@ -110,7 +111,7 @@ showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ### Energy Services for Freight Road Transport per Capita - StackedBars
 ```{r ES transport freight road per capita}
 items <- c(
-  "ES|Transport|Freight|Road|BEV pCap",
+  "ES|Transport|Freight|Road|Electric pCap",
   "ES|Transport|Freight|Road|FCEV pCap",
   "ES|Transport|Freight|Road|Gases pCap",
   "ES|Transport|Freight|Road|Liquids pCap")
