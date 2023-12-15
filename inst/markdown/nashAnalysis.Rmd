@@ -14,10 +14,11 @@ params:
 
 
 ```{r loading_libraries, include=FALSE}
-library(knitr) # nolint
-library(dplyr) # nolint
-library(remind2) # nolint
-library(ggplot2) # nolint
+library(knitr)
+library(dplyr)
+library(remind2)
+library(ggplot2)
+library(plotly)
 
 knitr::opts_chunk$set(
   echo = FALSE,
@@ -241,6 +242,7 @@ prices_and_surplus_steps <- rbind(
   ) %>%
   relocate(where(is.numeric), .after = last_col()) %>%
   select(-"variable")
+
 ```
 
 ### x: time, slider: iter, facet: var
@@ -254,14 +256,39 @@ for (v in unique(prices_and_surplus_steps$all_enty)) {
 
   # manually override colors
   plots <- p[[1]] +
-    ggplot2::scale_colour_manual(values = c("iter" = "#08519c", "iter+1" = "#3182bd",
-                                            "iter+2" = "#6baed6", "iter+3" = "#bdd7e7"))
+    ggplot2::scale_colour_manual(values = c("iter" = "#000066", "iter+1" = "#39418d",
+                                            "iter+2" = "#7b8cba", "iter+3" = "#bdd7e7"))
   plots <- list(plots)
   plots <- lapply(plots, plotly::ggplotly) %>% adjustSliderAnimation()
 
   print(htmltools::tagList(plots))
 
 }
+```
+
+
+### x: time, slider: iter, facet: var + all_enty
+
+```{r  results = "asis"}
+
+df <- prices_and_surplus_steps %>%
+  filter(.data$all_enty != "peur", .data$tall >= 2005) %>%
+  mutate("group" = paste0(.data$all_enty, "-", .data$group)) %>%
+  select(-"all_enty")
+
+p <- ggplot(df) +
+  geom_line(aes_string(x = "tall", y = "value", color = "step", frame = "iteration")) +
+  facet_wrap("group", scales = "free_y",ncol = 2) +
+  ggplot2::scale_color_manual(
+    breaks = c("iter", "iter+1", "iter+2", "iter+3"),
+    values = c("#000066", "#39418d", "#7b8cba", "#bdd7e7")
+  ) +
+  theme_bw() +
+  theme(strip.background = element_blank())
+
+plotly::ggplotly(p, autosize = F, height = 800) %>%
+  plotly::animation_opts(frame = 1)
+
 ```
 
 ### x: iter, slider: time, facet: var
