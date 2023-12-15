@@ -522,6 +522,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                           "Emi|CO2|Energy|Supply|+|Gases w/ couple prod (Mt CO2/yr)")
   )
 
+  # energy-related CO2 emissions from extraction processes
+  out <- mbind(out,
+               setNames(dimSums(v_emiEnFuelEx[, , "co2"], dim = 3) * GtC_2_MtCO2,
+                        "Emi|CO2|Energy|Supply|Extraction (Mt CO2/yr)")
+               )
+
   # split into electric and non-electric energy supply emissions
   out <- mbind(out,
                # total gross non-eletric energy supply emissions
@@ -535,7 +541,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # split into sectors
   out <- mbind(out,
 
-               # buidings emissions
+               # buildings emissions
                setNames(dimSums(EmiFeCarrier[, , "build"], dim = 3) * GtC_2_MtCO2,
                           "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)"),
                # industry emissions: fe carrier emissions - industry CCS
