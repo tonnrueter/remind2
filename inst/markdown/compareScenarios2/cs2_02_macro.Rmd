@@ -206,25 +206,25 @@ walk(vars, showLinePlots, data = data)
 
 ## FE intensity of GDP
 
-```{r FE intensity of GDP}
+```{r FE intensity of GDP_PPP}
 items <- c(
-  "FE|Transport pGDP",
-  "FE|Buildings pGDP",
-  "FE|Industry pGDP")
+  "FE|Transport pGDP_PPP",
+  "FE|Buildings pGDP_PPP",
+  "FE|Industry pGDP_PPP")
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-## FE intensity of GDP, linegraph (by GDP)
+## FE intensity of GDP_PPP, linegraph (by pGDP_PPP)
 
-```{r FE intensity of GDP, linegraph}
+```{r FE intensity of GDP_PPP, linegraph}
 dIea <-
   data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA")
 items <- c(
-  "FE|Transport pGDP",
-  "FE|Buildings pGDP",
-  "FE|Industry pGDP")
+  "FE|Transport pGDP_PPP",
+  "FE|Buildings pGDP_PPP",
+  "FE|Industry pGDP_PPP")
 showMultiLinePlots(dIea, items, scales = "fixed")
 showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 ```
@@ -234,7 +234,7 @@ showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
 ```{r Kaya Decomposition}
 d <-
   data %>%
-  filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER", "Population")) %>%
+  filter(variable %in% c("Emi|CO2|Energy", "FE", "GDP|MER",  "GDP|PPP","Population")) %>%
   filter(scenario != "historical") %>%
   select(model, scenario, region, variable, unit, period, value)
 oldUnits <-
@@ -246,18 +246,22 @@ kaya <-
   pivot_wider(names_from = variable, values_from = value) %>%
   mutate(
     emiCO2_by_FE = `Emi|CO2|Energy` / FE,
-    FE_by_GDP = FE / `GDP|MER`,
-    GDP_by_Pop = `GDP|MER` / Population,
-    `Emi|CO2|Energy` = NULL, FE = NULL, `GDP|MER` = NULL) %>%
+    FE_by_GDP_MER = FE / `GDP|MER`,
+    FE_by_GDP_PPP = FE / `GDP|PPP`,
+    GDP_MER_by_Pop = `GDP|MER` / Population,
+    GDP_PPP_by_Pop = `GDP|PPP` / Population,
+    `Emi|CO2|Energy` = NULL, FE = NULL, `GDP|MER` = NULL, `GDP|PPP` = NULL) %>%
   pivot_longer(
-    c(emiCO2_by_FE, FE_by_GDP, GDP_by_Pop, Population),
+    c(emiCO2_by_FE, FE_by_GDP_MER, FE_by_GDP_PPP, GDP_MER_by_Pop, GDP_PPP_by_Pop, Population),
     names_to = "variable",
     values_to = "value")
 kayaUnits <- tribble(
   ~variable, ~unit,
   "Population", "million",
-  "GDP_by_Pop", "billion US$2005/yr/million",
-  "FE_by_GDP", "EJ/billion US$2005",
+  "GDP_MER_by_Pop", "billion US$2005/yr/million",
+  "GDP_PPP_by_Pop", "billion US$2005/yr/million",
+  "FE_by_GDP_MER", "EJ/billion US$2005",
+  "FE_by_GDP_PPP", "EJ/billion US$2005",
   "emiCO2_by_FE", "EJ/Mt CO2")
 kayaVars <- kayaUnits$variable
 kaya <-

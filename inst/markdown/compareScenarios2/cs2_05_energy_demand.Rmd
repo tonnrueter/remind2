@@ -8,11 +8,13 @@
 tot <- "FE"
 items <- c(
   "FE|Electricity",
-  "FE|Gases",
+  "FE|Hydrogen",  
   "FE|Heat",
-  "FE|Solids",
+  "FE|Gases",
   "FE|Liquids",
-  "FE|Hydrogen")
+  "FE|Solids",
+  NULL
+)
 ```
 
 \newpage
@@ -20,8 +22,8 @@ items <- c(
 #### FE|* Area Plots
 
 ```{r FE|* Area Plots}
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
 ```
 
 #### FE|* Line Plots
@@ -45,23 +47,28 @@ showLinePlots(data, "FE|Electricity|Share")
 tot <- "FE|Buildings"
 items <- c(
   "FE|Buildings|Electricity",
+  "FE|Buildings|Hydrogen",
+  "FE|Buildings|Heat",  
   "FE|Buildings|Gases",
-  "FE|Buildings|Heat",
-  "FE|Buildings|Solids",
   "FE|Buildings|Liquids",
-  "FE|Buildings|Hydrogen")
+  "FE|Buildings|Solids",  
+  NULL
+)
+
 items2 <- c(
   "FE|Buildings|Electricity",
-  "FE|Buildings|Gases|Fossil",
-  "FE|Buildings|Gases|Biomass",
-  "FE|Buildings|Gases|Hydrogen",
+  "FE|Buildings|Hydrogen",
   "FE|Buildings|Heat",
-  "FE|Buildings|Solids|Fossil",
-  "FE|Buildings|Solids|Biomass",
-  "FE|Buildings|Liquids|Fossil",
+  "FE|Buildings|Gases|Hydrogen",
+  "FE|Buildings|Gases|Biomass",  
+  "FE|Buildings|Gases|Fossil",
+  "FE|Buildings|Liquids|Hydrogen",    
   "FE|Buildings|Liquids|Biomass",
-  "FE|Buildings|Liquids|Hydrogen",
-  "FE|Buildings|Hydrogen")
+  "FE|Buildings|Liquids|Fossil",
+  "FE|Buildings|Solids|Biomass",
+  "FE|Buildings|Solids|Fossil",
+  NULL
+)
 ```
 
 \newpage
@@ -69,8 +76,8 @@ items2 <- c(
 #### FE|Buildings|* Area Plots
 
 ```{r FE|Buildings|* Area Plots}
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
 showAreaAndBarPlots(data, items2, tot, orderVars = "user", scales = "fixed")
 ```
 
@@ -96,23 +103,27 @@ showLinePlots(data, "FE|Buildings|Electricity|Share")
 tot <- "FE|Industry"
 items <- c(
   "FE|Industry|Electricity",
+  "FE|Industry|Hydrogen",
+  "FE|Industry|Heat",  
   "FE|Industry|Gases",
-  "FE|Industry|Heat",
-  "FE|Industry|Solids",
   "FE|Industry|Liquids",
-  "FE|Industry|Hydrogen")
+  "FE|Industry|Solids",  
+  NULL)
+
 items2 <- c(
   "FE|Industry|Electricity",
-  "FE|Industry|Gases|Fossil",
-  "FE|Industry|Gases|Biomass",
-  "FE|Industry|Gases|Hydrogen",
+  "FE|Industry|Hydrogen",
   "FE|Industry|Heat",
-  "FE|Industry|Solids|Fossil",
-  "FE|Industry|Solids|Biomass",
-  "FE|Industry|Liquids|Fossil",
+  "FE|Industry|Gases|Hydrogen",
+  "FE|Industry|Gases|Biomass",  
+  "FE|Industry|Gases|Fossil",
+  "FE|Industry|Liquids|Hydrogen",    
   "FE|Industry|Liquids|Biomass",
-  "FE|Industry|Liquids|Hydrogen",
-  "FE|Industry|Hydrogen")
+  "FE|Industry|Liquids|Fossil",
+  "FE|Industry|Solids|Biomass",
+  "FE|Industry|Solids|Fossil",
+  NULL)
+
 ```
 
 \newpage
@@ -120,8 +131,8 @@ items2 <- c(
 #### FE|Industry|* Area Plots
 
 ```{r FE|Industry|* Area Plots}
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
 showAreaAndBarPlots(data, items2, tot, orderVars = "user", scales = "fixed")
 ```
 
@@ -143,25 +154,28 @@ showLinePlots(data, "FE|Industry|Electricity|Share")
 ```{r FE mix Steel}
 tot <- "FE|Industry|Steel"
 items <- c(
-  "FE|Industry|Steel|Solids",
-  "FE|Industry|Steel|Liquids",
-  "FE|Industry|Steel|Gases",
-  "FE|Industry|Steel|Hydrogen",
-  "FE|Industry|Steel|Primary|Electricity",
-  "FE|Industry|Steel|Secondary|Electricity")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "FE|Industry|Steel|Secondary|Electricity",
+  "FE|Industry|Steel|Primary|Electricity",  
+  "FE|Industry|Steel|Hydrogen",  
+  "FE|Industry|Steel|Gases",  
+  "FE|Industry|Steel|Liquids",  
+  "FE|Industry|Steel|Solids",  
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### FE mix Cement
 ```{r FE mix Cement}
 tot <- "FE|Industry|Cement"
 items <- c(
-  "FE|Industry|Cement|Solids",
-  "FE|Industry|Cement|Liquids",
+  "FE|Industry|Cement|Electricity",
+  "FE|Industry|Cement|Hydrogen",  
   "FE|Industry|Cement|Gases",
-  "FE|Industry|Cement|Hydrogen",
-  "FE|Industry|Cement|Electricity")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "FE|Industry|Cement|Liquids",
+  "FE|Industry|Cement|Solids",
+  NULL
+)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### FE mix Non-metallic minerals
@@ -169,39 +183,48 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 tot <- "FE|Industry|Non-metallic minerals"
 items <- c(
   "FE|Industry|Electricity|Non-metallic minerals",
+  "FE|Industry|Hydrogen|Non-metallic minerals",  
+  "FE|Industry|Heat|Non-metallic minerals",  
   "FE|Industry|Gases|Non-metallic minerals",
-  "FE|Industry|Heat|Non-metallic minerals",
-  "FE|Industry|Hydrogen|Non-metallic minerals",
   "FE|Industry|Liquids|Non-metallic minerals",
   "FE|Industry|Solids|Non-metallic minerals")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### FE mix Chemicals
 ```{r FE mix Chemicals}
 tot <- "FE|Industry|Chemicals"
 items <- c(
+  "FE|Industry|Chemicals|Electricity|Mechanical work and low-temperature heat",
+  "FE|Industry|Chemicals|Electricity|High-temperature heat",
+  "FE|Industry|Chemicals|Hydrogen",  
+  "FE|Industry|Chemicals|Gases",
   "FE|Industry|Chemicals|Solids",
   "FE|Industry|Chemicals|Liquids",
-  "FE|Industry|Chemicals|Gases",
-  "FE|Industry|Chemicals|Hydrogen",
-  "FE|Industry|Chemicals|Electricity|Mechanical work and low-temperature heat",
-  "FE|Industry|Chemicals|Electricity|High-temperature heat")
+  NULL)
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+### FE Total Chemicals
+```{r FE Total Chemicals}
+items <- c(
+  "FE|Industry|Chemicals") 
+showLinePlots(data, items)
 ```
 
 ### FE mix Other Industry
 ```{r FE mix Other Industry}
 tot <- "FE|Industry|Other Industry"
 items <- c(
-  "FE|Industry|Other Industry|Solids",
-  "FE|Industry|Other Industry|Liquids",
-  "FE|Industry|Other Industry|Gases",
-  "FE|Industry|Other Industry|Hydrogen",
-  "FE|Industry|Other Industry|Heat",
   "FE|Industry|Other Industry|Electricity|Mechanical work and low-temperature heat",
-  "FE|Industry|Other Industry|Electricity|High-temperature heat")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "FE|Industry|Other Industry|Electricity|High-temperature heat",
+  "FE|Industry|Other Industry|Hydrogen",
+  "FE|Industry|Other Industry|Heat",  
+  "FE|Industry|Other Industry|Gases",
+  "FE|Industry|Other Industry|Liquids",  
+  "FE|Industry|Other Industry|Solids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### FE|Industry|* line plots
@@ -214,6 +237,25 @@ showLinePlots(data, "FE|Industry|Non-metallic minerals")
 showLinePlots(data, "FE|Industry|Chemicals")
 showLinePlots(data, c("FE|Industry|Other Industry", "FE|Industry|other"))
 ```
+
+
+### FE|Non-energy Use|Industry per carrier and SE origin
+
+```{r}
+tot <- "FE|Non-energy Use|Industry"
+items <- c(
+  "FE|Non-energy Use|Industry|Solids|Fossil",
+  "FE|Non-energy Use|Industry|Solids|Biomass",
+  "FE|Non-energy Use|Industry|Liquids|Fossil",
+  "FE|Non-energy Use|Industry|Liquids|Biomass",
+  "FE|Non-energy Use|Industry|Liquids|Hydrogen",
+  "FE|Non-energy Use|Industry|Gases|Fossil",
+  "FE|Non-energy Use|Industry|Gases|Biomass",
+  "FE|Non-energy Use|Industry|Gases|Hydrogen")
+showAreaAndBarPlots(data, items, tot)
+```
+
+
 
 ### Specific Energy Consumption
 ```{r}
@@ -277,16 +319,21 @@ showLinePlots(data, 'FE|Industry|Specific Energy Consumption|Other Industry')
 tot <- "FE|Transport"
 items <- c(
   "FE|Transport|Electricity",
+  "FE|Transport|Hydrogen",
   "FE|Transport|Gases",
   "FE|Transport|Liquids",
-  "FE|Transport|Hydrogen")
+  NULL
+)
+
 items2 <- c(
   "FE|Transport|Electricity",
+  "FE|Transport|Hydrogen",  
   "FE|Transport|Gases",
   "FE|Transport|Liquids|Biomass",
   "FE|Transport|Liquids|Fossil",
   "FE|Transport|Liquids|Hydrogen",
-  "FE|Transport|Hydrogen")
+  NULL
+)
 ```
 
 \newpage
@@ -294,9 +341,9 @@ items2 <- c(
 #### FE|Transport|* Area Plots -- with Bunkers
 
 ```{r FE|Transport|* Area Plots -- with Bunkers}
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-showAreaAndBarPlots(data, items2, tot, scales = "fixed")
-showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
+showAreaAndBarPlots(data, items2, tot, orderVars = "user", scales = "fixed")
 ```
 
 #### FE|Transport|* Line Plots -- with Bunkers
@@ -319,16 +366,20 @@ showLinePlots(data, "FE|Transport|Electricity|Share")
 tot <- "FE|Transport|w/o Bunkers"
 items <- c(
   "FE|Transport|w/o Bunkers|Electricity",
+  "FE|Transport|w/o Bunkers|Hydrogen",  
   "FE|Transport|w/o Bunkers|Gases",
   "FE|Transport|w/o Bunkers|Liquids",
-  "FE|Transport|w/o Bunkers|Hydrogen")
+  NULL
+)
 items2 <- c(
   "FE|Transport|w/o Bunkers|Electricity",
+  "FE|Transport|w/o Bunkers|Hydrogen",
   "FE|Transport|w/o Bunkers|Gases",
   "FE|Transport|w/o Bunkers|Liquids|Biomass",
   "FE|Transport|w/o Bunkers|Liquids|Fossil",
   "FE|Transport|w/o Bunkers|Liquids|Hydrogen",
-  "FE|Transport|w/o Bunkers|Hydrogen")
+  NULL
+)
 ```
 
 \newpage
@@ -336,9 +387,9 @@ items2 <- c(
 #### FE|Transport|* Area Plots -- w/o Bunkers
 
 ```{r FE|Transport|* Area Plots -- w/o Bunkers}
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-showAreaAndBarPlots(data, items2, tot, scales = "fixed")
-showAreaAndBarPlots(data, items, tot, fill = TRUE)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
+showAreaAndBarPlots(data, items2, tot, orderVars = "user", scales = "fixed")
 ```
 
 #### FE|Transport|* Line Plots -- w/o Bunkers
@@ -354,15 +405,17 @@ walk(items, showLinePlots, data = data)
 ```{r Transport per type}
 tot <- "FE|Transport"
 items <- c(
-  "FE|Transport|LDV|Liquids",
-  "FE|Transport|LDV|Gases",
   "FE|Transport|LDV|Electricity",
   "FE|Transport|LDV|Hydrogen",
-  "FE|Transport|non-LDV|Liquids",
-  "FE|Transport|non-LDV|Gases",
+  "FE|Transport|LDV|Gases",
+  "FE|Transport|LDV|Liquids",
   "FE|Transport|non-LDV|Electricity",
-  "FE|Transport|non-LDV|Hydrogen")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "FE|Transport|non-LDV|Hydrogen",
+  "FE|Transport|non-LDV|Gases",  
+  "FE|Transport|non-LDV|Liquids",
+  NULL
+)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 ### Bunkers
@@ -372,5 +425,5 @@ tot <- "FE|Transport"
 items <- c(
   "FE|Transport|Bunkers",
   "FE|Transport|w/o Bunkers")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
