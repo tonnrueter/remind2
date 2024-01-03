@@ -41,50 +41,78 @@ if (m2r[m2r$module == "optimization", "*"] != "nash") {
 adjustSliderAnimation <- function(p) {
   return(list(p[[1]] %>% plotly::animation_opts(frame = 1)))
 }
+
+mipIterationsSurplus <- function(
+    plotData, xAxis = "year", color = NULL,
+    slider = "iteration", facets = "region", facetScales = "fixed", rectData) {
+  
+  p <- mip::mipIterations(plotData, returnGgplots = TRUE, xAxis, color, slider, facets, facetScales)[[1]]
+  
+  p <- p + geom_rect(data = rectData, aes(
+    xmin = min(plotData[xAxis]),
+    xmax = max(plotData[xAxis]),
+    ymin = p80_surplusMaxTolerance * -1,
+    ymax = p80_surplusMaxTolerance,
+    text = all_enty
+  ), fill = "#00BFC4", alpha = 0.5, inherit.aes = FALSE)
+  
+  p <- plotly::ggplotly(p) %>%
+    plotly::animation_opts(frame = 1) %>%
+    hide_legend()
+
+  htmltools::tagList(p)
+}
+
 ```
 
 ## p80_surplus
 
 ### Read Data from gdx
 ```{r p80_surplus___READ}
+
 p80_surplus <- mip::getPlotData("p80_surplus", params$gdx) %>%
   mutate(tall := as.numeric(tall))
 str(p80_surplus)
+
+p80_surplusMaxTolerance <- mip::getPlotData("p80_surplusMaxTolerance", params$gdx) %>%
+  filter(all_enty %in% unique(p80_surplus[["all_enty"]]))
+
 ```
 
 ### x: time, slider: iter, facet: enty
 ```{r}
-p <- mip::mipIterations(
-  plotData = p80_surplus,
-  xAxis = "tall", facets = "all_enty", color = NULL, slider = "iteration",
-  facetScales = "free_y"
-) %>% adjustSliderAnimation()
 
-htmltools::tagList(p)
+mipIterationsSurplus(plotData = p80_surplus,
+  xAxis = "tall", facets = "all_enty", color = NULL, slider = "iteration",
+  facetScales = "free_y", p80_surplusMaxTolerance)
+
 ```
 
 ### x: iter, slider: time, facet: enty
 ```{r  results = "asis"}
-p <- mip::mipIterations(
-  plotData = filter(p80_surplus, tall >= 2025), # for this to work, we starting year must be available for all facets
-  xAxis = "iteration", slider = "tall", color = NULL, facets = "all_enty", facetScales = "free_y"
-) %>% adjustSliderAnimation()
 
-htmltools::tagList(p)
+mipIterationsSurplus(
+  plotData = filter(p80_surplus, tall >= 2025), # for this to work, we starting year must be available for all facets
+  xAxis = "iteration", slider = "tall", color = NULL, facets = "all_enty", facetScales = "free_y", p80_surplusMaxTolerance
+)
+
 ```
 
 ### x: time, slider: iter, color: enty
 ```{r  results = "asis"}
+
 p <- mip::mipIterations(
   plotData = p80_surplus,
   xAxis = "tall", facets = NULL, color = "all_enty", slider = "iteration"
 ) %>% adjustSliderAnimation()
 
 htmltools::tagList(p)
+
 ```
 
 ### x: iter, facets: time
 ```{r  results = "asis"}
+
 p <- mip::mipIterations(
   plotData = filter(p80_surplus, tall >= 2025),
   returnGgplots = TRUE,
@@ -92,6 +120,18 @@ p <- mip::mipIterations(
 )
 
 for (i in p) {
+  
+  rectData <- p80_surplusMaxTolerance %>%
+    filter(all_enty ==  unique(i$data$all_enty))
+  
+  i <- i + suppressWarnings(
+    geom_rect(data = rectData, aes(
+    xmin = 0, xmax = max(p80_surplus$iteration),
+    ymin = p80_surplusMaxTolerance * -1,
+    ymax = p80_surplusMaxTolerance,
+    text = all_enty
+  ), fill = "#00BFC4", alpha = 0.5, inherit.aes = FALSE))
+  
   print(i)
 }
 
@@ -256,18 +296,35 @@ prices_and_surplus_steps <- rbind(
 ```{r  results = "asis"}
 
 for (v in unique(prices_and_surplus_steps$all_enty)) {
+  
   p <- mip::mipIterations(
-    plotData = filter(prices_and_surplus_steps, all_enty == v, tall >= 2005), returnGgplots = TRUE,
-    xAxis = "tall", facets = "group", color = "step", slider = "iteration", facetScales = "free_y"
+    plotData = filter(prices_and_surplus_steps, all_enty == v, tall >= 2005), 
+    returnGgplots = TRUE,
+    xAxis = "tall", facets = "group", color = "step", 
+    slider = "iteration", facetScales = "free_y"
   )
 
   # manually override colors
   plots <- p[[1]] +
     ggplot2::scale_colour_manual(values = c("iter" = "#000066", "iter+1" = "#39418d",
                                             "iter+2" = "#7b8cba", "iter+3" = "#bdd7e7"))
-  plots <- list(plots)
-  plots <- lapply(plots, plotly::ggplotly) %>% adjustSliderAnimation()
-
+  
+  # add surplus tolerance as background
+  dataRect <- filter(p80_surplusMaxTolerance, all_enty ==  v) %>%
+    mutate(group = "p80_surplus")
+  
+  plots <- plots + suppressWarnings(
+    geom_rect(
+      data = dataRect,
+      aes(
+    xmin = 2005, xmax = max(p80_surplus$tall),
+    ymin = p80_surplusMaxTolerance * -1, 
+    ymax = p80_surplusMaxTolerance,
+    text = all_enty
+  ), fill = "#00BFC4", inherit.aes = FALSE, alpha = 0.2)) 
+  
+  plots <- plotly::ggplotly(plots) %>% plotly::animation_opts(frame = 1)
+  
   print(htmltools::tagList(plots))
 
 }
@@ -281,12 +338,27 @@ df <- prices_and_surplus_steps %>%
   mutate("group" = paste0(.data$all_enty, "-", .data$group)) %>%
   select(-"all_enty")
 
+dataRect <- p80_surplusMaxTolerance %>%
+  mutate("group" = paste0(.data$all_enty, "-p80_surplus")) %>%
+  filter(group %in% unique(df$group))
+
 p <- ggplot(df) +
   geom_line(aes_string(x = "tall", y = "value", color = "step", frame = "iteration")) +
-  facet_wrap("group", scales = "free_y",ncol = 2) +
+  facet_wrap("group", scales = "free_y", ncol = 2) +
   ggplot2::scale_color_manual(
     breaks = c("iter", "iter+1", "iter+2", "iter+3"),
     values = c("#000066", "#39418d", "#7b8cba", "#bdd7e7")
+  ) +
+  suppressWarnings(
+    geom_rect(
+      data = dataRect,
+      aes(
+        xmin = min(df$tall), xmax = max(df$tall),
+        ymin = p80_surplusMaxTolerance * -1, 
+        ymax = p80_surplusMaxTolerance, 
+        text = all_enty
+      ), fill = "#00BFC4", inherit.aes = FALSE, alpha = 0.2
+    )
   ) +
   theme_bw() +
   theme(strip.background = element_blank())
@@ -299,10 +371,32 @@ plotly::ggplotly(p, autosize = F, height = 800) %>%
 ### x: iter, slider: time, facet: var
 ```{r  results = "asis"}
 for (v in unique(prices_and_surplus$all_enty)) {
+  dataRect <- p80_surplusMaxTolerance %>%
+    filter(all_enty == v) %>%
+    mutate(variable = "p80_surplus")
+
+  df <- filter(prices_and_surplus, all_enty == v, tall >= 2025)
+
   p <- mip::mipIterations(
-    plotData = filter(prices_and_surplus, all_enty == v, tall >= 2025),
-    xAxis = "iteration", facets = "variable", color = NULL, slider = "tall", facetScales = "free_y"
-  ) %>% adjustSliderAnimation()
+    df,
+    xAxis = "iteration", facets = "variable", color = NULL,
+    slider = "tall", facetScales = "free_y", returnGgplots = TRUE
+  )[[1]] +
+    suppressWarnings(
+      geom_rect(
+        data = dataRect,
+        aes(
+          xmin = min(df$iteration), xmax = max(df$iteration),
+          ymin = p80_surplusMaxTolerance * -1, 
+          ymax = p80_surplusMaxTolerance, 
+          text = all_enty
+        ), fill = "#00BFC4", inherit.aes = FALSE, alpha = 0.2
+      )
+    )
+
+  p <- plotly::ggplotly(p) %>%
+    plotly::animation_opts(frame = 1)
+
 
   print(htmltools::tagList(p))
 }
