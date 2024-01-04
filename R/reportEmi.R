@@ -11,7 +11,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #'
-#' @author Felix Schreyer...
+#' @author Felix Schreyer, Simón Moreno Leiva
 #' @examples
 #' \dontrun{
 #' reportEmi(gdx)
@@ -26,7 +26,6 @@
 
 
 reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
-
 
   # emissions calculation requires information from other reporting functions
   if (is.null(output)) {
@@ -308,8 +307,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # get combinations of SE,FE,sector,emiMkt that exist in vm_demFeSector
   FE.map <- se2fe %>%
-    left_join(entyFe2Sector) %>%
-    left_join(sector2emiMkt) %>%
+    left_join(entyFe2Sector, by = "all_enty1", relationship = "many-to-many") %>%
+    left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
     select( -all_te) %>%
     mutate( name = paste(all_enty,all_enty1,emi_sectors,all_emiMkt, sep = "."))
 
@@ -345,8 +344,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
     # get combinations of SE,FE,sector,emiMkt that exist in vm_nonIncineratedPlastics
     FE.feed.map <- se2fe %>%
-      left_join(entyFe2Sector) %>%
-      left_join(sector2emiMkt) %>%
+      left_join(entyFe2Sector, by = "all_enty1", relationship = "many-to-many") %>%
+      left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
       right_join(entyFe2sector2emiMkt_NonEn %>%
                    rename(all_enty1 = all_enty)) %>%
       select( -all_te) %>%
@@ -498,7 +497,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                          - dimSums(plastic_CDR, dim=3)
                         )*GtC_2_MtCO2,
                         "Emi|CO2|Energy|+|Demand (Mt CO2/yr)")
-    
+
   )
 
  # CO2 emissions from the end-of-life of carbon-bearing products
@@ -513,7 +512,7 @@ if (!is.null(vm_plasticsCarbon)) {
               setNames(out[, , "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"]
                         + out[, , "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)"],
                         "Emi|CO2|Energy|+|Waste (Mt CO2/yr)")
-                        )                               
+                        )
 }
   #### 2.1.2 Energy Supply ----
 
@@ -854,7 +853,7 @@ if (!is.null(vm_plasticsCarbon)) {
           x[['variable']])
       }) %>%
         mbind())
-        
+
       # Baseline emission before CCS, corresponds to energy carbon content
           out <- mbind(
           # energy emissions
@@ -2536,10 +2535,9 @@ if (!is.null(vm_plasticsCarbon)) {
 
   # 8. Ad-hoc fix for emissions w/o non-energy use and Aggregation to global and regional values  ----
 
-if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "fixed_shares")) {
- # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
+
+  # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
-  #Note (SM): I'm not sure if I got these notes so I created the condition above to try to make sure that this will work anyways
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
@@ -2659,12 +2657,10 @@ if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "f
     # insert "w/o Non-energy Use" label in variable names
     out.wNonEn <- setNames(out.wNonEn[, , emi.vars.wNonEn], names.wNonEn)
 
-
     out <- mbind(out, out.wNonEn)
 
-
   }
-}
+
   # add global values
   out <- mbind(out, dimSums(out, dim = 1))
   # add other region aggregations
