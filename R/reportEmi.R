@@ -1193,7 +1193,7 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2,
                         "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
                # negative emissions from (non-BECCS) CDR (DACCS, EW)
-               setNames((v33_emiEW + v33_emiDAC * p_share_CCS) * GtC_2_MtCO2,
+               setNames((v33_emi[, , "weathering"] + v33_emi[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
                         "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
                 )
 
