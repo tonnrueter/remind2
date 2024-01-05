@@ -40,7 +40,7 @@ reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),se
     vm_cesIO     <- readGDX(gdx, name = 'vm_cesIO', field = 'l')
     # read parameters
     ppfKap_Ind <- readGDX(gdx, name = 'ppfkap_industry_dyn37', react = 'silent')
-    is_PBS <- "steel" %in% readGDX(gdx, "secInd37Prc", react='silent')
+    steel_process_based <- "steel" %in% readGDX(gdx, "secInd37Prc", react='silent')
 
     # calculate maximal temporal resolution
     y <- Reduce(intersect,list(getYears(vm_cap),getYears(v_investcost)))
@@ -104,7 +104,7 @@ reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),se
         'kap_chemicals',         'Chemicals',
         'kap_otherInd',          'other')
 
-      if (!is_PBS) {
+      if (!steel_process_based) {
         mixer <- bind_rows(mixer, tribble(
         ~pf,                     ~name,
         'kap_steel_primary',     'Primary Steel',

@@ -63,7 +63,8 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
     indu_mod <- "fixed_shares"
     buil_mod <- "simple"
   }
-  is_PBS <- "steel" %in% readGDX(gdx, "secInd37Prc", react='silent')
+
+  steel_process_based <- "steel" %in% readGDX(gdx, "secInd37Prc", react='silent')
 
   # choose the CES entries names for transport
   name_trsp <- c("fepet", "ueLDVt", "fedie", "ueHDVt", "feelt", "ueelTt")
@@ -313,7 +314,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                   "feh2_cement.feso_cement",
                   "feh2_cement.feli_cement")
 
-  if (!is_PBS) {
+  if (!steel_process_based) {
     mrs.report <- append(mrs.report,
                   "feh2_steel.feso_steel"
                   )
@@ -336,7 +337,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                                CES.price[,,"Internal|CES Function|CES Price|feh2b (US$2005/GJ)"],
                              "Internal|CES Function|MRS|feelhpb|feh2b (ratio)"))
 
-  if (!is_PBS) {
+  if (!steel_process_based) {
     CES.mrs <- mbind( CES.mrs,
                     setNames(CES.price[,,"Internal|CES Function|CES Price|feel_steel_secondary (US$2005/GJ)"] /
                                CES.price[,,"Internal|CES Function|CES Price|feso_steel (US$2005/GJ)"],
