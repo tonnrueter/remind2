@@ -12,8 +12,9 @@ items <- c(
   "Energy Investments|Elec|Storage",
   "Energy Investments|Elec|Solar",
   "Energy Investments|Elec|Wind",
-  "Energy Investments|Elec|Geothermal",
   "Energy Investments|Elec|Hydro",
+  "Energy Investments|Elec|Nuclear",
+  "Energy Investments|Elec|Geothermal",  
   "Energy Investments|Elec|Biomass|w/ CC",
   "Energy Investments|Elec|Biomass|w/o CC",
   "Energy Investments|Elec|Oil",
@@ -21,7 +22,8 @@ items <- c(
   "Energy Investments|Elec|Gas|w/o CC",
   "Energy Investments|Elec|Coal|w/ CC",
   "Energy Investments|Elec|Coal|w/o CC",
-  "Energy Investments|Elec|Nuclear")
+  NULL)
+
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
@@ -36,6 +38,7 @@ items <- c(
   else
     "Cap|Electricity|Wind",
   "Cap|Electricity|Hydro",
+  "Cap|Electricity|Nuclear",  
   "Cap|Electricity|Geothermal",
   "Cap|Electricity|Biomass",
   "Cap|Electricity|Hydrogen",
@@ -44,7 +47,7 @@ items <- c(
   "Cap|Electricity|Oil|w/o CC",
   "Cap|Electricity|Coal|w/ CC",
   "Cap|Electricity|Coal|w/o CC",
-  "Cap|Electricity|Nuclear"
+  NULL
   )
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
@@ -102,27 +105,29 @@ showLinePlots(data, "Cap|Electricity|Hydrogen")
 ### PE|Coal
 ```{r PE|Coal}
 items <- c(
-  "PE|Coal|Gases",
-  "PE|Coal|Liquids",
-  "PE|Coal|Solids",
-  "PE|Coal|Heat",
+  "PE|Coal|Hydrogen",
   "PE|Coal|Electricity",
-  "PE|Coal|Hydrogen")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "PE|Coal|Heat",
+  "PE|Coal|Gases",  
+  "PE|Coal|Liquids",  
+  "PE|Coal|Solids",
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ### PE|Gas
 ```{r PE|Gas}
 items <- c(
-  "PE|Gas|Gases",
-  "PE|Gas|Heat",
+  "PE|Gas|Hydrogen|w/ CC",
+  "PE|Gas|Hydrogen|w/o CC",  
   "PE|Gas|Electricity|w/ CC",
   "PE|Gas|Electricity|w/o CC",
+  "PE|Gas|Heat",  
+  "PE|Gas|Gases",  
   "PE|Gas|Liquids|w/ CC",
   "PE|Gas|Liquids|w/o CC",
-  "PE|Gas|Hydrogen|w/ CC",
-  "PE|Gas|Hydrogen|w/o CC")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 
@@ -130,16 +135,17 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 
 ```{r PE|Biomass}
 items <- c(
-  "PE|Biomass|Solids",
+  "PE|Biomass|Hydrogen|w/ CC",
+  "PE|Biomass|Hydrogen|w/o CC",
+  "PE|Biomass|Electricity|w/ CC",
+  "PE|Biomass|Electricity|w/o CC",  
   "PE|Biomass|Heat",
+  "PE|Biomass|Gases",  
   "PE|Biomass|Liquids|w/ CC",
   "PE|Biomass|Liquids|w/o CC",
-  "PE|Biomass|Gases",
-  "PE|Biomass|Electricity|w/ CC",
-  "PE|Biomass|Electricity|w/o CC",
-  "PE|Biomass|Hydrogen|w/ CC",
-  "PE|Biomass|Hydrogen|w/o CC")
-showAreaAndBarPlots(data, items, scales = "fixed")
+  "PE|Biomass|Solids",
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## Primary Energy line plots
@@ -177,24 +183,24 @@ showLinePlots(data, "Res|Extraction|Gas")
 tot <- "SE|Electricity"
 
 items <- c(
-  "SE|Electricity|Coal|w/ CC",
-  "SE|Electricity|Coal|w/o CC",
-  "SE|Electricity|Oil",
-  "SE|Electricity|Gas|w/ CC",
-  "SE|Electricity|Gas|w/o CC",
-  "SE|Electricity|Geothermal",
-  "SE|Electricity|Hydro",
-  "SE|Electricity|Nuclear",
-  "SE|Electricity|Biomass|w/ CC",
-  "SE|Electricity|Biomass|w/o CC",
+  "SE|Electricity|Net Imports",
   "SE|Electricity|Solar|CSP",
   "SE|Electricity|Solar|PV",
   "SE|Electricity|Wind|Onshore",
   "SE|Electricity|Wind|Offshore",
+  "SE|Electricity|Hydro",  
   "SE|Electricity|Hydrogen",
-  "SE|Electricity|Net Imports")
-
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "SE|Electricity|Nuclear",  
+  "SE|Electricity|Geothermal",  
+  "SE|Electricity|Biomass|w/ CC",
+  "SE|Electricity|Biomass|w/o CC",
+  "SE|Electricity|Oil",  
+  "SE|Electricity|Gas|w/ CC",
+  "SE|Electricity|Gas|w/o CC",
+  "SE|Electricity|Coal|w/ CC",
+  "SE|Electricity|Coal|w/o CC",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 
@@ -215,7 +221,7 @@ items <- c(
   "SE|Input|Electricity|CDR",
   "SE|Input|Electricity|Self Consumption Energy System")
 
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 
@@ -223,11 +229,12 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```{r SE|Heat}
 tot <- "SE|Heat"
 items <- c(
+  "SE|Heat|Electricity|Heat Pump",
   "SE|Heat|Biomass",
-  "SE|Heat|Coal",
   "SE|Heat|Gas",
-  "SE|Heat|Electricity|Heat Pump")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "SE|Heat|Coal",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 
@@ -237,16 +244,18 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 tot <- "SE|Hydrogen"
 
 items <- c(
-  "SE|Hydrogen|Biomass|w/ CC",
-  "SE|Hydrogen|Biomass|w/o CC",
-  "SE|Hydrogen|Coal|w/ CC",
-  "SE|Hydrogen|Coal|w/o CC",
-  "SE|Hydrogen|Gas|w/ CC",
-  "SE|Hydrogen|Gas|w/o CC",
+  "SE|Hydrogen|Net Imports",   
   "SE|Hydrogen|Electricity|VRE Storage Electrolysis",
   "SE|Hydrogen|Electricity|Standard Electrolysis",
-  "SE|Hydrogen|Net Imports")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  "SE|Hydrogen|Biomass|w/ CC",
+  "SE|Hydrogen|Biomass|w/o CC",
+  "SE|Hydrogen|Gas|w/ CC",
+  "SE|Hydrogen|Gas|w/o CC",
+  "SE|Hydrogen|Coal|w/ CC",
+  "SE|Hydrogen|Coal|w/o CC",
+  NULL
+  )
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 ### SE|Hydrogen - Usage
@@ -274,8 +283,8 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 tot <- "SE|Solids"
 
 items <- c(
+  "SE|Solids|Traditional Biomass",  
   "SE|Solids|Biomass",
-  "SE|Solids|Traditional Biomass",
   "SE|Solids|Coal")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
@@ -288,16 +297,18 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 tot <- "SE|Liquids"
 
 items <- c(
-  "SE|Liquids|Fossil|Oil",
+  "SE|Liquids|Hydrogen",
+  "SE|Liquids|Hydrogen|Net Imports",
   "SE|Liquids|Biomass|w/ CC",
   "SE|Liquids|Biomass|w/o CC",
+  "SE|Liquids|Fossil|Oil",
+  "SE|Liquids|Fossil|Gas|w/ CC",
+  "SE|Liquids|Fossil|Gas|w/o CC",  
   "SE|Liquids|Fossil|Coal|w/ CC",
   "SE|Liquids|Fossil|Coal|w/o CC",
-  "SE|Liquids|Fossil|Gas|w/ CC",
-  "SE|Liquids|Fossil|Gas|w/o CC",
-  "SE|Liquids|Hydrogen",
-  "SE|Liquids|Hydrogen|Net Imports")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  NULL)
+
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 ### SE|Gases
@@ -306,13 +317,15 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 tot <- "SE|Gases"
 
 items <- c(
-  "SE|Gases|Fossil|Natural Gas",
+  "SE|Gases|Hydrogen",
   "SE|Gases|Biomass|w/ CC",
   "SE|Gases|Biomass|w/o CC",
+  "SE|Gases|Fossil|Natural Gas",
   "SE|Gases|Fossil|Coal|w/ CC",
   "SE|Gases|Fossil|Coal|w/o CC",
-  "SE|Gases|Hydrogen")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
+  NULL)
+
+showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 

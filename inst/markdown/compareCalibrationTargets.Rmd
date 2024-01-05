@@ -34,7 +34,7 @@ params:
 </style>
 
 ```{r setup, include=FALSE}
-library(svglite)
+library(svglite) # nolint
 
 knitr::opts_chunk$set(
   echo = FALSE,
@@ -51,7 +51,6 @@ knitr::opts_chunk$set(
 
 
 ```{r libraries, include=FALSE}
-
 # kableExtra must not be loaded before the call of library(kableExtra) below,
 # as its .onLoad() function must be called to tell knitr about add necessary
 # LaTeX libraries needed for tables.
@@ -59,20 +58,19 @@ knitr::opts_chunk$set(
 # may cause "Undefined control sequence" errors in LaTeX.
 try(unloadNamespace("kableExtra"), silent = TRUE)
 
-library(kableExtra)
-library(quitte)
-library(gdx)
-library(ggplot2)
-library(dplyr)
-library(madrat)
+library(kableExtra) # nolint
+library(quitte) # nolint
+library(gdx) # nolint
+library(ggplot2) # nolint
+library(dplyr) # nolint
+library(madrat) # nolint
 ```
 
 
 ```{r read, include=FALSE}
-
 data <- NULL
 for (i in seq(length(params$gdxPaths))) {
-  tmp <- readGDX(params$gdxPaths[[i]], "pm_cesdata", restore_zeros = F)[, , "quantity"] %>% dimReduce()
+  tmp <- readGDX(params$gdxPaths[[i]], "pm_cesdata", restore_zeros = FALSE)[, , "quantity"] %>% dimReduce()
   if (!is.null(params$gdxPathNames)) {
     tmp <- add_dimension(tmp,
       dim = 3.1, add = "scenario",
@@ -132,7 +130,6 @@ data <- as.quitte(data) %>% select(region, scenario, variable = all_in, period, 
 
 ### Top Level
 ```{r top-2050}
-
 vars <- c("inco", "lab", "kap")
 
 for (v in vars) {
@@ -151,7 +148,6 @@ for (v in vars) {
 
 ### Buildings
 ```{r buildings-2050}
-
 vars <- c("feelcb", "fehob", "fesob", "feelhpb", "feelrhb", "feheb", "fegab", "feh2b")
 
 for (v in vars) {
@@ -169,7 +165,6 @@ for (v in vars) {
 
 ### Transportation
 ```{r transportation-2050}
-
 vars <- c("entrp_pass_sm", "entrp_pass_lo", "entrp_frgt_sm", "entrp_frgt_lo")
 
 for (v in vars) {
@@ -187,8 +182,16 @@ for (v in vars) {
 
 ### Industry
 ```{r industry-2050}
-
-vars <- c("ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement", "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd")
+vars <- c(
+  "ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement",
+  "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals",
+  "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals",
+  "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel",
+  "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary",
+  "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd",
+  "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd",
+  "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd"
+)
 
 for (v in vars) {
   if (any(regionsH12 %in% unique(data$region))) {
@@ -207,7 +210,6 @@ for (v in vars) {
 
 ### Top Level
 ```{r top-all}
-
 vars <- c("inco", "lab", "kap")
 for (v in vars) {
   if (any(regionsH12 %in% unique(data$region))) {
@@ -224,7 +226,6 @@ for (v in vars) {
 
 ### Buildings
 ```{r buildings-all}
-
 vars <- c("feelcb", "fehob", "fesob", "feelhpb", "feelrhb", "feheb", "fegab", "feh2b")
 
 for (v in vars) {
@@ -244,7 +245,6 @@ for (v in vars) {
 
 ### Transportation
 ```{r transportation-all}
-
 vars <- c("entrp_pass_sm", "entrp_pass_lo", "entrp_frgt_sm", "entrp_frgt_lo")
 
 for (v in vars) {
@@ -262,8 +262,17 @@ for (v in vars) {
 
 ### Industry
 ```{r industry-all}
-
-vars <- c("ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement", "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals", "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals", "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel", "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary", "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary", "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd", "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd", "feelwlth_otherInd", "kap_otherInd")
+vars <- c(
+  "ue_cement", "feso_cement", "feli_cement", "fega_cement", "feh2_cement",
+  "feel_cement", "kap_cement", "ue_chemicals", "feso_chemicals",
+  "feli_chemicals", "fega_chemicals", "feh2_chemicals", "feelhth_chemicals",
+  "feelwlth_chemicals", "kap_chemicals", "ue_steel_primary", "feso_steel",
+  "feli_steel", "fega_steel", "feh2_steel", "feel_steel_primary",
+  "kap_steel_primary", "ue_steel_secondary", "kap_steel_secondary",
+  "feel_steel_secondary", "ue_otherInd", "feso_otherInd", "feli_otherInd",
+  "fega_otherInd", "feh2_otherInd", "fehe_otherInd", "feelhth_otherInd",
+  "feelwlth_otherInd", "kap_otherInd"
+)
 
 for (v in vars) {
   if (any(regionsH12 %in% unique(data$region))) {
