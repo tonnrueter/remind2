@@ -889,7 +889,7 @@ if (!is.null(vm_plasticsCarbon)) {
           `getSets<-`(fulldim = FALSE, value = getSets(out)),
 
           # process emissions for cement subsector
-          readGDX(gdx, 'vm_macBaseInd', field = 'l', restore_zeros = FALSE) %>%
+          readGDX(gdx, c('vm_emiIndBase', 'vm_macBaseInd'), field = 'l', restore_zeros = FALSE) %>%
           `[`(,,'co2cement_process.cement') %>%
           `*`(as.numeric(GtC_2_MtCO2)) %>%
           `getSets<-`(fulldim = FALSE, value = getSets(out)) %>%
