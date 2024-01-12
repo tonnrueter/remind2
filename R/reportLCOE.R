@@ -127,8 +127,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  p47_taxCO2eq_AggFE <- readGDX(gdx,"p47_taxCO2eq_AggFE", restore_zeros=F, react = "silent")
 
  ## variables
- v_costInvTeDir <- readGDX(gdx,name=c("v_costInvTeDir","vm_costInvTeDir","v_directteinv"),field="l",format="first_found")[,ttot,] ## Total direct Investment Cost in Timestep
- v_costInvTeAdj <- readGDX(gdx,name=c("v_costInvTeAdj"),field="l",format="first_found")[,ttot,] ## total adjustment cost in period
+ vm_costInvTeDir <- readGDX(gdx,name=c("vm_costInvTeDir","v_costInvTeDir","v_directteinv"),field="l",format="first_found")[,ttot,] ## Total direct Investment Cost in Timestep
+ vm_costInvTeAdj <- readGDX(gdx,name=c("vm_costInvTeAdj","v_costInvTeAdj"),field="l",format="first_found")[,ttot,] ## total adjustment cost in period
  vm_capEarlyReti <- readGDX(gdx,name=c("vm_capEarlyReti"),field="l",format="first_found")[,ttot,]
  vm_deltaCap   <- readGDX(gdx,name=c("vm_deltaCap"),field="l",format="first_found")[,ttot,]
  vm_demPe      <- readGDX(gdx,name=c("vm_demPe","v_pedem"),field="l",restore_zeros=FALSE,format="first_found")
@@ -174,13 +174,13 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_inv_annuity <- 1e+12 * te_annuity[,,te] *
    mbind(
      v_investcost[,ttot_before2005,te] * dimSums(vm_deltaCap[teall2rlf][,ttot_before2005,te],dim=3.2),
-     v_costInvTeDir[,ttot_from2005,te]
+     vm_costInvTeDir[,ttot_from2005,te]
    )
 
  te_inv_annuity_wadj <- 1e+12 * te_annuity[,,te] *
    mbind(
      v_investcost[,ttot_before2005,te] * dimSums(vm_deltaCap[teall2rlf][,ttot_before2005,te],dim=3.2),
-     v_costInvTeAdj[,ttot_from2005,te] + v_costInvTeDir[,ttot_from2005,te]
+     vm_costInvTeAdj[,ttot_from2005,te] + vm_costInvTeDir[,ttot_from2005,te]
    )
 
  # average LCOE components ----
