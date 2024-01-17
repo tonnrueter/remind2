@@ -250,6 +250,13 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   tmp <- bind_category(tmp, v_investcost, category, unit, factor, techmap)
   int2ext <- get_global_mapping(category, unit, techmap)
+  
+  if (CDR_mod != "off") {
+    unit <- "US$2005/tCO2 yr"
+    factor <- 1000 / 3.6
+    tmp <- bind_category(tmp, v_investcost, category, unit, factor, cdrmap)
+    int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
+  }
 
   ### Capital cost including adjustment cost ----
   if (!is.null(v_adjustteinv_avg)) {
@@ -263,14 +270,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   if (tran_mod == "complex") {
     unit <- "US$2005/veh"
-    tmp <- bind_category(tmp, v_investcost, category, unit, factor, carmap)
+    tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, carmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, carmap))
   }
 
   if (CDR_mod != "off") {
     unit <- "US$2005/tCO2 yr"
     factor <- 1000 / 3.6
-    tmp <- bind_category(tmp, v_investcost, category, unit, factor, cdrmap)
+    tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
   }
 
