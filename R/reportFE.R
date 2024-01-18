@@ -563,8 +563,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   if(any_process_based){
     v37_outflowPrc <- readGDX(gdx, name=c("v37_outflowPrc"), field="l", restore_zeros=FALSE, format="first_found", react='silent')[,t,]
     o37_demFePrc <- readGDX(gdx, name=c("o37_demFePrc"), restore_zeros=FALSE,format= "first_found")[,t,] * TWa_2_EJ
+    o37_demFePrc [is.na(o37_demFePrc )] = 0.
     o37_ProdIndRoute <- readGDX(gdx, name=c("o37_ProdIndRoute"), restore_zeros=FALSE, format="first_found", react='silent')[,t,]
+    o37_ProdIndRoute[is.na(o37_ProdIndRoute)] = 0.
     o37_demFeIndRoute <- readGDX(gdx, name=c("o37_demFeIndRoute"), restore_zeros=FALSE, format="first_found", react='silent')[,t,] * TWa_2_EJ
+    o37_demFeIndRoute[is.na(o37_demFeIndRoute)] = 0.
     # mapping of process to output materials
     tePrc2ue <- readGDX(gdx, "tePrc2ue", restore_zeros=FALSE)
   }
@@ -973,7 +976,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           # script, needs to be converted back to REMIND units here and then
           # scaled by 1e3 for obtaining Mt or billion US$2005
           .select_sum_name_multiply(vm_cesIO, .mixer_to_selector(mixer),
-                                    1e3 / TWa_2_EJ),
+                                    factor=1e3 / TWa_2_EJ),
           # report CES node of total industry as internal variable (for model
           # diagnostics) to represent total industry activity
           list(setNames(mselect(vm_cesIO, all_in = "ue_industry"),
@@ -995,7 +998,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         )
 
         out <- mbind(c(list(out),
-                     .select_sum_name_multiply(o37_ProdIndRoute, .mixer_to_selector(mixer), 1e3))) # factor 1e3 converts Gt/yr to Mt/yr 
+                     .select_sum_name_multiply(o37_ProdIndRoute, .mixer_to_selector(mixer), factor=1e3))) # factor 1e3 converts Gt/yr to Mt/yr
       }
     }
   }
@@ -1759,11 +1762,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
   }
 
-  #TODO: Only left here short-term for safety, can be removed if you read this
-  #if (any(is.na(out))) {
-    #out[is.na(out)] <- 0
-  #}
-
   # in case the current non-energy use implementation creates negative values, set them to 0
   if (any(out < 0)) {
     out[out < 0] <- 0
@@ -1806,7 +1804,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                            "FE|Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
                   setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segasyn"), dim=3),
                            "FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)")
-                  ) 
+                  )
 
     ### FE without non-energy use
     out <- mbind(out,
