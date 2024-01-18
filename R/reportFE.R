@@ -561,7 +561,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
 
   if(any_process_based){
-    v37_outflowPrc <- readGDX(gdx, name=c("v37_outflowPrc"), field="l", restore_zeros=FALSE, format="first_found", react='silent')[,t,]
+    vm_outflowPrc <- readGDX(gdx, name=c("vm_outflowPrc"), field="l", restore_zeros=FALSE, format="first_found", react='silent')[,t,]
     o37_demFePrc <- readGDX(gdx, name=c("o37_demFePrc"), restore_zeros=FALSE,format= "first_found")[,t,] * TWa_2_EJ
     o37_demFePrc [is.na(o37_demFePrc )] = 0.
     o37_ProdIndRoute <- readGDX(gdx, name=c("o37_ProdIndRoute"), restore_zeros=FALSE, format="first_found", react='silent')[,t,]
