@@ -40,10 +40,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   # make the reporting
   output <- NULL
-  # onlyReportFE <- TRUE
-  onlyReportFE <- FALSE
 
-  if (! onlyReportFE) {
   message("running reportMacroEconomy...")
   output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList,t)[,t,])
   message("running reportTrade...")
@@ -52,10 +49,8 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportPE(gdx,regionSubsetList,t)[,t,])
   message("running reportSE...")
   output <- mbind(output,reportSE(gdx,regionSubsetList,t)[,t,])
-  }
   message("running reportFE...")
   output <- mbind(output,reportFE(gdx,regionSubsetList,t))
-  if (! onlyReportFE) {
   message("running reportExtraction...")
   output <- mbind(output,reportExtraction(gdx,regionSubsetList,t)[,t,])
   message("running reportCapacity...")
@@ -118,7 +113,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   } else {
     message("function reportSDPVariables does not work and is skipped")
   }
-  }
+
   # Add dimension names "scenario.model.variable"
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
