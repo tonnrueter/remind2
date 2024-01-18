@@ -51,6 +51,7 @@ Imports:
     gdxrrw,
     ggplot2,
     gms,
+    gridExtra,
     htmltools,
     iamc,
     knitr,
