@@ -173,9 +173,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # total captured CO2
   vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = F)[, t, ]
 
-  v33_emi <- readGDX(gdx, "v33_emi", field = "l", restore_zeros = F, react = "silent")[, t, ]
+  vm_emiCdrTeDetail <- readGDX(gdx, c("vm_emiCdrTeDetail","v33_emi"), field = "l", restore_zeros = F, react = "silent")[, t, ]
 
-  if (is.null(v33_emi)) { # compatibility with the CDR module before the portfolio was added
+  if (is.null(vm_emiCdrTeDetail)) { # compatibility with the CDR module before the portfolio was added
     # captured CO2 by DAC
     v33_emiDAC <- readGDX(gdx, "v33_emiDAC", field = "l", restore_zeros = F, react = "silent")[, t, ]
     if (is.null(v33_emiDAC)) {
@@ -187,8 +187,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       v33_emiEW <- new.magpie(getItems(vm_co2capture, "all_regi"), getItems(vm_co2capture, "ttot"), fill = 0)
     }
     # variable used in the rest of the reporting
-    v33_emi <- mbind(v33_emiDAC, v33_emiEW)
-    v33_emi <- setNames(v33_emi, c("dac", "weathering"))
+    vm_emiCdrTeDetail <- mbind(v33_emiDAC, v33_emiEW)
+    vm_emiCdrTeDetail <- setNames(vm_emiCdrTeDetail, c("dac", "weathering"))
   }
   # stored CO2
   vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)[, t, ]
@@ -1114,7 +1114,7 @@ if (!is.null(vm_plasticsCarbon)) {
                  # vm_emiTeMkt is variable in REMIND closest to energy co2 emissions
                  (dimSums(sel_vm_emiTeMkt_co2, dim = 3)
                   # subtract non-BECCS CCU CO2 (i.e., non-CCS part of DAC)
-                  - (1 - p_share_CCS) * (-v33_emi[, , "dac"])
+                  - (1 - p_share_CCS) * (-vm_emiCdrTeDetail[, , "dac"])
                   # deduce co2 captured by industrial processes which is not stored but used for CCU
                   # -> gets accounted in industrial process emissions
                   - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
@@ -1164,7 +1164,7 @@ if (!is.null(vm_plasticsCarbon)) {
                  setNames(dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2,
                           "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
                  # negative emissions from (non-BECCS) CDR (DACCS, EW)
-                 setNames((v33_emi[, , "weathering"] + v33_emi[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
+                 setNames((vm_emiCdrTeDetail[, , "weathering"] + vm_emiCdrTeDetail[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
                           "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
     )
 
@@ -1197,7 +1197,7 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2,
                         "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
                # negative emissions from (non-BECCS) CDR (DACCS, EW)
-               setNames((v33_emi[, , "weathering"] + v33_emi[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
+               setNames((vm_emiCdrTeDetail[, , "weathering"] + vm_emiCdrTeDetail[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
                         "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
                 )
 
@@ -1385,7 +1385,7 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3) * GtC_2_MtCO2,
                           "Carbon Management|Carbon Capture|Industry Process|+|Cement (Mt CO2/yr)"),
                # total co2 captured by DAC
-               setNames(-v33_emi[, , "dac"] * GtC_2_MtCO2,
+               setNames(-vm_emiCdrTeDetail[, , "dac"] * GtC_2_MtCO2,
                           "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"),
                # total co2 captured
                setNames(vm_co2capture * GtC_2_MtCO2,
@@ -1748,7 +1748,7 @@ if (!is.null(vm_plasticsCarbon)) {
                         "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
                # total EW
                # total co2 captured by EW
-               setNames(v33_emi[, , "weathering"] * GtC_2_MtCO2,
+               setNames(vm_emiCdrTeDetail[, , "weathering"] * GtC_2_MtCO2,
                         "Emi|CO2|CDR|EW (Mt CO2/yr)"))
 
   out <- mbind(out,
@@ -1787,7 +1787,7 @@ if (!is.null(vm_plasticsCarbon)) {
                           "Emi|CO2|CDR|DACCS (Mt CO2/yr)"),
                  # total EW
                  # total co2 captured by EW
-                 setNames(v33_emi[, , "weathering"] * GtC_2_MtCO2,
+                 setNames(vm_emiCdrTeDetail[, , "weathering"] * GtC_2_MtCO2,
                           "Emi|CO2|CDR|EW (Mt CO2/yr)"))
 
     out <- mbind(out,
@@ -2401,7 +2401,7 @@ if (!is.null(vm_plasticsCarbon)) {
                  # CDR energy-related emissions
                  (dimSums(mselect(EmiFeCarrier[, , "ETS"], emi_sectors = "CDR"), dim = 3)
                   # Captured CO2 by non-BECCS capture technologies
-                  + (v33_emi[, , "weathering"] + v33_emi[, , "dac"] * p_share_CCS)) * GtC_2_MtCO2,
+                  + (vm_emiCdrTeDetail[, , "weathering"] + vm_emiCdrTeDetail[, , "dac"] * p_share_CCS)) * GtC_2_MtCO2,
                  "Emi|GHG|ETS|+|non-BECCS CDR (Mt CO2eq/yr)"),
 
                # Extraction
