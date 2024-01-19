@@ -879,11 +879,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
         # technologies and operation modes that belong to primary and secondary steel
         teOpmoSteelPrimary <- tePrc2ue %>%
-          filter(all_in == "ue_steel_primary")
+          filter(.data$all_in == "ue_steel_primary")
         teSteelPrimary <- teOpmoSteelPrimary %>% pull('tePrc')
         opmoSteelPrimary <- teOpmoSteelPrimary %>% pull('opmoPrc')
         teOpmoSteelSecondary <- tePrc2ue %>%
-          filter(all_in == "ue_steel_secondary")
+          filter(.data$all_in == "ue_steel_secondary")
         teSteelSecondary <- teOpmoSteelSecondary %>% pull('tePrc')
         opmoSteelSecondary <- teOpmoSteelSecondary %>% pull('opmoPrc')
 
@@ -922,10 +922,10 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
         # energy production factors for primary and secondary steel
         en.ppfen.primary.steel <- ces_eff_target_dyn37 %>%
-          filter(all_in == "ue_steel_primary") %>%
+          filter(.data$all_in == "ue_steel_primary") %>%
           pull('all_in1')
         en.ppfen.sec.steel <- ces_eff_target_dyn37 %>%
-          filter(all_in == "ue_steel_secondary") %>%
+          filter(.data$all_in == "ue_steel_secondary") %>%
           pull('all_in1')
 
         mixer <- tribble(
