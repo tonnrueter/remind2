@@ -3,8 +3,53 @@
 \docType{package}
 \name{remind2-package}
 \alias{remind2-package}
+\alias{_PACKAGE}
 \alias{remind2}
 \title{The REMIND R package (2nd generation)}
 \description{
 Contains the REMIND-specific routines for data and model output manipulation.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/pik-piam/remind2}
+}
+
+}
+\author{
+\strong{Maintainer}: Renato Rodrigues \email{renato.rodrigues@pik-potsdam.de}
+
+Authors:
+\itemize{
+  \item Lavinia Baumstark
+  \item Falk Benke
+  \item Jan Philipp Dietrich
+  \item Alois Dirnaichner
+  \item Pascal Führlich
+  \item Anastasis Giannousakis
+  \item Robin Hasse
+  \item Jérome Hilaire
+  \item David Klein
+  \item Johannes Koch
+  \item Katarzyna Kowalczyk
+  \item Antoine Levesque
+  \item Aman Malik
+  \item Anne Merfort
+  \item Leon Merfort
+  \item Simón Morena-Leiva
+  \item Michaja Pehl
+  \item Robert Pietzcker
+  \item Sebastian Rauner
+  \item Oliver Richters
+  \item Marianna Rottoli
+  \item Christof Schötz
+  \item Felix Schreyer
+  \item Kais Siala
+  \item Björn Sörgel
+  \item Mike Spahr
+  \item Jessica Strefler
+  \item Philipp Verpoort
+  \item Pascal Weigmann
+}
+
 }
