@@ -3,7 +3,6 @@
 \docType{package}
 \name{remind2-package}
 \alias{remind2-package}
-\alias{_PACKAGE}
 \alias{remind2}
 \title{The REMIND R package (2nd generation)}
 \description{
@@ -25,6 +24,7 @@ Authors:
   \item Falk Benke
   \item Jan Philipp Dietrich
   \item Alois Dirnaichner
+  \item Jakob Duerrwaechter
   \item Pascal Führlich
   \item Anastasis Giannousakis
   \item Robin Hasse

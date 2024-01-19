@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using the metadata from this file.
 type: software
 title: 'remind2: The REMIND R package (2nd generation)'
-version: 1.129.4
-date-released: '2024-01-18'
+version: 1.130.0
+date-released: '2024-01-19'
 abstract: Contains the REMIND-specific routines for data and model output manipulation.
 authors:
 - family-names: Rodrigues
@@ -17,6 +17,8 @@ authors:
   given-names: Jan Philipp
 - family-names: Dirnaichner
   given-names: Alois
+- family-names: Duerrwaechter
+  given-names: Jakob
 - family-names: Führlich
   given-names: Pascal
 - family-names: Giannousakis
