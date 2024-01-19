@@ -304,16 +304,23 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
     )[, , "good"] %>%
       as.numeric()
 
-    data <- readGDX(gdx, name = "p80_DevPriceAnticipGlobAllMax2100Iter",
-                    restore_zeros = FALSE, react = "error") %>%
+    data <- readGDX(gdx,
+      name = "p80_DevPriceAnticipGlobAllMax2100Iter",
+      restore_zeros = FALSE, react = "error"
+    ) %>%
       as.quitte() %>%
       select("iteration", "value") %>%
       mutate(
         "iteration" := as.numeric(.data$iteration),
         "converged" = ifelse(.data$value > 0.1 * maxTolerance, "no", "yes"),
-        "text" = "hallo"
+        "tooltip" = ifelse(.data$value > 0.1 * maxTolerance,
+          paste0(
+            "Not converged<br>Price Anticipation deviation is not low enough<br>",
+            round(.data$value, 5), " > ", 0.1 * maxTolerance
+          ),
+          "Converged"
+        ),
       )
-
 
     priceAnticipationDeviation <- ggplot(data, aes_(x = ~iteration)) +
       suppressWarnings(geom_point(
