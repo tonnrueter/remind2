@@ -296,33 +296,26 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
     surplusSummaryPlotly <- ggplotly(surplusSummary, tooltip = c("text"))
     subplots <- append(subplots, list(surplusSummaryPlotly))
 
-    # Price anticipation ----
+    # Deviation due to price anticipation ----
 
-    cmMaxFadeoutPriceAnticip <- as.vector(readGDX(gdx, name = "cm_maxFadeoutPriceAnticip", react = "error"))
-    p80FadeoutPriceAnticipIter <- readGDX(gdx, name = "p80_fadeoutPriceAnticip_iter",
-                                          restore_zeros = FALSE, react = "error") %>%
+    maxTolerance <- readGDX(gdx,
+      name = "p80_surplusMaxTolerance",
+      restore_zeros = FALSE, react = "error"
+    )[, , "good"] %>%
+      as.numeric()
+
+    data <- readGDX(gdx, name = "p80_DevPriceAnticipGlobAllMax2100Iter",
+                    restore_zeros = FALSE, react = "error") %>%
       as.quitte() %>%
-      select("iteration", "fadeoutPriceAnticip" = "value")
-
-    data <- p80FadeoutPriceAnticipIter %>%
+      select("iteration", "value") %>%
       mutate(
         "iteration" := as.numeric(.data$iteration),
-        "converged" = ifelse(.data$fadeoutPriceAnticip > cmMaxFadeoutPriceAnticip, "no", "yes"),
-        "tooltip" = ifelse(
-          .data$converged == "yes",
-          paste0(
-            "Converged<br>Price Anticipation fade out is low enough<br>",
-            round(.data$fadeoutPriceAnticip, 5), " <= ", cmMaxFadeoutPriceAnticip
-          ),
-          paste0(
-            "Not converged<br>Price Anticipation fade out is not low enough<br>",
-            round(.data$fadeoutPriceAnticip, 5), " > ", cmMaxFadeoutPriceAnticip
-          )
-        )
+        "converged" = ifelse(.data$value > 0.1 * maxTolerance, "no", "yes"),
+        "text" = "hallo"
       )
 
-    priceAnticipation <- ggplot(data, aes_(x = ~iteration)) +
-      geom_line(aes_(y = ~fadeoutPriceAnticip), alpha = 0.3, linewidth = aestethics$line$size) +
+
+    priceAnticipationDeviation <- ggplot(data, aes_(x = ~iteration)) +
       suppressWarnings(geom_point(
         size = 2,
         aes_(y = 0.0001, fill = ~converged, text = ~tooltip),
@@ -330,68 +323,13 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
       )) +
       theme_minimal() +
       scale_fill_manual(values = booleanColor) +
-      scale_y_continuous(breaks = c(0.0001), labels = c("Price\nAnticipation")) +
+      scale_y_continuous(breaks = c(0.0001), labels = c("Price Anticipation\nDeviation")) +
       scale_x_continuous(breaks = c(data$iteration)) +
       labs(x = NULL, y = NULL) +
       coord_cartesian(ylim = c(-0.2, 1))
 
-    priceAnticipationPlotly <- ggplotly(priceAnticipation, tooltip = c("text"))
-    subplots <- append(subplots, list(priceAnticipationPlotly))
-
-    # Tax Convergence (optional) ----
-
-    cmTaxConvCheck <- as.vector(readGDX(gdx, name = "cm_TaxConvCheck", react = "error"))
-
-    p80ConvNashTaxrevIter <- readGDX(gdx, name = "p80_convNashTaxrev_iter", restore_zeros = FALSE, react = "error") %>%
-      as.quitte() %>%
-      select("region", "period", "iteration", "value") %>%
-      mutate("failed" = abs(.data$value) > 1e-4)
-
-    data <- p80ConvNashTaxrevIter %>%
-      group_by(.data$iteration) %>%
-      summarise(converged = ifelse(any(.data$failed == TRUE), "no", "yes")) %>%
-      mutate("tooltip" = "Converged")
-
-    for (i in unique(p80ConvNashTaxrevIter$iteration)) {
-      if (data[data$iteration == i, "converged"] == "no") {
-        tmp <- filter(p80ConvNashTaxrevIter, .data$iteration == i, .data$failed == TRUE) %>%
-          mutate("item" = paste0(.data$region, " ", .data$period)) %>%
-          select("region", "period", "item") %>%
-          distinct()
-
-        if (nrow(tmp) > 10) {
-          data[data$iteration == i, "tooltip"] <- paste0(
-            "Iteration ", i, " ",
-            "not converged:<br>",
-            paste0(unique(tmp$region), collapse = ", "),
-            "<br>",
-            paste0(unique(tmp$period), collapse = ", ")
-          )
-        } else {
-          data[data$iteration == i, "tooltip"] <- paste0(
-            "Iteration ", i, " ",
-            "not converged:<br>",
-            paste0(unique(tmp$item), collapse = ", ")
-          )
-        }
-      }
-    }
-
-    yLabel <- ifelse(cmTaxConvCheck == 0, "Tax Convergence\n(inactive)", "Tax Convergence")
-
-    taxConvergence <- suppressWarnings(ggplot(data, aes_(
-      x = ~iteration, y = yLabel,
-      fill = ~converged, text = ~tooltip
-    ))) +
-      geom_hline(yintercept = 0) +
-      theme_minimal() +
-      geom_point(size = 2, alpha = aestethics$alpha) +
-      scale_fill_manual(values = booleanColor) +
-      scale_y_discrete(breaks = c(yLabel), drop = FALSE) +
-      labs(x = NULL, y = NULL)
-
-    taxConvergencePlotly <- ggplotly(taxConvergence, tooltip = c("text"))
-    subplots <- append(subplots, list(taxConvergencePlotly))
+    priceAnticipationDeviation <- ggplotly(priceAnticipationDeviation, tooltip = c("text"))
+    subplots <- append(subplots, list(priceAnticipationDeviation))
 
     # Emission Market Deviation (optional) ----
 
@@ -580,9 +518,104 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
 
       damageInternalizationPlotly <- ggplotly(damageInternalization, tooltip = c("text"))
       subplots <- append(subplots, list(damageInternalizationPlotly))
-
     }
 
+    # Tax Convergence (optional) ----
+
+    cmTaxConvCheck <- as.vector(readGDX(gdx, name = "cm_TaxConvCheck", react = "error"))
+
+    p80ConvNashTaxrevIter <- readGDX(gdx, name = "p80_convNashTaxrev_iter", restore_zeros = FALSE, react = "error") %>%
+      as.quitte() %>%
+      select("region", "period", "iteration", "value") %>%
+      mutate("failed" = abs(.data$value) > 1e-4)
+
+    data <- p80ConvNashTaxrevIter %>%
+      group_by(.data$iteration) %>%
+      summarise(converged = ifelse(any(.data$failed == TRUE), "no", "yes")) %>%
+      mutate("tooltip" = "Converged")
+
+    for (i in unique(p80ConvNashTaxrevIter$iteration)) {
+      if (data[data$iteration == i, "converged"] == "no") {
+        tmp <- filter(p80ConvNashTaxrevIter, .data$iteration == i, .data$failed == TRUE) %>%
+          mutate("item" = paste0(.data$region, " ", .data$period)) %>%
+          select("region", "period", "item") %>%
+          distinct()
+
+        if (nrow(tmp) > 10) {
+          data[data$iteration == i, "tooltip"] <- paste0(
+            "Iteration ", i, " ",
+            "not converged:<br>",
+            paste0(unique(tmp$region), collapse = ", "),
+            "<br>",
+            paste0(unique(tmp$period), collapse = ", ")
+          )
+        } else {
+          data[data$iteration == i, "tooltip"] <- paste0(
+            "Iteration ", i, " ",
+            "not converged:<br>",
+            paste0(unique(tmp$item), collapse = ", ")
+          )
+        }
+      }
+    }
+
+    yLabel <- ifelse(cmTaxConvCheck == 0, "Tax Convergence\n(inactive)", "Tax Convergence")
+
+    taxConvergence <- suppressWarnings(ggplot(data, aes_(
+      x = ~iteration, y = yLabel,
+      fill = ~converged, text = ~tooltip
+    ))) +
+      geom_hline(yintercept = 0) +
+      theme_minimal() +
+      geom_point(size = 2, alpha = aestethics$alpha) +
+      scale_fill_manual(values = booleanColor) +
+      scale_y_discrete(breaks = c(yLabel), drop = FALSE) +
+      labs(x = NULL, y = NULL)
+
+    taxConvergencePlotly <- ggplotly(taxConvergence, tooltip = c("text"))
+    subplots <- append(subplots, list(taxConvergencePlotly))
+
+    # Price anticipation (optional) ----
+
+    cmMaxFadeoutPriceAnticip <- as.vector(readGDX(gdx, name = "cm_maxFadeoutPriceAnticip", react = "error"))
+    p80FadeoutPriceAnticipIter <- readGDX(gdx, name = "p80_fadeoutPriceAnticip_iter",
+                                          restore_zeros = FALSE, react = "error") %>%
+      as.quitte() %>%
+      select("iteration", "fadeoutPriceAnticip" = "value")
+
+    data <- p80FadeoutPriceAnticipIter %>%
+      mutate(
+        "iteration" := as.numeric(.data$iteration),
+        "converged" = ifelse(.data$fadeoutPriceAnticip > cmMaxFadeoutPriceAnticip, "no", "yes"),
+        "tooltip" = ifelse(
+          .data$converged == "yes",
+          paste0(
+            "Converged<br>Price Anticipation fade out is low enough<br>",
+            round(.data$fadeoutPriceAnticip, 5), " <= ", cmMaxFadeoutPriceAnticip
+          ),
+          paste0(
+            "Not converged<br>Price Anticipation fade out is not low enough<br>",
+            round(.data$fadeoutPriceAnticip, 5), " > ", cmMaxFadeoutPriceAnticip
+          )
+        )
+      )
+
+    priceAnticipation <- ggplot(data, aes_(x = ~iteration)) +
+      geom_line(aes_(y = ~fadeoutPriceAnticip), alpha = 0.3, linewidth = aestethics$line$size) +
+      suppressWarnings(geom_point(
+        size = 2,
+        aes_(y = 0.0001, fill = ~converged, text = ~tooltip),
+        alpha = aestethics$alpha
+      )) +
+      theme_minimal() +
+      scale_fill_manual(values = booleanColor) +
+      scale_y_continuous(breaks = c(0.0001), labels = c("Price\nAnticipation (inactive)")) +
+      scale_x_continuous(breaks = c(data$iteration)) +
+      labs(x = NULL, y = NULL) +
+      coord_cartesian(ylim = c(-0.2, 1))
+
+    priceAnticipationPlotly <- ggplotly(priceAnticipation, tooltip = c("text"))
+    subplots <- append(subplots, list(priceAnticipationPlotly))
 
     # Summary plot ----
 
@@ -594,7 +627,7 @@ plotNashConvergence <- function(gdx) { # nolint cyclocomp_linter
     out$plot <- subplot(
       subplots,
       nrows = n,
-      heights = c(3 / (n + 3), rep(1 / (n + 3), 2), 2 / (n + 3), 1 / (n + 3), rep(1 / (n + 3), n - 5)),
+      heights = c(2 / (n + 1), rep(1 / (n + 1), n - 1)),
       shareX = TRUE,
       titleX = FALSE
     ) %>%

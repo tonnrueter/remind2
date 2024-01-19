@@ -6,7 +6,7 @@ output:
     toc_float: true
     code_folding: hide
 params:
-  gdx: "fulldata.gdx"
+  gdx: "/home/benke/dev/pik-piam/miptemplate/SSP2EU-EU21-NDC_2023-11-01_19.58.36/fulldata.gdx"
   warning: false
   message: false
   figWidth: 8
@@ -14,21 +14,26 @@ params:
 
 
 ```{r loading_libraries, include=FALSE}
-library(knitr)
+
 library(dplyr)
-library(remind2)
-library(plotly)
 library(ggplot2)
 library(gridExtra)
-library(scales)
+library(knitr)
 library(mip)
+library(plotly)
+library(remind2)
+library(scales)
+library(svglite)
 
 knitr::opts_chunk$set(
   echo = FALSE,
   error = TRUE,
   fig.width = params$figWidth,
   message = params$message,
-  warning = params$warning
+  warning = params$warning,
+  dev = "svglite",
+  fix.ext = ".svg",
+  dpi = 100
 )
 ```
 
@@ -430,8 +435,8 @@ for (v in setdiff(unique(prices_and_surplus_scaled$all_enty), "good")) {
 ```
 
 ## Convergence Plots
-```{r results = "asis"}
-diag <- remind2::plotNashConvergence(gdx = params$gdx)
+```{r results = "asis", fig.width=12, fig.height=6}
+diag <- plotNashConvergence(gdx = params$gdx)
 htmltools::tagList(diag$plot)
 htmltools::tagList(diag$tradeDetailPlot)
 ```
