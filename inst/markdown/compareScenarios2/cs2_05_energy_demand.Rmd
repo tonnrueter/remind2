@@ -149,7 +149,6 @@ walk(items, showLinePlots, data = data)
 showLinePlots(data, "FE|Industry|Electricity|Share")
 ```
 
-
 ### FE mix Steel
 ```{r FE mix Steel}
 tot <- "FE|Industry|Steel"
@@ -162,6 +161,30 @@ items <- c(
   "FE|Industry|Steel|Solids",  
   NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### FE mix Steel using process-based steel modeling by route
+```{r FE mix Steel route}
+if ("FE|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+  tot <- "FE|Industry|Steel"
+  items <- c(
+    "FE|Industry|Steel|DRI-NG-EAF-CCS",
+    "FE|Industry|Steel|DRI-NG-EAF",
+    "FE|Industry|Steel|DRI-H2-EAF",
+    "FE|Industry|Steel|BF-BOF-CCS",
+    "FE|Industry|Steel|BF-BOF",
+    "FE|Industry|Steel|SCRAP-EAF")
+  # Non-process based scenarios have tot variable, but not items, which leads to errors in display;
+  # Therefore, filter data by scenarios that have the 'items' variables.
+  dscens <- data %>%
+    filter(.data$variable %in% items, .data$scenario != "historical") %>%
+    droplevels() %>%
+    pull('scenario') %>%
+    unique()
+  droute <- data %>%
+    filter(.data$scenario %in% dscens)
+showAreaAndBarPlots(droute, items, tot, orderVars="user", scales = "fixed")
+}
 ```
 
 ### FE mix Cement
@@ -311,7 +334,7 @@ data %>%
 showLinePlots(data, 'FE|Industry|Specific Energy Consumption|Other Industry')
 ```
 
-## Transport Final Energy 
+## Transport Final Energy
 
 ### Basics -- with Bunkers
 

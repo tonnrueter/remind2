@@ -24,6 +24,7 @@ Authors:
   \item Falk Benke
   \item Jan Philipp Dietrich
   \item Alois Dirnaichner
+  \item Jakob Duerrwaechter
   \item Pascal Führlich
   \item Anastasis Giannousakis
   \item Robin Hasse

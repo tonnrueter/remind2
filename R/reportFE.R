@@ -58,8 +58,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
      || (length(entySEbio) == length(entySEsyn) && all(entySEbio == entySEsyn)))
     entySEsyn <- c('seliqsyn', 'segasyn')
 
-  macBaseInd37 <- readGDX(gdx, 'macBaseInd37')
-
   demFemapping <- entyFe2Sector %>%
     full_join(sector2emiMkt, by = 'emi_sectors', relationship = "many-to-many") %>%
     # rename such that all_enty1 always signifies the FE carrier like in
@@ -138,6 +136,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   buil_mod = find_real_module(module2realisation,"buildings")
   cdr_mod  = find_real_module(module2realisation,"CDR")
 
+  any_process_based <- length(readGDX(gdx, "secInd37Prc", react='silent')) > 0.
+  steel_process_based <- "steel" %in% readGDX(gdx, "secInd37Prc", react='silent')
 
 
 
@@ -560,6 +560,18 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # CES nodes, convert from TWa to EJ
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
 
+  if(any_process_based){
+    vm_outflowPrc <- readGDX(gdx, name=c("vm_outflowPrc"), field="l", restore_zeros=FALSE, format="first_found", react='silent')[,t,]
+    o37_demFePrc <- readGDX(gdx, name=c("o37_demFePrc"), restore_zeros=FALSE,format= "first_found")[,t,] * TWa_2_EJ
+    o37_demFePrc [is.na(o37_demFePrc )] = 0.
+    o37_ProdIndRoute <- readGDX(gdx, name=c("o37_ProdIndRoute"), restore_zeros=FALSE, format="first_found", react='silent')[,t,]
+    o37_ProdIndRoute[is.na(o37_ProdIndRoute)] = 0.
+    o37_demFeIndRoute <- readGDX(gdx, name=c("o37_demFeIndRoute"), restore_zeros=FALSE, format="first_found", react='silent')[,t,] * TWa_2_EJ
+    o37_demFeIndRoute[is.na(o37_demFeIndRoute)] = 0.
+    # mapping of process to output materials
+    tePrc2ue <- readGDX(gdx, "tePrc2ue", restore_zeros=FALSE)
+  }
+
   # ---- transformations
   # Correct for offset quantities in the transition between ESM and CES for zero quantities
   if (any(grep('\\.offset_quantity$', getNames(pm_cesdata)))) {
@@ -863,26 +875,77 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     # subsectors realisation specific
     if (indu_mod == 'subsectors') {
 
-      # mapping of industrial output to energy production factors in CES tree
-      ces_eff_target_dyn37 <- readGDX(gdx, "ces_eff_target_dyn37")
+      if (steel_process_based) {
 
-      # energy production factors for primary and secondary steel
-      en.ppfen.primary.steel <- ces_eff_target_dyn37 %>%
-        filter(.data$all_in == "ue_steel_primary") %>%
-        pull('all_in1')
+        # technologies and operation modes that belong to primary and secondary steel
+        teOpmoSteelPrimary <- tePrc2ue %>%
+          filter(.data$all_in == "ue_steel_primary")
+        teSteelPrimary <- teOpmoSteelPrimary %>% pull('tePrc')
+        opmoSteelPrimary <- teOpmoSteelPrimary %>% pull('opmoPrc')
+        teOpmoSteelSecondary <- tePrc2ue %>%
+          filter(.data$all_in == "ue_steel_secondary")
+        teSteelSecondary <- teOpmoSteelSecondary %>% pull('tePrc')
+        opmoSteelSecondary <- teOpmoSteelSecondary %>% pull('opmoPrc')
 
-      en.ppfen.sec.steel <- ces_eff_target_dyn37 %>%
-        filter(.data$all_in == "ue_steel_secondary") %>%
-        pull('all_in1')
+        # Electricity uses by primary/secondary steel
+        mixer <- tribble(
+          ~variable,                                               ~all_enty,        ~all_te,           ~opmoPrc,
+          "FE|Industry|Steel|Primary|Electricity (EJ/yr)",         "feels",          teSteelPrimary,    opmoSteelPrimary,
+          "FE|Industry|Steel|Secondary|Electricity (EJ/yr)",       "feels",          teSteelSecondary,  opmoSteelSecondary,
+          "FE|Industry|Steel|++|Primary (EJ/yr)",                  NULL,             teSteelPrimary,    opmoSteelPrimary,
+          "FE|Industry|Steel|++|Secondary (EJ/yr)",                NULL,             teSteelSecondary,  opmoSteelSecondary)
+
+        out <- mbind(
+          c(list(out), # pass a list of magpie objects
+            .select_sum_name_multiply(o37_demFePrc, .mixer_to_selector(mixer))
+          ))
+
+        # Electricity use by route
+        mixer <- tribble(
+          ~variable,                                      ~all_enty,  ~all_te,  ~route,           ~secInd37,
+          "FE|Industry|Steel|+++|BF-BOF (EJ/yr)",         NULL,       NULL,     "bfbof",          "steel",
+          "FE|Industry|Steel|+++|BF-BOF-CCS (EJ/yr)",     NULL,       NULL,     "bfbof_ccs",      "steel",
+          "FE|Industry|Steel|+++|DRI-NG-EAF (EJ/yr)",     NULL,       NULL,     "idreaf_ng",      "steel",
+          "FE|Industry|Steel|+++|DRI-NG-EAF-CCS (EJ/yr)", NULL,       NULL,     "idreaf_ng_ccs",  "steel",
+          "FE|Industry|Steel|+++|DRI-H2-EAF (EJ/yr)",     NULL,       NULL,     "idreaf_h2",      "steel",
+          "FE|Industry|Steel|+++|SCRAP-EAF (EJ/yr)",      NULL,       NULL,     "seceaf",         "steel")
+
+        out <- mbind(
+          c(list(out), # pass a list of magpie objects
+            .select_sum_name_multiply(o37_demFeIndRoute, .mixer_to_selector(mixer))
+          ))
+
+      } else {
+
+        # mapping of industrial output to energy production factors in CES tree
+        ces_eff_target_dyn37 <- readGDX(gdx, "ces_eff_target_dyn37")
+
+        # energy production factors for primary and secondary steel
+        en.ppfen.primary.steel <- ces_eff_target_dyn37 %>%
+          filter(.data$all_in == "ue_steel_primary") %>%
+          pull('all_in1')
+        en.ppfen.sec.steel <- ces_eff_target_dyn37 %>%
+          filter(.data$all_in == "ue_steel_secondary") %>%
+          pull('all_in1')
+
+        mixer <- tribble(
+          ~variable,                                                                                     ~all_in,
+          "FE|Industry|Steel|Primary|Electricity (EJ/yr)",                                               "feel_steel_primary",
+          "FE|Industry|Steel|Secondary|Electricity (EJ/yr)",                                             "feel_steel_secondary",
+          "FE|Industry|Steel|++|Primary (EJ/yr)",                                                        en.ppfen.primary.steel,
+          "FE|Industry|Steel|++|Secondary (EJ/yr)",                                                      en.ppfen.sec.steel)
+
+        # calculate and bind to out
+        out <- mbind(
+          c(list(out), # pass a list of magpie objects
+            .select_sum_name_multiply(vm_cesIO, .mixer_to_selector(mixer))
+          ))
+      }
 
       mixer <- tribble(
         ~variable,                                                                                     ~all_in,
         "FE|Industry|Chemicals|Electricity|+|Mechanical work and low-temperature heat (EJ/yr)",        "feelwlth_chemicals",
         "FE|Industry|Chemicals|Electricity|+|High-temperature heat (EJ/yr)",                           "feelhth_chemicals",
-        "FE|Industry|Steel|++|Primary (EJ/yr)",                                                        en.ppfen.primary.steel,
-        "FE|Industry|Steel|Primary|Electricity (EJ/yr)",                                               "feel_steel_primary",
-        "FE|Industry|Steel|++|Secondary (EJ/yr)",                                                      en.ppfen.sec.steel,
-        "FE|Industry|Steel|Secondary|Electricity (EJ/yr)",                                             "feel_steel_secondary",
         "FE|Industry|Other Industry|Electricity|+|Mechanical work and low-temperature heat (EJ/yr)",   "feelwlth_otherInd",
         "FE|Industry|Other Industry|Electricity|+|High-temperature heat (EJ/yr)",                      "feelhth_otherInd")
 
@@ -913,13 +976,30 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           # script, needs to be converted back to REMIND units here and then
           # scaled by 1e3 for obtaining Mt or billion US$2005
           .select_sum_name_multiply(vm_cesIO, .mixer_to_selector(mixer),
-                                    1e3 / TWa_2_EJ),
+                                    factor=1e3 / TWa_2_EJ),
           # report CES node of total industry as internal variable (for model
           # diagnostics) to represent total industry activity
           list(setNames(mselect(vm_cesIO, all_in = "ue_industry"),
                         "Internal|Activity|Industry (arbitrary unit/yr)"))
         )
       )
+
+
+      # reporting of process-based industry production per process-route
+      if (steel_process_based) {
+        mixer <- tribble(
+          ~variable,                                            ~mat,          ~route,
+          "Production|Industry|Steel|+|BF-BOF (Mt/yr)",         "prsteel",     "bfbof",
+          "Production|Industry|Steel|+|BF-BOF-CCS (Mt/yr)",     "prsteel",     "bfbof_ccs",
+          "Production|Industry|Steel|+|DRI-NG-EAF (Mt/yr)",     "prsteel",     "idreaf_ng",
+          "Production|Industry|Steel|+|DRI-NG-EAF-CCS (Mt/yr)", "prsteel",     "idreaf_ng_ccs",
+          "Production|Industry|Steel|+|DRI-H2-EAF (Mt/yr)",     "prsteel",     "idreaf_h2",
+          "Production|Industry|Steel|+|SCRAP-EAF (Mt/yr)",      "sesteel",     "seceaf"
+        )
+
+        out <- mbind(c(list(out),
+                     .select_sum_name_multiply(o37_ProdIndRoute, .mixer_to_selector(mixer), factor=1e3))) # factor 1e3 converts Gt/yr to Mt/yr
+      }
     }
   }
 
@@ -1681,7 +1761,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                               out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
   }
-    # in case the current non-energy use implementation creates negative values, set them to 0
+
+  # in case the current non-energy use implementation creates negative values, set them to 0
   if (any(out < 0)) {
     out[out < 0] <- 0
   }
@@ -1723,7 +1804,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                            "FE|Non-energy Use|Industry|Gases|+|Biomass (EJ/yr)"),
                   setNames(dimSums(mselect(vm_demFENonEnergySector, emi_sectors="indst",all_enty1="fegas", all_enty = "segasyn"), dim=3),
                            "FE|Non-energy Use|Industry|Gases|+|Hydrogen (EJ/yr)")
-                  ) 
+                  )
 
     ### FE without non-energy use
     out <- mbind(out,

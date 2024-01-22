@@ -40,6 +40,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   # make the reporting
   output <- NULL
+
   message("running reportMacroEconomy...")
   output <- mbind(output,reportMacroEconomy(gdx,regionSubsetList,t)[,t,])
   message("running reportTrade...")
