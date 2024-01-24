@@ -13,7 +13,7 @@ getProjectPath <- function(project = "remind") {
 #' @importFrom dplyr bind_cols
 getNewsestModeltests <- function(namePattern, requireMif) {
 
-  modeltestOutPath <- file.path(getProjectPath(), "modeltests/output")
+  modeltestOutPath <- file.path(getProjectPath(), "modeltests", "remind", "output")
   entries <- dir(modeltestOutPath)
   allRunNames <-
     entries %>%
