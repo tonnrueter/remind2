@@ -3,7 +3,7 @@ globalVariables(".") # nolint
 
 
 getProjectPath <- function(project = "remind") {
-  possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "p", "projects"), project)
+  possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "/p/projects"), project) # nolint
   sel <- which(file.exists(possibleProjectLocations))[1]
   if (is.na(sel)) stop("Cannot determine a path to projects on the cluster.")
   possibleProjectLocations[sel]
