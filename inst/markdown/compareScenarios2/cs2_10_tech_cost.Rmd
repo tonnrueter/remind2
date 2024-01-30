@@ -1,0 +1,44 @@
+# Technology capital costs
+
+## Electricity generating technology capital costs
+### Renewables, storage and nuclear
+```{r Renewables, storage and nuclear}
+showLinePlots(data, "Tech|Electricity|Solar|PV|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Wind|Onshore|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Wind|Offshore|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Nuclear|Capital Costs")
+```
+
+### Direct and indirect electrifications
+```{r Direct and indirect electrifications}
+showLinePlots(data, "Tech|Heat|Electricity|Heat Pump|Capital Costs")
+showLinePlots(data, "Tech|Hydrogen|Electricity|Capital Costs")
+showLinePlots(data, "Tech|Liquids|Hydrogen|Capital Costs")
+```
+
+### Carbon management technologies
+```{r Carbon management technologies}
+showLinePlots(data, "Tech|Hydrogen|Gas|w/ CC|Capital Costs")
+showLinePlots(data, "Tech|CO2 Storage|Capital Costs|w/ Adj Costs")
+showLinePlots(data, "Tech|DAC|Capital Costs|w/ Adj Costs")
+```
+
+
+### Gas technologies
+```{r Gas technologies}
+showLinePlots(data, "Tech|Electricity|Gas|Combined Cycle w/ CC|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Gas|Gas Turbine|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Gas|Combined Heat and Power w/o CC|Capital Costs")
+```
+
+
+### Coal technologies
+```{r Coal technologies}
+showLinePlots(data, "Tech|Electricity|Coal|Pulverised Coal w/ CC|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Coal|Gasification Combined Cycle w/o CC|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Coal|Combined Heat and Power w/o CC|Capital Costs")
+showLinePlots(data, "Tech|Heat|Coal|Capital Costs")
+```
+
+
