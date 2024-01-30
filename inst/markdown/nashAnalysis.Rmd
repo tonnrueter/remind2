@@ -6,7 +6,7 @@ output:
     toc_float: true
     code_folding: hide
 params:
-  gdx: "/home/benke/dev/pik-piam/miptemplate/SSP2EU-EU21-NDC_2023-11-01_19.58.36/fulldata.gdx"
+  gdx: "fulldata.gdx"
   warning: false
   message: false
   figWidth: 8
