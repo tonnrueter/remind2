@@ -1,9 +1,9 @@
 #' @importFrom utils globalVariables
-globalVariables(".")
+globalVariables(".") # nolint
 
 
 getProjectPath <- function(project = "remind") {
-  possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "/p/projects"), project)
+  possibleProjectLocations <- file.path(c("//clusterfs.pik-potsdam.de", "/p/projects"), project) # nolint
   sel <- which(file.exists(possibleProjectLocations))[1]
   if (is.na(sel)) stop("Cannot determine a path to projects on the cluster.")
   possibleProjectLocations[sel]
@@ -13,14 +13,15 @@ getProjectPath <- function(project = "remind") {
 #' @importFrom dplyr bind_cols
 getNewsestModeltests <- function(namePattern, requireMif) {
 
-  modeltestOutPath <- file.path(getProjectPath(), "modeltests/output")
+  modeltestOutPath <- file.path(getProjectPath(), "modeltests", "remind", "output")
   entries <- dir(modeltestOutPath)
   allRunNames <-
     entries %>%
     grep(
       x = .,
       pattern = "^[a-zA-Z0-9-]+_\\d{4}-\\d{2}-\\d{2}_\\d{2}\\.\\d{2}\\.\\d{2}$",
-      value = TRUE)
+      value = TRUE
+    )
   allRuns <-
     allRunNames %>%
     strsplit("_", fixed = TRUE) %>%
@@ -31,6 +32,8 @@ getNewsestModeltests <- function(namePattern, requireMif) {
     bind_cols(runName = allRunNames) %>%
     mutate(date = as.Date(.data$date)) %>%
     mutate(path = file.path(.env$modeltestOutPath, .data$runName)) %>%
+    filter(date >= max(.data$date) - 180) %>% # limit to half a year
+    filter(file.exists(file.path(.data$path, "config.Rdata"))) %>%
     mutate(mifScen = getMifScenPath(.data$path))
   selectedRuns <-
     allRuns %>%
@@ -57,11 +60,11 @@ getNewsestModeltests <- function(namePattern, requireMif) {
 #' }
 #' @export
 loadCs2Data <- function(
-    mifScen,
-    mifHist,
-    cfgScen = NULL,
-    cfgDefault = NULL,
-    envir = globalenv()
+  mifScen,
+  mifHist,
+  cfgScen = NULL,
+  cfgDefault = NULL,
+  envir = globalenv()
 ) {
 
   folder <- tempdir()
@@ -76,7 +79,8 @@ loadCs2Data <- function(
     outputFile = outputFile,
     sections = NULL,
     envir = envir,
-    quiet = TRUE)
+    quiet = TRUE
+  )
   file.remove(file.path(folder, paste0(outputFile, ".pdf")))
   return(invisible(NULL))
 }
@@ -112,15 +116,15 @@ cs2InputPaths <- function(outputDirs) {
 #' ssp1 <- new.env()
 #' ssp2eu <- new.env()
 #' loadModeltest(ssp1, "^SSP1-AMT-")
-#' loadModeltest(ssp2eu, "^SSP2EU-AMT-")
+#' loadModeltest(ssp2eu, "^SSP2EU-.*-AMT$")
 #' ssp1$data
 #' ssp2eu$data
 #' }
 #' @export
 loadModeltest <- function(
-    envir = globalenv(),
-    namePattern = "^SSP2EU-AMT-",
-    folder = tempdir()
+  envir = globalenv(),
+  namePattern = "^SSP2EU-.*-AMT$",
+  folder = tempdir()
 ) {
 
   stopifnot(is.environment(envir))
@@ -143,7 +147,8 @@ loadModeltest <- function(
     mifScen = file.path(folder, paste0(modeltests$name, ".mif")),
     mifHist = file.path(folder, "historical.mif"),
     cfgScen = file.path(folder, paste0(modeltests$name, ".Rdata")),
-    cfgDefault = file.path(folder, "default.cfg"))
+    cfgDefault = file.path(folder, "default.cfg")
+  )
 
   copyFile <- function(from, to) {
     cat("Copying\n  ", paste(from, collapse = "\n  "),
@@ -155,7 +160,8 @@ loadModeltest <- function(
       warning(
         "failed copying following files\n",
         paste(from[!success], collapse = "\n"),
-        immediate. = TRUE)
+        immediate. = TRUE
+      )
   }
 
   copyFile(path$mifScen, tmpPath$mifScen)
@@ -169,14 +175,16 @@ loadModeltest <- function(
       "user specified environment"
     else
       environmentName(envir),
-    ".\n", sep = "")
+    ".\n", sep = ""
+  )
 
   loadCs2Data(
     mifScen = tmpPath$mifScen,
     mifHist = tmpPath$mifHist,
     cfgScen = tmpPath$cfgScen,
     cfgDefault = tmpPath$cfgDefault,
-    envir = envir)
+    envir = envir
+  )
 
   cat("Done.\n")
 
