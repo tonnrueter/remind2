@@ -371,7 +371,7 @@ showAreaAndBarPlots(data, items2, tot, orderVars = "user", scales = "fixed")
 
 #### FE Transport Liquid Area Plots -- with Bunkers
 
-```{r Transport Final Energy Synthetic Liquid}
+```{r Transport Final Energy Synthetic Liquid - by Use}
 tot_synliq <- "FE|Transport|Liquids|Hydrogen"
 items_synliq <- c(
   "FE|Transport|Pass|Road|LDV|Liquids|Hydrogen",
@@ -389,7 +389,7 @@ showAreaAndBarPlots(data, items_synliq, tot_synliq, orderVars = "user", scales =
 
 ```
 
-```{r Transport Final Energy Biogenic Liquid}
+```{r Transport Final Energy Biogenic Liquid - by Use}
 tot_bioliq <- "FE|Transport|Liquids|Biomass"
 items_bioliq <- c(
   "FE|Transport|Pass|Road|LDV|Liquids|Biomass",
