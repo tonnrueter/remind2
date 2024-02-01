@@ -369,6 +369,44 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", fill = TRUE)
 showAreaAndBarPlots(data, items2, tot, orderVars = "user", scales = "fixed")
 ```
 
+#### FE Transport Liquid Area Plots -- with Bunkers
+
+```{r Transport Final Energy Synthetic Liquid}
+tot_synliq <- "FE|Transport|Liquids|Hydrogen"
+items_synliq <- c(
+  "FE|Transport|Pass|Road|LDV|Liquids|Hydrogen",
+  "FE|Transport|Freight|Road|Liquids|Hydrogen",
+  "FE|Transport|Pass|Road|Bus|Liquids|Hydrogen",
+  "FE|Transport|Freight|Rail|Liquids|Hydrogen",
+  "FE|Transport|Pass|Rail|Liquids|Hydrogen",
+  "FE|Transport|Pass|Aviation|Domestic|Liquids|Hydrogen",
+  "FE|Transport|Pass|Aviation|International|Liquids|Hydrogen",
+  "FE|Transport|Freight|International Shipping|Liquids|Hydrogen",
+  NULL
+)
+
+showAreaAndBarPlots(data, items_synliq, tot_synliq, orderVars = "user", scales = "fixed")
+
+```
+
+```{r Transport Final Energy Biogenic Liquid}
+tot_bioliq <- "FE|Transport|Liquids|Biomass"
+items_bioliq <- c(
+  "FE|Transport|Pass|Road|LDV|Liquids|Biomass",
+  "FE|Transport|Freight|Road|Liquids|Biomass",
+  "FE|Transport|Pass|Road|Bus|Liquids|Biomass",
+  "FE|Transport|Freight|Rail|Liquids|Biomass",
+  "FE|Transport|Pass|Rail|Liquids|Biomass",
+  "FE|Transport|Pass|Aviation|Domestic|Liquids|Biomass",
+  "FE|Transport|Pass|Aviation|International|Liquids|Biomass",
+  "FE|Transport|Freight|International Shipping|Liquids|Biomass",
+  NULL
+)
+
+showAreaAndBarPlots(data, items_bioliq, tot_bioliq, orderVars = "user", scales = "fixed")
+
+```
+
 #### FE Transport Line Plots -- with Bunkers
 
 ```{r FE Transport Line Plots -- with Bunkers}
