@@ -1189,8 +1189,8 @@ df.co2price.weighted <- df.pomeg.expand %>%
     sector.mapping <- c("build" = "buildings", "indst" = "industry", "trans" = "transport")
 
 
-    pm_tau_fe_tax <- readGDX(gdx, "pm_tau_fe_tax", restore_zeros = F)
-    pm_tau_fe_sub <- readGDX(gdx, "pm_tau_fe_sub", restore_zeros = F)
+    pm_tau_fe_tax <- readGDX(gdx, c("p21_tau_fe_tax","pm_tau_fe_tax"), restore_zeros = F)
+    pm_tau_fe_sub <- readGDX(gdx, c("p21_tau_fe_sub","pm_tau_fe_sub"), restore_zeros = F)
 
     df.taxrate <- as.quitte(pm_tau_fe_tax * 1.2 / s_twa2mwh * 1e12) %>%
                     rename(taxrate = value)
