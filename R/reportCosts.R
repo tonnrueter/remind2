@@ -132,7 +132,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
     vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",restore_zeros=FALSE,format="first_found")
     demFeIndst.m <- readGDX(gdx,name=c("q37_demFeIndst"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
     demFeBuild.m <- readGDX(gdx,name=c("q36_demFeBuild"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
-    balFe.m <- readGDX(gdx,name=c("qm_balFe","q_balFe"),types="equations",restore_zeros=FALSE,field="m",format="first_found") 
+    balFe.m <- readGDX(gdx,name=c("q_balFe","qm_balFe"),types="equations",restore_zeros=FALSE,field="m",format="first_found") 
     #balFeCDR.m <- readGDX(gdx,name=c("q33_balFeCDR"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
     #febalForUe.m <- dimReduce(febalForUe.m, dim_exclude = 2)
     demFeTrans.m <- readGDX(gdx,name=c("q35_demFeTrans"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
