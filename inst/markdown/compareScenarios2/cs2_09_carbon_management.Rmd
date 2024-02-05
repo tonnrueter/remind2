@@ -16,6 +16,10 @@ showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Industry Energy"
 showLinePlots(data, "Carbon Management|Storage")
 showAreaAndBarPlotsPlus(data, "Carbon Management|Storage", scales = "fixed")
 showAreaAndBarPlotsPlus(data, "Carbon Management|Storage|Industry Energy", scales = "fixed")
+showLinePlots(data, "Carbon Management|Storage|Share of annual potential used")
+showAreaAndBarPlots(data,
+                    vars = c("Carbon Management|Storage"),
+                    tot = "Carbon Management|Storage|Maximum annual CO2 storage potential")
 ```
 
 ## Usage
