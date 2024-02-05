@@ -493,7 +493,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames((dimSums(EmiFeCarrier, dim = 3)
                          # subtract industry CCS
                          - dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3)*p_share_CCS
-                         # subtract synthetic and biogenic carbon contained in industrial feedstocks
+                         # subtract synthetic and biogenic carbon contained in chemical feedstocks that don't return to the atmosphere (e.g. non-incinerated plastics)
                          - dimSums(plastic_CDR, dim=3)
                         )*GtC_2_MtCO2,
                         "Emi|CO2|Energy|+|Demand (Mt CO2/yr)")
@@ -501,11 +501,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   )
 
  # CO2 emissions from the end-of-life of carbon-bearing products
+ # fixme: wild guess: mybe I have to discount the carbon of biogenic and atmospheric origin from here as well. Nope, wasn't that
 if (!is.null(vm_plasticsCarbon)) {
     out <- mbind(out,
-               setNames(dimSums(vm_feedstockEmiUnknownFate, dim=3)* GtC_2_MtCO2,
+               setNames((dimSums(vm_feedstockEmiUnknownFate, dim=3))* GtC_2_MtCO2,
                         "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"),
-               setNames(dimSums(vm_incinerationEmi, dim=3)* GtC_2_MtCO2,
+               setNames((dimSums(vm_incinerationEmi, dim=3))* GtC_2_MtCO2,
                         "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)")
                         )
     out <- mbind(out,
@@ -1113,9 +1114,9 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(
                  # vm_emiTeMkt is variable in REMIND closest to energy co2 emissions
                  (dimSums(sel_vm_emiTeMkt_co2, dim = 3)
-                  # subtract non-BECCS CCU CO2 (i.e., non-CCS part of DAC)
+                  # subtract non-BECCS CCU CO2 (i.e., non-CCS part of DAC (synfuels))
                   - (1 - p_share_CCS) * (-vm_emiCdrTeDetail[, , "dac"])
-                  # deduce co2 captured by industrial processes which is not stored but used for CCU
+                  # deduce co2 captured by industrial processes which is not stored but used for CCU (synfuels)
                   # -> gets accounted in industrial process emissions
                   - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
                  "Emi|CO2|+|Energy (Mt CO2/yr)"))
