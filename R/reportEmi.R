@@ -201,6 +201,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # variable to release captured CO2 when no CCU capacities are standing anymore vent captured CO2
   v_co2capturevalve <- readGDX(gdx, "v_co2capturevalve", field = "l", restore_zeros = F)[, t, ]
 
+  # maximum annual CO2 storage potential assumed
+  max_geolStorage <-  readGDX(gdx, "vm_co2CCS", field = "up", restore_zeros = F)[, t, ]  # CO2 captured per industry subsector
+
   # CO2 captured per industry subsector
   # NOTE: The parameter pm_IndstCO2Captured was calculated without taking into
   # account the different emission factors of energy carriers, so we recalculate
@@ -1626,6 +1629,19 @@ if (!is.null(vm_plasticsCarbon)) {
 
   ### carbon storage ----
 
+  # maximum annual carbon storage and share that is used
+  out <- mbind(out,
+               setNames(dimSums(max_geolStorage, dim = 3, na.rm = T) * GtC_2_MtCO2,
+                        "Carbon Management|Storage|Maximum annual CO2 storage potential (Mt CO2/yr)")
+  )
+  # share of annual storage potential used
+  out <- mbind(out,
+             
+             setNames(dimSums(vm_co2CCS, dim = 3, na.rm = T) / dimSums(max_geolStorage, dim = 3, na.rm = T) * 100,
+                      "Carbon Management|Storage|Share of annual potential used (%)")%>%
+            ifelse(is.finite(.), ., 0)
+  )
+
   # calculate carbon storage variables
   out <- mbind(out,
 
@@ -2676,18 +2692,23 @@ if (!is.null(vm_plasticsCarbon)) {
   ## aggregate intensive variables ----
   .regionSubsetList <- c(list('GLO' = getItems(vm_co2CCS, dim = 'all_regi')),
                          regionSubsetList)
-
+  i <- seq_along(.regionSubsetList)
   for (i in seq_along(.regionSubsetList)) {
-    var <- 'Carbon Management|Share of Stored CO2 from Captured CO2 (%)'
-
+    var1 <- "Carbon Management|Share of Stored CO2 from Captured CO2 (%)"
+    var2 <- "Carbon Management|Storage|Share of annual potential used (%)"
     target_region  <- .regionSubsetList[i]
     source_regions <- .regionSubsetList[[i]]
-
-    out[names(target_region),,var] <- (
+    out[names(target_region),,var1] <- (
         dimSums(vm_co2CCS[source_regions,,],     dim = c(1, 3), na.rm = TRUE)
       / dimSums(vm_co2capture[source_regions,,], dim = c(1, 3))
       * 100
       ) %>%
+      ifelse(is.finite(.), ., 0)   # set NaN (division by 0) to 0
+
+    out[names(target_region),,var2] <- (
+        dimSums(vm_co2CCS[source_regions,,], dim = c(1,3), na.rm = T) 
+      / dimSums(max_geolStorage[source_regions,,], dim = c(1,3), na.rm = T) 
+      * 100) %>%
       ifelse(is.finite(.), ., 0)   # set NaN (division by 0) to 0
   }
 
