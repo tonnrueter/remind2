@@ -19,6 +19,7 @@ showAreaAndBarPlots(
                'Carbon Management|Carbon Capture|Industry Process|Cement',
                'Carbon Management|Carbon Capture|Industry Energy|Chemicals',
                'Carbon Management|Carbon Capture|Industry Energy|Steel')),
+  scales = 'fixed',
   orderVars = 'user')
 ```
 
