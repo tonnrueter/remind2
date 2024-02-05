@@ -77,10 +77,15 @@ compareScenConf <- function(fileList = NULL, remindPath = "/p/projects/rd3mod/gi
   settings1 <- readCheckScenarioConfig(fileList[[1]], remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
   settings2 <- readCheckScenarioConfig(fileList[[2]], remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
 
-  # for mapping files
+  # for mapping files use "Variable" if exists, else combine first two columns
   if (is.null(row.names)) {
-    rownames(settings1) <- make.unique(paste0(settings1[, 1], ": ", settings1[, 2]))
-    rownames(settings2) <- make.unique(paste0(settings2[, 1], ": ", settings2[, 2]))
+    if ("Variable" %in% intersect(colnames(settings1), colnames(settings2))) {
+      rownames(settings1) <- make.unique(settings1[, "Variable"])
+      rownames(settings2) <- make.unique(settings2[, "Variable"])
+    } else {
+      rownames(settings1) <- make.unique(paste0(settings1[, 1], ": ", settings1[, 2]))
+      rownames(settings2) <- make.unique(paste0(settings2[, 1], ": ", settings2[, 2]))
+    }
   }
 
   # rename columns and rows in old file to new names after some checks
