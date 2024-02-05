@@ -204,7 +204,7 @@ vars <-
 walk(vars, showLinePlots, data = data)
 ```
 
-## FE intensity of GDP
+## FE intensity of GDP_PPP
 
 ```{r FE intensity of GDP_PPP}
 items <- c(
@@ -214,7 +214,7 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-## FE intensity of GDP_PPP, linegraph (by pGDP_PPP)
+## FE intensity of GDP_PPP, linegraph
 
 ```{r FE intensity of GDP_PPP, linegraph}
 dIea <-

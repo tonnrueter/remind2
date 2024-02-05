@@ -10,6 +10,21 @@ showLinePlots(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs")
 showLinePlots(data, "Tech|Electricity|Nuclear|Capital Costs")
 ```
 
+### Learning renewables and storage
+```{r Learning renewables and storage}
+showLinePlots(data, )
+showLinePlots(data, "Tech|Electricity|Wind|Onshore|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Wind|Offshore|Capital Costs")
+showLinePlots(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Solar|PV|Capital Costs", "Cumulative Cap|Electricity|Solar", scales = "fixed")
+
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Onshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Onshore", scales = "fixed", showHistorical = FALSE)
+
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Offshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Offshore", scales = "fixed", showHistorical = FALSE)
+
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs", "Cumulative Cap|Electricity|Storage|Battery|For PV", scales = "fixed", showHistorical = FALSE)
+```
+
 ### Direct and indirect electrifications
 ```{r Direct and indirect electrifications}
 showLinePlots(data, "Tech|Heat|Electricity|Heat Pump|Capital Costs")
