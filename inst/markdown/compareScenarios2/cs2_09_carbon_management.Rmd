@@ -7,7 +7,19 @@ showLinePlots(data, "Carbon Management|Carbon Capture")
 showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture", scales = "fixed")
 showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Biomass|Pe2Se", scales = "fixed")
 showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Fossil|Pe2Se", scales = "fixed")
-showAreaAndBarPlotsPlus(data, "Carbon Management|Carbon Capture|Industry Energy", scales = "fixed")
+
+# industry ----
+showAreaAndBarPlotsPlus(data,
+                        "Carbon Management|Carbon Capture|Industry Energy",
+                        scales = "fixed")
+
+showAreaAndBarPlots(
+  data = data,
+  vars = rev(c('Carbon Management|Carbon Capture|Industry Energy|Cement',
+               'Carbon Management|Carbon Capture|Industry Process|Cement',
+               'Carbon Management|Carbon Capture|Industry Energy|Chemicals',
+               'Carbon Management|Carbon Capture|Industry Energy|Steel')),
+  orderVars = 'user')
 ```
 
 ## Storage
