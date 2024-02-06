@@ -191,7 +191,7 @@ walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```{r FE Transport Prices}
 carriers <- c("Solids", "Liquids", "Gases", "Hydrogen", "Heat", "Electricity")
 vars <- intersect(paste0("Price|Final Energy|Transport|", carriers),
-                  carrierslevels(dPrice$variable))
+                  levels(dPrice$variable))
 walk(vars, showLinePlots, data = dPrice, scale = "fixed")
 ```
 
