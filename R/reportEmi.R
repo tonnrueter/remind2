@@ -2558,6 +2558,7 @@ if (!is.null(vm_plasticsCarbon)) {
 
   # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
+  if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "fixed_shares")) {
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
@@ -2680,6 +2681,7 @@ if (!is.null(vm_plasticsCarbon)) {
     out <- mbind(out, out.wNonEn)
 
   }
+}
 
   # add global values
   out <- mbind(out, dimSums(out, dim = 1))
@@ -2758,11 +2760,13 @@ if (!is.null(vm_plasticsCarbon)) {
 
   }
 
-  # if non-energy use variables exist, also do bunker correction for variables w/o non-energy use
-  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
-      "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) &&
-      "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) &&
-      "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
+  # if non-energy use variables exist, also do bunker correction for variables
+  # w/o non-energy use
+  if (   "FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)
+      && "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output)
+      && "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output)
+      && "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)
+      && exists('emi.vars.wNonEn')) {
 
     emi.vars.wBunkers.wNonEn <- intersect(emi.vars.wBunkers, emi.vars.wNonEn)
 
@@ -2786,10 +2790,11 @@ if (!is.null(vm_plasticsCarbon)) {
                                    "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
 
     # add bunker correction for emissions variables with LULUCF national accounting and w/o non-energy use
-    if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
-        "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) &&
-        "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) &&
-        "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
+    if (   "FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)
+        && "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output)
+        && "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output)
+        && "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)
+        && exists('emi.vars.wNonEn')) {
 
       emi.vars.wBunkers <- c(emi.vars.wBunkers,
                              "Emi|GHG|w/o Non-energy Use|LULUCF national accounting (Mt CO2eq/yr)",
