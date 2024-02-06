@@ -479,8 +479,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
 
-
-
   # calculate total energy supply and demand co2 emissions
   out <- mbind(out,
 
@@ -1121,7 +1119,9 @@ if (!is.null(vm_plasticsCarbon)) {
                   - (1 - p_share_CCS) * (-vm_emiCdrTeDetail[, , "dac"])
                   # deduce co2 captured by industrial processes which is not stored but used for CCU (synfuels)
                   # -> gets accounted in industrial process emissions
-                  - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
+                  - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)
+                  # fixme: missing/wrong emissions
+                  ) * GtC_2_MtCO2,
                  "Emi|CO2|+|Energy (Mt CO2/yr)"))
 
   ### 2.2 Non-energy CO2 emissions ----
@@ -2559,6 +2559,8 @@ if (!is.null(vm_plasticsCarbon)) {
 
   # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
+# fixme: test re-introduce condition:
+if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "fixed_shares")) {
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
@@ -2681,7 +2683,7 @@ if (!is.null(vm_plasticsCarbon)) {
     out <- mbind(out, out.wNonEn)
 
   }
-
+}
   # add global values
   out <- mbind(out, dimSums(out, dim = 1))
   # add other region aggregations
