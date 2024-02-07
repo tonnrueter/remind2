@@ -502,12 +502,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   )
 
  # CO2 emissions from the end-of-life of carbon-bearing products
- # fixme: wild guess: mybe I have to discount the carbon of biogenic and atmospheric origin from here as well. Nope, wasn't that
+
 if (!is.null(vm_plasticsCarbon)) {
     out <- mbind(out,
-               setNames((dimSums(vm_feedstockEmiUnknownFate, dim=3))* GtC_2_MtCO2,
+               setNames(dimSums(vm_feedstockEmiUnknownFate, dim=3)* GtC_2_MtCO2,
                         "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"),
-               setNames((dimSums(vm_incinerationEmi, dim=3))* GtC_2_MtCO2,
+               setNames(dimSums(vm_incinerationEmi, dim=3)* GtC_2_MtCO2,
                         "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)")
                         )
     out <- mbind(out,
