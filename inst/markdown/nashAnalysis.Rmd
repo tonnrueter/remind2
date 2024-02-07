@@ -194,7 +194,9 @@ for (i in p) {
 
 ### Read Data from gdx
 ```{r results = "asis"}
-price_not_discounted_itr <- left_join(p80_pvp_itr,
+
+price_not_discounted_itr <- left_join(
+  filter(p80_pvp_itr, all_enty != "good"),
   filter(p80_pvp_itr, all_enty == "good"),
   by = c("ttot", "iteration")
 ) %>%
@@ -203,6 +205,16 @@ price_not_discounted_itr <- left_join(p80_pvp_itr,
     p80_pvp_itr_no_discount = p80_pvp_itr.x / p80_pvp_itr.y
   ) %>%
   select("ttot", "iteration", "all_enty", "p80_pvp_itr_no_discount")
+
+# adjust "good" value: p80_pvp_itr(t, "good",iteration) * (1.05 ** (t.val - 2005) )
+
+price_not_discounted_itr_good <- p80_pvp_itr %>%
+  filter(all_enty == "good") %>%
+  mutate("p80_pvp_itr_no_discount" := .data$p80_pvp_itr * 1.05 ** (.data$ttot - 2005)) %>%
+  select(-"p80_pvp_itr")
+
+price_not_discounted_itr <- rbind(price_not_discounted_itr, price_not_discounted_itr_good)
+
 ```
 
 ### x: time, slider: iter, facet: enty

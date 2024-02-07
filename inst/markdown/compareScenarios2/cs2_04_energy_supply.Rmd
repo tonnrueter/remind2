@@ -102,8 +102,8 @@ showLinePlots(data, "Cap|Electricity|Hydrogen")
 ```
 
 ## PE Mix
-### PE|Coal
-```{r PE|Coal}
+### PE Coal
+```{r PE Coal}
 items <- c(
   "PE|Coal|Hydrogen",
   "PE|Coal|Electricity",
@@ -115,8 +115,8 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
-### PE|Gas
-```{r PE|Gas}
+### PE Gas
+```{r PE Gas}
 items <- c(
   "PE|Gas|Hydrogen|w/ CC",
   "PE|Gas|Hydrogen|w/o CC",  
@@ -131,9 +131,9 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 
-### PE|Biomass
+### PE Biomass
 
-```{r PE|Biomass}
+```{r PE Biomass}
 items <- c(
   "PE|Biomass|Hydrogen|w/ CC",
   "PE|Biomass|Hydrogen|w/o CC",
@@ -158,18 +158,18 @@ showLinePlots(data, "PE|Biomass")
 showLinePlots(data, "Primary Energy Production|Biomass|Energy Crops")
 ```
 
-### PE|Coal|Extraction
-```{r PE|Coal|Extraction}
+### PE Coal Extraction
+```{r PE Coal Extraction}
 showLinePlots(data, "Res|Extraction|Coal")
 ```
 
-### PE|Oil|Extraction
-```{r PE|Oil|Extraction}
+### PE Oil Extraction
+```{r PE Oil Extraction}
 showLinePlots(data, "Res|Extraction|Oil")
 ```
 
-### PE|Gas|Extraction
-```{r PE|Gas|Extraction}
+### PE Gas Extraction
+```{r PE Gas Extraction}
 showLinePlots(data, "Res|Extraction|Gas")
 ```
 
@@ -205,8 +205,8 @@ showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 
 
 
-### SE|Electricity - Usage
-```{r SE|Electricity - Usage}
+### SE Electricity - Usage
+```{r SE Electricity - Usage}
 
 tot <- "SE|Electricity"
 
@@ -225,8 +225,8 @@ showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 
-### SE|Heat
-```{r SE|Heat}
+### SE Heat
+```{r SE Heat}
 tot <- "SE|Heat"
 items <- c(
   "SE|Heat|Electricity|Heat Pump",
@@ -238,8 +238,8 @@ showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
 
-### SE|Hydrogen
-```{r SE|Hydrogen}
+### SE Hydrogen
+```{r SE Hydrogen}
 
 tot <- "SE|Hydrogen"
 
@@ -258,8 +258,8 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
-### SE|Hydrogen - Usage
-```{r SE|Hydrogen - Usage}
+### SE Hydrogen - Usage
+```{r SE Hydrogen - Usage}
 
 tot <- "SE|Hydrogen"
 
@@ -277,8 +277,8 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 
 
 
-### SE|Solids
-```{r SE|Solids}
+### SE Solids
+```{r SE Solids}
 
 tot <- "SE|Solids"
 
@@ -290,9 +290,9 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 
-### SE|Liquids
+### SE Liquids
 
-```{r SE|Liquids}
+```{r SE Liquids}
 
 tot <- "SE|Liquids"
 
@@ -311,8 +311,8 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
-### SE|Gases
-```{r SE|Gases}
+### SE Gases
+```{r SE Gases}
 
 tot <- "SE|Gases"
 
@@ -335,35 +335,35 @@ showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 
 ## Secondary Energy line plots - totals
 
-### SE|Electricity
-```{r SE|Electricity total line}
+### SE Electricity
+```{r SE Electricity total line}
 showLinePlots(data, "SE|Electricity")
 ```
 
-### SE|Heat
-```{r SE|Heat total line}
+### SE Heat
+```{r SE Heat total line}
 showLinePlots(data, "SE|Heat")
 ```
 
-### SE|Hydrogen
-```{r SE|Hydrogen total line}
+### SE Hydrogen
+```{r SE Hydrogen total line}
 showLinePlots(data, "SE|Hydrogen")
 ```
 
 
-### SE|Solids
-```{r SE|Solids total line}
+### SE Solids
+```{r SE Solids total line}
 showLinePlots(data, "SE|Solids")
 ```
 
 
-### SE|Liquids
-```{r SE|Liquids total line}
+### SE Liquids
+```{r SE Liquids total line}
 showLinePlots(data, "SE|Liquids")
 ```
 
-### SE|Gases
-```{r SE|Gases total line}
+### SE Gases
+```{r SE Gases total line}
 showLinePlots(data, "SE|Gases")
 ```
 
@@ -373,8 +373,8 @@ showLinePlots(data, "SE|Gases")
 ## Secondary Energy line plots - detail
 
 
-### SE|Electricity
-```{r SE|Electricity detail line}
+### SE Electricity
+```{r SE Electricity detail line}
 showLinePlots(data, "SE|Electricity|Gas")
 showLinePlots(data, "SE|Electricity|Coal")
 showLinePlots(data, "SE|Electricity|Oil")
@@ -391,8 +391,8 @@ showLinePlots(data, "SE|Electricity|Biomass")
 ```
 
 
-### SE|Heat
-```{r SE|Heat detail line}
+### SE Heat
+```{r SE Heat detail line}
 
 showLinePlots(data, "SE|Heat|Coal")
 showLinePlots(data, "SE|Heat|Gas")
@@ -401,8 +401,8 @@ showLinePlots(data, "SE|Heat|Electricity|Heat Pump")
 
 ```
 
-### SE|Hydrogen
-```{r SE|Hydrogen detail line}
+### SE Hydrogen
+```{r SE Hydrogen detail line}
 
 showLinePlots(data,  "SE|Hydrogen|Biomass|w/ CC")
 showLinePlots(data,  "SE|Hydrogen|Biomass|w/o CC")
@@ -416,16 +416,16 @@ showLinePlots(data,  "SE|Hydrogen|Net Imports")
 
 ```
 
-### SE|Solids
-```{r SE|Solids detail line}
+### SE Solids
+```{r SE Solids detail line}
 showLinePlots(data, "SE|Solids|Coal")
 showLinePlots(data, "SE|Solids|Biomass")
 showLinePlots(data, "SE|Solids|Traditional Biomass")
 ```
 
-### SE|Liquids
+### SE Liquids
 
-```{r SE|Liquids detail line}
+```{r SE Liquids detail line}
 
 
 showLinePlots(data, "SE|Liquids|Fossil|Oil")
@@ -441,8 +441,8 @@ showLinePlots(data, "SE|Liquids|Hydrogen")
 ```
 
 
-### SE|Gases
-```{r SE|Gases detail line}
+### SE Gases
+```{r SE Gases detail line}
 showLinePlots(data,  c("SE|Gases|Fossil|Natural Gas", "SE|Gases|Gas"))
 showLinePlots(data, "SE|Gases|Fossil|Coal")
 showLinePlots(data, "SE|Gases|Biomass")
