@@ -39,6 +39,8 @@ Emi|CO2;Emi|CO2|CDR|BECCS;1
 Emi|CO2;Emi|CO2|CDR|Industry CCS|Synthetic Fuels;1
 Emi|CO2;Emi|CO2|CDR|DACCS;1
 Emi|CO2;Emi|CO2|CDR|EW;1
+Emi|CO2;Emi|CO2|Gross|Energy|+|Waste;1
+Emi|CO2;Emi|CO2|CDR|Materials|+|Plastics;1
 ;;
 # total GHG emissions by CO2 sectors and non-CO2 gases;;
 Emi|GHG 1;Emi|CO2|+|Energy;1
@@ -58,10 +60,12 @@ Emi|CO2|Cumulated;Emi|CO2|Cumulated|Energy|Demand|Buildings;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|Energy|Demand|CDR;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|Gross|Energy|Supply|Non-electric;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|Gross|Energy|Supply|Electricity;1
+Emi|CO2|Cumulated;Emi|CO2|Cumulated|Gross|Energy|Waste;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|BECCS;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|Industry CCS|Synthetic Fuels;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|DACCS;1
 Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|EW;1
+Emi|CO2|Cumulated;Emi|CO2|Cumulated|CDR|Materials|Plastics;1
 ;;
 # total CDR;;
 Emi|CO2|CDR;Emi|CO2|CDR|Land-Use Change;1

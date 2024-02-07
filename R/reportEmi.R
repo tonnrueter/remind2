@@ -1879,8 +1879,45 @@ if (!is.null(vm_plasticsCarbon)) {
                         - out[, , "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"],
                         "Emi|CO2|Gross|Energy|+|Demand (Mt CO2/yr)"))
 
+###########################################
+## Gross emissions in Energy|Waste sector##
+###########################################
+# fixme: check that CDR addition makes sense
+if (!is.null(vm_plasticsCarbon)){
+# calculate gross emissions in energy waste sector
+  out <- mbind(out,
+               # total gross energy waste emissions
+               setNames(out[, , "Emi|CO2|Energy|+|Waste (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy|+|Waste (Mt CO2/yr)"))
+}
 
-  # total gross variables
+###########################
+## total gross variables ##
+###########################
+# if feedstocks are available
+if (!is.null(vm_plasticsCarbon)){
+ out <- mbind(out,
+               # total gross energy emissions
+               setNames(out[, , "Emi|CO2|+|Energy (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy (Mt CO2/yr)"),
+
+               # total gross energy and industrial process emissions
+               setNames(out[, , "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
+                        "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)"),
+
+               # total gross emissions
+               setNames(out[, , "Emi|CO2 (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR (Mt CO2/yr)"],
+                        "Emi|CO2|Gross (Mt CO2/yr)"))
+} else {
+  # total gross variables if feedstocks are not available
   out <- mbind(out,
                # total gross energy emissions
                setNames(out[, , "Emi|CO2|+|Energy (Mt CO2/yr)"]
@@ -1898,6 +1935,8 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(out[, , "Emi|CO2 (Mt CO2/yr)"]
                         - out[, , "Emi|CO2|CDR (Mt CO2/yr)"],
                         "Emi|CO2|Gross (Mt CO2/yr)"))
+}
+
 
   # split into electric and non-electric energy supply emissions
   out <- mbind(out,
@@ -2207,8 +2246,16 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(out[, , "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)"],
                         "Emi|GHG|Energy|Demand|+|CDR (Mt CO2eq/yr)"))
 
-
-
+###############################
+## GHG energy waste emissions##
+###############################
+# note that Emi|GHG|Energy|Waste corresponds to end-of-life emissions of products of the chemicals sector
+# and it is different to Emi|GHG|+++|Waste
+if (!is.null(vm_plasticsCarbon)){
+    out <- mbind(out,
+               setNames(out[, , "Emi|CO2|Energy|+|Waste (Mt CO2/yr)"],
+                        "Emi|GHG|Energy|+|Waste (Mt CO2eq/yr)"))
+}
 
   ## gross GHG variables (ecxl. negative emissions from BECCS and carbon storage of carbon-neutral synthetic fuels)
   ## note Emi|CO2|CDR|... variables are negative. That's why we substract them to get from net to gross emissions.
@@ -2241,17 +2288,39 @@ if (!is.null(vm_plasticsCarbon)) {
 
 
                setNames(out[, , "Emi|GHG|Energy|Demand|+|CDR (Mt CO2eq/yr)"],
-                        "Emi|GHG|Gross|Energy|Demand|+|CDR (Mt CO2eq/yr)"),
+                        "Emi|GHG|Gross|Energy|Demand|+|CDR (Mt CO2eq/yr)")
+
+  )
+
+#############################################
+## gross GHG variables if feedstocks exist ##
+#############################################
+
+  ##(ecxl. negative emissions from BECCS and carbon storage of carbon-neutral synthetic fuels)
+  ## note Emi|CO2|CDR|... variables are negative. That's why we substract them to get from net to gross emissions.
+if (!is.null(vm_plasticsCarbon)){
+    out <- mbind(out,
+               
+               # total gross waste emissions
+               setNames(out[, , "Emi|GHG|Energy|+|Waste (Mt CO2eq/yr)"]
+                        - out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
+                        "Emi|GHG|Gross|Energy|+|Waste (Mt CO2eq/yr)"),
 
                # total gross energy emissions
                setNames(out[, , "Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
                         - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"]
+                        - out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
+                        "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
+  )
+} else {
+  # total gross energy emissions
+               setNames(out[, , "Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
+                        - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
                         - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"],
                         "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
-
-
-  )
-
+}
+## END of gross GHG variables if feedstocks exist ############################
 
   # electric and non-electric supply GHG emissions (needed for total GHG stacked plots with gross emissions)
 
@@ -2850,7 +2919,35 @@ if (!is.null(vm_plasticsCarbon)) {
     return(tmp)
   }
 
-  # emissions variables for which we want to calculate cumulative values
+
+# emissions variables for which we want to calculate cumulative values
+if (!is.null(vm_plasticsCarbon)) {
+  vars.cumulate <- c("Emi|GHG (Mt CO2eq/yr)",
+                     "Emi|CO2 (Mt CO2/yr)",
+                     "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy and Industrial Processes (Mt CO2/yr)",
+                     "Emi|CO2|+|Energy (Mt CO2/yr)",
+                     "Emi|CO2|+|Land-Use Change (Mt CO2/yr)",
+                     "Emi|CO2|+|Industrial Processes (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|Industry (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|Buildings (Mt CO2/yr)",
+                     "Emi|CO2|Energy|Demand|+|CDR (Mt CO2/yr)",
+                     "Emi|CO2|Energy|+|Waste (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Demand|+|Industry (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Supply|Non-electric (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|Supply|+|Electricity (Mt CO2/yr)",
+                     "Emi|CO2|Gross|Energy|+|Waste (Mt CO2/yr)",
+                     "Emi|CO2|CDR (Mt CO2/yr)",
+                     "Emi|CO2|CDR|BECCS (Mt CO2/yr)",
+                     "Emi|CO2|CDR|BECCS|Pe2Se (Mt CO2/yr)",
+                     "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)",
+                     "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)",
+                     "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
+                     "Emi|CO2|CDR|EW (Mt CO2/yr)",
+                     "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)",
+                     "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)")
+}else{
   vars.cumulate <- c("Emi|GHG (Mt CO2eq/yr)",
                      "Emi|CO2 (Mt CO2/yr)",
                      "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
@@ -2873,7 +2970,7 @@ if (!is.null(vm_plasticsCarbon)) {
                      "Emi|CO2|CDR|DACCS (Mt CO2/yr)",
                      "Emi|CO2|CDR|EW (Mt CO2/yr)",
                      "Emi|CO2|CDR|Land-Use Change (Mt CO2/yr)")
-
+}
 
   # variable names for cumulated emissions variables
   names.cumul <- vars.cumulate
