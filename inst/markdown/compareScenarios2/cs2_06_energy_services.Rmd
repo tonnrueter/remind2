@@ -68,13 +68,17 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 items <- c(
   "FE|Buildings|Heating",
   "FE|Buildings|Appliances and Light",
-  "FE|Buildings|Cooking and Water",
+  "FE|Buildings|Cooking and Water")
+
+showMultiLinePlots(data, items)
+showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
+
+items <- c(
   "FE|Buildings|Space Cooling",
   "FE|Buildings|Space Heating")
-showMultiLinePlots(data, items[1:3])
-showMultiLinePlots(data, items[4:5])
-showMultiLinePlotsByVariable(data, items[1:3], "GDP|PPP pCap")
-showMultiLinePlotsByVariable(data, items[4:5], "GDP|PPP pCap")
+
+showMultiLinePlots(data, items)
+showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
 

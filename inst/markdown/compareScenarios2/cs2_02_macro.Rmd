@@ -204,9 +204,9 @@ vars <-
 walk(vars, showLinePlots, data = data)
 ```
 
-## FE intensity of GDP_PPP
+## FE intensity of GDP_PPP, area plot
 
-```{r FE intensity of GDP_PPP}
+```{r FE intensity of GDP_PPP, area plot (by sector)}
 items <- c(
   "FE|Transport pGDP_PPP",
   "FE|Buildings pGDP_PPP",
@@ -214,9 +214,9 @@ items <- c(
 showAreaAndBarPlots(data, items, scales = "fixed")
 ```
 
-## FE intensity of GDP_PPP, linegraph
+## FE intensity of GDP_PPP, line plot
 
-```{r FE intensity of GDP_PPP, linegraph}
+```{r FE intensity of GDP_PPP, line plot (by sector)}
 dIea <-
   data %>%
   # To make the plots less crowded, show only IEA historical data.
@@ -288,7 +288,7 @@ kayaRel <-
 ### Absolute
 
 ```{r Kaya Decomposition Absolute}
-showMultiLinePlots(kaya, kayaVars)
+showMultiLinePlots(kaya, kayaVars, NROW_NUM = 2)
 walk(kayaVars, showRegiLinePlots, data = kaya)
 ```
 
@@ -297,7 +297,7 @@ cat("### Relative to ", refYear, "\n")
 ```
 
 ```{r Kaya Decomposition Relative}
-showMultiLinePlots(kayaRel, kayaVars)
+showMultiLinePlots(kayaRel, kayaVars, NROW_NUM = 2)
 walk(kayaVars, showRegiLinePlots, data = kayaRel)
 ```
 
