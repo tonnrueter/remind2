@@ -479,8 +479,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
 
-
-
   # calculate total energy supply and demand co2 emissions
   out <- mbind(out,
 
@@ -496,7 +494,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
                setNames((dimSums(EmiFeCarrier, dim = 3)
                          # subtract industry CCS
                          - dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3)*p_share_CCS
-                         # subtract synthetic and biogenic carbon contained in industrial feedstocks
+                         # subtract synthetic and biogenic carbon contained in chemical feedstocks that don't return to the atmosphere (e.g. non-incinerated plastics)
                          - dimSums(plastic_CDR, dim=3)
                         )*GtC_2_MtCO2,
                         "Emi|CO2|Energy|+|Demand (Mt CO2/yr)")
@@ -504,6 +502,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   )
 
  # CO2 emissions from the end-of-life of carbon-bearing products
+
 if (!is.null(vm_plasticsCarbon)) {
     out <- mbind(out,
                setNames(dimSums(vm_feedstockEmiUnknownFate, dim=3)* GtC_2_MtCO2,
@@ -1116,11 +1115,13 @@ if (!is.null(vm_plasticsCarbon)) {
                setNames(
                  # vm_emiTeMkt is variable in REMIND closest to energy co2 emissions
                  (dimSums(sel_vm_emiTeMkt_co2, dim = 3)
-                  # subtract non-BECCS CCU CO2 (i.e., non-CCS part of DAC)
+                  # subtract non-BECCS CCU CO2 (i.e., non-CCS part of DAC (synfuels))
                   - (1 - p_share_CCS) * (-vm_emiCdrTeDetail[, , "dac"])
-                  # deduce co2 captured by industrial processes which is not stored but used for CCU
+                  # deduce co2 captured by industrial processes which is not stored but used for CCU (synfuels)
                   # -> gets accounted in industrial process emissions
-                  - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
+                  - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)
+                  # fixme: missing/wrong emissions
+                  ) * GtC_2_MtCO2,
                  "Emi|CO2|+|Energy (Mt CO2/yr)"))
 
   ### 2.2 Non-energy CO2 emissions ----
@@ -2558,6 +2559,7 @@ if (!is.null(vm_plasticsCarbon)) {
 
   # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
+  if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "fixed_shares")) {
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
@@ -2680,7 +2682,7 @@ if (!is.null(vm_plasticsCarbon)) {
     out <- mbind(out, out.wNonEn)
 
   }
-
+}
   # add global values
   out <- mbind(out, dimSums(out, dim = 1))
   # add other region aggregations
@@ -2758,11 +2760,13 @@ if (!is.null(vm_plasticsCarbon)) {
 
   }
 
-  # if non-energy use variables exist, also do bunker correction for variables w/o non-energy use
-  if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
-      "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) &&
-      "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) &&
-      "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
+  # if non-energy use variables exist, also do bunker correction for variables
+  # w/o non-energy use
+  if (   "FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)
+      && "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output)
+      && "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output)
+      && "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)
+      && exists('emi.vars.wNonEn')) {
 
     emi.vars.wBunkers.wNonEn <- intersect(emi.vars.wBunkers, emi.vars.wNonEn)
 
@@ -2786,10 +2790,11 @@ if (!is.null(vm_plasticsCarbon)) {
                                    "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
 
     # add bunker correction for emissions variables with LULUCF national accounting and w/o non-energy use
-    if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
-        "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output) &&
-        "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output) &&
-        "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)) {
+    if (   "FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)
+        && "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output)
+        && "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output)
+        && "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)
+        && exists('emi.vars.wNonEn')) {
 
       emi.vars.wBunkers <- c(emi.vars.wBunkers,
                              "Emi|GHG|w/o Non-energy Use|LULUCF national accounting (Mt CO2eq/yr)",

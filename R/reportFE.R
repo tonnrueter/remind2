@@ -1761,6 +1761,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                               out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
   }
+  ### end of "### temporary (!) industry non-energy use reporting" for Ariadne
 
   # in case the current non-energy use implementation creates negative values, set them to 0
   if (any(out < 0)) {
