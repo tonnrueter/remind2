@@ -2515,8 +2515,7 @@ if (!is.null(vm_plasticsCarbon)){
 
                # Waste (from MAC curve)
                setNames(
-                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3)
-                 + dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ETS"), dim=3) * GtC_2_MtCO2 ,
+                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3) ,
                  "Emi|GHG|ETS|+|Waste (Mt CO2eq/yr)"),
                setNames(
                  dimSums(mselect(EmiMACEq[, , "ES"], sector = "Waste"), dim = 3),
