@@ -149,11 +149,10 @@ reportLCOE <- function(gdx, output.type = "both"){
    }
 
 
-
-
+  discount_rate <- 0.05
 
  # calculates annuity cost:
- # annuity cost = 1/ sum_t (p_omeg(t) / 1.06^t)  * direct investment cost
+ # annuity cost = 1/ sum_t (p_omeg(t) / (1+discount_rate)^t)  * direct investment cost
  # t is in T which is the lifetime of the technology
  # direct investment cost = directteinv or for past values (before 2005) (v_investcost * deltaCap)
  # annuity represents (total investment cost + interest over lifetime) distributed equally over all years of lifetime
@@ -168,7 +167,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  te_annuity <- new.magpie("GLO",names=magclass::getNames(p_omeg,dim=2))
  for(a in magclass::getNames(p_omeg[reg1,,],dim=2)){
-  te_annuity[,,a] <- 1/dimSums(p_omeg[reg1,,a]/1.06**as.numeric(magclass::getNames(p_omeg[reg1,,a],dim=1)),dim=3.1)
+  te_annuity[,,a] <- 1/dimSums(p_omeg[reg1,,a]/(1+discount_rate)**as.numeric(magclass::getNames(p_omeg[reg1,,a],dim=1)),dim=3.1)
  }
 
  te_inv_annuity <- 1e+12 * te_annuity[,,te] *
