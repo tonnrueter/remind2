@@ -2315,10 +2315,12 @@ if (!is.null(vm_plasticsCarbon)){
   )
 } else {
   # total gross energy emissions
+  out <- mbind(out,
+
                setNames(out[, , "Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
                         - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
                         - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"],
-                        "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
+                        "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"))
 }
 ## END of gross GHG variables if feedstocks exist ############################
 
