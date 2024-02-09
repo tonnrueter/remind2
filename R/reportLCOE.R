@@ -470,15 +470,15 @@ reportLCOE <- function(gdx, output.type = "both"){
               #### Carbon Transport and storage ("ccsinje")
               setNames(te_annual_inv_cost[,ttot_from2005,"ccsinje"]/
                          vm_co2CCS_tCO2[,,"ccsinje.1"],
-                       paste0("LCOCS|average|","injectedCO2|","ccsinje","|supply-side", "|Investment Cost")),
+                       paste0("LCOCS|average|","ico2|","ccsinje","|supply-side", "|Investment Cost")),
               setNames(te_annual_inv_cost_wadj[,ttot_from2005,"ccsinje"]/
                          vm_co2CCS_tCO2[,,"ccsinje.1"],
-                       paste0("LCOCS|average|","injectedCO2|","ccsinje","|supply-side", "|Investment Cost w/ Adj Cost")),
+                       paste0("LCOCS|average|","ico2|","ccsinje","|supply-side", "|Investment Cost w/ Adj Cost")),
               setNames(te_annual_OMF_cost[,,"ccsinje"]/vm_co2CCS_tCO2[,,"ccsinje.1"],
-                       paste0("LCOCS|average|","injectedCO2|","ccsinje", "|supply-side","|OMF Cost")),
+                       paste0("LCOCS|average|","ico2|","ccsinje", "|supply-side","|OMF Cost")),
               setNames(te_annual_secFuel_cost[,,"ccsinje"]/vm_co2CCS_tCO2[,,"ccsinje.1"],
-                       paste0("LCOCS|average|","injectedCO2|","ccsinje", "|supply-side","|Second Fuel Cost"))
-)*1.2
+                       paste0("LCOCS|average|","ico2|","ccsinje", "|supply-side","|Second Fuel Cost"))
+ )*1.2
 
  # convert to better dimensional format
  df.lcoe.avg <- as.quitte(LCOE.avg) %>%
@@ -505,7 +505,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  df.lcoe.avg <- df.lcoe.avg %>%
                   mutate( unit = "US$2015/MWh") %>% 
-                  mutate(unit = case_when(tech=="ccsinje" & output=="cco2_stored" ~ "US$2015/tCO2", TRUE ~ unit)) %>%
+                  mutate(unit = case_when(output=="ico2" ~ "US$2015/tCO2", TRUE ~ unit)) %>%
                   select(region, period, type, output, tech, sector, unit, cost, value)
 
  # reconvert to magpie object
