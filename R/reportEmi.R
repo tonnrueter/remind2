@@ -355,7 +355,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       mutate( name = paste(all_enty,all_enty1,all_emiMkt, sep = "."))
 
     plastic_CDR <- mselect(vm_nonIncineratedPlastics[,,FE.feed.map$name],
-                             all_enty = unique(entySEbio, entySEsyn))
+                             all_enty = c(entySEbio, entySEsyn))
 
 
   } else {
@@ -1636,7 +1636,7 @@ if (!is.null(vm_plasticsCarbon)) {
   )
   # share of annual storage potential used
   out <- mbind(out,
-             
+
              setNames(dimSums(vm_co2CCS, dim = 3, na.rm = T) / dimSums(max_geolStorage, dim = 3, na.rm = T) * 100,
                       "Carbon Management|Storage|Share of annual potential used (%)")%>%
             ifelse(is.finite(.), ., 0)
@@ -2300,7 +2300,7 @@ if (!is.null(vm_plasticsCarbon)){
   ## note Emi|CO2|CDR|... variables are negative. That's why we substract them to get from net to gross emissions.
 if (!is.null(vm_plasticsCarbon)){
     out <- mbind(out,
-               
+
                # total gross waste emissions
                setNames(out[, , "Emi|GHG|Energy|+|Waste (Mt CO2eq/yr)"]
                         - out[, , "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"],
@@ -2776,8 +2776,8 @@ if (!is.null(vm_plasticsCarbon)){
       ifelse(is.finite(.), ., 0)   # set NaN (division by 0) to 0
 
     out[names(target_region),,var2] <- (
-        dimSums(vm_co2CCS[source_regions,,], dim = c(1,3), na.rm = T) 
-      / dimSums(max_geolStorage[source_regions,,], dim = c(1,3), na.rm = T) 
+        dimSums(vm_co2CCS[source_regions,,], dim = c(1,3), na.rm = T)
+      / dimSums(max_geolStorage[source_regions,,], dim = c(1,3), na.rm = T)
       * 100) %>%
       ifelse(is.finite(.), ., 0)   # set NaN (division by 0) to 0
   }
