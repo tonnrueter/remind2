@@ -2503,9 +2503,20 @@ if (!is.null(vm_plasticsCarbon)){
                  + out[, , "Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"],
                  "Emi|GHG|ESR|+|Agriculture (Mt CO2eq/yr)"),
 
-               # Waste
+               # Waste emissions from energy sector due to end-of-life emissions of chemical products
+               setNames((dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ETS"), dim=3) +
+                        dimSums(mselect(vm_incinerationEmi, all_emiMkt = "ETS"), dim=3)) * GtC_2_MtCO2,
+                        "Emi|GHG|ETS|+|Energy Waste (Mt CO2eq/yr)"),
+
+               # Waste emissions from energy sector due to end-of-life emissions of chemical products
+               setNames((dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ES"), dim=3) +
+                           dimSums(mselect(vm_incinerationEmi, all_emiMkt = "ES"), dim=3)) * GtC_2_MtCO2,
+                        "Emi|GHG|ESR|+|Energy Waste (Mt CO2eq/yr)"),
+
+               # Waste (from MAC curve)
                setNames(
-                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3),
+                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3)
+                 + dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ETS"), dim=3) * GtC_2_MtCO2 ,
                  "Emi|GHG|ETS|+|Waste (Mt CO2eq/yr)"),
                setNames(
                  dimSums(mselect(EmiMACEq[, , "ES"], sector = "Waste"), dim = 3),
