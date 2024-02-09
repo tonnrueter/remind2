@@ -86,23 +86,30 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportCrossVariables(gdx,output,regionSubsetList,t)[,t,])
 
   # Report policy costs, if possible and sensible
-  if(!is.null(gdx_refpolicycost)) {
-    if (file.exists(gdx_refpolicycost)) {
-      gdp_scen <- try(readGDX(gdx,"cm_GDPscen",react ="error"),silent=T)
-      gdp_scen_ref <- try(readGDX(gdx_refpolicycost,"cm_GDPscen",react = "error"),silent=T)
-      if(!inherits(gdp_scen,"try-error") && !inherits(gdp_scen_ref,"try-error")){
-        if(gdp_scen[1]==gdp_scen_ref[1]){
-          message("running reportPolicyCosts, comparing to ", basename(dirname(gdx_refpolicycost)), "/", basename(gdx_refpolicycost), "...")
-          output <- mbind(output,reportPolicyCosts(gdx,gdx_refpolicycost,regionSubsetList,t)[,t,])
-        } else {
-          warning(paste0("The GDP scenario differs from that of the reference run. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the 'policyCosts' output.R script."))
-        }
+  if (!is.null(gdx_refpolicycost)) {
+    gdx_refpolicycost <- gdx
+    message("gdx_refpolicycost not defined, report 0 everywhere.")
+  }
+  if (file.exists(gdx_refpolicycost)) {
+    gdp_scen <- try(readGDX(gdx, "cm_GDPscen", react = "error"), silent = TRUE)
+    gdp_scen_ref <- try(readGDX(gdx_refpolicycost, "cm_GDPscen", react = "error"), silent = TRUE)
+    if (! inherits(gdp_scen, "try-error") && ! inherits(gdp_scen_ref, "try-error")) {
+      if (gdp_scen[1] == gdp_scen_ref[1]) {
+        file_refpolicycost <- paste0(basename(dirname(gdx_refpolicycost)), "/", basename(gdx_refpolicycost))
+        message("running reportPolicyCosts, comparing to ", file_refpolicycost, "...")
+        output <- mbind(output, reportPolicyCosts(gdx, gdx_refpolicycost, regionSubsetList, t)[,t,])
       } else {
-        warning(paste0("A comparison of the GDP scenarios between this run and its reference run wasn't possible (old remind version). Therefore to avoid reporting unsensible policy costs, 'reportPolicyCosts' was not executed. If a policy costs reporting is required, please use the  'policyCosts' output.R script."))
+        warning("The GDP scenario differs from that of the reference run. Did not execute 'reportPolicyCosts'! ",
+                "If a policy costs reporting is desired, please use the 'policyCosts' output.R script.")
       }
     } else {
-      warning(paste0("File ",gdx_refpolicycost," not found. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the   'policyCosts' output.R script."))
+      warning("A comparison of the GDP scenarios between this run and its reference run wasn't possible (old remind version). ",
+              "Therefore to avoid reporting unsensible policy costs, 'reportPolicyCosts' was not executed. ",
+              "If a policy costs reporting is required, please use the  'policyCosts' output.R script.")
     }
+  } else {
+    warning(paste0("File ", gdx_refpolicycost, " not found. Did not execute 'reportPolicyCosts'! ",
+            "If a policy costs reporting is desired, please use the 'policyCosts' output.R script."))
   }
 
   # reporting of SDP variables
@@ -128,7 +135,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   capture.output(
     sumChecks <- checkSummations(
-      mifFile = output, outputDirectory = NULL,
+      mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
       summationsFile = "extractVariableGroups",
       absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE
     ) %>%
@@ -137,7 +144,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
     .reportSummationErrors()
 
   capture.output(sumChecks <- checkSummations(
-    mifFile = output, outputDirectory = NULL,
+    mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
     summationsFile = system.file('extdata/additional_summation_checks.csv',
                                  package = 'remind2'),
     absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE) %>%

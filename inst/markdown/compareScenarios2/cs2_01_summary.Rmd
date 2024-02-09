@@ -4,7 +4,7 @@
 
 ## GHG Emissions
 
-```{r summary GHG emissions}
+```{r GHG emissions}
 tot <- "Emi|GHG"
 items <- c(
   "Emi|CO2|Energy",
@@ -17,9 +17,9 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-## GHG by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)
+## GHG by sector
 
-```{r summary GHG by sector}
+```{r GHG by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)}
 tot <- "Emi|GHG"
 items <- c(
   "Emi|GHG|Gross|Energy|Supply|Electricity",
@@ -45,9 +45,9 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"), scales = "fixed")
 ```
 
-## CO2 by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)
+## CO2 by sector
 
-```{r CO2 by sector}
+```{r CO2 by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)}
 tot <- "Emi|CO2"
 items <- c(
   "Emi|CO2|Land-Use Change",
@@ -72,9 +72,9 @@ showAreaAndBarPlots(data, paste(items, "pCap"), paste(tot, "pCap"), scales = "fi
 ```
 
 
-###  CO2 cumulated by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)
+###  CO2 cumulated by sector
 
-```{r CO2 cumulated by sector}
+```{r CO2 cumulated by sector (w/ gross emissions, excl. negative emissions from CCS of non-fossil carbon)}
 tot <- "Emi|CO2|Cumulated"
 items <- c(
   "Emi|CO2|Cumulated|Land-Use Change",
@@ -106,7 +106,7 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 
 ## FE per capita (by sector, time domain, area plot)
 
-```{r FE per capita area plot}
+```{r FE per capita (by sector, time domain, area plot)}
 items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
@@ -116,7 +116,7 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 
 ## FE per capita (by sector, time domain, line graph)
 
-```{r FE per capita line plot}
+```{r FE per capita (by sector, time domain, line graph)}
 dIea <- data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA")
@@ -130,16 +130,17 @@ showMultiLinePlots(dIea, items, scales = "fixed")
 
 ## FE per capita (by sector, GDP)
 
-```{r FE per capita}
+```{r FE per capita (by sector, GDP)}
 dIea <- data %>%
   # To make the plots less crowded, show only IEA historical data.
   filter(scenario != "historical" | model == "IEA")
-showMultiLinePlotsByVariable(dIea, "FE pCap", "GDP|PPP pCap")
+showMultiLinePlotsByVariable(dIea, "FE pCap", "GDP|PPP pCap", showGlobal = TRUE)
 items <- c(
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed")
+showMultiLinePlotsByVariable(dIea, items, "GDP|PPP pCap", scales = "fixed", showGlobal = TRUE)
+
 ```
 
 ## FE by carrier
@@ -184,7 +185,7 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 
 ## FE Industry by carrier (incl. non-energy use)
 
-```{r FE Industry by carrier}
+```{r FE Industry by carrier (incl. non-energy use)}
 items <- c(
   "FE|Industry|Electricity",
   "FE|Industry|Hydrogen",
