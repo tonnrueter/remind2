@@ -113,6 +113,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  teNoCCS   <- readGDX(gdx,"teNoCCS")
  techp     <- readGDX(gdx,c("teChp","techp"),format="first_found")
  teReNoBio <- readGDX(gdx,"teReNoBio")
+ teCDR     <- readGDX(gdx,"te_used33") # NEEDS TO BE SEEN + if kept made backwards-compatible
+ teCDR     <- teCDR[teCDR %in% c("weathering","dac")]
 
  pc2te <- readGDX(gdx,"pc2te") # mapping of couple production & consumption
 
@@ -153,6 +155,12 @@ reportLCOE <- function(gdx, output.type = "both"){
    v32_curt <- 0
    }
 
+  # dac FE demand
+  v33_FEdemand <- readGDX(gdx, name="v33_FEdemand", field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,teCDR]
+  DAC_ccsdemand <- readGDX(gdx, name="vm_ccs_cdr", field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,"ccsinje.1"]
+  v33_emi <- readGDX(gdx, name=c("v33_emi","vm_emiCdrTeDetail"), field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,teCDR]
+  pm_FEPrice <- readGDX(gdx, "pm_FEPrice")[,ttot_from2005,"indst.ETS"]
+  fe2cdr <- readGDX(gdx, name="fe2cdr") %>% filter(all_te %in% teCDR)
 
   discount_rate <- 0.05
 
@@ -268,6 +276,16 @@ reportLCOE <- function(gdx, output.type = "both"){
           # * electricity price (Fuel.Price, USD2005/TWa_inpu) 
           # * main Output (for pe2se: vm_prodSe (TWa_mainOutput); for ccsinje: amount of CO2 captured (vm_co2CCS, GtC))
           # = te_annual_secFuel_cost = [USD2005]
+
+# 2.3 additional fuel demand of CDR module technologies
+  if (length(teCDR)>0){
+  te_annual_otherFuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,teCDR, fill=0)
+  for (te in teCDR){
+    te_annual_otherFuel_cost[,ttot_from2005,te] <- setNames(dimSums(
+      1e+12 * setNames(pm_FEPrice[,,unique(fe2cdr$all_enty)], unique(fe2cdr$all_enty)) * 
+        setNames(dimSums(v33_FEdemand[,,te],dim=3.2), unique(getNames(v33_FEdemand[,,te],dim=1)))),
+    te)}
+  }
 
  # 3. sub-part: OMV cost ----
 
