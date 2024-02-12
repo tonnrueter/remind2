@@ -58,7 +58,7 @@ items1 <- c(
 "Tech|DAC|Capital Costs|w/ Adj Costs",
 NULL)
 
-showMultiLinePlots(data, items1, NROW_NUM = 3)
+showMultiLinePlots(data, items1, nrowNum = 3)
 
 items2 <- c(
 "Tech|Electricity|Gas|Combined Cycle w/ CC|Capital Costs",
@@ -69,6 +69,6 @@ items2 <- c(
 "Tech|Electricity|Coal|Combined Heat and Power w/o CC|Capital Costs",
 "Tech|Heat|Coal|Capital Costs",
 NULL)
-showMultiLinePlots(data, items2, NROW_NUM = 3)
+showMultiLinePlots(data, items2, nrowNum = 3)
 
 ```

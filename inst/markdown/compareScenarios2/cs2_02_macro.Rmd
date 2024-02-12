@@ -288,7 +288,7 @@ kayaRel <-
 ### Absolute
 
 ```{r Kaya Decomposition Absolute}
-showMultiLinePlots(kaya, kayaVars, NROW_NUM = 2)
+showMultiLinePlots(kaya, kayaVars, nrowNum = 2)
 walk(kayaVars, showRegiLinePlots, data = kaya)
 ```
 
@@ -297,7 +297,7 @@ cat("### Relative to ", refYear, "\n")
 ```
 
 ```{r Kaya Decomposition Relative}
-showMultiLinePlots(kayaRel, kayaVars, NROW_NUM = 2)
+showMultiLinePlots(kayaRel, kayaVars, nrowNum = 2)
 walk(kayaVars, showRegiLinePlots, data = kayaRel)
 ```
 
