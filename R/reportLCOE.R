@@ -114,6 +114,7 @@ reportLCOE <- function(gdx, output.type = "both"){
  techp     <- readGDX(gdx,c("teChp","techp"),format="first_found")
  teReNoBio <- readGDX(gdx,"teReNoBio")
 
+ pc2te <- readGDX(gdx,"pc2te") # mapping of couple production & consumption
 
  ## parameter
  p_omeg  <- readGDX(gdx,c("pm_omeg","p_omeg"),format="first_found")
@@ -125,6 +126,10 @@ reportLCOE <- function(gdx, output.type = "both"){
  pm_eta_conv <- readGDX(gdx,"pm_eta_conv", restore_zeros=F) # efficiency oftechnologies with time-dependent eta
  pm_dataeta <- readGDX(gdx,"pm_dataeta", restore_zeros=F)# efficiency of technologies with time-independent eta
  p47_taxCO2eq_AggFE <- readGDX(gdx,"p47_taxCO2eq_AggFE", restore_zeros=F, react = "silent")
+
+ pm_prodCouple <- readGDX(gdx, "pm_prodCouple", restore_zeros = F) # Second fuel production or demand per unit output of technology. Negative values mean own consumption, positive values mean coupled product. 
+ pm_PEPrice <- readGDX(gdx, "pm_PEPrice", restore_zeros = F) 
+ pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = F)
 
  ## variables
  vm_costInvTeDir <- readGDX(gdx,name=c("vm_costInvTeDir","v_costInvTeDir","v_directteinv"),field="l",format="first_found")[,ttot,] ## Total direct Investment Cost in Timestep
@@ -243,22 +248,26 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_annual_fuel_cost[,,pe2se$all_te] <- setNames(1e+12 * qm_pebal[,ttot_from2005,pe2se$all_enty] / qm_budget[,ttot_from2005,] *
            setNames(vm_demPe[,,pe2se$all_te], pe2se$all_enty), pe2se$all_te)
 
- # 2.2 second fuel cost - !only CCSinje for now! 
-    # pm_prodCouple: Second fuel production or demand per unit output of technology. Negative values mean own consumption, positive values mean coupled product. 
-      pm_prodCouple <- readGDX(gdx, "pm_prodCouple", restore_zeros = F)
-    # potential fuels and prices: not needed in this detail here, but copying approach in marginal section
-      fuels <- c("peoil","pegas","pecoal","peur", "pebiolc" , "pebios","pebioil",
-                 "seel","seliqbio", "seliqfos","seliqsyn", "sesobio","sesofos","seh2","segabio" ,
-                 "segafos","segasyn","sehe")
-      pm_PEPrice <- readGDX(gdx, "pm_PEPrice", restore_zeros = F) 
-      pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = F)
-      Fuel.Price <- mbind(pm_PEPrice,pm_SEPrice )[,,fuels]*1e12 # convert from trUSD2005/TWa to USD2005/TWa [note: this already includes the CO2 price]
+ # 2.2 secondary fuel cost
+ Fuel.Price <- mbind(pm_PEPrice,pm_SEPrice )[,,]*1e12 # convert from trUSD2005/TWa to USD2005/TWa [note: this already includes the CO2 price]
 
-    # calculate secondary Fuel cost for ccsinje 
-      te_annual_secFuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005, "ccsinje" , fill=0)  
-      te_annual_secFuel_cost[,,"ccsinje"] <- setNames(-pm_prodCouple[,,"ccsinje"] * Fuel.Price[,,"seel"] * vm_co2CCS[,,"ccsinje.1"], "ccsinje") 
-          # units: -1 (so pm_prodCouple turns positive because consuming energy) * electricity demand (pm_prodCouple, TWa/GtC)
-          #           * electricity price (Fuel.Price, USD2005/TWa) * amount of CO2 captured (vm_co2CCS, GtC) = te_annual_secFuel_cost = [USD2005]
+ pm_SecFuel <- pm_prodCouple[,,getNames(pm_prodCouple)[pm_prodCouple[reg1,,]<0]] # keep only second fuel consumption, not co-production
+ SecFuelTechs <- intersect(getNames(pm_SecFuel, dim = 3), pc2te$all_te) # determine all te that have couple production 
+ SecFuelTechs_pe2se <- intersect(SecFuelTechs, pe2se$all_te) 
+ otherSecFuelTechs <- setdiff(SecFuelTechs, pe2se$all_te) # note: tdbiogas and tdfosgas are currently not being reported in the average LCOE, and are thus ignored below
+ 
+ te_annual_secFuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005, getNames(te_inv_annuity) , fill=0)  
+  # calculate secondary fuel cost for pe2se
+    te_annual_secFuel_cost[,,SecFuelTechs_pe2se] <- setNames(dimSums(-pm_SecFuel[,,SecFuelTechs_pe2se] * Fuel.Price[,ttot_from2005, getNames(pm_SecFuel, dim = 4)] *
+                                                            vm_prodSe[,ttot_from2005,SecFuelTechs_pe2se], dim=3.4) , SecFuelTechs_pe2se)
+  # calculate secondary fuel cost for ccsinje
+     te_annual_secFuel_cost[,,"ccsinje"] <- setNames(-pm_SecFuel[,,"ccsinje"] * Fuel.Price[,,"seel"] * vm_co2CCS[,,"ccsinje.1"], "ccsinje") 
+  # calculation explanation:    
+          # units: -1 (so pm_SecFuel turns positive because consuming energy) 
+          # * electricity or heat demand (pm_SecFuel, TWa_input/TWa_mainOutput OR TWa/GtC)
+          # * electricity price (Fuel.Price, USD2005/TWa_inpu) 
+          # * main Output (for pe2se: vm_prodSe (TWa_mainOutput); for ccsinje: amount of CO2 captured (vm_co2CCS, GtC))
+          # = te_annual_secFuel_cost = [USD2005]
 
  # 3. sub-part: OMV cost ----
 
@@ -451,6 +460,8 @@ reportLCOE <- function(gdx, output.type = "both"){
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te,"|supply-side", "|Investment Cost w/ Adj Cost")),
               setNames(te_annual_fuel_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te,"|supply-side", "|Fuel Cost")),
+              setNames(te_annual_secFuel_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
+                       paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te,"|supply-side", "|Second Fuel Cost")),
               setNames(te_annual_OMF_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|OMF Cost")),
               setNames(te_annual_OMV_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
