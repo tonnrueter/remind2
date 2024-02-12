@@ -269,6 +269,11 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_annual_OMV_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,magclass::getNames(te_inv_annuity), fill=0)
  te_annual_OMV_cost[,,temapse$all_te] <- 1e+12 * collapseNames(pm_data[,,"omv"])[,,temapse$all_te] * setNames(vm_prodSe[,,temapse.names],temapse$all_te)
 
+ # read and add EW O&M cost if needed
+ if("weathering" %in% teCDR){
+   vm_omcosts_cdr <- readGDX(gdx,"vm_omcosts_cdr",restore_zeros = F,field="l",format="first_found")
+   te_annual_OMV_cost[,,"weathering"] <- vm_omcosts_cdr}
+
  # 4. sub-part: OMF cost ----
 
  # omf cost = omf (from pm_data) * investcost (trUSD/TW) * capacity
