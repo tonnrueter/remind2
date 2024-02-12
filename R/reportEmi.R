@@ -1418,10 +1418,10 @@ if (!is.null(vm_plasticsCarbon)) {
 
             # carbon in plastics that are incinerated
             setNames(dimSums(vm_incinerationEmi, dim = 3) * GtC_2_MtCO2,
-                    "Carbon Management|Materials|Plastics|++|Incineration (Mt CO2/yr)"),
+                    "Carbon Management|Materials|Plastics|Waste|++|Incineration (Mt CO2/yr)"),
             # carbon in plastics with other fate
             setNames(dimSums(vm_nonIncineratedPlastics, dim = 3) * GtC_2_MtCO2,
-                     "Carbon Management|Materials|Plastics|++|Other destination (Mt CO2/yr)")
+                     "Carbon Management|Materials|Plastics|Waste|++|Other destination (Mt CO2/yr)")
 
           )
 
@@ -1757,7 +1757,7 @@ if (!is.null(vm_plasticsCarbon)) {
                         "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"),
 
                # CO2 stored in plastic products that are not incinerated and come from atmospheric or biogenic carbon
-               setNames(-out[, , "Carbon Management|Materials|Plastics|++|Other destination (Mt CO2/yr)"] *p_share_atmBiogco2,
+               setNames(-out[, , "Carbon Management|Materials|Plastics|Waste|++|Other destination (Mt CO2/yr)"] *p_share_atmBiogco2,
                          "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"),
 
                # total DACCS
