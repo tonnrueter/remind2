@@ -2315,10 +2315,12 @@ if (!is.null(vm_plasticsCarbon)){
   )
 } else {
   # total gross energy emissions
+  out <- mbind(out,
+
                setNames(out[, , "Emi|GHG|+++|Energy (Mt CO2eq/yr)"]
                         - out[, , "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"]
                         - out[, , "Emi|CO2|CDR|BECCS (Mt CO2/yr)"],
-                        "Emi|GHG|Gross|Energy (Mt CO2eq/yr)")
+                        "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"))
 }
 ## END of gross GHG variables if feedstocks exist ############################
 
@@ -2501,9 +2503,19 @@ if (!is.null(vm_plasticsCarbon)){
                  + out[, , "Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"],
                  "Emi|GHG|ESR|+|Agriculture (Mt CO2eq/yr)"),
 
-               # Waste
+               # Waste emissions from energy sector due to end-of-life emissions of chemical products
+               setNames((dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ETS"), dim=3) +
+                        dimSums(mselect(vm_incinerationEmi, all_emiMkt = "ETS"), dim=3)) * GtC_2_MtCO2,
+                        "Emi|GHG|ETS|+|Energy Waste (Mt CO2eq/yr)"),
+
+               # Waste emissions from energy sector due to end-of-life emissions of chemical products
+               setNames((dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ES"), dim=3) +
+                           dimSums(mselect(vm_incinerationEmi, all_emiMkt = "ES"), dim=3)) * GtC_2_MtCO2,
+                        "Emi|GHG|ESR|+|Energy Waste (Mt CO2eq/yr)"),
+
+               # Waste (from MAC curve)
                setNames(
-                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3),
+                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3) ,
                  "Emi|GHG|ETS|+|Waste (Mt CO2eq/yr)"),
                setNames(
                  dimSums(mselect(EmiMACEq[, , "ES"], sector = "Waste"), dim = 3),
@@ -2626,9 +2638,9 @@ if (!is.null(vm_plasticsCarbon)){
   # 8. Ad-hoc fix for emissions w/o non-energy use and Aggregation to global and regional values  ----
 
 
-  # (Note: The non-energy use variables are so far only available for REMIND-EU runs and industry fixed_shares)
+  # (Note: The non-energy use variables are so far only available for REMIND-EU runs as they are needed for the Ariadne-project:q)
   # TODO: add non-energy use variables for all regionmappings and sector realizations
-  if (is.null(vm_demFENonEnergySector) && (module2realisation["industry", 2] == "fixed_shares")) {
+  if (is.null(vm_demFENonEnergySector)) {
 
   # Note: Non-energy use emissions should not be confused with process emissions. Non-energy use emissions are emissions/carbon flow of FE carriers which are used as feedstocks in industry.
   if ("FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output) &&
