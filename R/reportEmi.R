@@ -1120,7 +1120,6 @@ if (!is.null(vm_plasticsCarbon)) {
                   # deduce co2 captured by industrial processes which is not stored but used for CCU (synfuels)
                   # -> gets accounted in industrial process emissions
                   - vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)
-                  # fixme: missing/wrong emissions
                   ) * GtC_2_MtCO2,
                  "Emi|CO2|+|Energy (Mt CO2/yr)"))
 
@@ -1882,7 +1881,7 @@ if (!is.null(vm_plasticsCarbon)) {
 ###########################################
 ## Gross emissions in Energy|Waste sector##
 ###########################################
-# fixme: check that CDR addition makes sense
+
 if (!is.null(vm_plasticsCarbon)){
 # calculate gross emissions in energy waste sector
   out <- mbind(out,
@@ -2431,6 +2430,11 @@ if (!is.null(vm_plasticsCarbon)){
                          "Emi|N2O|++|Outside ETS and ESR (kt N2O/yr)"))
 
   # market GHG emissions across sectors
+
+  ###################################
+  ## When feedstocks are available ##
+  ###################################
+  if(!is.null(vm_plasticsCarbon)){
   out <- mbind(out,
                # energy supply
                setNames(
@@ -2533,6 +2537,103 @@ if (!is.null(vm_plasticsCarbon)){
                  "Emi|GHG|Outside ETS and ESR|+|F-Gases (Mt CO2eq/yr)")
 
   )
+  }else{
+  #######################################
+  ## When feedstocks are not available ##
+  #######################################
+out <- mbind(out,
+               # energy supply
+               setNames(
+                 out[, , "Emi|CO2|Energy|+|Supply (Mt CO2/yr)"]
+                 + out[, , "Emi|GHG|CH4|+|Energy Supply (Mt CO2eq/yr)"]
+                 + out[, , "Emi|GHG|N2O|+|Energy Supply (Mt CO2eq/yr)"],
+                 "Emi|GHG|ETS|+|Energy Supply (Mt CO2eq/yr)"),
+
+               # industry (energy and process emissions)
+               setNames(
+                 # demand-side co2 emissions (before industry CCS)
+                 (dimSums(mselect(EmiFeCarrier[, , "ETS"], emi_sectors = "indst"), dim = 3)
+                  # industry CCS
+                  # TODO: adapt to industry ETS/ESR split
+                  -  dimSums(vm_emiIndCCS[, , emiInd37_fuel]*p_share_CCS, dim=3)
+                  # substract synthetic and biogenic carbon contained in non-incinerated plastics
+                  - dimSums(plastic_CDR, dim=3)
+                  # add captured CO2 from cement process which is not stored
+                  # (EmiMACEq for co2cement_process contains cement process emissions - captured cement co2 process emissions)
+                  + vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2
+                 + dimSums(mselect(EmiMACEq[, , "ETS"], sector = "indst"), dim = 3)
+                 # add chemical process emissions to ETS
+                 + dimSums(EmiProcess_Feedstocks, dim = 3) * GtC_2_MtCO2,
+                 "Emi|GHG|ETS|+|Industry (Mt CO2eq/yr)"),
+               setNames(
+                 # demand-side co2 emissions (before industry CCS)
+                 dimSums(mselect(EmiFeCarrier[, , "ES"], emi_sectors = "indst"), dim = 3) * GtC_2_MtCO2,
+                 "Emi|GHG|ESR|+|Industry (Mt CO2eq/yr)"),
+
+               # Transport
+               setNames(
+                 # demand-side co2 emissions (ETS)
+                 (dimSums(mselect(EmiFeCarrier[, , "ETS"], emi_sectors = "trans"), dim = 3)) * GtC_2_MtCO2,
+                 "Emi|GHG|ETS|+|Transport (Mt CO2eq/yr)"),
+
+               setNames(
+                 # demand-side co2 emissions (ESR)
+                 dimSums(mselect(EmiFeCarrier[, , "ES"], emi_sectors = "trans"), dim = 3) * GtC_2_MtCO2
+                 + dimSums(mselect(EmiMACEq[, , "ES"], sector = "trans"), dim = 3),
+                 "Emi|GHG|ESR|+|Transport (Mt CO2eq/yr)"),
+
+               setNames(
+                 # demand-side co2 emissions (bunkers)
+                 dimSums(mselect(EmiFeCarrier[, , "other"], emi_sectors = "trans"), dim = 3) * GtC_2_MtCO2,
+                 "Emi|GHG|Outside ETS and ESR|+|Transport (Mt CO2eq/yr)"),
+
+               # Buildings
+               setNames(
+                 # demand-side co2 emissions
+                 dimSums(mselect(EmiFeCarrier[, , "ES"], emi_sectors = "build"), dim = 3) * GtC_2_MtCO2,
+                 "Emi|GHG|ESR|+|Buildings (Mt CO2eq/yr)"),
+
+               # CDR
+               setNames(
+                 # demand-side co2 emissions (before industry CCS)
+                 # CDR energy-related emissions
+                 (dimSums(mselect(EmiFeCarrier[, , "ETS"], emi_sectors = "CDR"), dim = 3)
+                  # Captured CO2 by non-BECCS capture technologies
+                  + (vm_emiCdrTeDetail[, , "weathering"] + vm_emiCdrTeDetail[, , "dac"] * p_share_CCS)) * GtC_2_MtCO2,
+                 "Emi|GHG|ETS|+|non-BECCS CDR (Mt CO2eq/yr)"),
+
+               # Extraction
+               setNames(
+                 out[, , "Emi|GHG|CH4|+|Extraction (Mt CO2eq/yr)"],
+                 "Emi|GHG|ETS|+|Extraction (Mt CO2eq/yr)"),
+
+               # Agriculture
+               setNames(
+                 out[, , "Emi|GHG|CH4|+|Agriculture (Mt CO2eq/yr)"]
+                 + out[, , "Emi|GHG|N2O|+|Agriculture (Mt CO2eq/yr)"],
+                 "Emi|GHG|ESR|+|Agriculture (Mt CO2eq/yr)"),
+
+               # Waste (from MAC curve)
+               setNames(
+                 dimSums(mselect(EmiMACEq[, , "ETS"], sector = "Waste"), dim = 3) ,
+                 "Emi|GHG|ETS|+|Waste (Mt CO2eq/yr)"),
+               setNames(
+                 dimSums(mselect(EmiMACEq[, , "ES"], sector = "Waste"), dim = 3),
+                 "Emi|GHG|ESR|+|Waste (Mt CO2eq/yr)"),
+
+               setNames(
+                 out[, , "Emi|GHG|N2O|+|Land-Use Change (Mt CO2eq/yr)"]
+                 + out[, , "Emi|GHG|CH4|+|Land-Use Change (Mt CO2eq/yr)"]
+                 + out[, , "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"],
+                 "Emi|GHG|Outside ETS and ESR|+|Land-Use Change (Mt CO2eq/yr)"),
+
+               # F-Gases
+               setNames(
+                 out[, , "Emi|GHG|+|F-Gases (Mt CO2eq/yr)"],
+                 "Emi|GHG|Outside ETS and ESR|+|F-Gases (Mt CO2eq/yr)")
+
+  )
+  }
 
 
 
