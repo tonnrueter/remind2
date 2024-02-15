@@ -40,12 +40,6 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
                                                                warn = FALSE))
     }
 
-    .no_older_than_30_days <- function(path) {
-      time <- strptime(sub(paste0(".*(", datetimepattern, ").*"), "\\1", path),
-                       format = "%Y-%m-%d_%H.%M.%S")
-      return((Sys.time() - time) < as.difftime(30, units = "days"))
-    }
-
     .latest_run_of_scenario <- function(path) {
       # sort by scenario and decreasing time, latest runs come first
       path <- path %>%
@@ -62,7 +56,6 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     return(c(gdxPaths,
              Sys.glob(paste0("/p/projects/remind/modeltests/remind/output/",
                              scenario, "*/fulldata.gdx")) %>%
-               Filter(.no_older_than_30_days, x = .) %>%
                Filter(.did_REMIND_finish, x = .) %>%
                .latest_run_of_scenario()))
   }
