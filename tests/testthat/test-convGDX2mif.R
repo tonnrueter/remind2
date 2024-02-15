@@ -27,28 +27,44 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     gdxPaths <- defaultGdxPath
   }
 
-  # finds for each AMT scenario the most recent, successfully converged GDX
+  # finds for each AMT scenario the most recent, successfully converged GDX,
+  # that is no older than 30 days
   .findAMTgdx <- function(gdxPaths = NULL, scenario = NULL) {
-    didremindfinish <- function(fulldatapath) {
-      logpath <- paste0(stringr::str_sub(fulldatapath, 1, -14), "/full.log")
-      return(file.exists(logpath) &&
-        any(grep("*** Status: Normal completion", readLines(logpath, warn = FALSE), fixed = TRUE)))
+    # regex for "%Y-%m-%d_%H.%M.%S" timestamp
+    datetimepattern <- "[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}"
+
+    .did_REMIND_finish <- function(path) {
+      logpath <- sub("fulldata.gdx$", "full.log", path)
+      return(   file.exists(logpath)
+             && "*** Status: Normal completion" %in% readLines(logpath,
+                                                               warn = FALSE))
     }
-    gdx <- Sys.glob(paste0("/p/projects/remind/modeltests/remind/output/", scenario, "*/fulldata.gdx"))
-    datetimepattern <- "_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}"
-    gdx <- gdx[grepl(paste0("^", scenario, datetimepattern, "$"), basename(dirname(gdx)))]
-    stamp <- lapply(gdx, stringr::str_sub, -32, -14) %>%
-      strptime(format = "%Y-%m-%d_%H.%M.%S") %>%
-      as.numeric()
-    gdx <- data.frame(list(gdx = gdx, stamp = stamp))
-    gdx <- gdx[Sys.time() - gdx$stamp < 30 * 24 * 60 * 60 & !is.na(gdx$stamp), ]
-    gdx <- gdx[unlist(lapply(gdx$gdx, didremindfinish)), ]
-    gdx <- gdx[order(gdx$stamp), ]
-    gdx$scenario <- sub(datetimepattern, "", basename(dirname(as.vector(gdx$gdx))))
-    for (scenarioname in unique(gdx$scenario)) {
-      gdxPaths <- c(gdxPaths, as.character(tail(gdx[gdx$scenario == scenarioname, ]$gdx, n = 1)))
+
+    .no_older_than_30_days <- function(path) {
+      time <- strptime(sub(paste0(".*(", datetimepattern, ").*"), "\\1", path),
+                       format = "%Y-%m-%d_%H.%M.%S")
+      return((Sys.time() - time) < as.difftime(30, units = "days"))
     }
-    return(gdxPaths)
+
+    .latest_run_of_scenario <- function(path) {
+      # sort by scenario and decreasing time, latest runs come first
+      path <- path %>%
+        sort(decreasing = TRUE)
+
+      # duplicates are older than the preceding runs
+      dup <- duplicated(sub(paste0("_", datetimepattern), "",
+                            basename(dirname(path))))
+
+      # everything that is no duplicate is the latest run of that scenario
+      return(path[!dup])
+    }
+
+    return(c(gdxPaths,
+             Sys.glob(paste0("/p/projects/remind/modeltests/remind/output/",
+                             scenario, "*/fulldata.gdx")) %>%
+               Filter(.no_older_than_30_days, x = .) %>%
+               Filter(.did_REMIND_finish, x = .) %>%
+               .latest_run_of_scenario()))
   }
 
   checkPiamTemplates <- function(computedVariables) {
