@@ -486,7 +486,8 @@ reportLCOE <- function(gdx, output.type = "both"){
 #             - carbon storage cost are calculated by dividing by tons of CO2 that are stored
 # convert from USD2005/MWh (or tCO2) to USD2015/MWh (or tCO2) (*1.2)
  LCOE.avg <- mbind(
-              #### Energy technologies (pe2se$all_te)
+      #### Energy technologies (pe2se$all_te)
+          ### production cost components
               setNames(te_annual_inv_cost[,ttot_from2005,pe2se$all_te]/
                          total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te,"|supply-side", "|Investment Cost")),
@@ -501,12 +502,12 @@ reportLCOE <- function(gdx, output.type = "both"){
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|OMF Cost")),
               setNames(te_annual_OMV_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|OMV Cost")),
-              ### calculate VRE grid and storage cost by dividing by usable generation (after generation)
+          ### calculate VRE grid and storage cost by dividing by usable generation (after generation)
               setNames(te_annual_stor_cost[,,pe2se$all_te]/total_te_energy_usable[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Storage Cost")),
               setNames(te_annual_grid_cost[,,pe2se$all_te]/total_te_energy_usable[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Grid Cost")),
-              ### calculate VRE grid and storage cost (with adjustment costs) by dividing by usable generation (after generation)
+          ### calculate VRE grid and storage cost (with adjustment costs) by dividing by usable generation (after generation)
               setNames(te_annual_stor_cost_wadj[,,pe2se$all_te]/total_te_energy_usable[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Storage Cost w/ Adj Cost")),
               setNames(te_annual_grid_cost_wadj[,,pe2se$all_te]/total_te_energy_usable[,,pe2se$all_te],
@@ -518,8 +519,18 @@ reportLCOE <- function(gdx, output.type = "both"){
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|CCS Cost w/ Adj Cost")),
               setNames(te_annual_co2_cost[,,pe2se$all_te]/total_te_energy[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|CO2 Cost")),
+          ### add curtailment cost
               setNames(te_curt_cost[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Curtailment Cost")),
+          ### Total Cost
+              setNames((te_annual_inv_cost[,ttot_from2005,pe2se$all_te]+ te_annual_fuel_cost[,,pe2se$all_te] + te_annual_OMF_cost[,,pe2se$all_te] +
+                             te_annual_OMV_cost[,,pe2se$all_te] + te_annual_ccsInj_cost[,,pe2se$all_te] + te_annual_co2_cost[,,pe2se$all_te])/total_te_energy[,,pe2se$all_te] +
+                       (te_annual_stor_cost[,,pe2se$all_te] + te_annual_grid_cost[,,pe2se$all_te]) / total_te_energy_usable[,,pe2se$all_te] + te_curt_cost[,,pe2se$all_te],
+                       paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Total Cost")), 
+              setNames((te_annual_inv_cost_wadj[,ttot_from2005,pe2se$all_te]+ te_annual_fuel_cost[,,pe2se$all_te] + te_annual_OMF_cost[,,pe2se$all_te] + 
+                             te_annual_OMV_cost[,,pe2se$all_te] + te_annual_ccsInj_inclAdjCost[,,pe2se$all_te] + te_annual_co2_cost[,,pe2se$all_te])/total_te_energy[,,pe2se$all_te] +
+                       (te_annual_stor_cost_wadj[,,pe2se$all_te] + te_annual_grid_cost_wadj[,,pe2se$all_te]) / total_te_energy_usable[,,pe2se$all_te] + te_curt_cost[,,pe2se$all_te],
+                       paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Total Cost w/ Adj Cost")), 
               #### Carbon Transport and storage ("ccsinje")
               setNames(te_annual_inv_cost[,ttot_from2005,"ccsinje"]/
                          vm_co2CCS_tCO2[,,"ccsinje.1"],
