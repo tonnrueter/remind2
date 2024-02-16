@@ -63,6 +63,17 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     computedVariables <- deletePlus(getItems(mifContent, dim = 3.3))
     computedVariables <- gsub("\\(\\)", "(unitless)", computedVariables)
     checkPiamTemplates(computedVariables)
+
+    expect_no_error(
+      test_ranges(
+        data = mifContent,
+        regex = list(
+          "^Emi\\|CO2\\|Energy\\|Demand\\|Industry\\|.*Fossil \\(Mt CO2/yr\\)$",
+          "Share.*\\((%|Percent)\\)$"
+        ),
+        low = list(0, 0),
+        up  = list(NULL, 100)))
+
     magclass::write.report(
       x = magclass::collapseNames(mifContent),
       file = file.path(tempdir(), paste0(numberOfMifs, ".mif")),
