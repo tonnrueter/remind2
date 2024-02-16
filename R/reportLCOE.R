@@ -114,8 +114,8 @@ reportLCOE <- function(gdx, output.type = "both"){
  teNoCCS   <- readGDX(gdx,"teNoCCS")
  techp     <- readGDX(gdx,c("teChp","techp"),format="first_found")
  teReNoBio <- readGDX(gdx,"teReNoBio")
- teCDR     <- readGDX(gdx,"te_used33") # NEEDS TO BE SEEN + if kept made backwards-compatible
- teCDR     <- teCDR[teCDR %in% c("weathering","dac")]
+ teCDR     <- readGDX(gdx,"te_used33")
+ EW_name   <- "weathering" # necessary for backward compatibility
 
  pc2te <- readGDX(gdx,"pc2te") # mapping of couple production & consumption
 
@@ -145,7 +145,20 @@ reportLCOE <- function(gdx, output.type = "both"){
  vm_prodFe     <- readGDX(gdx,name=c("vm_prodFe"),field="l",restore_zeros=FALSE,format="first_found")
  v_emiTeDetail <- readGDX(gdx,name=c("vm_emiTeDetail","v_emiTeDetail"),field="l",restore_zeros=FALSE,format="first_found")
  vm_emiIndCCS <- readGDX(gdx,name=c("vm_emiIndCCS","v_emiIndCCS"),field="l",restore_zeros=FALSE,format="first_found")
-
+ vm_emiCdrTeDetail <- readGDX(gdx, c("vm_emiCdrTeDetail","v33_emi"), field = "l", restore_zeros = F, react = "silent")[,ttot_from2005,teCDR]
+  if (is.null(vm_emiCdrTeDetail)) { # compatibility with the CDR module before the portfolio was added
+    # captured CO2 by DAC
+    v33_emiDAC <- readGDX(gdx, "v33_emiDAC", field = "l", restore_zeros = F, react = "silent")[, ttot_from2005, ]
+    if (!is.null(v33_emiDAC)){teCDR <- c(teCDR,"dac")}
+    # captured CO2 by Enhanced Weathering
+    v33_emiEW <- readGDX(gdx, "v33_emiEW", field = "l", restore_zeros = F, react = "silent")
+    if (!is.null(v33_emiEW)) {v33_emiEW <- add_columns(v33_emiEW, addnm=c("y2005","y2010"),dim=2,fill=0)[, ttot_from2005, ]
+                              teCDR <- c(teCDR,"rockgrind")
+                              EW_name <- "rockgrind"}
+    # variable used in the rest of the reporting
+    vm_emiCdrTeDetail <- mbind(v33_emiDAC, v33_emiEW)
+    vm_emiCdrTeDetail <- setNames(vm_emiCdrTeDetail, c("dac", "rockgrind"))
+  }
 
  # module-specific
  # amount of curtailed electricity
@@ -280,8 +293,8 @@ reportLCOE <- function(gdx, output.type = "both"){
           # = te_annual_secFuel_cost = [USD2005]
 
 # 2.3 additional fuel demand of CDR module technologies
-  if (length(teCDR)>0){
-  te_annual_otherFuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,teCDR, fill=0)
+  te_annual_otherFuel_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,getNames(te_inv_annuity), fill=0)
+  if (length(teCDR)>0 & !is.null(v33_FEdemand) ){  # i.e. this is only computed for remind post refactoring of cdr module (Nov 2024)
   for (te in teCDR){
     te_annual_otherFuel_cost[,ttot_from2005,te] <- setNames(dimSums(
       1e+12 * setNames(pm_FEPrice[,,unique(fe2cdr$all_enty)], unique(fe2cdr$all_enty)) * 
@@ -298,10 +311,10 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_annual_OMV_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,magclass::getNames(te_inv_annuity), fill=0)
  te_annual_OMV_cost[,,temapse$all_te] <- 1e+12 * collapseNames(pm_data[,,"omv"])[,,temapse$all_te] * setNames(vm_prodSe[,,temapse.names],temapse$all_te)
 
- # read and add EW O&M cost if needed
- if("weathering" %in% teCDR){
-   vm_omcosts_cdr <- readGDX(gdx,"vm_omcosts_cdr",restore_zeros = F,field="l",format="first_found")
-   te_annual_OMV_cost[,,"weathering"] <- vm_omcosts_cdr}
+ # read additional EW O&M cost if needed
+ if(EW_name %in% teCDR){
+   te_annual_addOM_cost  <- setNames(readGDX(gdx,"vm_omcosts_cdr",restore_zeros = F,field="l",format="first_found"),EW_name)
+  }
 
  # 4. sub-part: OMF cost ----
 
