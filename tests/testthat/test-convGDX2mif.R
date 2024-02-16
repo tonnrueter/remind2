@@ -91,7 +91,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     numberOfMifs <- numberOfMifs + 1
 
     message("Running convGDX2MIF(", gdxPath, ")...")
-    mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath)
+    mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath, testthat = TRUE)
 
     expect_no_warning(checkVariableNames(getNames(mifContent, dim = 3)))
 
