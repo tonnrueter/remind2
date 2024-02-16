@@ -175,7 +175,8 @@ reportLCOE <- function(gdx, output.type = "both"){
   DAC_ccsdemand <- readGDX(gdx, name="vm_ccs_cdr", field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,"ccsinje.1"]
   v33_emi <- readGDX(gdx, name=c("v33_emi","vm_emiCdrTeDetail"), field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,teCDR]
   pm_FEPrice <- readGDX(gdx, "pm_FEPrice")[,ttot_from2005,"indst.ETS"]
-  fe2cdr <- readGDX(gdx, name="fe2cdr") %>% filter(all_te %in% teCDR)
+  fe2cdr <- readGDX(gdx, name="fe2cdr") 
+  if(!is.null(fe2cdr)){fe2cdr <- fe2cdr %>% filter(all_te %in% teCDR)}
 
   discount_rate <- 0.05
 
@@ -476,7 +477,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
   # for LCO-sc: calculate stored CO2 to calculate cost per tCO2 
   cdrco2_byTech_tCO2 <- vm_emiCdrTeDetail[,,setdiff(teCDR,te_cco2)]*s_GtC2tCO2*-1 # currently only if enhanced weathering is on. In future also biochar & OAE
-  te_sco2 <- getNames(cdrco2_byTech_tCO2)  }
+  te_sco2 <- getNames(cdrco2_byTech_tCO2)
 
  # for pe2se: SE and FE production in MWh
  total_te_energy <- new.magpie(getRegions(vm_prodSe),getYears(vm_prodSe),
@@ -621,8 +622,8 @@ reportLCOE <- function(gdx, output.type = "both"){
                        paste0("LCOCC|average|","sco2|",te_sco2,"|carbon management", "|Investment Cost w/ Adj Cost")),
               setNames(te_annual_fuel_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
                        paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|Fuel Cost")),
-              setNames(te_annual_secFuel_cost[,,intersect(te_sco2, SecFuelTechs)]/cdrco2_byTech_tCO2[,ttot_from2005,intersect(te_sco2, SecFuelTechs)],
-                       paste0("LCOCC|average|","sco2|",intersect(te_sco2, SecFuelTechs), "|carbon management","|Second Fuel Cost")),
+              setNames(te_annual_secFuel_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
+                       paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|Second Fuel Cost")),
               setNames(te_annual_OMF_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
                        paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|OMF Cost")),
               setNames(te_annual_OMV_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
