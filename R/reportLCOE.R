@@ -153,11 +153,11 @@ reportLCOE <- function(gdx, output.type = "both"){
     # captured CO2 by Enhanced Weathering
     v33_emiEW <- readGDX(gdx, "v33_emiEW", field = "l", restore_zeros = F, react = "silent")
     if (!is.null(v33_emiEW)) {v33_emiEW <- add_columns(v33_emiEW, addnm=c("y2005","y2010"),dim=2,fill=0)[, ttot_from2005, ]
-                              teCDR <- c(teCDR,"rockgrind")
-                              EW_name <- "rockgrind"}
+                              EW_name <- intersect(c("rockgrind","weathering"),te)
+                              teCDR <- c(teCDR,EW_name)}
     # variable used in the rest of the reporting
     vm_emiCdrTeDetail <- mbind(v33_emiDAC, v33_emiEW)
-    vm_emiCdrTeDetail <- setNames(vm_emiCdrTeDetail, c("dac", "rockgrind"))
+    vm_emiCdrTeDetail <- setNames(vm_emiCdrTeDetail, c("dac", EW_name))
   }
 
  # module-specific
