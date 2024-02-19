@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass getYears mbind setNames dimSums
+#' @importFrom magclass getYears mbind setNames
 #' @importFrom dplyr tribble
 reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)) {
 

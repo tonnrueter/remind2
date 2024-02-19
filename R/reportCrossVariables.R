@@ -20,7 +20,7 @@
 #' @export
 #' @importFrom assertr assert not_na
 #' @importFrom gdx readGDX
-#' @importFrom magclass getYears getRegions mbind setNames dimSums mselect
+#' @importFrom magclass getYears getRegions mbind setNames mselect
 #' new.magpie setYears mcalc
 #' @importFrom luscale speed_aggregate
 #' @importFrom tibble as_tibble

@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass mselect getSets getSets<- getYears dimSums getNames<- mbind
+#' @importFrom magclass mselect getSets getSets<- getYears getNames<- mbind
 #' @importFrom abind abind
 #' @importFrom rlang sym
 

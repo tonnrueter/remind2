@@ -20,7 +20,7 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames
-#'                      dimSums getNames<- as.data.frame as.magpie getSets
+#'                      getNames<- as.data.frame as.magpie getSets
 #' @importFrom dplyr %>% filter full_join group_by left_join mutate rename
 #'     select semi_join summarise ungroup
 #' @importFrom quitte inline.data.frame revalue.levels

@@ -19,7 +19,7 @@
 #' 
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass mselect getYears dimSums getNames<- mbind setNames
+#' @importFrom magclass mselect getYears getNames<- mbind setNames
 
 reportPE <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
   ####### conversion factors ##########
