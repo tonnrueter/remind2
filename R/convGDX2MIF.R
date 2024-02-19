@@ -87,7 +87,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportCrossVariables(gdx,output,regionSubsetList,t)[,t,])
 
   # Report policy costs, if possible and sensible
-  if (!is.null(gdx_refpolicycost)) {
+  if (is.null(gdx_refpolicycost)) {
     gdx_refpolicycost <- gdx
     message("gdx_refpolicycost not defined, report 0 everywhere.")
   }
