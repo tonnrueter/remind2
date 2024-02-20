@@ -13,6 +13,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #' @param gdx_refpolicycost reference-gdx for policy costs, a GDX as created by readGDX, or the file name of a gdx
+#' @param testthat boolean whether called by tests, turns some messages into warnings
 #' @author Lavinia Baumstark
 #' @examples
 #'
@@ -27,7 +28,7 @@
 
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
                         t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
-                        gdx_refpolicycost = gdx_ref) {
+                        gdx_refpolicycost = gdx_ref, testthat = FALSE) {
 
   # Define region subsets
   regionSubsetList <- toolRegionSubsets(gdx)
@@ -86,7 +87,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportCrossVariables(gdx,output,regionSubsetList,t)[,t,])
 
   # Report policy costs, if possible and sensible
-  if (!is.null(gdx_refpolicycost)) {
+  if (is.null(gdx_refpolicycost)) {
     gdx_refpolicycost <- gdx
     message("gdx_refpolicycost not defined, report 0 everywhere.")
   }
@@ -128,9 +129,11 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   checkVariableNames(getNames(output, dim = 3))
 
-  .reportSummationErrors <- function(msg) {
-    if (!any(grepl('All summation checks were fine', msg)))
-      message(paste(msg, collapse = '\n'))
+  .reportSummationErrors <- function(msg, testthat) {
+    if (!any(grepl('All summation checks were fine', msg))) {
+      msgtext <- paste(msg, collapse = '\n')
+      if (isTRUE(testthat)) warning(msgtext) else message(msgtext)
+    }
   }
 
   capture.output(
@@ -141,7 +144,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
     ) %>%
       filter(abs(.data$diff) >= 1.5e-8),
     type = 'message') %>%
-    .reportSummationErrors()
+    .reportSummationErrors(testthat = testthat)
 
   capture.output(sumChecks <- checkSummations(
     mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
@@ -152,7 +155,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
       bind_rows(sumChecks),
     type = 'message'
   ) %>%
-    .reportSummationErrors()
+    .reportSummationErrors(testthat = testthat)
 
   # either write the *.mif or return the magpie object
   if (!is.null(file)) {

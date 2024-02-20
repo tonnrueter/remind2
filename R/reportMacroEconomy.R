@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass setNames mbind getYears dimSums new.magpie getRegions setYears
+#' @importFrom magclass setNames mbind getYears new.magpie getRegions setYears
 
 reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
                                t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {

@@ -1,8 +1,8 @@
 Type: Package
 Package: remind2
 Title: The REMIND R package (2nd generation)
-Version: 1.134.5
-Date: 2024-02-14
+Version: 1.135.3
+Date: 2024-02-19
 Authors@R: c(
     person("Renato", "Rodrigues", , "renato.rodrigues@pik-potsdam.de", role = c("aut", "cre")),
     person("Lavinia", "Baumstark", role = "aut"),

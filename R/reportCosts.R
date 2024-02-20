@@ -21,7 +21,7 @@
 #' 
 #' @export
 #' @importFrom rlang .data
-#' @importFrom magclass mbind getYears collapseNames dimSums setNames
+#' @importFrom magclass mbind getYears collapseNames setNames
 #' @importFrom gdx readGDX
 #' @importFrom dplyr filter
 
