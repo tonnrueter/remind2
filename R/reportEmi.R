@@ -350,7 +350,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
       left_join(entyFe2Sector, by = "all_enty1", relationship = "many-to-many") %>%
       left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
       right_join(entyFe2sector2emiMkt_NonEn %>%
-                   rename(all_enty1 = all_enty)) %>%
+                   rename(all_enty1 = all_enty),
+                 by = c("all_enty1", "emi_sectors", "all_emiMkt")) %>%
       select( -all_te) %>%
       mutate( name = paste(all_enty,all_enty1,all_emiMkt, sep = "."))
 
