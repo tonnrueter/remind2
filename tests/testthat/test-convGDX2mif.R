@@ -61,7 +61,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   }
 
   checkPiamTemplates <- function(computedVariables) {
-    templates <- c("AR6", "AR6_NGFS", "NAVIGATE", "SHAPE", "ELEVATE")
+    templates <- c("AR6", "AR6_NGFS", "ELEVATE", "NAVIGATE", "SHAPE")
     for (template in templates) {
       templateVariables <- template %>%
         piamInterfaces::getREMINDTemplateVariables() %>%
@@ -91,7 +91,8 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     numberOfMifs <- numberOfMifs + 1
 
     message("Running convGDX2MIF(", gdxPath, ")...")
-    mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = gdxPath, testthat = TRUE)
+    refpolicycost <- if (gdxPath == gdxPaths[[1]]) gdxPath else NULL
+    mifContent <- convGDX2MIF(gdxPath, gdx_refpolicycost = refpolicycost, testthat = TRUE)
 
     expect_no_warning(checkVariableNames(getNames(mifContent, dim = 3)))
 
