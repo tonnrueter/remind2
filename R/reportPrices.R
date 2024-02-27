@@ -552,8 +552,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "indst.fehos", "indst.fesos", "indst.feels", "indst.feh2s", "indst.fegas",
     "build.fepet", "indst.fepet"
   )
-  pm_tau_fe_tax <- readGDX(gdx, c("p21_tau_fe_tax","pm_tau_fe_tax"))[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
-  pm_tau_fe_sub <- readGDX(gdx, c("p21_tau_fe_sub","pm_tau_fe_sub"))[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
+  pm_tau_fe_tax <- readGDX(gdx, c("p21_tau_fe_tax","pm_tau_fe_tax"), format="first_found")[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
+  pm_tau_fe_sub <- readGDX(gdx, c("p21_tau_fe_sub","pm_tau_fe_sub"), format="first_found")[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
   price.tax <- (pm_tau_fe_tax + pm_tau_fe_sub) / s_twa2mwh / 3.6 * 1e12 # [USD2005/GJ]
 
   out <- mbind(
