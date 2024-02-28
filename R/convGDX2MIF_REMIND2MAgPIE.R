@@ -27,7 +27,7 @@ convGDX2MIF_REMIND2MAgPIE <- function(gdx, file = NULL, scenario = "default",
   # ADD EU-27 region aggregation if possible
   if("EUR" %in% names(regionSubsetList)){
     regionSubsetList <- c(regionSubsetList, list(
-      "EU27" = c("ENC", "EWN", "ECS", "ESC", "ECE", "FRA"," DEU", "ESW")
+      "EU27" = c("ENC", "EWN", "ECS", "ESC", "ECE", "FRA","DEU", "ESW")
     ))
   }
 
