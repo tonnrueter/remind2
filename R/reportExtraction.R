@@ -17,7 +17,7 @@
 #' @importFrom quitte calcCumulatedDiscount
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind dimSums mselect getRegions new.magpie getYears<- getYears setNames getSets getSets<- as.magpie
+#' @importFrom magclass mbind mselect getRegions new.magpie getYears<- getYears setNames getSets getSets<- as.magpie
 #' @importFrom dplyr %>% filter mutate
 #' @importFrom tidyr extract
 

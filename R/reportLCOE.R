@@ -24,7 +24,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass new.magpie dimSums getRegions getYears getNames setNames clean_magpie dimReduce as.magpie magpie_expand
+#' @importFrom magclass new.magpie getRegions getYears getNames setNames clean_magpie dimReduce as.magpie magpie_expand
 #' @importFrom dplyr %>% mutate select rename group_by ungroup right_join filter full_join arrange summarise
 #' @importFrom quitte as.quitte overwrite getRegs getPeriods
 #' @importFrom tidyr spread gather expand fill

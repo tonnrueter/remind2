@@ -20,7 +20,7 @@
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames
-#'                      dimSums getNames<- as.data.frame as.magpie getSets
+#'                      getNames<- as.data.frame as.magpie getSets
 #' @importFrom dplyr %>% filter full_join group_by left_join mutate rename
 #'     select semi_join summarise ungroup
 #' @importFrom quitte inline.data.frame revalue.levels
@@ -1761,6 +1761,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                               out[,,"FE|Non-energy Use|Industry|Solids|+|Fossil (EJ/yr)"],
                             "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"))
   }
+  ### end of "### temporary (!) industry non-energy use reporting" for Ariadne
 
   # in case the current non-energy use implementation creates negative values, set them to 0
   if (any(out < 0)) {

@@ -17,6 +17,24 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
+### FE mix per Capita
+```{r per Capita FE demand from buildings by carriers}
+if ("FE|Buildings|non-Heating|Electricity|Conventional pCap" %in% data[["variable"]]) {
+  tot <- "FE|Buildings pCap"
+  items <- c(
+    "FE|Buildings|non-Heating|Electricity|Conventional pCap",  
+    "FE|Buildings|Heating|Electricity|Heat pump pCap",  
+    "FE|Buildings|Heating|District Heating pCap",  
+    "FE|Buildings|Heating|Electricity|Resistance pCap",
+    "FE|Buildings|Heating|Hydrogen pCap",  
+    "FE|Buildings|Heating|Gases pCap",
+    "FE|Buildings|Heating|Liquids pCap",
+    "FE|Buildings|Heating|Solids pCap",
+    NULL)
+  showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+}
+```
+
 ### UE mix
 ```{r UE demand from buildings by carriers}
 tot <- "UE|Buildings"
@@ -31,6 +49,24 @@ items <- c(
   "UE|Buildings|Heating|Solids",
   NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### UE mix per Capita
+```{r per Capita UE demand from buildings by carriers}
+if ("UE|Buildings|non-Heating|Electricity|Conventional pCap" %in% data[["variable"]]) {
+  tot <- "UE|Buildings pCap"
+  items <- c(
+    "UE|Buildings|non-Heating|Electricity|Conventional pCap",  
+    "UE|Buildings|Heating|Electricity|Heat pump pCap",  
+    "UE|Buildings|Heating|District Heating pCap",  
+    "UE|Buildings|Heating|Electricity|Resistance pCap",
+    "UE|Buildings|Heating|Hydrogen pCap",  
+    "UE|Buildings|Heating|Gases pCap",
+    "UE|Buildings|Heating|Liquids pCap",
+    "UE|Buildings|Heating|Solids pCap",
+    NULL)
+  showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+}
 ```
 
 ### FE heating
@@ -48,6 +84,23 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
+### FE heating per capita
+```{r per Capita FE demand from buildings for heating by carriers}
+if ("FE|Buildings|Heating|Electricity|Heat pump pCap" %in% data[["variable"]]) {
+  tot <- "FE|Buildings|Heating pCap"
+  items <- c(
+    "FE|Buildings|Heating|Electricity|Heat pump pCap",  
+    "FE|Buildings|Heating|District Heating pCap",  
+    "FE|Buildings|Heating|Electricity|Resistance pCap",
+    "FE|Buildings|Heating|Hydrogen pCap",  
+    "FE|Buildings|Heating|Gases pCap",
+    "FE|Buildings|Heating|Liquids pCap",
+    "FE|Buildings|Heating|Solids pCap",
+    NULL)
+  showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+}
+```
+
 ### UE heating
 ```{r UE demand from buildings for heating by carriers}
 tot <- "UE|Buildings|Heating"
@@ -63,18 +116,39 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
+### UE heating per Capita
+```{r per Capita UE demand from buildings for heating by carriers}
+if ("UE|Buildings|Heating|Electricity|Heat pump pCap" %in% data[["variable"]]) {
+  tot <- "UE|Buildings|Heating pCap"
+  items <- c(
+    "UE|Buildings|Heating|Electricity|Heat pump pCap",  
+    "UE|Buildings|Heating|District Heating pCap",  
+    "UE|Buildings|Heating|Electricity|Resistance pCap",
+    "UE|Buildings|Heating|Hydrogen pCap",  
+    "UE|Buildings|Heating|Gases pCap",
+    "UE|Buildings|Heating|Liquids pCap",
+    "UE|Buildings|Heating|Solids pCap",
+    NULL)
+  showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+}
+```
+
 ### Region Intercomparison FE|Buildings
 ```{r FE Buildings Region}
 items <- c(
   "FE|Buildings|Heating",
   "FE|Buildings|Appliances and Light",
-  "FE|Buildings|Cooking and Water",
+  "FE|Buildings|Cooking and Water")
+
+showMultiLinePlots(data, items)
+showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
+
+items <- c(
   "FE|Buildings|Space Cooling",
   "FE|Buildings|Space Heating")
-showMultiLinePlots(data, items[1:3])
-showMultiLinePlots(data, items[4:5])
-showMultiLinePlotsByVariable(data, items[1:3], "GDP|PPP pCap")
-showMultiLinePlotsByVariable(data, items[4:5], "GDP|PPP pCap")
+
+showMultiLinePlots(data, items)
+showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
 

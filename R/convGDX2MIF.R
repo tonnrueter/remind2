@@ -13,6 +13,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #' @param gdx_refpolicycost reference-gdx for policy costs, a GDX as created by readGDX, or the file name of a gdx
+#' @param testthat boolean whether called by tests, turns some messages into warnings
 #' @author Lavinia Baumstark
 #' @examples
 #'
@@ -27,7 +28,7 @@
 
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
                         t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
-                        gdx_refpolicycost = gdx_ref) {
+                        gdx_refpolicycost = gdx_ref, testthat = FALSE) {
 
   # Define region subsets
   regionSubsetList <- toolRegionSubsets(gdx)
@@ -86,23 +87,34 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- mbind(output,reportCrossVariables(gdx,output,regionSubsetList,t)[,t,])
 
   # Report policy costs, if possible and sensible
-  if(!is.null(gdx_refpolicycost)) {
-    if (file.exists(gdx_refpolicycost)) {
-      gdp_scen <- try(readGDX(gdx,"cm_GDPscen",react ="error"),silent=T)
-      gdp_scen_ref <- try(readGDX(gdx_refpolicycost,"cm_GDPscen",react = "error"),silent=T)
-      if(!inherits(gdp_scen,"try-error") && !inherits(gdp_scen_ref,"try-error")){
-        if(gdp_scen[1]==gdp_scen_ref[1]){
-          message("running reportPolicyCosts, comparing to ", basename(dirname(gdx_refpolicycost)), "/", basename(gdx_refpolicycost), "...")
-          output <- mbind(output,reportPolicyCosts(gdx,gdx_refpolicycost,regionSubsetList,t)[,t,])
+  if (is.null(gdx_refpolicycost)) {
+    gdx_refpolicycost <- gdx
+    message("gdx_refpolicycost not defined, report 0 everywhere.")
+  }
+  if (file.exists(gdx_refpolicycost)) {
+    gdp_scen <- try(readGDX(gdx, "cm_GDPscen", react = "error"), silent = TRUE)
+    gdp_scen_ref <- try(readGDX(gdx_refpolicycost, "cm_GDPscen", react = "error"), silent = TRUE)
+    if (! inherits(gdp_scen, "try-error") && ! inherits(gdp_scen_ref, "try-error")) {
+      if (gdp_scen[1] == gdp_scen_ref[1]) {
+        if (gdx == gdx_refpolicycost) {
+          msg_refpc <- "reporting 0 everywhere"
         } else {
-          warning(paste0("The GDP scenario differs from that of the reference run. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the 'policyCosts' output.R script."))
+          msg_refpc <- paste0("comparing to ", basename(dirname(gdx_refpolicycost)), "/", basename(gdx_refpolicycost), "...")
         }
+        message("running reportPolicyCosts, ", msg_refpc)
+        output <- mbind(output, reportPolicyCosts(gdx, gdx_refpolicycost, regionSubsetList, t)[,t,])
       } else {
-        warning(paste0("A comparison of the GDP scenarios between this run and its reference run wasn't possible (old remind version). Therefore to avoid reporting unsensible policy costs, 'reportPolicyCosts' was not executed. If a policy costs reporting is required, please use the  'policyCosts' output.R script."))
+        warning("The GDP scenario differs from that of the reference run. Did not execute 'reportPolicyCosts'! ",
+                "If a policy costs reporting is desired, please use the 'policyCosts' output.R script.")
       }
     } else {
-      warning(paste0("File ",gdx_refpolicycost," not found. Did not execute 'reportPolicyCosts'! If a policy costs reporting is desired, please use the   'policyCosts' output.R script."))
+      warning("A comparison of the GDP scenarios between this run and its reference run wasn't possible (old remind version). ",
+              "Therefore to avoid reporting unsensible policy costs, 'reportPolicyCosts' was not executed. ",
+              "If a policy costs reporting is required, please use the 'policyCosts' output.R script.")
     }
+  } else {
+    warning(paste0("File ", gdx_refpolicycost, " not found. Did not execute 'reportPolicyCosts'! ",
+            "If a policy costs reporting is desired, please use the 'policyCosts' output.R script."))
   }
 
   # reporting of SDP variables
@@ -121,23 +133,25 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
 
   checkVariableNames(getNames(output, dim = 3))
 
-  .reportSummationErrors <- function(msg) {
-    if (!any(grepl('All summation checks were fine', msg)))
-      message(paste(msg, collapse = '\n'))
+  .reportSummationErrors <- function(msg, testthat) {
+    if (!any(grepl('All summation checks were fine', msg))) {
+      msgtext <- paste(msg, collapse = '\n')
+      if (isTRUE(testthat)) warning(msgtext) else message(msgtext)
+    }
   }
 
   capture.output(
     sumChecks <- checkSummations(
-      mifFile = output, outputDirectory = NULL,
+      mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
       summationsFile = "extractVariableGroups",
       absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE
     ) %>%
       filter(abs(.data$diff) >= 1.5e-8),
     type = 'message') %>%
-    .reportSummationErrors()
+    .reportSummationErrors(testthat = testthat)
 
   capture.output(sumChecks <- checkSummations(
-    mifFile = output, outputDirectory = NULL,
+    mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
     summationsFile = system.file('extdata/additional_summation_checks.csv',
                                  package = 'remind2'),
     absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE) %>%
@@ -145,7 +159,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
       bind_rows(sumChecks),
     type = 'message'
   ) %>%
-    .reportSummationErrors()
+    .reportSummationErrors(testthat = testthat)
 
   # either write the *.mif or return the magpie object
   if (!is.null(file)) {
