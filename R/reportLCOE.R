@@ -152,7 +152,7 @@ reportLCOE <- function(gdx, output.type = "both"){
     if (!is.null(v33_emiDAC)){teCDR <- c(teCDR,"dac")}
     # captured CO2 by Enhanced Weathering
     v33_emiEW <- readGDX(gdx, "v33_emiEW", field = "l", restore_zeros = F, react = "silent")
-    if (!is.null(v33_emiEW)) {v33_emiEW <- add_columns(v33_emiEW, addnm=c("y2005","y2010"),dim=2,fill=0)[, ttot_from2005, ]
+    if (!is.null(v33_emiEW)) {v33_emiEW <- add_columns(v33_emiEW, addnm=c("y2005","y2010","y2015","y2020"),dim=2,fill=0)[, ttot_from2005, ]
                               EW_name <- intersect(c("rockgrind","weathering"),te)
                               teCDR <- c(teCDR,EW_name)}
     # variable used in the rest of the reporting
@@ -302,6 +302,7 @@ reportLCOE <- function(gdx, output.type = "both"){
         setNames(dimSums(v33_FEdemand[,,te],dim=3.2), unique(getNames(v33_FEdemand[,,te],dim=1)))),
     te)}
   }
+  # calculation explanation: 10^12 USD/TrnUSD * pm_FEPrice(TrnUSD/TWa) * FEdemand(TWa) = USD
 
  # 3. sub-part: OMV cost ----
 
@@ -311,11 +312,6 @@ reportLCOE <- function(gdx, output.type = "both"){
  temapse.names <- apply(temapse, 1, function(x) paste0(x, collapse = '.'))
  te_annual_OMV_cost <- new.magpie(getRegions(te_inv_annuity),ttot_from2005,magclass::getNames(te_inv_annuity), fill=0)
  te_annual_OMV_cost[,,temapse$all_te] <- 1e+12 * collapseNames(pm_data[,,"omv"])[,,temapse$all_te] * setNames(vm_prodSe[,,temapse.names],temapse$all_te)
-
- # read additional EW O&M cost if needed
- if(EW_name %in% teCDR){
-   te_annual_addOM_cost  <- setNames(readGDX(gdx,"vm_omcosts_cdr",restore_zeros = F,field="l",format="first_found"),EW_name)
-  }
 
  # 4. sub-part: OMF cost ----
 
@@ -464,7 +460,23 @@ reportLCOE <- function(gdx, output.type = "both"){
    te_annual_ccsInj_cost +
    te_annual_co2_cost
 
- ####### 10. sub-part: calculate total energy production and carbon storage  #################################
+###### 10. sub-part: Additional Enhanced Weathering data & calculations 
+ if(EW_name %in% teCDR){
+  # read amount of rock spread
+   v33_EW_onfield <- readGDX(gdx,c("v33_EW_onfield","v33_grindrock_onfield"), restore_zeros = F,field="l",format="first_found")
+   v33_EW_onfield_sum <- dimSums(v33_EW_onfield,dim=3)
+
+  # EW-specific fixed OM cost are given by vm_omcosts_cdr. This cumulates a) completely fixed cost for mining, grinding and spreading; and b) fixed transportation cost that depend on the distance grade. 
+  # To allow interpretation of the LC, separate these cost components.
+   te_annual_addOM_cost  <- 10^12 * setNames(readGDX(gdx,"vm_omcosts_cdr",restore_zeros = F,field="l",format="first_found"),EW_name) 
+   s33_costs_fix <- readGDX(gdx,"s33_costs_fix")
+   p33_EW_transport_costs <- readGDX(gdx,c("p33_EW_transport_costs","p33_transport_costs"),format="first_found")
+   
+   EW_fixed_other_cost <- 10^12 * s33_costs_fix * v33_EW_onfield_sum 
+   EW_fixed_transport_cost <-  10^12 *  dimSums(p33_EW_transport_costs[,,getNames(v33_EW_onfield)] * v33_EW_onfield)
+  }
+
+####### 11. sub-part: calculate total energy production and carbon storage  #################################
  # a) production volumes to divide by:
   # for LCO-ccsinje: change unit of stored CO2 from GtC to tCO2
  vm_co2CCS_tCO2 <- vm_co2CCS*s_GtC2tCO2
@@ -476,7 +488,20 @@ reportLCOE <- function(gdx, output.type = "both"){
  te_cco2 <- intersect(getNames(cco2_byTech_tCO2),getNames(te_inv_annuity)) # Technologies that capture co2 to enter ccus system, no matter which source
 
   # for LCO-sc: calculate stored CO2 to calculate cost per tCO2 
-  cdrco2_byTech_tCO2 <- vm_emiCdrTeDetail[,,setdiff(teCDR,te_cco2)]*s_GtC2tCO2*-1 # currently only if enhanced weathering is on. In future also biochar & OAE
+  cdrco2_byTech_tCO2 <- vm_emiCdrTeDetail[,,setdiff(teCDR,te_cco2)]*s_GtC2tCO2*-1 # will become relevant when biochar included
+
+  # enhanced weathering: 
+  if (EW_name %in% teCDR){
+      # The calculation of cost is associated with the spreading of rocks in a time step. However, the removal induced thereby is spread across time steps. 
+      # Thus, we need to calculate the total removal induced through spreading a given amount of rock as reference value for the cost incurred in that time step.
+      s33_co2_rem_pot <- readGDX(gdx, "s33_co2_rem_pot")
+      EW_induced_in_tCO2 <- dimSums(v33_EW_onfield*s33_co2_rem_pot * s_GtC2tCO2, dim=3) # here grades do not matter because the overall removal depends on the type of stone and not grade
+                                      # [Gt stone] * [GtC/GtStone] * [tCO2/GtC]
+      EW_induced_in_tCO2[EW_induced_in_tCO2==0] <- NA # set NA to avoid infinite investment cost for the standing system when regions do not spread EW in time steps after initial investment was taken                             
+      cdrco2_byTech_tCO2[,,EW_name] <- EW_induced_in_tCO2[,ttot_from2005,] 
+      # Note that there is an alternative way to allocate the cost which may be added in the future.
+  }
+
   te_sco2 <- getNames(cdrco2_byTech_tCO2)
 
  # for pe2se: SE and FE production in MWh
@@ -615,28 +640,35 @@ reportLCOE <- function(gdx, output.type = "both"){
                       te_annual_ccsInj_inclAdjCost[,ttot_from2005,cco2Techs]/ (cco2_byTech_tCO2[,ttot_from2005,cco2Techs] * dimSums(vm_co2CCS/vm_co2capture)) ,
                        paste0("LCOCCS|average|","ico2|",te_cco2,"|carbon management", "|Total Cost w/ Adj Cost")),
       #### Carbon storing Technologies (other than CCUS chain; for now only if EW included, will include biochar in future)
-          if (EW_name %in% teCDR){
-              mbind(setNames(te_annual_inv_cost[,ttot_from2005,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2,"|carbon management", "|Investment Cost")),
+          if (EW_name %in% teCDR){mbind(
+          ## calculation based on removal initiated in t
+              setNames(te_annual_inv_cost[,ttot_from2005,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
+                       paste0("LCOCS|average|","sco2|",te_sco2,"|carbon management", "|Investment Cost")),
               setNames(te_annual_inv_cost_wadj[,ttot_from2005,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2,"|carbon management", "|Investment Cost w/ Adj Cost")),
+                       paste0("LCOCS|average|","sco2|",te_sco2,"|carbon management", "|Investment Cost w/ Adj Cost")),
               setNames(te_annual_fuel_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|Fuel Cost")),
+                       paste0("LCOCS|average|","sco2|",te_sco2, "|carbon management","|Fuel Cost")),
               setNames(te_annual_secFuel_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|Second Fuel Cost")),
+                       paste0("LCOCS|average|","sco2|",te_sco2, "|carbon management","|Second Fuel Cost")),
+              setNames(te_annual_otherFuel_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
+                       paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|Other Fuel Cost")), 
               setNames(te_annual_OMF_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|OMF Cost")),
+                       paste0("LCOCS|average|","sco2|",te_sco2, "|carbon management","|OMF Cost")),
               setNames(te_annual_OMV_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2, "|carbon management","|OMV Cost")),
-              setNames(te_annual_addOM_cost[,,EW_name]/cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
-                       paste0("LCOCC|average|","sco2|",EW_name, "|carbon management","|otherOM Cost")),
+                       paste0("LCOCS|average|","sco2|",te_sco2, "|carbon management","|OMV Cost")),
+              # specific to enhanced weathering 
+              setNames(EW_fixed_other_cost[,ttot_from2005,]/cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
+                       paste0("LCOCS|average|","sco2|",EW_name, "|carbon management","|OMF other Cost")),
+              setNames(EW_fixed_transport_cost/cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
+                       paste0("LCOCS|average|","sco2|",EW_name, "|carbon management","|OMF transport Cost")),
               # sum for enhanced weathering (incl. special om cost)
-              setNames((te_annual_inv_cost[,ttot_from2005,EW_name] +  te_annual_fuel_cost[,,EW_name] +  te_annual_secFuel_cost[,,EW_name] + te_annual_otherFuel_cost[,,EW_name] +
-                          te_annual_OMF_cost[,,EW_name] + te_annual_OMV_cost[,,EW_name] + te_annual_addOM_cost[,,EW_name]) / cdrco2_byTech_tCO2[,ttot_from2005,EW_name] ,
-                       paste0("LCOCC|average|","sco2|",EW_name,"|carbon management", "|Total Cost")),
-              setNames((te_annual_inv_cost_wadj[,ttot_from2005,te_sco2] + te_annual_fuel_cost[,,te_sco2] + te_annual_secFuel_cost[,,te_sco2] + te_annual_otherFuel_cost[,,EW_name] +
-                          te_annual_OMF_cost[,,te_sco2] + te_annual_OMV_cost[,,te_sco2]) / cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
-                       paste0("LCOCC|average|","sco2|",te_sco2,"|carbon management", "|Total Cost w/ Adj Cost")))}
+              setNames((te_annual_inv_cost[,ttot_from2005,EW_name] +  te_annual_OMF_cost[,,EW_name] + te_annual_otherFuel_cost[,,EW_name] + EW_fixed_other_cost + 
+                        EW_fixed_transport_cost) / cdrco2_byTech_tCO2[,ttot_from2005,EW_name] ,
+                       paste0("LCOCS|average|","sco2|",EW_name,"|carbon management", "|Total Cost")),
+              setNames((te_annual_inv_cost_wadj[,ttot_from2005,EW_name] + te_annual_otherFuel_cost[,,EW_name] + EW_fixed_other_cost +
+                        EW_fixed_transport_cost ) / cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
+                       paste0("LCOCS|average|","sco2|",EW_name,"|carbon management", "|Total Cost w/ Adj Cost"))
+                       )}
           else {NULL}
  )*1.2
 
