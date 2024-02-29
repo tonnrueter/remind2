@@ -463,7 +463,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 ###### 10. sub-part: Additional Enhanced Weathering data & calculations 
  if(EW_name %in% teCDR){
   # read amount of rock spread
-   v33_EW_onfield <- readGDX(gdx,c("v33_EW_onfield","v33_grindrock_onfield"), restore_zeros = F,field="l",format="first_found")
+   v33_EW_onfield <- readGDX(gdx,c("v33_EW_onfield","v33_grindrock_onfield"), restore_zeros = F,field="l",format="first_found")[,ttot_from2005,]
    v33_EW_onfield_sum <- dimSums(v33_EW_onfield,dim=3)
 
   # EW-specific fixed OM cost are given by vm_omcosts_cdr. This cumulates a) completely fixed cost for mining, grinding and spreading; and b) fixed transportation cost that depend on the distance grade. 
@@ -657,7 +657,7 @@ reportLCOE <- function(gdx, output.type = "both"){
               setNames(te_annual_OMV_cost[,,te_sco2]/cdrco2_byTech_tCO2[,ttot_from2005,te_sco2],
                        paste0("LCOCS|average|","sco2|",te_sco2, "|carbon management","|OMV Cost")),
               # specific to enhanced weathering 
-              setNames(EW_fixed_other_cost[,ttot_from2005,]/cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
+              setNames(EW_fixed_other_cost[,,]/cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
                        paste0("LCOCS|average|","sco2|",EW_name, "|carbon management","|OMF other Cost")),
               setNames(EW_fixed_transport_cost/cdrco2_byTech_tCO2[,ttot_from2005,EW_name],
                        paste0("LCOCS|average|","sco2|",EW_name, "|carbon management","|OMF transport Cost")),
