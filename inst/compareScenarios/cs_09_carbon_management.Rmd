@@ -78,7 +78,6 @@ showLinePlots(data, "Carbon Management|Storage|Share of annual potential used")
 showAreaAndBarPlots(data,
                     vars = c("Carbon Management|Storage"),
                     tot = "Carbon Management|Storage|Maximum annual CO2 storage potential")
-```
 
 ## Carbon Usage
 ### Usage Total - Line
