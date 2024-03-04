@@ -78,10 +78,14 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   #vm_prodFe  <- vm_prodFe[se2fe]
   vm_demFeSector <- readGDX(gdx,name=c("vm_demFeSector"),field="l",format="first_found",restore_zeros=FALSE)[,t,]*TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
+
   # FE non-energy use
-  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l", restore_zeros = T, react = "silent")[,t,]*TWa_2_EJ
+  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l", restore_zeros = FALSE, react = "silent")[,t,]*TWa_2_EJ
+
   if (length(vm_demFENonEnergySector) == 0) {
     vm_demFENonEnergySector <- NULL
+  } else {
+    vm_demFENonEnergySector <- expandMagclass(vm_demFENonEnergySector, vm_demFeSector)
   }
 
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
