@@ -145,15 +145,23 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   if (!is.null(o37_demFeIndSub)) {
     o37_demFeIndSub[is.na(o37_demFeIndSub)] <- 0
   }
-# CO2 captured per industry subsector
-  # note: this has to be read in with restore_zeros=T because sometimes it contains only non-zero values for "ETS" emiMkt
-  # and magclass will wrongly interpret this as a region
-  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = T,
-                                 react = 'silent')[,t,]
+
+  # CO2 captured per industry subsector
+  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = FALSE, react = "silent")
+  pm_IndstCO2Captured <- pm_IndstCO2Captured[, intersect(getYears(pm_IndstCO2Captured), t)]
+
+  # manually correct falsely classified region for "all_emiMkt"
+  if (dimExists(pm_IndstCO2Captured, dim = 1.2)) {
+    mkt <- getItems(pm_IndstCO2Captured, dim = 1.2)
+    pm_IndstCO2Captured <- collapseDim(pm_IndstCO2Captured, dim = 1.2)
+    pm_IndstCO2Captured <- add_dimension(pm_IndstCO2Captured, dim = 3.4, add = "all_emiMkt", nm = mkt)
+  }
+
   # if all zero, set to NULL
   if (length(pm_IndstCO2Captured) == 0) {
     pm_IndstCO2Captured <- NULL
   }
+
   # subset parameter to decrease size as restore_zeros=F was not possible
   if (!is.null(pm_IndstCO2Captured)) {
     pm_IndstCO2Captured <- pm_IndstCO2Captured[se2fe[,c(1,2)]]
