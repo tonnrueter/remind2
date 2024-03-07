@@ -147,25 +147,16 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   # CO2 captured per industry subsector
-  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", restore_zeros = FALSE, react = "silent")
-  pm_IndstCO2Captured <- pm_IndstCO2Captured[, intersect(getYears(pm_IndstCO2Captured), t)]
+  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", regional = 1,
+                                 spatial = 2, restore_zeros = FALSE, react = "silent")
 
-  # manually correct falsely classified region for "all_emiMkt"
-  if (dimExists(pm_IndstCO2Captured, dim = 1.2)) {
-    mkt <- getItems(pm_IndstCO2Captured, dim = 1.2)
-    pm_IndstCO2Captured <- collapseDim(pm_IndstCO2Captured, dim = 1.2)
-    pm_IndstCO2Captured <- add_dimension(pm_IndstCO2Captured, dim = 3.4, add = "all_emiMkt", nm = mkt)
-  }
+  pm_IndstCO2Captured <- pm_IndstCO2Captured[, intersect(getYears(pm_IndstCO2Captured), t), ]
 
   # if all zero, set to NULL
   if (length(pm_IndstCO2Captured) == 0) {
     pm_IndstCO2Captured <- NULL
   }
 
-  # subset parameter to decrease size as restore_zeros=F was not possible
-  if (!is.null(pm_IndstCO2Captured)) {
-    pm_IndstCO2Captured <- pm_IndstCO2Captured[se2fe[,c(1,2)]]
-  }
   # FE non-energy use
   vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l", react = "silent")[,t,]
   if (length(vm_demFENonEnergySector) == 0) {
