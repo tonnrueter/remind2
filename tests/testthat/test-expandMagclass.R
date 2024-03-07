@@ -8,31 +8,32 @@ test_that("expandMagclass works", {
     sets = c("region", "t", "name")
   )
 
+
   # spatial ----
+  ## x smaller then ref ----
+  expect_equal(expandMagclass(A[region[-2],,], A),
+               `mselect<-`(A, region = region[2], value = 0))
 
-  ## x smaller than ref ----
-  B <- expandMagclass(A[region[-2], , ], A)
-  expect_true(all(region %in% getRegions(B)))
-
-  ## x larger than ref ----
-  expect_equal(expandMagclass(A, A[region[-2], , ]), A)
+  ## x larger then ref ----
+  expect_equal(expandMagclass(A, A[region[-2],,]),
+               A[region[-2],,])
 
   # temporal ----
+  ## x smaller then ref ----
+  expect_equal(expandMagclass(A[,t[-2],], A),
+               `mselect<-`(A, t = t[2], value = 0))
 
-  ## x smaller than ref ----
-  B <- expandMagclass(A[, t[-2], ], A)
-  expect_true(all(t %in% getYears(B)))
-
-  ## x larger than ref ----
-  expect_equal(expandMagclass(x = A, ref = A[, t[-2], ]), A)
+  ## x larger then ref ----
+  expect_equal(expandMagclass(x = A, ref = A[,t[-2],]),
+               A[,t[-2],])
 
   # names ----
+  ## x smaller then ref ----
+  expect_equal(expandMagclass(A[,,name[-2]], A),
+               `mselect<-`(A, name = name[2], value = 0))
 
-  ## x smaller than ref ----
-  B <- expandMagclass(A[,,name[-2]], A)
-  expect_true(all(name %in% getNames(B)))
-
-  ## x larger than ref ----
-  expect_equal(expandMagclass(A, A[,,name[-2]]), A)
+  ## x larger then ref ----
+  expect_equal(expandMagclass(A, A[,,name[-2]]),
+               A[,,name[-2]])
 
 })

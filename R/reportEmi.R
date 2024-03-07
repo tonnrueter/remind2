@@ -147,9 +147,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   # CO2 captured per industry subsector
-  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", regional = 1,
-                                 spatial = 2, restore_zeros = FALSE, react = "silent")
-
+  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", regional = 1, spatial = 2, restore_zeros = FALSE, react = "silent")
   pm_IndstCO2Captured <- pm_IndstCO2Captured[, intersect(getYears(pm_IndstCO2Captured), t), ]
 
   # if all zero, set to NULL
@@ -158,7 +156,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   # FE non-energy use
-  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l", react = "silent")[,t,]
+  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l",
+                                     restore_zeros = F, react = "silent")[,t,]
   if (length(vm_demFENonEnergySector) == 0) {
     vm_demFENonEnergySector <- NULL
   }
@@ -192,7 +191,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   # stored CO2
   vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)[, t, ]
   # CO2 captured by industry sectors
-  vm_emiIndCCS <- readGDX(gdx, "vm_emiIndCCS", field = "l", restore_zeros = T)[, t, ]
+  vm_emiIndCCS <- readGDX(gdx, "vm_emiIndCCS", field = "l", restore_zeros = FALSE)[, t, ]
   getSets(vm_emiIndCCS)[3] <- "secInd37" # relabel subsector dimension to match with other parameters
 
   # CO2 released by CCU
@@ -307,17 +306,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
 
   # Preliminary Calculations----
 
-  # get combinations of SE,FE,sector,emiMkt that exist in vm_demFeSector
-  FE.map <- se2fe %>%
-    left_join(entyFe2Sector, by = "all_enty1", relationship = "many-to-many") %>%
-    left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
-    select( -all_te) %>%
-    mutate( name = paste(all_enty,all_enty1,emi_sectors,all_emiMkt, sep = "."))
-
-
   # calculate FE without non-energy use
   if (!is.null(vm_demFENonEnergySector)) {
-    vm_demFENonEnergySector <-  mselect(vm_demFENonEnergySector[, , FE.map$name],
+
+    vm_demFENonEnergySector <-  mselect(vm_demFENonEnergySector,
                                         all_enty1 = entyFe2sector2emiMkt_NonEn$all_enty,
                                         emi_sectors = entyFe2sector2emiMkt_NonEn$emi_sectors,
                                         all_emiMkt = entyFe2sector2emiMkt_NonEn$all_emiMkt)
@@ -328,36 +320,25 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   # Read-in plastic-related variables
-  vm_plasticsCarbon <- readGDX(gdx, "vm_plasticsCarbon", field = "l", restore_zeros = T, react = "silent")[,t,]
+  vm_plasticsCarbon <- readGDX(gdx, "vm_plasticsCarbon", field = "l", restore_zeros = FALSE, react = "silent")[,t,]
   if (length(vm_plasticsCarbon) == 0) {
     vm_plasticsCarbon <- NULL
   }
 
   if (!is.null(vm_plasticsCarbon)){
-    vm_feedstockEmiUnknownFate  <- readGDX(gdx, "vm_feedstockEmiUnknownFate", field = "l", restore_zeros = T, react = "silent")[,t,]
-    vm_incinerationEmi          <- readGDX(gdx, "vm_incinerationEmi", field = "l", restore_zeros = T, react = "silent")[,t,]
-    vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = T, react = "silent")[,t,]
+    vm_feedstockEmiUnknownFate  <- readGDX(gdx, "vm_feedstockEmiUnknownFate", field = "l", restore_zeros = FALSE,
+                                           spatial = 2, react = "silent")[,t,]
+    vm_incinerationEmi          <- readGDX(gdx, "vm_incinerationEmi", field = "l", restore_zeros = FALSE,
+                                           spatial = 2, react = "silent")[,t,]
+    vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = FALSE,
+                                           spatial = 2, react = "silent")[,t,]
   }
 
-  # create new variable for carbon embbeded in non-incinerated plastics:
+  # create new variable for carbon embedded in non-incinerated plastics:
   # plastics that do not get incinerated and come from biogenic sources
-  # or synfuels (regardless of syfuel origin)
+  # or synfuels (regardless of synfuel origin)
   if (!is.null(vm_plasticsCarbon)) {
-
-    # get combinations of SE,FE,sector,emiMkt that exist in vm_nonIncineratedPlastics
-    FE.feed.map <- se2fe %>%
-      left_join(entyFe2Sector, by = "all_enty1", relationship = "many-to-many") %>%
-      left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
-      right_join(entyFe2sector2emiMkt_NonEn %>%
-                   rename(all_enty1 = all_enty),
-                 by = c("all_enty1", "emi_sectors", "all_emiMkt")) %>%
-      select( -all_te) %>%
-      mutate( name = paste(all_enty,all_enty1,all_emiMkt, sep = "."))
-
-    plastic_CDR <- mselect(vm_nonIncineratedPlastics[,,FE.feed.map$name],
-                             all_enty = c(entySEbio, entySEsyn))
-
-
+    plastic_CDR <- mselect(vm_nonIncineratedPlastics, all_enty = c(entySEbio, entySEsyn))
   } else {
     plastic_CDR <- collapseDim(vm_co2eq)*0
   }
@@ -477,7 +458,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   } else {
    EmiFeCarrier <- pm_emifac.co2.fe * vm_demFeSector[, , emi.map.fe$name]
   }
-
 
   # calculate total energy supply and demand co2 emissions
   out <- mbind(out,
@@ -2700,7 +2680,9 @@ out <- mbind(out,
 
 
   # emissions with Grassi Correction (LULUCF emissions adjusted to national LULUCF accounting)
-  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = T, react = "silent")[getRegions(out), getYears(out),]
+
+  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = FALSE, react = "silent") %>%
+    expandMagclass(out, includeNames = FALSE)
 
   if (!is.null(p47_LULUCFEmi_GrassiShift)) {
 
@@ -2709,10 +2691,6 @@ out <- mbind(out,
                      "Emi|CO2 (Mt CO2/yr)",
                      "Emi|GHG|+++|Land-Use Change (Mt CO2eq/yr)",
                      "Emi|CO2|+|Land-Use Change (Mt CO2/yr)")
-
-
-
-
 
     out.lulucf <- out[,,vars.lulucf]
     # subtract shift of LULUCF emissions to be in line with national accounting
@@ -2728,13 +2706,8 @@ out <- mbind(out,
     names.lulucf <- gsub("\\|\\+\\+\\+\\|", "\\|", names.lulucf )
     getNames(out.lulucf) <- names.lulucf
 
-
     out <- mbind(out, out.lulucf)
-
   }
-
-
-
 
   # 8. Ad-hoc fix for emissions w/o non-energy use and Aggregation to global and regional values  ----
 

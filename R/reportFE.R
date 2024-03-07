@@ -84,8 +84,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   if (length(vm_demFENonEnergySector) == 0) {
     vm_demFENonEnergySector <- NULL
-  } else {
-    vm_demFENonEnergySector <- expandMagclass(vm_demFENonEnergySector, vm_demFeSector)
   }
 
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
