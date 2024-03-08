@@ -320,7 +320,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(seq(200
   }
 
   # Read-in plastic-related variables
-  v37_plasticsCarbon <- readGDX(gdx, "v37_plasticsCarbon", field = "l", restore_zeros = FALSE, react = "silent")[,t,]
+  v37_plasticsCarbon <- readGDX(gdx, "v37_plasticsCarbon", field = "l", temporal = 1, spatial = 2,
+                                restore_zeros = FALSE, react = "silent")[,t,]
   if (length(v37_plasticsCarbon) == 0) {
     v37_plasticsCarbon <- NULL
   }
@@ -2681,8 +2682,7 @@ out <- mbind(out,
 
   # emissions with Grassi Correction (LULUCF emissions adjusted to national LULUCF accounting)
 
-  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = FALSE, react = "silent") %>%
-    expandMagclass(out, includeNames = FALSE)
+  p47_LULUCFEmi_GrassiShift <- readGDX(gdx, "p47_LULUCFEmi_GrassiShift", restore_zeros = T, react = "silent")[getRegions(out), getYears(out),]
 
   if (!is.null(p47_LULUCFEmi_GrassiShift)) {
 
