@@ -802,7 +802,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       "FE|Industry|Chemicals|Gases|+|Biomass (EJ/yr)",           entySEbio,   "fegas",      "chemicals",
       "FE|Industry|Chemicals|Gases|+|Hydrogen (EJ/yr)",          entySEsyn,   "fegas",      "chemicals",
       "FE|Industry|Chemicals|+|Hydrogen (EJ/yr)",                NULL,        "feh2s",      "chemicals",
-      "FE|Industry|Chemicals|+|Heat (EJ/yr)",                    NULL,        "fehes",      "chemicals",
       "FE|Industry|Chemicals|+|Electricity (EJ/yr)",             NULL,        "feels",      "chemicals",
 
       "FE|Industry|Steel|+|Solids (EJ/yr)",                      NULL,        "fesos",      "steel",
