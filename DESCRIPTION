@@ -47,7 +47,7 @@ Imports:
     assertr,
     data.table,
     dplyr (>= 1.1.1),
-    gdx (>= 1.29),
+    gdx (>= 1.53.0),
     gdxdt,
     gdxrrw,
     ggplot2,
