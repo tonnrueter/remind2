@@ -140,15 +140,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     o37_demFeIndSub[is.na(o37_demFeIndSub)] <- 0
   }
 
-  # CO2 captured per industry subsector
-  pm_IndstCO2Captured <- readGDX(gdx, "pm_IndstCO2Captured", regional = 1, spatial = 2, restore_zeros = FALSE, react = "silent")
-  pm_IndstCO2Captured <- pm_IndstCO2Captured[, intersect(getYears(pm_IndstCO2Captured), t), ]
-
-  # if all zero, set to NULL
-  if (length(pm_IndstCO2Captured) == 0) {
-    pm_IndstCO2Captured <- NULL
-  }
-
   # FE non-energy use
   vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l",
                                      restore_zeros = F, react = "silent")[,t,]
