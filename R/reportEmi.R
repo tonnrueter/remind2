@@ -143,8 +143,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # FE non-energy use
   vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l",
                                      restore_zeros = F, react = "silent")[,t,]
+
   if (length(vm_demFENonEnergySector) == 0) {
     vm_demFENonEnergySector <- NULL
+  } else {
+    vm_demFENonEnergySector <- expandMagclass(vm_demFENonEnergySector, vm_demFeSector)
   }
 
   # secondary energy production
@@ -301,7 +304,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
     # calculate FE without non-energy use
     vm_demFeSector_woNonEn <- vm_demFeSector
-    vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector )]-vm_demFENonEnergySector
+    vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector)] - vm_demFENonEnergySector
   }
 
   # Read-in plastic-related variables
