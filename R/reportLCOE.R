@@ -795,7 +795,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   # # annuity factor from REMIND,
   # TODO: check whether this is the same as calculated above
   # so far only used in levelized cost of DAC calculation below
-  p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)
+  p_teAnnuity <- readGDX(gdx, c("p_teAnnuity","pm_teAnnuity"), restore_zeros = F)
 
   ### Read marginal adjustment costs ----
 
