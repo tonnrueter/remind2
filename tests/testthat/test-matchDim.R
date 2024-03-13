@@ -32,7 +32,7 @@ test_that("matchDim works", {
                `mselect<-`(A, name = name[2], value = 0))
 
   ## x larger then ref ----
-  expect_equal(expandMagclass(A, A[,,name[-2]]),
+  expect_equal(matchDim(A, A[,,name[-2]]),
                A[,,name[-2]])
 
 })

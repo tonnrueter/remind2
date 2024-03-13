@@ -9,7 +9,8 @@
 #'
 #' @export
 matchDim <- function(x, ref, fill = 0) {
-  # extend the object to the union of the both objects
+
+  # extend the object to the union of both objects
   r <- new.magpie(
     cells_and_regions = union(getRegions(x), getRegions(ref)),
     years = union(getYears(x), getYears(ref)),
@@ -17,10 +18,12 @@ matchDim <- function(x, ref, fill = 0) {
     fill = fill,
     sets = names(dimnames(ref))
   )
+
   # copy over values from x
   r[getRegions(x), getYears(x), getNames(x)] <- x
 
   # restrict object to dimensions of ref
   r <- r[getRegions(ref), getYears(ref), getNames(ref)]
+
   return(r)
 }
