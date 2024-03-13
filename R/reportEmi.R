@@ -147,7 +147,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   if (length(vm_demFENonEnergySector) == 0) {
     vm_demFENonEnergySector <- NULL
   } else {
-    vm_demFENonEnergySector <- expandMagclass(vm_demFENonEnergySector, vm_demFeSector)
+    vm_demFENonEnergySector <- matchDim(vm_demFENonEnergySector, vm_demFeSector)
   }
 
   # secondary energy production

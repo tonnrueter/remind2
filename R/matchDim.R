@@ -1,13 +1,14 @@
-#' Expand Magclass Object
+#' match object dimensions of a magclass object
 #'
-#' A helper to that restricts and expands x to the size of ref.
+#' A helper that restricts and expands a magclass object x to the size of a
+#' magclass object ref.
 #'
 #' @param x a magclass object to be modified
 #' @param ref a magclass object used as a reference for the modification
 #' @param fill value to be set in new dimensions
 #'
 #' @export
-expandMagclass <- function(x, ref, fill = 0) {
+matchDim <- function(x, ref, fill = 0) {
   # extend the object to the union of the both objects
   r <- new.magpie(
     cells_and_regions = union(getRegions(x), getRegions(ref)),
