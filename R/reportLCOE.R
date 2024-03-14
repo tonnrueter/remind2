@@ -621,6 +621,8 @@ reportLCOE <- function(gdx, output.type = "both"){
    `Total LCOE (time step prices)` <- NULL
    `Total LCOE (intertemporal prices)` <- NULL
    `Adjustment Cost` <- NULL
+   `SE Tax` <- NULL
+   `tau_SE_tax` <- NULL
 
 
 
