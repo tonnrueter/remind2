@@ -454,6 +454,18 @@ data %>%
     })
   ) %>%
   showStatsTable()
+
+data %>%
+  calcTimeSeriesStats(
+    "Temperature|Global Mean",
+    stats = list("Period (End of century Value)" = function(v, p) {
+      sprintf("%d (%.2f)", 2100, v[p == 2100])
+    })
+  ) %>%
+  showStatsTable()
+
+
+
 ```
 
 \newpage

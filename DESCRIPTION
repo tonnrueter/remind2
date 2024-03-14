@@ -60,7 +60,7 @@ Imports:
     luscale,
     lusweave,
     madrat,
-    mip (>= 0.139.1),
+    mip (>= 0.148.9),
     openxlsx,
     piamInterfaces (>= 0.13.12),
     plotly,
