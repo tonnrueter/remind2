@@ -24,7 +24,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind write.report
 #' @importFrom piamInterfaces checkSummations
-#' @importFrom utils write.csv
+#' @importFrom utils write.csv capture.output
 
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
                         t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
