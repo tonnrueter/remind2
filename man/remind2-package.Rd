@@ -3,7 +3,6 @@
 \docType{package}
 \name{remind2-package}
 \alias{remind2-package}
-\alias{_PACKAGE}
 \alias{remind2}
 \title{The REMIND R package (2nd generation)}
 \description{
