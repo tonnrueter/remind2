@@ -108,10 +108,11 @@ showAreaAndBarPlots(data, items, scales = "fixed")
 
 ```{r FE per capita (by sector, time domain, area plot)}
 items <- c(
+  "FE|CDR pCap",
   "FE|Transport pCap",
   "FE|Buildings pCap",
   "FE|Industry pCap")
-showAreaAndBarPlots(data, items, scales = "fixed")
+showAreaAndBarPlots(data, items, tot = "FE pCap", scales = "fixed")
 ```
 
 ## FE per capita (by sector, time domain, line graph)
