@@ -1,7 +1,7 @@
 Type: Package
 Package: remind2
 Title: The REMIND R package (2nd generation)
-Version: 1.135.17
+Version: 1.136.0
 Date: 2024-03-14
 Authors@R: c(
     person("Renato", "Rodrigues", , "renato.rodrigues@pik-potsdam.de", role = c("aut", "cre")),
@@ -60,7 +60,7 @@ Imports:
     luscale,
     lusweave,
     madrat,
-    mip (>= 0.139.1),
+    mip (>= 0.148.9),
     openxlsx,
     piamInterfaces (>= 0.13.12),
     plotly,
