@@ -6,7 +6,6 @@ AcceptedWarnings:
 - .*following variables are expected in the piamInterfaces.*
 - Summation checks have revealed some gaps.*
 - .*to check if summation groups add up.*
-- multiple methods tables found for.*elide
 AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
