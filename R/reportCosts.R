@@ -351,84 +351,29 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   #######################################
   ########## Energy costs ###############
   #######################################
-  if (!is.null(balfinen.m)) {
-
-    if ('subsectors' == industry_module) {
-      fe2ppfen37_feels <- filter(fe2ppfen37, 'feels' == .data$all_enty)
-      fe2ppfen37_fegas <- filter(fe2ppfen37, 'fegas' == .data$all_enty)
-      fe2ppfen37_feh2s <- filter(fe2ppfen37, 'feh2s' == .data$all_enty)
-
-
-      # "Price|Final Energy|Electricity|Industry (US$2005/GJ)")
-      price_feeli <- abs(
-        ( dimSums(
-            mselect(balfinen.m, fe2ppfen37_feels)
-          * vm_cesIO[,y,fe2ppfen37_feels$all_in],
-          dim = 3, na.rm = T)
-        / dimSums(vm_cesIO[,y,fe2ppfen37_feels$all_in], dim = 3, na.rm = T)
-        )
-        / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
-      )
-
-      # "Price|Final Energy|Gases|Industry (US$2005/GJ)")
-      price_fegai <- abs(
-        ( dimSums(
-          mselect(balfinen.m, fe2ppfen37_fegas)
-          * vm_cesIO[,y,fe2ppfen37_fegas$all_in],
-          dim = 3, na.rm = T)
-          / dimSums(vm_cesIO[,y,fe2ppfen37_fegas$all_in], dim = 3, na.rm = T)
-        )
-        / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
-      )
-
-      # "Price|Final Energy|Hydrogen|Industry (US$2005/GJ)")
-      price_feh2i <- abs(
-        ( dimSums(
-          mselect(balfinen.m, fe2ppfen37_feh2s)
-          * vm_cesIO[,y,fe2ppfen37_feh2s$all_in],
-          dim = 3, na.rm = T)
-          / dimSums(vm_cesIO[,y,fe2ppfen37_feh2s$all_in], dim = 3, na.rm = T)
-        )
-        / (budget.m + 1e-10) * 1000 / pm_conv_TWa_EJ
-      )
-    } else {
-      price_feeli <- abs(balfinen.m[,,"feels.feeli"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Electricity|Industry (US$2005/GJ)")
-      price_fegai <- abs(balfinen.m[,,"fegas.fegai"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Gases|Industry (US$2005/GJ)")
-      price_feh2i <- abs(balfinen.m[,,"feh2s.feh2i"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Hydrogen|Industry (US$2005/GJ)")
-    }
-
-    # reduce names in 3rd dimension
-    price_feeli <- setNames(price_feeli,"feeli") # reduce feels.feels to feels
-    price_fegai <- setNames(price_fegai,"fegai") # reduce fehes.fehes to fehes
-    price_feh2i <- setNames(price_feh2i,"feh2i") # reduce fehes.fehes to fehes
-
-  } else {
-    # industry final energy price
-    price_fe_indst_emiMkt <- abs(demFeIndst.m/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in industry per emission market (US$2005/GJ)
-    quant_fe_indst_emiMkt <-  dimSums(dimSums(vm_demFeSector[,,"indst"],dim=c(3.1),na.rm=T),dim=c(3.2),na.rm=T)[,,getNames(price_fe_indst_emiMkt)] # qunatity of final energy in industry per emission market
-    price_fe_indst <- dimSums(price_fe_indst_emiMkt*quant_fe_indst_emiMkt,dim=3.2,na.rm=T) / dimSums(quant_fe_indst_emiMkt,dim=3,na.rm=T) # price of final energy in industry (US$2005/GJ)
-    # buildings final energy price
-    price_fe_build_emiMkt <- abs(demFeBuild.m/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in buildings per emission market (US$2005/GJ)
-    quant_fe_build_emiMkt <-  dimSums(dimSums(vm_demFeSector[,,"build"],dim=c(3.1),na.rm=T),dim=c(3.2),na.rm=T)[,,getNames(price_fe_build_emiMkt)]
-    price_fe_build <- dimSums(price_fe_build_emiMkt*quant_fe_build_emiMkt,dim=3.2,na.rm=T) / dimSums(quant_fe_build_emiMkt,dim=3,na.rm=T) # price of final energy in buildings (US$2005/GJ)
-
-    # reduce names in 3rd dimension
-    price_feeli <- price_fe_indst[,,"feels"]
-    price_fegai <- price_fe_indst[,,"fegas"]
-    price_feh2i <- price_fe_indst[,,"feh2s"]
-    price_feeli <- setNames(price_feeli,"feeli") # reduce feels.feels to feels
-    price_fegai <- setNames(price_fegai,"fegai") # reduce fehes.fehes to fehes
-    price_feh2i <- setNames(price_feh2i,"feh2i") # reduce fehes.fehes to fehes
+  .drop_GLOs <- function(x) {
+    x[setdiff(getRegions(x), c('GLO', names(regionSubsetList))),,]
   }
 
+  price_feeli <- dimSums(output[,,'Price|Final Energy|Industry|Electricity (US$2005/GJ)'],
+                         dim = 3, na.rm = TRUE) %>%
+    .drop_GLOs()
+  price_fegai <- dimSums(output[,,'Price|Final Energy|Industry|Gases (US$2005/GJ)'],
+                         dim = 3, na.rm = TRUE) %>%
+    .drop_GLOs()
+  price_feh2i <- dimSums(output[,,'Price|Final Energy|Industry|Hydrogen (US$2005/GJ)'],
+                         dim = 3, na.rm = TRUE) %>%
+    .drop_GLOs()
   price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
 
-  tmp  <- mbind(tmp, setNames(price_feeli * CDR_FEdemand[,,"feels"] * pm_conv_TWa_EJ, "Energy costs CDR|Electricity (billion US$2005/yr)"))
-  tmp  <- mbind(tmp, setNames(price_fedie * CDR_FEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"))
-  tmp  <- mbind(tmp, setNames((price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
-                     "Energy costs CDR|Heat (billion US$2005/yr)"))
+  tmp  <- mbind(
+    tmp,
 
-  tmp  <- mbind(tmp, setNames((price_feeli * CDR_FEdemand[,,"feels"] + price_fedie * CDR_FEdemand[,,"fedie"] +
+    setNames(price_feeli * CDR_FEdemand[,,"feels"] * pm_conv_TWa_EJ, "Energy costs CDR|Electricity (billion US$2005/yr)"),
+    setNames(price_fedie * CDR_FEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"),
+    setNames((price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
+                     "Energy costs CDR|Heat (billion US$2005/yr)"),
+    setNames((price_feeli * CDR_FEdemand[,,"feels"] + price_fedie * CDR_FEdemand[,,"fedie"] +
                                price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
                              "Energy costs CDR (billion US$2005/yr)"))
 
