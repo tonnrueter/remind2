@@ -31,7 +31,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # emissions calculation requires information from other reporting functions
   if (is.null(output)) {
     message("reportEmi executes reportFE")
-    output <- mbind(output, reportFE(gdx, regionSubsetList, t))
+    output <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
   }
 
   # intialize varibles used in dplyr operations
