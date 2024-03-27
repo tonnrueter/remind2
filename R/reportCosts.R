@@ -36,6 +36,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
     message("- reportEnergyInvestments")
     output <- mbind(output, reportEnergyInvestment(gdx, regionSubsetList = regionSubsetList, t = t)[, getYears(output), ])
   }
+  output <- deletePlus(output)
 
   ########################################################################################
   ############# R E A D I N G    I N P U T ###############################################
@@ -391,7 +392,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   cost1 <- op_costs(ei=pe2se$all_enty,eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs(ei="seel",eo=se2fe$all_enty1,te=se2fe$all_te,e2e=se2fe,teall2rlf=teall2rlf,vm_prodE=vm_prodFe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost3 <- op_costs(ei=NULL,eo=NULL,te=tenotransform,e2e=NULL,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost1 + cost2 + cost3 + output[regi_on_gdx,,"Energy Investments|Electricity (billion US$2005/yr)"], "Total Energy costs|Electricity (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1 + cost2 + cost3 + output[regi_on_gdx,,"Energy Investments|Elec (billion US$2005/yr)"], "Total Energy costs|Electricity (billion US$2005/yr)"))
 
   ##### Elec|Fossil
   cost <- op_costs(ei=petyf,eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)

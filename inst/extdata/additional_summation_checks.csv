@@ -105,3 +105,23 @@ SE|Hydrogen;SE|Input|Hydrogen|Other Energy System Consumption;1
 Carbon Management|Carbon Capture;Carbon Management|Storage;1
 Carbon Management|Carbon Capture;Carbon Management|Usage;1
 Carbon Management|Carbon Capture;Carbon Management|Venting of Captured Carbon;1
+;;
+# check Energy Investments subcategories
+Energy Investments|Elec|Fossil;Energy Investments|Elec|Coal;1
+Energy Investments|Elec|Fossil;Energy Investments|Elec|Gas;1
+Energy Investments|Elec|Fossil;Energy Investments|Elec|Oil;1
+Energy Investments|Elec;Energy Investments|Elec|Fossil;1
+Energy Investments|Elec;Energy Investments|Elec|Non-Fossil;1
+Energy Investments|Elec;Energy Investments|Elec|+|Storage;1
+Energy Investments|Elec;Energy Investments|Elec|+|Grid;1
+Energy Investments|Elec;Energy Investments|Elec|+|Hydrogen;1
+Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Hydro;1
+Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Geothermal;1
+Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Wind;1
+Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Solar;1
+Energy Investments|Liquids|+|Fossil;Energy Investments|Liquids|Oil Ref;1
+Energy Investments|Liquids|+|Fossil;Energy Investments|Liquids|Fossil|w/o oil;1
+Energy Investments|Heat|Fossil;Energy Investments|Heat|+|Gas;1
+Energy Investments|Heat|Fossil;Energy Investments|Heat|+|Coal;1
+Energy Investments|Liquids including gas stations;Energy Investments|Liquids|Transport and Distribution including gas stations;1
+Energy Investments|Liquids including gas stations;Energy Investments|Liquids;1
