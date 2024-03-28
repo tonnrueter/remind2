@@ -595,7 +595,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Elec|Solar (billion US$2005/yr)"))
 
   cost1 <- op_costs(ei="pewin",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Elec|wind (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Elec|Wind (billion US$2005/yr)"))
 
   # add global values
   tmp <- mbind(tmp, dimSums(tmp,dim=1))

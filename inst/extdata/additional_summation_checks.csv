@@ -106,6 +106,9 @@ Carbon Management|Carbon Capture;Carbon Management|Storage;1
 Carbon Management|Carbon Capture;Carbon Management|Usage;1
 Carbon Management|Carbon Capture;Carbon Management|Venting of Captured Carbon;1
 ;;
+# check consistency of DACCS reporting
+Carbon Sequestration|Direct Air Capture;Emi|CO2|CDR|DACCS;-1
+;;
 # check Energy Investments subcategories
 Energy Investments|Elec|Fossil;Energy Investments|Elec|Coal;1
 Energy Investments|Elec|Fossil;Energy Investments|Elec|Gas;1
