@@ -575,11 +575,11 @@ reportLCOE <- function(gdx, output.type = "both"){
               setNames(te_curt_cost[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Curtailment Cost")),
           ### Total Cost
-              setNames((te_annual_inv_cost[,ttot_from2005,pe2se$all_te]+ te_annual_fuel_cost[,,pe2se$all_te] + te_annual_OMF_cost[,,pe2se$all_te] +
+              setNames((te_annual_inv_cost[,ttot_from2005,pe2se$all_te]+ te_annual_fuel_cost[,,pe2se$all_te] + te_annual_secFuel_cost[,,pe2se$all_te] + te_annual_OMF_cost[,,pe2se$all_te] +
                              te_annual_OMV_cost[,,pe2se$all_te] + te_annual_ccsInj_cost[,,pe2se$all_te] + te_annual_co2_cost[,,pe2se$all_te])/total_te_energy[,,pe2se$all_te] +
                        (te_annual_stor_cost[,,pe2se$all_te] + te_annual_grid_cost[,,pe2se$all_te]) / total_te_energy_usable[,,pe2se$all_te] + te_curt_cost[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Total Cost")), 
-              setNames((te_annual_inv_cost_wadj[,ttot_from2005,pe2se$all_te]+ te_annual_fuel_cost[,,pe2se$all_te] + te_annual_OMF_cost[,,pe2se$all_te] + 
+              setNames((te_annual_inv_cost_wadj[,ttot_from2005,pe2se$all_te]+ te_annual_fuel_cost[,,pe2se$all_te] + te_annual_secFuel_cost[,,pe2se$all_te] + te_annual_OMF_cost[,,pe2se$all_te] + 
                              te_annual_OMV_cost[,,pe2se$all_te] + te_annual_ccsInj_inclAdjCost[,,pe2se$all_te] + te_annual_co2_cost[,,pe2se$all_te])/total_te_energy[,,pe2se$all_te] +
                        (te_annual_stor_cost_wadj[,,pe2se$all_te] + te_annual_grid_cost_wadj[,,pe2se$all_te]) / total_te_energy_usable[,,pe2se$all_te] + te_curt_cost[,,pe2se$all_te],
                        paste0("LCOE|average|",pe2se$all_enty1,"|",pe2se$all_te, "|supply-side","|Total Cost w/ Adj Cost")), 
