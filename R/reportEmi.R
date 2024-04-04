@@ -31,7 +31,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # emissions calculation requires information from other reporting functions
   if (is.null(output)) {
     message("reportEmi executes reportFE")
-    output <- mbind(output, reportFE(gdx, regionSubsetList, t))
+    output <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
   }
 
   # intialize varibles used in dplyr operations
@@ -2287,11 +2287,20 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
   ### 5.3 PFCs ----
   out <- mbind(out,
-               setNames(vm_emiFgas[, , "emiFgasCF4"],   "Emi|CF4 (kt CF4/yr)"),
-               setNames(vm_emiFgas[, , "emiFgasC2F6"],  "Emi|C2F6 (kt C2F6/yr)"),
-               setNames(vm_emiFgas[, , "emiFgasC6F14"], "Emi|C6F14 (kt C6F14/yr)"),
-               setNames(vm_emiFgas[, , "emiFgasHFC"],   "Emi|HFC (kt HFC134a-equiv/yr)"),
-               setNames(vm_emiFgas[, , "emiFgasSF6"],   "Emi|SF6 (kt SF6/yr)")
+               setNames(vm_emiFgas[, , "emiFgasCF4"],      "Emi|CF4 (kt CF4/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasC2F6"],     "Emi|C2F6 (kt C2F6/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasC6F14"],    "Emi|C6F14 (kt C6F14/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC"],      "Emi|HFC (kt HFC134a-equiv/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC125"],   "Emi|HFC|HFC125 (kt HFC125/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC134a"],  "Emi|HFC|HFC134a (kt HFC134a/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC143a"],  "Emi|HFC|HFC143a (kt HFC143a/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC227ea"], "Emi|HFC|HFC227ea (kt HFC227ea/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC23"],    "Emi|HFC|HFC23 (kt HFC23/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC245fa"], "Emi|HFC|HFC245fa (kt HFC245fa/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC32"],    "Emi|HFC|HFC32 (kt HFC32/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasHFC43-10"], "Emi|HFC|HFC43-10 (kt HFC43-10/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasPFC"],      "Emi|PFC (kt CF4-equiv/yr)"),
+               setNames(vm_emiFgas[, , "emiFgasSF6"],      "Emi|SF6 (kt SF6/yr)")
   )
 
   ## 6. Emissions across markets ----
@@ -2756,8 +2765,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       names.wNonEn <- gsub("Emi\\|GHG", "Emi|GHG|w/o Non-energy Use", names.wNonEn)
 
       # remove all pluses from the "Emi w/o Non-energy Use" variables as they do not cover sectors in which non-energy use not relevant and checking aggregation does not make sense
-      names.wNonEn <- gsub("\\|\\+\\|", "\\|", names.wNonEn)
-      names.wNonEn <- gsub("\\|\\++\\|", "\\|", names.wNonEn)
+      names.wNonEn <- deletePlus(names.wNonEn)
 
       # calculate emissions variables with non-energy use
       out.wNonEn <- out[, , emi.vars.wNonEn]
@@ -2861,8 +2869,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     emi.vars.wBunkers.wNonEn <- intersect(emi.vars.wBunkers, emi.vars.wNonEn)
 
     # remove all pluses from the "Emi w/o Non-energy Use" variables as they do not cover sectors in which non-energy use not relevant and checking aggregation does not make sense
-    emi.vars.wBunkers.wNonEn <- gsub("\\|\\+\\|", "\\|", emi.vars.wBunkers.wNonEn)
-    emi.vars.wBunkers.wNonEn <- gsub("\\|\\++\\|", "\\|", emi.vars.wBunkers.wNonEn)
+    emi.vars.wBunkers.wNonEn <- deletePlus(emi.vars.wBunkers.wNonEn)
 
     emi.vars.wBunkers.wNonEn <- gsub("Emi\\|CO2", "Emi|CO2|w/o Non-energy Use", emi.vars.wBunkers.wNonEn)
     emi.vars.wBunkers.wNonEn <- gsub("Emi\\|GHG", "Emi|GHG|w/o Non-energy Use", emi.vars.wBunkers.wNonEn)
@@ -2900,8 +2907,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # emissions variables with bunkers
   out.wBunkers <- setNames(out[, , emi.vars.wBunkers], names.wBunkers)
   # remove all pluses from variables with bunkers the "Emi w/ Bunkers" variables do not cover sectors in which bunkers are not relevant and checking aggregation does not make sense
-  getNames(out.wBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.wBunkers))
-  getNames(out.wBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.wBunkers))
+  getNames(out.wBunkers) <- deletePlus(getNames(out.wBunkers))
 
   # subtract bunkers for standard emissions variables for regional values
   regs.wo.glob <- getRegions(out)
@@ -2918,8 +2924,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # emissions variables with bunkers
   out.wIntraRegionBunkers <- setNames(out[, , emi.vars.wBunkers], names.wIntraRegionBunkers)
   # remove all pluses from variables with intra reg bunkers
-  getNames(out.wIntraRegionBunkers) <- gsub("\\|\\+\\|", "\\|", getNames(out.wIntraRegionBunkers))
-  getNames(out.wIntraRegionBunkers) <- gsub("\\|\\++\\|", "\\|", getNames(out.wIntraRegionBunkers))
+  getNames(out.wIntraRegionBunkers) <- deletePlus(getNames(out.wIntraRegionBunkers))
 
   out <- mbind(out, out.wIntraRegionBunkers)
 

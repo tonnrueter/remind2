@@ -468,7 +468,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   )
 
   vm_costTeCapital <- readGDX(gdx, "vm_costTeCapital", field = "l", restore_zeros = F)[, YearsFrom2005, tech] # [tr USD2005/TWh]
-  p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)[, , tech]
+  p_teAnnuity <- readGDX(gdx, c("p_teAnnuity","pm_teAnnuity"), restore_zeros = F)[, , tech]
   vm_capFac <- readGDX(gdx, "vm_capFac", field = "l", restore_zeros = F)[, YearsFrom2005, tech] * 8760
   pm_data_omf <- readGDX(gdx, "pm_data", restore_zeros = F)[, , "omf"][, , tech]
 
