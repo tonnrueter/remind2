@@ -110,18 +110,18 @@ Carbon Management|Carbon Capture;Carbon Management|Venting of Captured Carbon;1
 Carbon Sequestration|Direct Air Capture;Emi|CO2|CDR|DACCS;-1
 ;;
 # check Energy Investments subcategories
-Energy Investments|Elec|Fossil;Energy Investments|Elec|Coal;1
-Energy Investments|Elec|Fossil;Energy Investments|Elec|Gas;1
-Energy Investments|Elec|Fossil;Energy Investments|Elec|Oil;1
-Energy Investments|Elec;Energy Investments|Elec|Fossil;1
-Energy Investments|Elec;Energy Investments|Elec|Non-Fossil;1
-Energy Investments|Elec;Energy Investments|Elec|+|Storage;1
-Energy Investments|Elec;Energy Investments|Elec|+|Grid;1
-Energy Investments|Elec;Energy Investments|Elec|+|Hydrogen;1
-Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Hydro;1
-Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Geothermal;1
-Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Wind;1
-Energy Investments|Elec|Non-Bio Re;Energy Investments|Elec|Solar;1
+Energy Investments|Electricity|Fossil;Energy Investments|Electricity|Coal;1
+Energy Investments|Electricity|Fossil;Energy Investments|Electricity|Gas;1
+Energy Investments|Electricity|Fossil;Energy Investments|Electricity|Oil;1
+Energy Investments|Electricity;Energy Investments|Electricity|Fossil;1
+Energy Investments|Electricity;Energy Investments|Electricity|Non-Fossil;1
+Energy Investments|Electricity;Energy Investments|Electricity|+|Storage;1
+Energy Investments|Electricity;Energy Investments|Electricity|+|Grid;1
+Energy Investments|Electricity;Energy Investments|Electricity|+|Hydrogen;1
+Energy Investments|Electricity|Non-Bio Re;Energy Investments|Electricity|Hydro;1
+Energy Investments|Electricity|Non-Bio Re;Energy Investments|Electricity|Geothermal;1
+Energy Investments|Electricity|Non-Bio Re;Energy Investments|Electricity|Wind;1
+Energy Investments|Electricity|Non-Bio Re;Energy Investments|Electricity|Solar;1
 Energy Investments|Liquids|+|Fossil;Energy Investments|Liquids|Oil Ref;1
 Energy Investments|Liquids|+|Fossil;Energy Investments|Liquids|Fossil|w/o oil;1
 Energy Investments|Heat|Fossil;Energy Investments|Heat|+|Gas;1

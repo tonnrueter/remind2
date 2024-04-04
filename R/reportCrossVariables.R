@@ -84,7 +84,7 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
 
   tmp <- mbind(tmp,setNames(
                    output[r,,"Energy Investments (billion US$2005/yr)"]
-                  -output[r,,"Energy Investments|Elec (billion US$2005/yr)"],"Energy Investments|Non-Elec (billion US$2005/yr)"))
+                  -output[r,,"Energy Investments|Electricity (billion US$2005/yr)"],"Energy Investments|Non-Electricity (billion US$2005/yr)"))
   # gas capacity factor
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Electricity|Gas (EJ/yr)"] / output[r,,"Cap|Electricity|Gas (GW)"] / TWa_2_EJ * 1000 * 100,
