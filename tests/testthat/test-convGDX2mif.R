@@ -14,20 +14,17 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
   # add GDXs for comparison here:
-  gdxPaths <- NULL
-
   gdxList <- c("fulldata-release.gdx" = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_fulldata.gdx",
                "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-PkBudg650-AMT.gdx")
 
-  if (length(gdxPaths) == 0) {
-    for (i in seq_along(gdxList)) {
-      from <- gdxList[i]
-      to   <- file.path(tempdir(), names(gdxList[i]))
-      if (!file.exists(to)) {
-        utils::download.file(from, to, mode = "wb", quiet = TRUE)
-      }
-      gdxPaths <- c(gdxPaths, to)
+  gdxPaths <- NULL
+  for (i in seq_along(gdxList)) {
+    from <- gdxList[i]
+    to   <- file.path(tempdir(), names(gdxList[i]))
+    if (!file.exists(to)) {
+      utils::download.file(from, to, mode = "wb", quiet = TRUE)
     }
+    gdxPaths <- c(gdxPaths, to)
   }
 
   checkPiamTemplates <- function(computedVariables) {
