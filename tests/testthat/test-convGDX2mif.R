@@ -51,8 +51,6 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
 
   # uncomment to add current calibration gdxes
   # gdxPaths <- c(gdxPaths, Sys.glob("/p/projects/remind/inputdata/CESparametersAndGDX/*.gdx"))
-  # uncomment to add debugging example gdx files
-  # gdxPaths <- c(gdxPaths, Sys.glob("/p/projects/remind/debugging/gdx-examples/*.gdx"))
 
   numberOfMifs <- 0
 
