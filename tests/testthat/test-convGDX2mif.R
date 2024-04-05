@@ -17,7 +17,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   gdxPaths <- NULL
 
   gdxList <- c("fulldata-release.gdx" = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_fulldata.gdx",
-               "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-NPi-AMT.gdx")
+               "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-PkBudg650-AMT.gdx")
 
   if (length(gdxPaths) == 0) {
     for (i in seq_along(gdxList)) {
