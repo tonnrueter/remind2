@@ -141,7 +141,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   }
 
   # FE non-energy use
-  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l",
+  vm_demFENonEnergySector <- readGDX(gdx, "vm_demFENonEnergySector", field = "l", spatial = 2,
                                      restore_zeros = F, react = "silent")[,t,]
 
   if (length(vm_demFENonEnergySector) == 0) {
