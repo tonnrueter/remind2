@@ -61,6 +61,7 @@ Imports:
     mip (>= 0.148.9),
     openxlsx,
     piamInterfaces (>= 0.13.12),
+    piamPlotComparison,
     plotly,
     quitte,
     readr,
