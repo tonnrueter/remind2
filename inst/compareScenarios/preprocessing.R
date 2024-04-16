@@ -4,8 +4,8 @@
 # e.g., calculating per capita variables. These reference models are defined here.
 histRefModel <- c(
   "Population" = "WDI",
-  "GDP|PPP pCap" = "James_IMF")
-
+  "GDP|PPP pCap" = "James_IMF"
+)
 
 options(mip.histRefModel = histRefModel) # nolint
 
@@ -110,8 +110,6 @@ data <-
   data %>%
   bind_rows(dataPCap)
 
-
-
 # calculate pGDP_PPP variables ----
 dataGDP <-
   data %>%
@@ -133,7 +131,8 @@ pGdpVariables <- tribble(
   "FE|CDR", "MJ/US$2005", 1e3,
   "FE|Transport", "MJ/US$2005", 1e3,
   "FE|Buildings", "MJ/US$2005", 1e3,
-  "FE|Industry", "MJ/US$2005", 1e3)
+  "FE|Industry", "MJ/US$2005", 1e3
+)
 
 dataPGdp <-
   data %>%
@@ -144,7 +143,8 @@ dataPGdp <-
     variable = paste0(variable, " pGDP_PPP"),
     varplus = paste0(varplus, " pGDP_PPP"),
     unit = newUnit,
-    newUnit = NULL, conversionFactor = NULL, gdp = NULL)
+    newUnit = NULL, conversionFactor = NULL, gdp = NULL
+  )
 
 data <-
   data %>%
@@ -158,4 +158,3 @@ varNames <- c(
 for (vn in varNames) if (exists(vn)) rm(list = vn)
 rm(varNames)
 rm(vn)
-

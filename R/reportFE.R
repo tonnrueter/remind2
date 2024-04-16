@@ -22,7 +22,7 @@
 #' @importFrom magclass new.magpie mselect getRegions getYears mbind setNames
 #'                      getNames<- as.data.frame as.magpie getSets
 #' @importFrom dplyr %>% filter full_join group_by left_join mutate rename
-#'     select semi_join summarise ungroup
+#'     select semi_join summarize ungroup
 #' @importFrom quitte inline.data.frame revalue.levels
 #' @importFrom rlang syms
 #' @importFrom tibble as_tibble tibble tribble
