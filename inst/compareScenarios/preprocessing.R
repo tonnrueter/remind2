@@ -1,4 +1,5 @@
-```{r reference models for historical}
+# reference models for historical ----
+
 # Sometimes it is necessary to choose a single model for the historical data,
 # e.g., calculating per capita variables. These reference models are defined here.
 histRefModel <- c(
@@ -7,10 +8,9 @@ histRefModel <- c(
 
 
 options(mip.histRefModel = histRefModel) # nolint
-```
 
+# calculate pCap variables ----
 
-```{r calculate pCap variables}
 # For all variables in following table, add a new variable to data with the name
 # "OldName pCap". Calculate its value by
 #     OldValue * conversionFactor # nolint
@@ -25,7 +25,7 @@ pCapVariables <- tribble(
   "FE|Transport", "GJ/yr", 1e9,
   "FE|Buildings", "GJ/yr", 1e9,
   "FE|Industry", "GJ/yr", 1e9,
-  "FE|Buildings|non-Heating|Electricity|Conventional", "GJ/yr", 1e9, 
+  "FE|Buildings|non-Heating|Electricity|Conventional", "GJ/yr", 1e9,
   "FE|Buildings|Heating|Electricity|Heat pump", "GJ/yr", 1e9,
   "FE|Buildings|Heating|District Heating", "GJ/yr", 1e9,
   "FE|Buildings|Heating|Electricity|Resistance", "GJ/yr", 1e9,
@@ -39,7 +39,7 @@ pCapVariables <- tribble(
   "FE|Buildings|Space Cooling", "GJ/yr", 1e9,
   "FE|Buildings|Space Heating", "GJ/yr", 1e9,
   "UE|Buildings", "GJ/yr", 1e9,
-  "UE|Buildings|non-Heating|Electricity|Conventional", "GJ/yr", 1e9, 
+  "UE|Buildings|non-Heating|Electricity|Conventional", "GJ/yr", 1e9,
   "UE|Buildings|Heating|Electricity|Heat pump", "GJ/yr", 1e9,
   "UE|Buildings|Heating|District Heating", "GJ/yr", 1e9,
   "UE|Buildings|Heating|Electricity|Resistance", "GJ/yr", 1e9,
@@ -109,10 +109,10 @@ dataPCap <-
 data <-
   data %>%
   bind_rows(dataPCap)
-```
 
 
-```{r calculate pGDP_PPP variables}
+
+# calculate pGDP_PPP variables ----
 dataGDP <-
   data %>%
   filter(variable == "GDP|PPP pCap") %>%
@@ -149,13 +149,13 @@ dataPGdp <-
 data <-
   data %>%
   bind_rows(dataPGdp)
-```
 
-```{r remove preprocessing objects not to be used anymore}
+
+# remove preprocessing objects not to be used anymore ----
 varNames <- c(
-  "dataGDP", "dataPCap", "dataPGdp", "dataPop", 
+  "dataGDP", "dataPCap", "dataPGdp", "dataPop",
   "histRefModel", "pCapVariables", "pGdpVariables")
 for (vn in varNames) if (exists(vn)) rm(list = vn)
 rm(varNames)
 rm(vn)
-```
+
