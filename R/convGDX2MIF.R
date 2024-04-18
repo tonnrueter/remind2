@@ -24,6 +24,7 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind write.report
 #' @importFrom piamInterfaces checkSummations checkVarNames
+#' @importFrom piamutils deletePlus
 #' @importFrom utils write.csv capture.output
 
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
