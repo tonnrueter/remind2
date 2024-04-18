@@ -48,9 +48,9 @@ getNewsestModeltests <- function(namePattern, requireMif) {
 
 #' Load compareScenarios Data
 #'
-#' Load data from mif files into R-objects as used in `compareScenarios`.
+#' Load data from mif files into R-objects as used in \link[=compareScenarios]{compareScenarios()}.
 #'
-#' @param cfgScen,cfgDefault See section "YAML Parameters" in `compareScenarios`.
+#' @param cfgScen,cfgDefault See section "YAML Parameters" in \link[=compareScenarios]{compareScenarios()}.
 #' @param envir \code{environment}. The environment where the loaded data is put into.
 #' @inheritParams piamPlotComparison::compareScenarios
 #' @examples
@@ -103,7 +103,7 @@ cs2InputPaths <- function(outputDirs) {
 #' Load Modeltest Results
 #'
 #' The newest model tests are collected from the cluster and copied into a
-#' temporary folder (by default). Then the compareScenarios
+#' temporary folder (by default). Then the \link[=compareScenarios]{compareScenarios()}
 #' data loading procedure is used to load this data into the users environment.
 #'
 #' @param namePattern \code{character(1)}. A regular expression to filter the
