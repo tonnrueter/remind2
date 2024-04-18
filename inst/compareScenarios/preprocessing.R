@@ -150,6 +150,10 @@ data <-
   data %>%
   bind_rows(dataPGdp)
 
+# backwards compatibility for https://github.com/pik-piam/remind2/pull/579
+data <- data %>%
+  mutate(variable = gsub("|Elec|", "|Electricity|", .data$variable, fixed = TRUE))
+
 
 # remove preprocessing objects not to be used anymore ----
 varNames <- c(
