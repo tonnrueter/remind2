@@ -208,11 +208,11 @@ data <-
   data %>%
   # In the variable names, replace `$dot$` by `.`.
   mutate(
-    variable = substituePlaceholder(variable)) %>%
+    variable = piamutils::substitutePlaceholder(variable)) %>%
   # In the variable names, replace `|+|`, `|++|`, `|+++|`, ... by `|`.
   mutate(
     varplus = as.character(variable),
-    variable = deletePlus(variable))
+    variable = piamutils::deletePlus(variable))
 
 # Filter regions.
 if (!is.null(params$reg)) {
