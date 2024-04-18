@@ -3,7 +3,6 @@
 \docType{import}
 \name{reexports}
 \alias{reexports}
-\alias{substitutePlaceholder}
 \alias{deletePlus}
 \title{Objects exported from other packages}
 \keyword{internal}
@@ -12,6 +11,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{piamutils}{\code{\link[piamutils]{deletePlus}}, \code{\link[piamutils]{substitutePlaceholder}}}
+  \item{piamutils}{\code{\link[piamutils]{deletePlus}}}
 }}
 
