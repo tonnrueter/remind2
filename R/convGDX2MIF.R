@@ -136,7 +136,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   .reportSummationErrors <- function(msg, testthat) {
     if (!any(grepl('All summation checks were fine', msg))) {
       msgtext <- paste(msg, collapse = '\n')
-      if (isTRUE(testthat)) warning(msgtext) else message(msgtext)
+      if (isTRUE(testthat)) warning("### Analyzing ", basename(gdx), ":\n", msgtext) else message(msgtext)
     }
   }
 
