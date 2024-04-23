@@ -23,8 +23,9 @@
 #' @importFrom dplyr %>% bind_rows filter
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind write.report
-#' @importFrom piamInterfaces checkSummations
-#' @importFrom utils write.csv
+#' @importFrom piamInterfaces checkSummations checkVarNames
+#' @importFrom piamutils deletePlus
+#' @importFrom utils write.csv capture.output
 
 convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
                         t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
@@ -89,7 +90,6 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   # Report policy costs, if possible and sensible
   if (is.null(gdx_refpolicycost)) {
     gdx_refpolicycost <- gdx
-    message("gdx_refpolicycost not defined, report 0 everywhere.")
   }
   if (file.exists(gdx_refpolicycost)) {
     gdp_scen <- try(readGDX(gdx, "cm_GDPscen", react = "error"), silent = TRUE)
@@ -131,12 +131,12 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
   output <- add_dimension(output,dim=3.1,add = "scenario",nm = scenario)
 
-  checkVariableNames(getNames(output, dim = 3))
+  checkVarNames(getNames(output, dim = 3))
 
   .reportSummationErrors <- function(msg, testthat) {
     if (!any(grepl('All summation checks were fine', msg))) {
       msgtext <- paste(msg, collapse = '\n')
-      if (isTRUE(testthat)) warning(msgtext) else message(msgtext)
+      if (isTRUE(testthat)) warning("### Analyzing ", basename(gdx), ":\n", msgtext) else message(msgtext)
     }
   }
 

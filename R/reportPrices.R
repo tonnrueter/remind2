@@ -468,7 +468,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   )
 
   vm_costTeCapital <- readGDX(gdx, "vm_costTeCapital", field = "l", restore_zeros = F)[, YearsFrom2005, tech] # [tr USD2005/TWh]
-  p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)[, , tech]
+  p_teAnnuity <- readGDX(gdx, c("p_teAnnuity","pm_teAnnuity"), restore_zeros = F)[, , tech]
   vm_capFac <- readGDX(gdx, "vm_capFac", field = "l", restore_zeros = F)[, YearsFrom2005, tech] * 8760
   pm_data_omf <- readGDX(gdx, "pm_data", restore_zeros = F)[, , "omf"][, , tech]
 
@@ -768,18 +768,19 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
                  setNames(pm_taxCO2eqSum * 1000 * 12/44,
                            "Price|Carbon|Supply (US$2005/t CO2)")
                 )
-    pm_taxCO2eq_FE <- pm_taxCO2eqSum * (1 +
+    pm_taxCO2eq_FE <- collapseNames( pm_taxCO2eqSum * (1 +
                                     (
-                                       p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "FE|Buildings (EJ/yr)"]
-                                     + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "FE|Transport (EJ/yr)"]
-                                    ) / output_wo_GLO[, , "FE (EJ/yr)"]
-    )
-    pm_taxCO2eq_Emi <- pm_taxCO2eqSum * (1 +
+                                       p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[getRegions(p21_CO2TaxSectorMarkup), , "FE|Buildings (EJ/yr)"]
+                                     + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[getRegions(p21_CO2TaxSectorMarkup), , "FE|Transport (EJ/yr)"]
+                                    ) / output_wo_GLO[getRegions(p21_CO2TaxSectorMarkup), , "FE (EJ/yr)"]
+    ) )
+    pm_taxCO2eq_Emi <- collapseNames( pm_taxCO2eqSum * (1 +
                                      (
-                                         p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|Buildings (Mt CO2eq/yr)"]
-                                       + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[, , "Emi|GHG|Gross|Energy|Demand|Transport (Mt CO2eq/yr)"]
-                                     ) / output_wo_GLO[, , "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"]
-    )
+                                         p21_CO2TaxSectorMarkup[, , "build"] * output_wo_GLO[getRegions(p21_CO2TaxSectorMarkup), , "Emi|GHG|Gross|Energy|Demand|Buildings (Mt CO2eq/yr)"]
+                                       + p21_CO2TaxSectorMarkup[, , "trans"] * output_wo_GLO[getRegions(p21_CO2TaxSectorMarkup), , "Emi|GHG|Gross|Energy|Demand|Transport (Mt CO2eq/yr)"]
+                                     ) / output_wo_GLO[getRegions(p21_CO2TaxSectorMarkup), , "Emi|GHG|Gross|Energy (Mt CO2eq/yr)"]
+    ) )
+
     out <- mbind(out, setNames(pm_taxCO2eq_FE * 1000 * 12/44,
                                 "Price|Carbon (US$2005/t CO2)")) # AggregatedbyFE
     out <- mbind(out, setNames(pm_taxCO2eq_Emi * 1000 * 12/44,

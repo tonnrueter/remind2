@@ -812,6 +812,8 @@ reportLCOE <- function(gdx, output.type = "both"){
    `Total LCOE (time step prices)` <- NULL
    `Total LCOE (intertemporal prices)` <- NULL
    `Adjustment Cost` <- NULL
+   `SE Tax` <- NULL
+   `tau_SE_tax` <- NULL
 
 
 
@@ -986,7 +988,7 @@ reportLCOE <- function(gdx, output.type = "both"){
   # # annuity factor from REMIND,
   # TODO: check whether this is the same as calculated above
   # so far only used in levelized cost of DAC calculation below
-  p_teAnnuity <- readGDX(gdx, "p_teAnnuity", restore_zeros = F)
+  p_teAnnuity <- readGDX(gdx, c("p_teAnnuity","pm_teAnnuity"), restore_zeros = F)
 
   ### Read marginal adjustment costs ----
 
@@ -1372,6 +1374,26 @@ df.co2price.weighted <- df.pomeg.expand %>%
                           rename(tech = all_te, FlexPriceShare = value) %>%
                           select(region, period, tech, FlexPriceShare)
 
+
+### Read SE Tax for Electrolysis ----
+
+    # read SE tax for electrolysis from GDX
+    v21_tau_SE_tax <- readGDX(gdx, "v21_tau_SE_tax", field = "l", restore_zeros = F, react = "silent")
+    # if not SE tax in run, set to 0
+    if(is.null(v21_tau_SE_tax)) {
+      v21_tau_SE_tax <- vm_costTeCapital
+      v21_tau_SE_tax[,,] <- 0
+    }
+
+    df.tau_SE_tax <- as.quitte(v21_tau_SE_tax) %>%
+                      rename(tech = all_te, tau_SE_tax = value) %>%
+                      select(region, period, tech, tau_SE_tax) %>%
+                      # convert to USD2015/MWh
+                      mutate( tau_SE_tax = 1.2 / as.vector(s_twa2mwh) * 1e12 * tau_SE_tax)
+
+
+
+
 ### Read Final Energy Taxes ----
 
 
@@ -1460,6 +1482,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
     left_join(df.curtShare, by = c("region", "period", "tech")) %>%
     left_join(df.CCStax, by = c("region", "period", "tech")) %>%
     left_join(df.flexPriceShare, by = c("region", "period", "tech")) %>%
+    left_join(df.tau_SE_tax, by = c("region", "period", "tech")) %>%
     left_join(df.FEtax, relationship = "many-to-many", by = c("region", "period", "output")) %>%
     left_join(df.AddTeInvH2, by = c("region", "period", "tech", "sector")) %>%
     # filter to only have LCOE technologies
@@ -1474,7 +1497,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
   # replace NA by 0 in certain columns
   # columns where NA should be replaced by 0
   col.NA.zero <- c("OMF","OMV", "AdjCost","co2.price","co2.price.weighted", "fuel.price","fuel.price.weighted", "co2_dem","emiFac.se2fe","Co2.Capt.Price",
-                   "secfuel.prod", "secfuel.price", "curtShare","CCStax.cost","FEtax","AddH2TdCost")
+                   "secfuel.prod", "secfuel.price", "curtShare","CCStax.cost","FEtax","AddH2TdCost","tau_SE_tax")
   df.LCOE[,col.NA.zero][is.na(df.LCOE[,col.NA.zero])] <- 0
 
   # replace NA by 1 in certain columns
@@ -1576,6 +1599,8 @@ df.co2price.weighted <- df.pomeg.expand %>%
     # Flex Tax benefit for electrolysis
     # FlexPriceShare denotes share of the electricity price that electrolysis sees
     mutate( `Flex Tax` = -(1-FlexPriceShare) * `Fuel Cost (time step prices)`) %>%
+    # SE tax for electrolysis, calculates fuel cost increase due to taxes and grid fees on electricity going into electrolysis
+    mutate(`SE Tax` = tau_SE_tax / eff) %>%
     # se2fe technologies come with FE tax
     mutate( `FE Tax` = FEtax,
     # FE H2 has some additional t&d cost at low H2 shares (phase-in cost) in REMIND
@@ -1584,10 +1609,10 @@ df.co2price.weighted <- df.pomeg.expand %>%
     mutate(
             # Total LCOE with fuel cost and co2 tax cost based on fuel prices and carbon prices of time step for which LCOE are calculated
             `Total LCOE (time step prices)` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Adjustment Cost` + `Fuel Cost (time step prices)` + `CO2 Tax Cost (time step prices)` +
-              `CO2 Provision Cost` + `Second Fuel Cost` + `CCS Tax Cost` + `Curtailment Cost` + `Flex Tax` + `FE Tax` + `Additional H2 t&d Cost`,
+              `CO2 Provision Cost` + `Second Fuel Cost` + `CCS Tax Cost` + `Curtailment Cost` + `Flex Tax` + `SE Tax` + `FE Tax` + `Additional H2 t&d Cost`,
             # Total LCOE with fuel cost and co2 tax cost based on fuel prices and carbon prices that are intertemporally weighted and averaged over the plant lifetime
             `Total LCOE (intertemporal prices)` = `Investment Cost` + `OMF Cost` + `OMV Cost` + `Adjustment Cost` + `Fuel Cost (intertemporal prices)` + `CO2 Tax Cost (intertemporal prices)` +
-              `CO2 Provision Cost` + `Second Fuel Cost` + `CCS Tax Cost` + `Curtailment Cost` + `Flex Tax` + `FE Tax` + `Additional H2 t&d Cost`)
+              `CO2 Provision Cost` + `Second Fuel Cost` + `CCS Tax Cost` + `Curtailment Cost` + `Flex Tax` + `SE Tax` + `FE Tax` + `Additional H2 t&d Cost`)
 
 
   # Levelized Cost of UE in Buildings Putty Realization ----
@@ -1669,7 +1694,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
              `Fuel Cost (time step prices)` , `CO2 Tax Cost (time step prices)`,
              `Fuel Cost (intertemporal prices)`, `CO2 Tax Cost (intertemporal prices)`,
              `CO2 Provision Cost`,`Second Fuel Cost`, `Curtailment Cost`,
-             `CCS Tax Cost`, `Flex Tax`,`FE Tax`,`Additional H2 t&d Cost`,
+             `CCS Tax Cost`, `Flex Tax`,`SE Tax`,`FE Tax`,`Additional H2 t&d Cost`,
              `Total LCOE (time step prices)`,
              `Total LCOE (intertemporal prices)`
               ) %>%
