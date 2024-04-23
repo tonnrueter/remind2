@@ -19,12 +19,12 @@ output file.}
 
 \item{mifHist}{\code{character(1)}. Path to historical mif.}
 
-\item{cfgScen, cfgDefault}{See section "YAML Parameters" in `compareScenarios`.}
+\item{cfgScen, cfgDefault}{See section "YAML Parameters" in \link[=compareScenarios]{compareScenarios()}.}
 
 \item{envir}{\code{environment}. The environment where the loaded data is put into.}
 }
 \description{
-Load data from mif files into R-objects as used in `compareScenarios`.
+Load data from mif files into R-objects as used in \link[=compareScenarios]{compareScenarios()}.
 }
 \examples{
 \dontrun{
