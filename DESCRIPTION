@@ -55,7 +55,6 @@ Imports:
     htmltools,
     knitr,
     lucode2 (>= 0.43.0),
-    luscale,
     lusweave,
     madrat,
     mip (>= 0.148.9),
