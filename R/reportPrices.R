@@ -889,8 +889,8 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "Price|Secondary Energy|Liquids (US$2005/GJ)"                      = "SE|Liquids (EJ/yr)",
     "Price|Secondary Energy|Gases (US$2005/GJ)"                        = "SE|Gases (EJ/yr)",
 
-    "Price|Carbon|ETS (US$2005/t CO2)"                                 = "Emi|GHG|ETS (Mt CO2eq/yr)",
-    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "Emi|GHG|ESR (Mt CO2eq/yr)",
+    "Price|Carbon|ETS (US$2005/t CO2)"                                 = "FE|ETS (EJ/yr)",
+    "Price|Carbon|ESR (US$2005/t CO2)"                                 = "FE|ESR (EJ/yr)",
 
     "Price|Carbon (US$2005/t CO2)"                                    = "FE (EJ/yr)",
     "Price|Carbon|Captured (US$2005/t CO2)"                           = "FE (EJ/yr)",
@@ -1035,7 +1035,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   int2ext <- int2ext[intersect(names(int2ext), getNames(out))] # select only data that exists
 
   for (i2e in names(int2ext)) {
-    tmp_GLO["GLO",,i2e] <- toolAggregate(out[,,i2e], rel = map, weight = output[map$region,,int2ext[i2e]])
+    tmp_GLO["GLO",,i2e] <- toolAggregate(out[,,i2e], rel = map, weight = output[map$region,,int2ext[i2e]], zeroWeight = "allow")
     for(t in getYears(out)){
       if(all(output[map$region,t,int2ext[i2e]]==0)){
         tmp_GLO["GLO",t,i2e] <- NA
@@ -1050,7 +1050,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     for(region in names(regionSubsetList)){
       tmp_RegAgg_ie2 <- do.call("mbind",lapply(names(int2ext), function(i2e) {
         map <- data.frame(region=regionSubsetList[[region]],parentRegion=region,stringsAsFactors=FALSE)
-        result <- toolAggregate(out[regionSubsetList[[region]],,i2e], rel = map, weight = output[regionSubsetList[[region]],,int2ext[i2e]])
+        result <- toolAggregate(out[regionSubsetList[[region]],,i2e], rel = map, weight = output[regionSubsetList[[region]],,int2ext[i2e]], zeroWeight = "allow")
         getItems(result, dim = 1) <- region
         for(t in getYears(out)){
           if(all(output[regionSubsetList[[region]],t,int2ext[i2e]]==0)){
