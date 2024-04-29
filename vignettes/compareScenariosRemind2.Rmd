@@ -24,7 +24,9 @@ knitr::opts_chunk$set(
 
 # Overview
 
-To visually compare the results of multiple runs of the IAM [REMIND](https://github.com/remindmodel/remind), use the [`remind/output.R`](https://github.com/remindmodel/remind/blob/develop/output.R) script: Execute `Rscript output.R` in the REMIND folder, select `Comparison across runs` and then `compareScenarios2`.
+This tutorial explains how to visually compare the results of multiple runs of the IAM [REMIND](https://github.com/remindmodel/remind) using the framework [piamPlotComparison](https://github.com/pik-piam/piamPlotComparison).
+
+The common use case is creating plots after your REMIND runs have finished, using the  [`remind/output.R`](https://github.com/remindmodel/remind/blob/develop/output.R) script: Execute `Rscript output.R` in the REMIND folder, select `Comparison across runs` and then `compareScenarios2`.
 
 The function reads the results from the output-mif-files (in the remind folder after runs are completed, i.e., the files `./output/<run_folder>/REMIND_generic_<run>.mif`). Additionally it reads historical data from a `historical.mif` in one of the run output folders. Using this data, a document containing many plots is created and written as a PDF- or HTML-file. 
 
@@ -180,7 +182,7 @@ compareScenarios(
 
 # Preprocessing
 
-Most of the general setup for rendering the markdown files is done in [cs_main.Rmd](https://github.com/pik-piam/piamPlotComparison/blob/master/inst/compareScenarios/cs_main.Rmd). Please refer to the  [vignette in piamPlotComparison](https://pik-piam.r-universe.dev/articles/piamPlotComparison/compareScenarios.html) for info on general data preparation steps, such as renaming scenarios, filtering regions and years, unifying variable names, setting global variables, etc.
+Most of the general setup for rendering the markdown files is done as part of the `piamPlotComparison` framework in  [cs_main.Rmd](https://github.com/pik-piam/piamPlotComparison/blob/master/inst/compareScenarios/cs_main.Rmd). Please refer to the  [vignette in piamPlotComparison](https://pik-piam.r-universe.dev/articles/piamPlotComparison/compareScenarios.html) for info on general data preparation steps, such as renaming scenarios, filtering regions and years, unifying variable names, setting global variables, etc.
 
 Any additional `remind2`-specific code to be executed as part of the general setup can be found in `inst/compareScenarios/preprocessing.R`. 
 
