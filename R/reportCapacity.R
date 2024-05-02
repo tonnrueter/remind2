@@ -149,6 +149,8 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("coalftrec", "coalftcrec")], dim = 3), "Cap|Liquids|Coal (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("MeOH")], dim = 3), "Cap|Liquids|Hydrogen (GW)"))
 
+  # carbon management
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("dac")], dim = 3)*3.66, "Cap|Carbon Management|DAC (Mt CO2/yr)"))
 
   # Newly built capacities electricity (Should all go into tmp2, so that this can be used for calculating cumulated values in tmp5 below)
   tmp2 <- NULL
@@ -248,7 +250,8 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h22ch4")], dim = 3),
         "New Cap|Gases|Hydrogen (GW/yr)"))
 
-
+    # carbon management
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("dac")], dim = 3)*3.66, "New Cap|Carbon Management|DAC (Mt CO2/yr/yr)"))
 
   # add terms calculated from previously calculated capacity values
   tmp_aux <- NULL
@@ -305,9 +308,16 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
       mutate(variable = gsub("New", replacement = "Cumulative", x))
   })
 
+
   tmp6 <- do.call("rbind", mylist)
   tmp6 <- as.magpie(quitte::as.quitte(tmp6))
   magclass::getNames(tmp6) <- paste0(magclass::getNames(tmp6), " (GW)")
+
+
+
+  magclass::getNames(tmp6)[grep("Cumulative Cap\\|Carbon Management", getNames(tmp6))] <- gsub("GW","Mt CO2/yr",
+                                                                                               magclass::getNames(tmp6)[grep("Cumulative Cap\\|Carbon Management", getNames(tmp6))])
+
 
   tmp <- mbind(tmp[, t2005, ], tmp6)
   # add global values
