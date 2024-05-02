@@ -14,8 +14,8 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
   # add GDXs for comparison here:
-  gdxList <- c("fulldata-release.gdx" = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_fulldata.gdx",
-               "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-PkBudg650-AMT.gdx")
+  gdxList <- c("fulldata-release.gdx" = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-EU21-PkBudg650-AMT.gdx",
+               "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-NPi-AMT.gdx")
 
   gdxPaths <- NULL
   for (i in seq_along(gdxList)) {
@@ -29,7 +29,7 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
 
   checkPiamTemplates <- function(computedVariables) {
     # if you add a new template here, make sure to adjust the piamInterfaces version in the DESCRIPTION
-    templates <- c("AR6", "AR6_NGFS", "ELEVATE", "NAVIGATE", "SHAPE")
+    templates <- c("AR6", "AR6_NGFS", "ELEVATE", "NAVIGATE", "SHAPE", "ARIADNE", "ECEMF")
     for (template in templates) {
       templateVariables <- template %>%
         piamInterfaces::getREMINDTemplateVariables() %>%
