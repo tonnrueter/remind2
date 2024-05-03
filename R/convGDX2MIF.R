@@ -126,6 +126,30 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
     message("function reportSDPVariables does not work and is skipped")
   }
 
+  # Report climate assessment variables & merge with output
+  message("running reportClimate...")
+  climateVars <- reportClimate(gdx) # Returns NULL if no climate assessment variables are available
+  if (!is.null(climateVars)) {
+    # Great, we found climate assessment variables in the GDX. However, climateVars has wrong dimensions
+    # and needs to be reformatted to the match the output format
+    tmp <- new.magpie(
+      cells_and_regions = getRegions(output),
+      years = t,
+      names = dimnames(climateVars)$data,
+      fill = NA,
+      sets = names(dimnames(output))
+    )
+    # Make sure to take only climate assessment values from years that are present in the data. Values are only
+    # available for the GLO region
+    tclimate <- intersect(getYears(output), getYears(climateVars))
+    for (variable in dimnames(climateVars)$data) {
+      tmp["GLO", tclimate, variable] <- climateVars["GLO", tclimate, variable]
+    }
+    output <- mbind(output, tmp)
+  } else {
+    message("reportClimate did not find climate assessment variables in the GDX. Skip.")
+  }
+
   # Add dimension names "scenario.model.variable"
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
