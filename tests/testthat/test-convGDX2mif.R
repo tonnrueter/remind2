@@ -90,7 +90,8 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
 
   suppressWarnings(
     capture.output( # Do not show stdout text.
-      compareScenarios2(
+      piamPlotComparison::compareScenarios(
+        projectLibrary = "remind2",
         mifScen = myMifs,
         mifHist = histMif,
         outputFormat = "pdf",
