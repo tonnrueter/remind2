@@ -34,7 +34,8 @@ Authors@R: c(
     person("Mike", "Spahr", role = "aut"),
     person("Jessica", "Strefler", role = "aut"),
     person("Philipp", "Verpoort", role = "aut"),
-    person("Pascal", "Weigmann", role = "aut")
+    person("Pascal", "Weigmann", role = "aut"),
+    person("Tonn", "Rüter", , "tonn.rueter@pik-potsdam.de", role = "aut")
   )
 Description: Contains the REMIND-specific routines for data and model
     output manipulation.
