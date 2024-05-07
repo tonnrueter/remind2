@@ -27,9 +27,8 @@ The marginal LCOE are calculate in two versions: 1) with fuel prices and co2 tax
 or 2) with an intertemporal weighted-average of fuel price and co2 taxes over the lifetime of the plant (intertemporal prices).
 }
 \examples{
-\dontrun{
-reportLCOE(gdx)
-}
+
+\dontrun{reportLCOE(gdx)}
 
 }
 \seealso{

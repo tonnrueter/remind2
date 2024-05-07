@@ -274,7 +274,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
  # 2.2 secondary fuel cost
  Fuel.Price <- mbind(pm_PEPrice,pm_SEPrice )[,,]*1e12 # convert from trUSD2005/TWa to USD2005/TWa [note: this already includes the CO2 price]
- Fuel.Price <- matchRegions(Fuel.Price, vm_prodSe, fill = NA)
+ Fuel.Price <- matchRegions(Fuel.Price, vm_prodSe, fill = 0)
 
  pm_SecFuel <- pm_prodCouple[,,getNames(pm_prodCouple)[pm_prodCouple[reg1,,]<0]] # keep only second fuel consumption, not co-production
  SecFuelTechs <- intersect(getNames(pm_SecFuel, dim = 3), pc2te$all_te) # determine all te that have couple production
@@ -1203,7 +1203,7 @@ df.co2price.weighted <- df.pomeg.expand %>%
       p33_fedem[,,"dac.fehes"] <- p33_dac_fedem_heat[,,"fehes"]
     }
 
-    Fuel.Price <- matchRegions(Fuel.Price, p33_fedem, fill = NA)
+    Fuel.Price <- matchRegions(Fuel.Price, p33_fedem, fill = 0)
     # capital cost in trUSD2005/GtC -> convert to USD2015/tCO2
     LCOD[,,"Investment Cost"] <- vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"] * p_teAnnuity[,,"dac"]*1e3
     LCOD[,,"OMF Cost"] <-  pm_data_omf[,,"dac"]*vm_costTeCapital[,,"dac"] * 1.2 / 3.66 /vm_capFac[,,"dac"]*1e3
