@@ -15,45 +15,33 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass setNames mbind
 reportClimate <- function(
-  gdx,
+  gdxPath,
   output = NULL
 ) {
   # Climate assessment is turned of per default. Try reading climate asessment data from GDX, but fail
   # silently if none are available.
-  pm_globalMeanTemperature <- readGDX(gdx, "pm_globalMeanTemperature", react = "silent", restore_zeros = FALSE)
+  pm_globalMeanTemperature <- readGDX(gdxPath, "pm_globalMeanTemperature", react = "silent", restore_zeros = FALSE)
   if (!is.null(pm_globalMeanTemperature)) {
     pm_globalMeanTemperature <- setNames(pm_globalMeanTemperature, "Temperature|Global Mean (K)")
   }
-  p15_forc_magicc <- readGDX(gdx, "p15_forc_magicc", react = "silent", restore_zeros = FALSE)
+  p15_forc_magicc <- readGDX(gdxPath, "p15_forc_magicc", react = "silent", restore_zeros = FALSE)
   if (!is.null(p15_forc_magicc)) {
     p15_forc_magicc <- setNames(p15_forc_magicc, "Forcing (W/m2)")
   }
-
+  # Combine climate assessment variables into one object
   climateVars <- mbind(pm_globalMeanTemperature, p15_forc_magicc)
-
   if (is.null(climateVars)) {
     # No climate assessment variables found in the GDX, return output as is
     message("reportClimate did not find climate assessment variables in the GDX. Skip.")
     return(NULL)
-  } else if (!is.null(output)) {
-    # Great, we found climate assessment variables in the GDX. However, climateVars might have wrong dimensions
-    # and needs to be reformatted to the match the output format
-    tmp <- new.magpie(
-      cells_and_regions = getRegions(output),
-      years = t,
-      names = dimnames(climateVars)$data,
-      fill = NA,
-      sets = names(dimnames(output))
-    )
-    # Make sure to take only climate assessment values from years that are present in the data. Values are only
-    # available for the GLO region
-    tclimate <- intersect(getYears(output), getYears(climateVars))
-    for (variable in dimnames(climateVars)$data) {
-      tmp["GLO", tclimate, variable] <- climateVars["GLO", tclimate, variable]
-    }
-    return(tmp)
-  } else {
-    # In case no output is provided, return the climate assessment variables as is
-    return(climateVars)
   }
+
+  if (!is.null(output)) {
+    # Great, we found climate assessment variables in the GDX. However, climateVars might have wrong dimensions
+    # and needs to be reformatted to the match the output format. In case output is not provided, return climate
+    # assessment variables as is
+    climateVars <- matchYears(climateVars, output, fill = NA)
+    climateVars <- matchRegions(climateVars, output, fill = NA)
+  }
+  return(climateVars)
 }
