@@ -60,6 +60,8 @@ matchRegions <- function(x, ref, fill = 0) {
 
   # restrict object to dimensions of ref
   r <- r[getRegions(ref), , ]
+
+  return(r)
 }
 
 #' match temporal dimension of a magclass object
@@ -87,4 +89,6 @@ matchYears <- function(x, ref, fill = 0) {
 
   # restrict object to dimensions of ref
   r <- r[, getYears(ref), ]
+
+  return(r)
 }
