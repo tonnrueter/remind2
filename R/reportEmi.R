@@ -19,7 +19,7 @@
 #' @export
 #'
 #' @importFrom gdx readGDX
-#' @importFrom dplyr %>% filter full_join group_by inner_join left_join mutate rename select summarise
+#' @importFrom dplyr %>% distinct filter full_join group_by inner_join left_join mutate rename select summarise
 #' @importFrom magclass mselect mselect<- collapseDim getItems getRegions getYears
 #' @importFrom madrat toolAggregate
 #' @importFrom tibble as_tibble
@@ -314,11 +314,21 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     v37_plasticsCarbon <- NULL
   }
 
-  if (!is.null(v37_plasticsCarbon)){
+  if (!is.null(v37_plasticsCarbon)) {
     vm_feedstockEmiUnknownFate  <- readGDX(gdx, "vm_feedstockEmiUnknownFate", field = "l", restore_zeros = FALSE,
                                            spatial = 2, react = "silent")[,t,]
-    vm_incinerationEmi          <- readGDX(gdx, "vm_incinerationEmi", field = "l", restore_zeros = FALSE,
-                                           spatial = 2, react = "silent")[,t,]
+
+    vm_incinerationEmi <- readGDX(gdx, 'o37_incinerationEmi', restore_zeros = FALSE, spatial = 2,
+                                  react = 'silent')
+    if (is.null(vm_incinerationEmi)) {
+      vm_incinerationEmi <- readGDX(gdx, "vm_incinerationEmi", field = "l",
+                                    restore_zeros = FALSE, spatial = 2,
+                                    react = "silent")[,t,]
+    }
+    else {
+      vm_incinerationEmi <- matchDim(vm_incinerationEmi, v37_plasticsCarbon,
+                                   fill = 0)
+    }
     vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = FALSE,
                                            spatial = 2, react = "silent")[,t,]
   }
