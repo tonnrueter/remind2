@@ -523,7 +523,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   )
 
-  # ---- BUNKERS ----
+  # ---- Bunkers ----
   # creating additional variables with and without bunkers for the transport sector
 
   ## ESR variables correspond to transport without bunkers by definition
@@ -531,7 +531,8 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     lapply(
       getNames(out)[grep("FE\\|Transport\\|ESR", getNames(out))],
       function(x) {
-        setNames(out[,,x],gsub("FE\\|Transport\\|ESR", "FE\\|Transport\\|w/o Bunkers", x))
+        setNames(out[, , x], gsub("FE\\|Transport\\|ESR",
+                                  "FE\\|Transport\\|w/o Bunkers", x))
       }
     )
   )
@@ -540,18 +541,20 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     lapply(
       getNames(out)[grep("FE\\|Transport\\|Outside ETS and ESR", getNames(out))],
       function(x) {
-        setNames(out[,,x],gsub("FE\\|Transport\\|Outside ETS and ESR", "FE\\|Transport\\|Bunkers", x))
+        setNames(out[, , x], gsub("FE\\|Transport\\|Outside ETS and ESR",
+                                  "FE\\|Transport\\|Bunkers", x))
       }
     )
   )
-  out <- mbind(out,var_without_Bunkers,var_with_Bunkers)
+  out <- mbind(out, var_without_Bunkers, var_with_Bunkers)
   ##
   out <- mbind(out,
-    setNames(out[,,"FE|Transport|++|ESR (EJ/yr)"], "FE|Transport|w/o Bunkers (EJ/yr)"),
-    setNames(out[,,"FE|Transport|++|Outside ETS and ESR (EJ/yr)"], "FE|Transport|Bunkers (EJ/yr)")
+    setNames(out[, , "FE|Transport|++|ESR (EJ/yr)"], "FE|Transport|w/o Bunkers (EJ/yr)"),
+    setNames(out[, , "FE|Transport|++|Outside ETS and ESR (EJ/yr)"], "FE|Transport|Bunkers (EJ/yr)")
   )
  out <- mbind(out,
-              setNames(out[,,"FE (EJ/yr)"] - out[,,"FE|Transport|Bunkers (EJ/yr)"], "FE|w/o Bunkers (EJ/yr)")
+              setNames(out[, , "FE (EJ/yr)"] - out[, , "FE|Transport|Bunkers (EJ/yr)"],
+                       "FE|w/o Bunkers (EJ/yr)")
   )
 
 
@@ -1312,49 +1315,72 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       )
   }
 
-  ### FE variables without bunkers ----
+  ### FE w/o non-energy and w/o bunkers ----
 
-  ### variables for which version without bunkers should be calculated
-  fe.vars.woBunkers <- c(
-    "FE (EJ/yr)",
-    "FE|++|Transport (EJ/yr)",
-    "FE|Transport|+|Liquids (EJ/yr)")
-
-  # add FE w/o non-energy use variables if available
+  # only try to add variables if non-energy use variables are available
   if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
 
-    fe.vars.woBunkers <- c(fe.vars.woBunkers,
-                          "FE|w/o Non-energy Use (EJ/yr)",
-                          "FE|w/o Non-energy Use|Liquids (EJ/yr)")
+    out <- mbind(
+      out,
+      # Total
+      setNames(
+        out[, , "FE|w/o Non-energy Use (EJ/yr)"] - out[, , "FE|Transport|Bunkers (EJ/yr)"],
+        "FE|w/o Non-energy Use w/o Bunkers"),
+
+      # Liquids
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Liquids (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|+|Liquids (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|Liquids|+|Fossil (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Fossil"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|Liquids|+|Biomass (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Biomass"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|Liquids|+|Hydrogen (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Hydrogen"),
+
+      # Gases
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Gases (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|+|Gases (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Gases|+|Fossil (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|Gases|+|Fossil (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Fossil"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Gases|+|Biomass (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|Gases|+|Biomass (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Biomass"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Gases|+|Hydrogen (EJ/yr)"]
+        - out[, , "FE|Transport|Bunkers|Gases|+|Hydrogen (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Hydrogen"),
+
+      # Solids (same as there are no solids in Bunkers)
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Solids (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Solids"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Solids|+|Fossil (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil"),
+      setNames(
+        out[, , "FE|w/o Non-energy Use|Solids|+|Biomass (EJ/yr)"],
+        "FE|w/o Bunkers|w/o Non-energy Use|Solids|Biomass")
+      )
   }
 
-  # bunker correction for distinction of fossil, biomass, hydrogen-based liquids
-  fe.vars.woBunkers.fos <- c(  "FE|Liquids|+|Fossil (EJ/yr)",
-                               "FE|Transport|Liquids|+|Fossil (EJ/yr)")
 
-  fe.vars.woBunkers.bio <- c(  "FE|Liquids|+|Biomass (EJ/yr)",
-                               "FE|Transport|Liquids|+|Biomass (EJ/yr)")
-
-  fe.vars.woBunkers.syn <- c(  "FE|Liquids|+|Hydrogen (EJ/yr)",
-                               "FE|Transport|Liquids|+|Hydrogen (EJ/yr)")
-
-
-  # add FE w/o non-energy use variables if available
-  if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
-
-    # bunker correction for distinction of fossil, biomass, hydrogen-based liquids
-    fe.vars.woBunkers.fos <- c(   fe.vars.woBunkers.fos,
-                                 "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)")
-
-    fe.vars.woBunkers.bio <- c(   fe.vars.woBunkers.bio,
-                                  "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)")
-
-    fe.vars.woBunkers.syn <- c(   fe.vars.woBunkers.syn,
-                                  "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)")
-  }
+  ### Regional Aggregation ----
 
   # add global values
-  out <- mbind(out,dimSums(out,dim=1))
+  out <- mbind(out, dimSums(out, dim = 1))
   # add other region aggregations
   if (!is.null(regionSubsetList))
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
