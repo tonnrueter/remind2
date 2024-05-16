@@ -1325,54 +1325,54 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       # Total
       setNames(
         out[, , "FE|w/o Non-energy Use (EJ/yr)"] - out[, , "FE|Transport|Bunkers (EJ/yr)"],
-        "FE|w/o Non-energy Use w/o Bunkers"),
+        "FE|w/o Non-energy Use w/o Bunkers (EJ/yr)"),
 
       # Liquids
       setNames(
         out[, , "FE|w/o Non-energy Use|Liquids (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|+|Liquids (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Liquids"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Liquids|+|Fossil (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|Liquids|+|Fossil (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Fossil"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Fossil (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Liquids|+|Biomass (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|Liquids|+|Biomass (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Biomass"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Biomass (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Liquids|+|Hydrogen (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|Liquids|+|Hydrogen (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Hydrogen"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Liquids|Hydrogen (EJ/yr)"),
 
       # Gases
       setNames(
         out[, , "FE|w/o Non-energy Use|Gases (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|+|Gases (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Gases"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Gases|+|Fossil (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|Gases|+|Fossil (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Fossil"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Fossil (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Gases|+|Biomass (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|Gases|+|Biomass (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Biomass"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Biomass (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Gases|+|Hydrogen (EJ/yr)"]
         - out[, , "FE|Transport|Bunkers|Gases|+|Hydrogen (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Hydrogen"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Gases|Hydrogen (EJ/yr)"),
 
       # Solids (same as there are no solids in Bunkers)
       setNames(
         out[, , "FE|w/o Non-energy Use|Solids (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Solids"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Solids (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Solids|+|Fossil (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil"),
+        "FE|w/o Bunkers|w/o Non-energy Use|Solids|Fossil (EJ/yr)"),
       setNames(
         out[, , "FE|w/o Non-energy Use|Solids|+|Biomass (EJ/yr)"],
-        "FE|w/o Bunkers|w/o Non-energy Use|Solids|Biomass")
+        "FE|w/o Bunkers|w/o Non-energy Use|Solids|Biomass (EJ/yr)")
       )
   }
 
