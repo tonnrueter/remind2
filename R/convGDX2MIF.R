@@ -126,6 +126,10 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
     message("function reportSDPVariables does not work and is skipped")
   }
 
+  # Report climate assessment variables & merge with output
+  message("running reportClimate...")
+  output <- mbind(output, reportClimate(gdx, output))
+
   # Add dimension names "scenario.model.variable"
   getSets(output)[3] <- "variable"
   output <- add_dimension(output,dim=3.1,add = "model",nm = "REMIND")
