@@ -13,9 +13,9 @@ library(gdx)
 test_that("Test if REMIND reporting is produced as it should and check data integrity", {
   skip_if_not(as.logical(gdxrrw::igdx(silent = TRUE)), "gdxrrw is not initialized properly")
 
-  # add GDXs for comparison here:
-  gdxList <- c("fulldata-release.gdx" = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-EU21-PkBudg650-AMT.gdx",
-               "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-NPi-AMT.gdx")
+  # GDXs for comparison. Once the remind2::reportEmi does not report negative gross emissions we will switch to SSP2EU-EU21-PkBudg and SSP2EU-NPi
+  gdxList <- c("fulldata-release.gdx" = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-EU21-NPi_2024-03-28_10.23.13.gdx",
+               "fulldata-AMT.gdx"     = "https://rse.pik-potsdam.de/data/example/remind2_test-convGDX2MIF_SSP2EU-PkBudg650-AMT.gdx")
 
   gdxPaths <- NULL
   for (i in seq_along(gdxList)) {
