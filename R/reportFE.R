@@ -126,16 +126,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   }
 
 
-  # temporary backwards compatibility: this can be removed, once a new test gdx after March 2021 is used
-  if ("seliqsyn" %in% getNames(vm_prodFe, dim=1)) {
-    seliq <- c("seliqfos","seliqbio","seliqsyn")
-    segas <- c("segafos","segabio","segasyn")
-  } else {
-    seliq <- c("seliqfos","seliqbio")
-    segas <- c("segafos","segabio")
-  }
-
-
   ####### Realisation specific Variables ##########
 
   # Define current realisation for the different modules
@@ -174,11 +164,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # ---- FE total production (incl. non-energy use) ------
   out <- mbind(out,
 
-    #total
+    #Total
     setNames((dimSums(vm_prodFe,dim=3,na.rm=T)), "FE (EJ/yr)"),
 
     #Liquids
-    setNames(dimSums(vm_prodFe[,,seliq],dim=3,na.rm=T),                                                "FE|+|Liquids (EJ/yr)"),
+    setNames(dimSums(vm_prodFe[,,c("seliqfos","seliqbio","seliqsyn")],dim=3,na.rm=T),                                     "FE|+|Liquids (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"seliqbio"],dim=3,na.rm=T),                                                              "FE|Liquids|+|Biomass (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"seliqfos"],dim=3,na.rm=T),                                                              "FE|Liquids|+|Fossil (EJ/yr)"),
     setNames(dimSums(mselect(vm_prodFe, all_enty="seliqsyn") ,dim=3,na.rm=T),                                             "FE|Liquids|+|Hydrogen (EJ/yr)"),
@@ -192,19 +182,18 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     setNames(p_eta_conv[,,"tdfossos"] * dimSums(mselect(vm_prodSe,all_enty1="sesofos",all_enty="pecoal"),dim=3,na.rm=T),  "FE|Solids|Fossil|+|Coal (EJ/yr)"),
 
     #Gases
-    setNames(dimSums(vm_prodFe[,,segas],dim=3,na.rm=T),                                                  "FE|+|Gases (EJ/yr)"),
+    setNames(dimSums(vm_prodFe[,,c("segafos","segabio","segasyn")],dim=3,na.rm=T),                                        "FE|+|Gases (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"segabio"],dim=3,na.rm=T),                                                               "FE|Gases|+|Biomass (EJ/yr)"),
     setNames(dimSums(vm_prodFe[,,"segafos"],dim=3,na.rm=T),                                                               "FE|Gases|+|Fossil (EJ/yr)"),
-     setNames(dimSums(mselect(vm_prodFe, all_enty="segasyn") ,dim=3,na.rm=T),                                             "FE|Gases|+|Hydrogen (EJ/yr)"),
+    setNames(dimSums(mselect(vm_prodFe, all_enty="segasyn"),dim=3,na.rm=T),                                               "FE|Gases|+|Hydrogen (EJ/yr)"),
 
-
-    # electricity
+    #Electricity
     setNames(dimSums(vm_prodFe[,,c("feels","feelt")],dim=3,na.rm=T),                                                      "FE|+|Electricity (EJ/yr)"),
 
-    # heat
+    #Heat
     setNames(dimSums(vm_prodFe[,,"sehe.fehes.tdhes"],dim=3,na.rm=T),                                                      "FE|+|Heat (EJ/yr)"),
 
-    # hydrogen
+    #Hydrogen
     setNames(dimSums(vm_prodFe[,,c("feh2s","feh2t")],dim=3,na.rm=T),                                                      "FE|+|Hydrogen (EJ/yr)"),
 
     #Emission markets

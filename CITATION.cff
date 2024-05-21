@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using the metadata from this file.
 type: software
 title: 'remind2: The REMIND R package (2nd generation)'
-version: 1.141.3
-date-released: '2024-05-17'
+version: 1.141.4
+date-released: '2024-05-21'
 abstract: Contains the REMIND-specific routines for data and model output manipulation.
 authors:
 - family-names: Rodrigues
@@ -73,5 +73,6 @@ authors:
   given-names: Tonn
   email: tonn.rueter@pik-potsdam.de
 license: LGPL-3.0
+keywords: ~
 repository-code: https://github.com/pik-piam/remind2
 
