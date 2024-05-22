@@ -484,11 +484,16 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   if (!is.null(v37_plasticsCarbon)) {
     out <- mbind(
       out,
-      setNames(dimSums(vm_feedstockEmiUnknownFate, dim = 3) * GtC_2_MtCO2,
-               "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"),
+      setNames(
+          dimSums(mselect(vm_feedstockEmiUnknownFate, all_enty = entySEfos),
+                  dim = 3)
+        * GtC_2_MtCO2,
+        "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"),
 
-      setNames(dimSums(vm_incinerationEmi, dim = 3) * GtC_2_MtCO2,
-               "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)")
+      setNames(
+          dimSums(mselect(vm_incinerationEmi, all_enty = entySEfos), dim = 3)
+        * GtC_2_MtCO2,
+        "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)")
     )
     out <- mbind(
       out,
