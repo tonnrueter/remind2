@@ -2475,9 +2475,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       # Waste emissions from energy sector due to end-of-life emissions of
       # chemical products
       setNames(
-          ( dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ETS"),
+          ( dimSums(mselect(vm_feedstockEmiUnknownFate,
+                            all_enty = entySEfos, all_emiMkt = "ETS"),
                     dim = 3)
-          + dimSums(mselect(vm_incinerationEmi, all_emiMkt = "ETS"), dim = 3)
+          + dimSums(mselect(vm_incinerationEmi,
+                            all_enty = entySEfos, all_emiMkt = "ETS"),
+                    dim = 3)
           )
         * GtC_2_MtCO2,
         "Emi|GHG|ETS|+|Energy Waste (Mt CO2eq/yr)"),
@@ -2485,9 +2488,12 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       # Waste emissions from energy sector due to end-of-life emissions of
       # chemical products
       setNames(
-          ( dimSums(mselect(vm_feedstockEmiUnknownFate, all_emiMkt = "ES"),
+          ( dimSums(mselect(vm_feedstockEmiUnknownFate,
+                            all_enty = entySEfos, all_emiMkt = "ES"),
                     dim = 3)
-          + dimSums(mselect(vm_incinerationEmi, all_emiMkt = "ES"), dim = 3)
+          + dimSums(mselect(vm_incinerationEmi,
+                            all_enty = entySEfos, all_emiMkt = "ES"),
+                    dim = 3)
           )
         * GtC_2_MtCO2,
         "Emi|GHG|ESR|+|Energy Waste (Mt CO2eq/yr)"),
