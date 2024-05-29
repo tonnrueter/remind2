@@ -67,12 +67,12 @@ test_that("Test if REMIND reporting is produced as it should and check data inte
     expect_no_error(
       test_ranges(
         data = mifContent,
-        regex = list(
-          "^Emi\\|CO2\\|Energy\\|Demand\\|Industry\\|.*Fossil \\(Mt CO2/yr\\)$",
-          "Share.*\\((%|Percent)\\)$"
-        ),
-        low = list(0, 0),
-        up  = list(NULL, 100)))
+        tests = list(
+          list(
+            "^Emi\\|CO2\\|Energy\\|Demand\\|Industry\\|.*Fossil \\(Mt CO2/yr\\)$",
+            low = 0),
+          list("Share.*\\((%|Percent)\\)$", low = 0, up = 100)),
+        reaction = 'stop'))
 
     magclass::write.report(
       x = magclass::collapseNames(mifContent),
