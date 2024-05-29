@@ -168,6 +168,16 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   ) %>%
     .reportSummationErrors(testthat = testthat)
 
+  ## range checks ----
+  test_ranges(
+        data = output,
+        tests = list(
+          list(
+            "^Emi\\|CO2\\|Energy\\|Demand\\|Industry\\|.*Fossil \\(Mt CO2/yr\\)$",
+            low = 0),
+          list("Share.*\\((%|Percent)\\)$", low = 0, up = 100)),
+        reaction = 'warning')
+
   # write or return output ----
   if (!is.null(file)) {
     write.report(output, file = file, ndigit = 7)
