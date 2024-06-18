@@ -17,13 +17,10 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind mselect mselect<- getItems getRegions getYears getSets dimSums new.magpie
-
-require(gdx)
-require(magclass)
-require(dplyr)
-source("./R/reportFE.R")
-source("./R/reportEmiAirPol.R")
-
+library(gdx)
+library(magclass)
+library(dplyr)
+library(remind2)
 reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList = NULL,
                                           t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
   # emissions calculation requires information from other reporting functions
@@ -237,12 +234,100 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
   # out <- mbind(out, dimSums(out, dim = 1))
 
   getSets(out)[3] <- "variable"
+  message("reportEmiForClimateAssessment about to return")
   return(out)
 }
 
+#
+# REFERENCE data (sans air pollution, right??)
+#
+library(quitte)
+mif_path <- "/p/projects/piam/abrahao/tonns_stuff/reportemi_stuff/reportemi_basicmode_fulldata_postsolve.mif"
+# ref <- as.quitte(mif_path)
+ref <- as.quitte(mif_path) %>% arrange(.data$variable, .data$region, .data$period)
+unique(ref$region) # LAM OAS SSA EUR NEU MEA REF CAZ CHA IND JPN USA GLO
+unique(ref$variable)
+ref
+
+#
+# EMISSIONS 1: Using the reduced version of reportEmi
+#
 postsolve_gdx_path <- "/p/projects/piam/abrahao/tonns_stuff/reportemi_stuff/fulldata_postsolve.gdx"
-emiForCA <- reportEmiForClimateAssessment(postsolve_gdx_path)
+# postsolve_gdx_path <- "fulldata_postsolve.gdx"
+# emiForCA <- reportEmiForClimateAssessment(postsolve_gdx_path)
+# getRegions(emiForCA)
+emiForCa <- reportEmiForClimateAssessment("fulldata_postsolve.gdx")
 
+# For the life of me I cannot figure out why theres region "dummy" instead of "GLO" in
+# the data returned to me. Gabriel assured me that when he reads THE SAME FILE, no
+# "dummy" region values occur. So work around this for development purposes..
+regions_sans_dummy <- getItems(emiForCa, dim = "all_regi")
+regions_sans_dummy[regions_sans_dummy == "dummy"] <- "GLO"
+# regions_sans_dummy
+getItems(emiForCa, dim = "all_regi") <- regions_sans_dummy
 
+# In order to be able to compare emiForCa with ref, we need to sort the data! HOWEVER,
+# during the as.quitte step, apparently the LEVELS of som factor columns are sorted 
+# differently in ref than in emiForCa. So we need to sort the levels of the factor
+# mifForCa <- mifForCa %>%
+foo <- as.quitte(emiForCa)
+unique(foo$region)
+foo$region[foo$region != "(Missing)"]
+levels(foo$region)[-length(levels(foo$region))]
+levels(ref$region)
+levels(foo$variable)
 
-emiForCA
+mifForCa <- as.quitte(emiForCa) %>%
+  mutate(
+    variable = factor(variable, levels = sort(levels(variable))),
+    region = factor(region, levels = levels(region)[levels(region) != "(Missing)"]),
+    unit = factor(unit, levels = sort(levels(unit)))) %>%
+  arrange(.data$variable, .data$region, .data$period)
+# mifForCa <- mifForCa %>% arrange(.data$region) %>% arrange(.data$variable, .data$period)
+# mifForCa <- as.quitte(emiForCa) %>% arrange(.data$variable, .data$region, .data$period)
+# levels(mifForCa$variable) <- 
+# mifForCa <- as.quitte(emiForCA)
+# mifForCa <- mifForCa[order(mifForCa$variable, mifForCa$region, mifForCa$period), ]
+# rownames(mifForCa) <- NULL
+# rownames(mifForCa) <- 1:nrow(mifForCa)
+# mifForCa <- mifForCa %>% arrange(.data$variable, .data$region, .data$period)
+# mifForCa %>% arrange(.data$variable)
+
+unique(mifForCa$region) # LAM OAS SSA EUR NEU MEA REF CAZ CHA IND JPN USA GLO
+unique(mifForCa$variable)
+
+#
+# VERIFY the similarity between reference and newly created data sets
+#
+# Check if the data sets share the same variables, regions, scenarios and models
+# as an indication that we're not completely off. The set difference of ref
+# and emiForCa should be empty in case they share exactly the same variables etc.
+# Gives [1, 5], i.e. all elements in the first set that are not in the second set
+setdiff(c(1, 2, 3, 5), c(2, 3, 4)) 
+variable_difference <- setdiff(unique(ref$region), unique(mifForCa$region))
+region_difference <- setdiff(unique(ref$region), unique(mifForCa$region))
+scenario_difference <- setdiff(unique(ref$scenario), unique(mifForCa$scenario))
+model_difference <- setdiff(unique(ref$model), unique(mifForCa$model))
+# This should show all zeros
+c(length(variable_difference), length(region_difference), length(scenario_difference), length(model_difference))
+
+# Finally compare ALL VALUES. Should print TRUE in current config
+all.equal(mifForCa, ref)
+
+#
+# MBIND to results of reportEmiAirPol. MOVE THIS TO reportEmiForClimateAssessment.R !!!
+#
+# emiAirPol <- reportEmiAirPol("fulldata_postsolve.gdx")
+emiAirPol <- reportEmiAirPol(postsolve_gdx_path)
+# Convert to tibble, check for differences in factors..
+mifAirPol <- as.quitte(emiAirPol)
+variable_difference <- setdiff(unique(mifForCa$region), unique(mifAirPol$region))
+region_difference <- setdiff(unique(mifForCa$region), unique(mifAirPol$region))
+scenario_difference <- setdiff(unique(mifForCa$scenario), unique(mifAirPol$scenario))
+model_difference <- setdiff(unique(mifForCa$model), unique(mifAirPol$model))
+c(length(variable_difference), length(region_difference), length(scenario_difference), length(model_difference))
+
+# Check dimnames(emiForCa) to see which dim are available
+# out <- mbind(emiForCa, emiAirPol[getRegions(emiForCA), getYears(emiForCa), ])
+out <- mbind(emiForCa, emiAirPol[getItems(emiForCa, dim = "all_regi"), getItems(emiForCa, dim = "tall"), ])
+
