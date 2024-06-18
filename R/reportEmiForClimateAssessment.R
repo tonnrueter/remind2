@@ -17,76 +17,32 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom magclass mbind mselect mselect<- getItems getRegions getYears getSets dimSums new.magpie
-library(gdx)
-library(magclass)
-library(dplyr)
-library(remind2)
 reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList = NULL,
                                           t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
-  # emissions calculation requires information from other reporting functions
-  # if (is.null(output)) {
-  #   message("reportEmi executes reportFE")
-  #   output <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
-  # }
-
-  # if (is.null(output)) {
-  # # Error in `.dimextract()`:
-  # # ! subscript out of bounds ("GLO")
-  # # Run `rlang::last_trace()` to see where the error occurred.
-  # # > rlang::last_trace()
-  # # <error/rlang_error>
-  # # Error in `.dimextract()`:
-  # # ! subscript out of bounds ("GLO")
-  # # ---
-  # # Backtrace:
-  # #     ▆
-  # #  1. └─global reportEmiForClimateAssessment(postsolve_gdx_path)
-  # #  2.   ├─magclass::mbind(...)
-  # #  3.   └─global reportEmiAirPol(gdx, regionSubsetList = regionSubsetList, t = t)
-  # #  4.     ├─methods (local) `[<-`(`*tmp*`, "GLO", , , value = `<magpie[,40,2]>`) at ./R/reportEmiAirPol.R:114:7
-  # #  5.     └─magclass (local) `[<-`(`*tmp*`, "GLO", , , value = `<magpie[,40,2]>`)
-  # #  6.       └─magclass (local) .local(x, i, j, ..., value = value)
-  # #  7.         └─magclass:::.dimextract(x, i, 1, pmatch = pmatch)
-  #   message("reportEmiForClimateAssessment executes reportAirPol")
-  #   output <- mbind(output, reportEmiAirPol(gdx, regionSubsetList = regionSubsetList, t = t))
-  # }
-
-  # intialize varibles used in dplyr operations
-
+  # NOTE: This function is a copy of reportEmi with unnecessary parts removed
   # Read Data from GDX ----
 
   ####### get realisations #########
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
 
-
   # unit conversion parameters needed
   sm_c_2_co2 <- readGDX(gdx, "sm_c_2_co2")
   GtC_2_MtCO2 <- sm_c_2_co2 * 1000 # conversion of GtC to MtCO2
   MtN2_to_ktN2O <- 44 / 28 * 1000 # conversion from MtN to ktN2O
 
-  # other parameters required
-
-  # switches relevant for emissions reporting
-
   # sets required
   emiMac2sector <- readGDX(gdx, "emiMac2sector") # mapping of MAC sectors to emissions sectors and gases
   macSector2emiMkt <- readGDX(gdx, "macSector2emiMkt") # mapping of MAC sectors to emissions markets
 
-  # additional sets needed
-  # SE carriers for solids, liquids, gases
-
-
   # SE carriers by origin
-
   if (is.null(entySEbio <- readGDX(gdx, "entySEbio", react = "silent")))
     entySEbio <- c("sesobio", "seliqbio", "segabio")
 
   if (is.null(entySEsyn <- readGDX(gdx, "entySEsyn", react = "silent")) ||
-    (length(entySEbio) == length(entySEsyn) && all(entySEbio == entySEsyn))) {
+        (length(entySEbio) == length(entySEsyn) && all(entySEbio == entySEsyn))) {
     entySEsyn <- c("seliqsyn", "segasyn")
   }
-
 
   ### emissions variables from REMIND (see definitions in core/equations.gms)
   # total GHG emissions
@@ -232,7 +188,10 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
   out <- mbind(out, dimSums(out, dim = 1))
 
   # out <- mbind(out, dimSums(out, dim = 1))
+  # message("reportEmiForClimateAssessment executes reportEmiAirPol")
+  # emiAirPol <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
 
+  out <- mbind(emiForCa, emiAirPol[getItems(emiForCa, dim = "all_regi"), getItems(emiForCa, dim = "tall"), ])
   getSets(out)[3] <- "variable"
   message("reportEmiForClimateAssessment about to return")
   return(out)
@@ -319,6 +278,13 @@ all.equal(mifForCa, ref)
 #
 # emiAirPol <- reportEmiAirPol("fulldata_postsolve.gdx")
 emiAirPol <- reportEmiAirPol(postsolve_gdx_path)
+# emiAirPol <- reportEmiAirPol(postsolve_gdx_path, regionSubsetList = c("GLO"))
+# emiAirPol <- reportEmiAirPol(
+#   postsolve_gdx_path, 
+#   regionSubsetList = getItems(emiForCa, dim = "all_regi"),
+#   t = getItems(emiForCa, dim = "tall")
+# )
+
 # Convert to tibble, check for differences in factors..
 mifAirPol <- as.quitte(emiAirPol)
 variable_difference <- setdiff(unique(mifForCa$region), unique(mifAirPol$region))
@@ -330,4 +296,6 @@ c(length(variable_difference), length(region_difference), length(scenario_differ
 # Check dimnames(emiForCa) to see which dim are available
 # out <- mbind(emiForCa, emiAirPol[getRegions(emiForCA), getYears(emiForCa), ])
 out <- mbind(emiForCa, emiAirPol[getItems(emiForCa, dim = "all_regi"), getItems(emiForCa, dim = "tall"), ])
-
+# For some reason, providing t = getItems(emiForCa, dim = "tall") to reportEmiAirPol still returns years that are
+# not in emiForCa. So we still need to subset the years, regions
+# out <- mbind(emiForCa, emiAirPol)
