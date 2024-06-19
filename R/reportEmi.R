@@ -2152,7 +2152,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   )
 
   # Waste Emissions (IPCC category 5),
-  # note: waste CO2 emissions from combustion of waste in incineration plants are accounted here but in industry energy demand emimssions
+  # note: waste CO2 emissions from combustion of waste in incineration plants are accounted here but in industry energy demand emissions
   # as industry energy emissions are calculated based on the total FE (incl. non-energy use) going into industry
   out <- mbind(out,
                setNames(out[, , "Emi|GHG|CH4|+|Waste (Mt CO2eq/yr)"]
