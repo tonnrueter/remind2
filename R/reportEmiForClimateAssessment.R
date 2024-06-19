@@ -16,12 +16,19 @@
 #' @export
 #'
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind mselect mselect<- getItems getRegions getYears getSets dimSums new.magpie
+#' @importFrom magclass mbind mselect mselect<- getItems getRegions getYears getSets new.magpie
+# library(remind2)
+source("R/dimSums.R")
+source("R/reportEmiAirPol.R")
+library(gdx)
+# library(magclass)
+library(dplyr)
 reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList = NULL,
                                           t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
   # NOTE: This function is a copy of reportEmi with unnecessary parts removed
   # Read Data from GDX ----
-
+  gdx <- "/p/projects/piam/abrahao/tonns_stuff/reportemi_stuff/fulldata_postsolve.gdx"
+  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)
   ####### get realisations #########
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
@@ -36,13 +43,13 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
   macSector2emiMkt <- readGDX(gdx, "macSector2emiMkt") # mapping of MAC sectors to emissions markets
 
   # SE carriers by origin
-  if (is.null(entySEbio <- readGDX(gdx, "entySEbio", react = "silent")))
-    entySEbio <- c("sesobio", "seliqbio", "segabio")
+  # if (is.null(entySEbio <- readGDX(gdx, "entySEbio", react = "silent")))
+  #   entySEbio <- c("sesobio", "seliqbio", "segabio")
 
-  if (is.null(entySEsyn <- readGDX(gdx, "entySEsyn", react = "silent")) ||
-        (length(entySEbio) == length(entySEsyn) && all(entySEbio == entySEsyn))) {
-    entySEsyn <- c("seliqsyn", "segasyn")
-  }
+  # if (is.null(entySEsyn <- readGDX(gdx, "entySEsyn", react = "silent")) ||
+  #       (length(entySEbio) == length(entySEsyn) && all(entySEbio == entySEsyn))) {
+  #   entySEsyn <- c("seliqsyn", "segasyn")
+  # }
 
   ### emissions variables from REMIND (see definitions in core/equations.gms)
   # total GHG emissions
@@ -51,19 +58,11 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
   # total energy emissions from pe2se and se2fe conversions
   vm_emiTeDetailMkt <- readGDX(gdx, c("vm_emiTeDetailMkt", "v_emiTeDetailMkt"), field = "l", restore_zeros = FALSE)
   # total energy emissions in REMIND
-  # emissions from MAC curves (non-energy emissions)
+  # Emissions from MACs (currently: all emissions outside of energy CO2 emissions)
   vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = FALSE)[, t, ]
   # exogenous emissions (SO2, BC, OC)
   # F-Gases
   vm_emiFgas <- readGDX(gdx, "vm_emiFgas", field = "l", restore_zeros = FALSE)[, t, ]
-  # Emissions from MACs (currently: all emissions outside of energy CO2 emissions)
-  vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = FALSE)
-  # energy extraction energy-related CO2 emissions
-  v_emiEnFuelEx <- readGDX(gdx, "v_emiEnFuelEx", field = "l", restore_zeros = FALSE)
-  # set to zero if not available
-  if (is.null(v_emiEnFuelEx)) {
-    v_emiEnFuelEx <- vm_emiMacSector[, , "co2"] * 0
-  }
 
   # START OF BASICMODE
   # if basicmode is TRUE, we need only a subset of reported emissions.
@@ -81,8 +80,10 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
 
   #### Markets for total CO2 emissions
   sel_vm_emiAllMkt_co2 <- if (getSets(vm_emiAllMkt)[[3]] == "emiTe") {
+    print("emiTe")
     mselect(vm_emiAllMkt, emiTe = "co2")
   } else {
+    print("all_enty")
     mselect(vm_emiAllMkt, all_enty = "co2")
   }
 
@@ -174,7 +175,6 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
     setNames(vm_emiFgas[, , "emiFgasPFC"],      "Emi|PFC (kt CF4-equiv/yr)"),
     setNames(vm_emiFgas[, , "emiFgasSF6"],      "Emi|SF6 (kt SF6/yr)")
   )
-
   ### Basic F-Gases (Mt CO2eq)
   out <- mbind(
     out,
@@ -184,18 +184,32 @@ reportEmiForClimateAssessment <- function(gdx, output = NULL, regionSubsetList =
     )
   )
 
-  # add global values
+  # Add global values
   out <- mbind(out, dimSums(out, dim = 1))
+  # add other region aggregations
+  if (!is.null(regionSubsetList)) {
+    out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
+  }
 
+  # Run air pollution report
   # out <- mbind(out, dimSums(out, dim = 1))
-  # message("reportEmiForClimateAssessment executes reportEmiAirPol")
-  # emiAirPol <- mbind(output, reportFE(gdx, regionSubsetList = regionSubsetList, t = t))
+  message("reportEmiForClimateAssessment executes reportEmiAirPol")
+  pollutants <- reportEmiAirPol(postsolve_gdx_path)
 
-  out <- mbind(emiForCa, emiAirPol[getItems(emiForCa, dim = "all_regi"), getItems(emiForCa, dim = "tall"), ])
+
+  # Combine both reports
+  out <- mbind(out, pollutants[getItems(out, dim = "all_regi"), getItems(out, dim = "tall"), ])
+  
   getSets(out)[3] <- "variable"
   message("reportEmiForClimateAssessment about to return")
   return(out)
 }
+
+library(quitte)
+postsolve_gdx_path <- "/p/projects/piam/abrahao/tonns_stuff/reportemi_stuff/fulldata_postsolve.gdx"
+emiForCa <- reportEmiForClimateAssessment(postsolve_gdx_path)
+emiForCa
+foo <- as.quitte(emiForCa)
 
 #
 # REFERENCE data (sans air pollution, right??)
@@ -216,6 +230,8 @@ postsolve_gdx_path <- "/p/projects/piam/abrahao/tonns_stuff/reportemi_stuff/full
 # emiForCA <- reportEmiForClimateAssessment(postsolve_gdx_path)
 # getRegions(emiForCA)
 emiForCa <- reportEmiForClimateAssessment("fulldata_postsolve.gdx")
+# Check those values, they seem of. E.g.
+# emiForCa["GLO", , "Emi|CO2 (Mt CO2/yr)"]
 
 # For the life of me I cannot figure out why theres region "dummy" instead of "GLO" in
 # the data returned to me. Gabriel assured me that when he reads THE SAME FILE, no
@@ -262,7 +278,7 @@ unique(mifForCa$variable)
 # as an indication that we're not completely off. The set difference of ref
 # and emiForCa should be empty in case they share exactly the same variables etc.
 # Gives [1, 5], i.e. all elements in the first set that are not in the second set
-setdiff(c(1, 2, 3, 5), c(2, 3, 4)) 
+setdiff(c(1, 2, 3, 5), c(2, 3, 4))
 variable_difference <- setdiff(unique(ref$region), unique(mifForCa$region))
 region_difference <- setdiff(unique(ref$region), unique(mifForCa$region))
 scenario_difference <- setdiff(unique(ref$scenario), unique(mifForCa$scenario))
@@ -276,6 +292,7 @@ all.equal(mifForCa, ref)
 #
 # MBIND to results of reportEmiAirPol. MOVE THIS TO reportEmiForClimateAssessment.R !!!
 #
+# No matter if regionSubsetList or t is provided, the size and runtimes of mifAirPol stays the same 
 # emiAirPol <- reportEmiAirPol("fulldata_postsolve.gdx")
 emiAirPol <- reportEmiAirPol(postsolve_gdx_path)
 # emiAirPol <- reportEmiAirPol(postsolve_gdx_path, regionSubsetList = c("GLO"))
@@ -299,3 +316,4 @@ out <- mbind(emiForCa, emiAirPol[getItems(emiForCa, dim = "all_regi"), getItems(
 # For some reason, providing t = getItems(emiForCa, dim = "tall") to reportEmiAirPol still returns years that are
 # not in emiForCa. So we still need to subset the years, regions
 # out <- mbind(emiForCa, emiAirPol)
+mifOut <- as.quitte(out)
