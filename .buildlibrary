@@ -1,4 +1,4 @@
-ValidationKey: '227587360'
+ValidationKey: '227618695'
 AcceptedWarnings:
 - 'Warning: package ''.*'' was built under R version'
 - 'Warning: namespace ''.*'' is not available and has been replaced'
@@ -6,7 +6,6 @@ AcceptedWarnings:
 - .*following variables are expected in the piamInterfaces.*
 - Summation checks have revealed some gaps.*
 - .*to check if summation groups add up.*
-- .* Negative numbers in weight. Dangerous, was it really intended?.*
 AcceptedNotes:
 - All declared Imports should be used.
 - Imports includes .* non-default packages.
