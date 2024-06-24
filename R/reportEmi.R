@@ -1645,6 +1645,14 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       * p_share_CCS,
       "Carbon Management|Storage|+|Industry Process (Mt CO2/yr)"),
 
+    if (exists('vm_incinerationCCS'))
+    {
+      setNames(
+          out[,,'Carbon Management|Carbon Capture|+|Waste|Plastics Incineration (Mt CO2/yr)']
+        * p_share_CCS,
+        'Carbon Management|Storage|+|Waste|Plastics Incineration (Mt CO2/yr)')
+    },
+
     setNames(
         out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"]
       * p_share_CCS,
