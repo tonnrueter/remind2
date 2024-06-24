@@ -1353,6 +1353,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       * GtC_2_MtCO2,
       "Carbon Management|Carbon Capture|Industry Process|+|Cement (Mt CO2/yr)"),
 
+    if (exists('vm_incinerationCCS'))
+    {
+      setNames(dimSums(vm_incinerationCCS, dim = 3) * GtC_2_MtCO2,
+               paste0('Carbon Management|Carbon Capture|+|Waste|',
+                      'Plastics Incineration (Mt CO2/yr)'))
+    },
+
     # total co2 captured by DAC
     setNames(-vm_emiCdrTeDetail[, , "dac"] * GtC_2_MtCO2,
              "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"),
