@@ -2541,6 +2541,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
           + dimSums(mselect(vm_incinerationEmi,
                             all_enty = entySEfos, all_emiMkt = "ETS"),
                     dim = 3)
+          + if (exists('vm_incinerationCCS')) {
+              dimSums(vm_incinerationCCS, dim = 3) * (1 - p_share_CCS)
+            } else {
+              0
+            }
           )
         * GtC_2_MtCO2,
         "Emi|GHG|ETS|+|Energy Waste (Mt CO2eq/yr)"),
