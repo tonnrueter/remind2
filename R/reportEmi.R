@@ -1313,28 +1313,46 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   )
 
   # aggregate carbon capture/source variables
-  out <- mbind(out,
+  out <- mbind(
+    out,
 
-               # total captured co2 by bio pe2se technologies
-               setNames(dimSums(mselect(CCO2Pe2Se, all_te = te.becc), dim = 3) * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"),
-               # total captured co2 by fossil pe2se technologies
-               setNames(dimSums(mselect(CCO2Pe2Se, all_te = teFosCCS), dim = 3) * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture|+|Fossil|Pe2Se (Mt CO2/yr)"),
-               # total co2 captured in industry from energy emissions (to do: split in fossil and bio industry capture)
-               setNames(dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3) * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture|+|Industry Energy (Mt CO2/yr)"),
-               # total co2 captured in industry from proess emissions (only cemnent process CO2 for now)
-               setNames(dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3) * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"),
-               setNames(dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3) * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture|Industry Process|+|Cement (Mt CO2/yr)"),
-               # total co2 captured by DAC
-               setNames(-vm_emiCdrTeDetail[, , "dac"] * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"),
-               # total co2 captured
-               setNames(vm_co2capture * GtC_2_MtCO2,
-                          "Carbon Management|Carbon Capture (Mt CO2/yr)")
+    # total captured co2 by bio pe2se technologies
+    setNames(
+        dimSums(mselect(CCO2Pe2Se, all_te = te.becc), dim = 3)
+      * GtC_2_MtCO2,
+      "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"),
+
+    # total captured co2 by fossil pe2se technologies
+    setNames(
+        dimSums(mselect(CCO2Pe2Se, all_te = teFosCCS), dim = 3)
+      * GtC_2_MtCO2,
+      "Carbon Management|Carbon Capture|+|Fossil|Pe2Se (Mt CO2/yr)"),
+
+    # total co2 captured in industry from energy emissions (to do: split in fossil and bio industry capture)
+    setNames(
+        dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3)
+      * GtC_2_MtCO2,
+      "Carbon Management|Carbon Capture|+|Industry Energy (Mt CO2/yr)"),
+
+    # total co2 captured in industry from process emissions (only cement process
+    # CO2 for now)
+    setNames(
+        dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3)
+      * GtC_2_MtCO2,
+      "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"),
+
+    setNames(
+        dimSums(vm_emiIndCCS[, , "co2cement_process"], dim = 3)
+      * GtC_2_MtCO2,
+      "Carbon Management|Carbon Capture|Industry Process|+|Cement (Mt CO2/yr)"),
+
+    # total co2 captured by DAC
+    setNames(-vm_emiCdrTeDetail[, , "dac"] * GtC_2_MtCO2,
+             "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"),
+
+    # total co2 captured
+    setNames(vm_co2capture * GtC_2_MtCO2,
+             "Carbon Management|Carbon Capture (Mt CO2/yr)")
   )
 
   # add materials-related carbon management variables only if available
@@ -1577,26 +1595,46 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   )
 
   # calculate carbon storage variables
-  out <- mbind(out,
+  out <- mbind(
+    out,
 
-               # total captured and stored by pe2se BECCS
-               setNames(out[, , "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"),
-               setNames(out[, , "Carbon Management|Carbon Capture|+|Fossil|Pe2Se (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|+|Fossil|Pe2Se (Mt CO2/yr)"),
-               setNames(out[, , "Carbon Management|Carbon Capture|+|Industry Energy (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|+|Industry Energy (Mt CO2/yr)"),
-               # subcategories of industry energy CCS depending on whether the FE that industry demands comes from fossil, biomass or synfuel origin
-               setNames(out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Fossil (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|Industry Energy|+|Fossil (Mt CO2/yr)"),
-               setNames(out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"),
-               setNames(out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"),
-               setNames(out[, , "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|+|Industry Process (Mt CO2/yr)"),
-               setNames(out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"] * p_share_CCS,
-                          "Carbon Management|Storage|+|DAC (Mt CO2/yr)")
+    # total captured and stored by pe2se BECCS
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|+|Biomass|Pe2Se (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|+|Biomass|Pe2Se (Mt CO2/yr)"),
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|+|Fossil|Pe2Se (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|+|Fossil|Pe2Se (Mt CO2/yr)"),
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|+|Industry Energy (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|+|Industry Energy (Mt CO2/yr)"),
+
+    # subcategories of industry energy CCS depending on whether the FE that
+    # industry demands comes from fossil, biomass or synfuel origin
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Fossil (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|Industry Energy|+|Fossil (Mt CO2/yr)"),
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"),
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"),
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|+|Industry Process (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|+|Industry Process (Mt CO2/yr)"),
+
+    setNames(
+        out[, , "Carbon Management|Carbon Capture|+|DAC (Mt CO2/yr)"]
+      * p_share_CCS,
+      "Carbon Management|Storage|+|DAC (Mt CO2/yr)")
   )
 
   # calculate carbon storage variables for energy supply CCS
