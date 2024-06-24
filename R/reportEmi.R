@@ -498,7 +498,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
         "Emi|CO2|Energy|Waste|+|Feedstocks unknown fate (Mt CO2/yr)"),
 
       setNames(
-          dimSums(mselect(vm_incinerationEmi, all_enty = entySEfos), dim = 3)
+          ( dimSums(mselect(vm_incinerationEmi, all_enty = entySEfos), dim = 3)
+          + if (exists('vm_incinerationCCS')) {
+              dimSums(vm_incinerationCCS, dim = 3) * (1 - p_share_CCS)
+            } else {
+              0
+            }
+          )
         * GtC_2_MtCO2,
         "Emi|CO2|Energy|Waste|+|Plastics Incineration (Mt CO2/yr)")
     )
