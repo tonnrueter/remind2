@@ -176,7 +176,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
             "^Emi\\|CO2\\|Energy\\|Demand\\|Industry\\|.*Fossil \\(Mt CO2/yr\\)$",
             low = 0),
           list("Share.*\\((%|Percent)\\)$", low = 0, up = 100)),
-        reaction = 'stop')
+        reaction = 'warning')
 
   # write or return output ----
   if (!is.null(file)) {
