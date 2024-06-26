@@ -831,8 +831,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                 dim = 3)
             # subtract carbon contained in plastics that are not incinerated
             - dimSums(
-                ( mselect(plastic_CDR_SubSec,    x[setdiff(names(x), 'variable')])
-                ),
+                mselect(plastic_CDR_SubSec, x[setdiff(names(x), 'variable')]),
                 dim = 3)
             ) * GtC_2_MtCO2,
             x[['variable']])
