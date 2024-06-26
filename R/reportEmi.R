@@ -3128,5 +3128,15 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   out <- mbind(out, out.cumul)
 
   getSets(out)[3] <- "variable"
+
+  # round values to unreasonably low limits to get rid of values different from
+  # zero introduced by precision errors
+  out <- mbind(
+    # round Mt and kt to one gram
+    round(out[,,grep('(Mt', getNames(out), value = TRUE, fixed = TRUE)], 12),
+    round(out[,,grep('(kt', getNames(out), value = TRUE, fixed = TRUE)],  9),
+    # everything else stays as is
+    out[,,grep('\\([Mk]t', getNames(out), value = TRUE, invert = TRUE)])
+
   return(out)
 }
