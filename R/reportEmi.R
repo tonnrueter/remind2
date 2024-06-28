@@ -333,9 +333,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     vm_incinerationCCS <- readGDX(gdx, 'vm_incinerationCCS', field = 'l',
                                   restore_zeros = FALSE, spatial = 2,
                                   react = 'silent')[,t,]
+
     if (is.null(vm_incinerationCCS)) {
       rm('vm_incinerationCCS')
+    } else {
+      vm_incinerationCCS <- matchDim(vm_incinerationCCS, vm_incinerationEmi)
     }
+
     vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = FALSE,
                                            spatial = 2, react = "silent")[,t,]
   }
