@@ -20,7 +20,7 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom dplyr %>% distinct filter full_join group_by inner_join left_join mutate rename select summarise
-#' @importFrom magclass mselect mselect<- collapseDim getItems getRegions getYears
+#' @importFrom magclass mselect mselect<- collapseDim getItems getRegions getYears matchDim
 #' @importFrom madrat toolAggregate
 #' @importFrom tibble as_tibble
 #' @importFrom piamutils deletePlus
