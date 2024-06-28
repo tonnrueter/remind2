@@ -20,7 +20,7 @@
 #'
 #' @importFrom gdx readGDX
 #' @importFrom dplyr %>% distinct filter full_join group_by inner_join left_join mutate rename select summarise
-#' @importFrom magclass mselect mselect<- collapseDim getItems getRegions getYears matchDim
+#' @importFrom magclass mselect mselect<- collapseDim getItems getRegions getYears
 #' @importFrom madrat toolAggregate
 #' @importFrom tibble as_tibble
 #' @importFrom piamutils deletePlus
@@ -147,7 +147,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   if (length(vm_demFENonEnergySector) == 0) {
     vm_demFENonEnergySector <- NULL
   } else {
-    vm_demFENonEnergySector <- matchDim(vm_demFENonEnergySector, vm_demFeSector)
+    vm_demFENonEnergySector <- magclass::matchDim(vm_demFENonEnergySector, vm_demFeSector)
   }
 
   # secondary energy production
@@ -326,7 +326,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                                     react = "silent")[,t,]
     }
     else {
-      vm_incinerationEmi <- matchDim(vm_incinerationEmi, v37_plasticsCarbon,
+      vm_incinerationEmi <- magclass::matchDim(vm_incinerationEmi, v37_plasticsCarbon,
                                    fill = 0)
     }
 
@@ -337,7 +337,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     if (is.null(vm_incinerationCCS)) {
       rm('vm_incinerationCCS')
     } else {
-      vm_incinerationCCS <- matchDim(vm_incinerationCCS, vm_incinerationEmi)
+      vm_incinerationCCS <- magclass::matchDim(vm_incinerationCCS, vm_incinerationEmi)
     }
 
     vm_nonIncineratedPlastics   <- readGDX(gdx, "vm_nonIncineratedPlastics", field = "l", restore_zeros = FALSE,
