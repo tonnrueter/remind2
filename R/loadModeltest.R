@@ -117,14 +117,14 @@ cs2InputPaths <- function(outputDirs) {
 #' ssp1 <- new.env()
 #' ssp2eu <- new.env()
 #' loadModeltest(ssp1, "^SSP1-AMT-")
-#' loadModeltest(ssp2eu, "^SSP2EU-.*-AMT$")
+#' loadModeltest(ssp2eu, "^SSP2-.*-AMT$")
 #' ssp1$data
 #' ssp2eu$data
 #' }
 #' @export
 loadModeltest <- function(
   envir = globalenv(),
-  namePattern = "^SSP2EU-.*-AMT$",
+  namePattern = "^SSP2-.*-AMT$",
   folder = tempdir()
 ) {
 

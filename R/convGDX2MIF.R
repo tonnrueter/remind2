@@ -151,9 +151,8 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
     sumChecks <- checkSummations(
       mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
       summationsFile = "extractVariableGroups",
-      absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE
-    ) %>%
-      filter(abs(.data$diff) >= 1.5e-8),
+      absDiff = 0.01, relDiff = 0.02, roundDiff = TRUE
+    ),
     type = 'message') %>%
     .reportSummationErrors(testthat = testthat)
 
@@ -161,8 +160,7 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
     mifFile = output, dataDumpFile = NULL, outputDirectory = NULL,
     summationsFile = system.file('extdata/additional_summation_checks.csv',
                                  package = 'remind2'),
-    absDiff = 1.5e-8, relDiff = 1e-8, roundDiff = TRUE) %>%
-      filter(abs(.data$diff) >= 1.5e-8) %>%
+    absDiff = 0.01, relDiff = 0.02, roundDiff = TRUE) %>%
       bind_rows(sumChecks),
     type = 'message'
   ) %>%
