@@ -429,6 +429,7 @@ if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process
 showAreaAndBarPlots(droute, items, tot, orderVars="user", scales = "fixed")
 }
 ```
+
 ### Subsector per-Capita Production
 ```{r plot subsector per-capita production}
 items <- c("Production|Industry|Cement|per-capita",
