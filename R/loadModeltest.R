@@ -75,7 +75,6 @@ loadCs2Data <- function(
     mifScen = mifScen,
     mifHist = mifHist,
     cfgScen = cfgScen,
-    cfgDefault = cfgDefault,
     outputDir = folder,
     outputFormat = "pdf",
     outputFile = outputFile,
