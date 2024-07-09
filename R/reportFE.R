@@ -651,30 +651,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     }
   } 
 
-    out <- mbind(out,
-                  setNames(dimSums(out[,,c("UE|Buildings|Space Heating (EJ/yr)","UE|Buildings|Space Cooling (EJ/yr)")],dim=3,na.rm=T), "UE|Buildings|Space Conditioning (EJ/yr)"),
-
-                  setNames(dimSums(out[,,"FE|Buildings|Appliances and Light|Electricity (EJ/yr)"],dim=3,na.rm=T),        "FE|Buildings|Appliances and Light (EJ/yr)"),
-
-                  setNames(dimSums(out[,,c("FE|Buildings|Cooking and Water|Solids (EJ/yr)",
-                                            "FE|Buildings|Cooking and Water|Electricity (EJ/yr)",
-                                            "FE|Buildings|Cooking and Water|Heat (EJ/yr)",
-                                            "FE|Buildings|Cooking and Water|Gases (EJ/yr)",
-                                            "FE|Buildings|Cooking and Water|Liquids (EJ/yr)",
-                                            "FE|Buildings|Cooking and Water|Hydrogen (EJ/yr)")],dim=3,na.rm=T),        "FE|Buildings|Cooking and Water (EJ/yr)"),
-
-                  setNames(dimSums(out[,,"FE|Buildings|Space Cooling|Electricity (EJ/yr)"],dim=3,na.rm=T),        "FE|Buildings|Space Cooling (EJ/yr)"),
-
-                  setNames(dimSums(out[,,c("FE|Buildings|Space Heating|Solids (EJ/yr)",
-                                            "FE|Buildings|Space Heating|Electricity (EJ/yr)",
-                                            "FE|Buildings|Space Heating|Heat (EJ/yr)",
-                                            "FE|Buildings|Space Heating|Gases (EJ/yr)",
-                                            "FE|Buildings|Space Heating|Liquids (EJ/yr)",
-                                            "FE|Buildings|Space Heating|Hydrogen (EJ/yr)")],dim=3,na.rm=T),        "FE|Buildings|Space Heating (EJ/yr)")
-
-    )
-  }
-
   # Industry Module ----
   ## FE demand ----
   if (!(is.null(o37_demFeIndSub) | 0 == length(o37_demFeIndSub))) {
