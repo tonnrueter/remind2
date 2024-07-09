@@ -137,41 +137,8 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
     }
   }
 
-  if (buil_mod %in% c("services_putty", "services_with_capital")) {
-    #-Capital Stocks
-    cap <- mbind(setNames(vm_cesIO[, , "kaphc"] * 1000, "Capital Stock|Non-ESM|Space Conditioning (billion US$2005)"),
-                 setNames(vm_cesIO[, , "kapal"] * 1000, "Capital Stock|Non-ESM|Appliances and Light (billion US$2005)"),
-                 setNames(vm_cesIO[, , "kapsc"] * 1000, "Capital Stock|Non-ESM|Space Cooling (billion US$2005)"),
-                 setNames(vm_cesIO[, , "kap"] * 1000, "Capital Stock|Non-ESM|Macro (billion US$2005)"))
-    cap <- mbind(cap, setNames(cap[, , "Capital Stock|Non-ESM|Space Conditioning (billion US$2005)"]
-                               + cap[, , "Capital Stock|Non-ESM|Appliances and Light (billion US$2005)"]
-                               + cap[, , "Capital Stock|Non-ESM|Space Cooling (billion US$2005)"],
-                               "Capital Stock|Non-ESM|End-use (billion US$2005)"))
-    cap <- mbind(cap, setNames(cap[, , "Capital Stock|Non-ESM|End-use (billion US$2005)"]
-                               + cap[, , "Capital Stock|Non-ESM|Macro (billion US$2005)"],
-                               "Capital Stock|Non-ESM (billion US$2005)"))
-
-    #-Capital investments
-
-    invM <- mbind(
-      setNames(vm_invMacro[, , "kaphc"] * 1000, "Investments|Non-ESM|Space Conditioning (billion US$2005/yr)"),
-      setNames(vm_invMacro[, , "kapal"] * 1000, "Investments|Non-ESM|Appliances and Light (billion US$2005/yr)"),
-      setNames(vm_invMacro[, , "kapsc"] * 1000, "Investments|Non-ESM|Space Cooling (billion US$2005/yr)"),
-      setNames(vm_invMacro[, , "kap"] * 1000, "Investments|Non-ESM|Macro (billion US$2005/yr)")
-    )
-    invM <- mbind(invM, setNames(invM[, , "Investments|Non-ESM|Space Conditioning (billion US$2005/yr)"]
-                                 + invM[, , "Investments|Non-ESM|Appliances and Light (billion US$2005/yr)"]
-                                 + invM[, , "Investments|Non-ESM|Space Cooling (billion US$2005/yr)"],
-                                 "Investments|Non-ESM|End-use (billion US$2005/yr)"))
-
-    invM <- mbind(invM, setNames(invM[, , "Investments|Non-ESM|End-use (billion US$2005/yr)"]
-                                 + invM[, , "Investments|Non-ESM|Macro (billion US$2005/yr)"],
-                                 "Investments|Non-ESM (billion US$2005/yr)"))
-
-  } else {
-    cap <- setNames(vm_cesIO[, , "kap"] * 1000, "Capital Stock|Non-ESM (billion US$2005)")
-    invM <- setNames(vm_invMacro[, , "kap"] * 1000, "Investments|Non-ESM (billion US$2005/yr)")
-  }
+  cap <- setNames(vm_cesIO[, , "kap"] * 1000, "Capital Stock|Non-ESM (billion US$2005)")
+  invM <- setNames(vm_invMacro[, , "kap"] * 1000, "Investments|Non-ESM (billion US$2005/yr)")
 
   inv <- setNames(invM[, , "Investments|Non-ESM (billion US$2005/yr)"] + invE, "Investments (billion US$2005/yr)")
   # TODO: add p80_curracc
@@ -201,22 +168,7 @@ reportMacroEconomy <- function(gdx, regionSubsetList = NULL,
     ces <- mbind(ces, setNames(vm_cesIO[, , "fesob"] * TWa_2_EJ, "CES_input|fesob (EJ/yr)"))
     ces <- mbind(ces, setNames(vm_cesIO[, , "feheb"] * TWa_2_EJ, "CES_input|feheb (EJ/yr)"))
     ces <- mbind(ces, setNames(vm_cesIO[, , "feh2b"] * TWa_2_EJ, "CES_input|feh2b (EJ/yr)"))
-  } else if (buil_mod %in% c("services_putty", "services_with_capital")) {
-    ces <- mbind(ces, setNames(vm_cesIO[, , "fealelb"] * TWa_2_EJ, "CES_input|fealelb (EJ/yr)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "fescelb"] * TWa_2_EJ, "CES_input|fescelb (EJ/yr)"))
-
-    ces <- mbind(ces, setNames(vm_cesIO[, , "uescb"] * TWa_2_EJ, "CES_input|uescb (EJ/yr)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "ueshb"] * TWa_2_EJ, "CES_input|ueshb (EJ/yr)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "ueswb"] * TWa_2_EJ, "CES_input|ueswb (EJ/yr)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "uealb"] * TWa_2_EJ, "CES_input|uealb (EJ/yr)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "uecwb"] * TWa_2_EJ, "CES_input|uecwb (EJ/yr)"))
-
-
-    ces <- mbind(ces, setNames(vm_cesIO[, , "kapal"] * 1000, "CES_input|kapal (billion US$2005)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "kapsc"] * 1000, "CES_input|kapsc (billion US$2005)"))
-    ces <- mbind(ces, setNames(vm_cesIO[, , "kaphc"] * 1000, "CES_input|kaphc (billion US$2005)"))
-  }
-
+  } 
 
   if (indu_mod == "fixed_shares") {
     ces <- mbind(ces, setNames(vm_cesIO[, , "feeli"] * TWa_2_EJ, "CES_input|feeli (EJ/yr)"))
