@@ -31,12 +31,12 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 
 ```{r Capacities Electricity}
 items <- c(
-  "Cap|Electricity|Storage|Battery",
   "Cap|Electricity|Solar",
   if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
     c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
   else
     "Cap|Electricity|Wind",
+  "Cap|Electricity|Storage|Battery",
   "Cap|Electricity|Hydro",
   "Cap|Electricity|Nuclear",  
   "Cap|Electricity|Geothermal",
@@ -115,6 +115,7 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
+
 ### PE Gas
 ```{r PE Gas}
 items <- c(
@@ -132,7 +133,6 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 
 
 ### PE Biomass
-
 ```{r PE Biomass}
 items <- c(
   "PE|Biomass|Hydrogen|w/ CC",
@@ -148,14 +148,43 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
-## Primary Energy line plots
+### PE Oil
+```{r PE Oil}
+items <- c(
+  "PE|Oil",
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
+```
 
-```{r Primary Energy line plots}
+## Primary Energy line plots
+### PE Coal - Line
+```{r PE Coal}
 showLinePlots(data, "PE|Coal")
+```
+
+### PE Oil - Line
+```{r PE Oil}
 showLinePlots(data, "PE|Oil")
+```
+
+### PE Gas - Line
+```{r PE Gas}
 showLinePlots(data, "PE|Gas")
+```
+
+### PE Biomass - Line
+```{r PE Biomass}
 showLinePlots(data, "PE|Biomass")
+```
+
+### PE Biomass - Energy Crops - Line
+```{r PE Biomass - Energy Crops}
 showLinePlots(data, "Primary Energy Production|Biomass|Energy Crops")
+```
+
+### PE Geothermal - Line
+```{r PE Geothermal}
+showLinePlots(data, "PE|Geothermal")
 ```
 
 ### PE Coal Extraction
@@ -175,9 +204,7 @@ showLinePlots(data, "Res|Extraction|Gas")
 
 ## Secondary Energy Mixes
 
-
 ### SE Electricity
-
 ```{r SE Electricity}
 
 tot <- "SE|Electricity"
@@ -289,6 +316,20 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
+### SE Solids - Usage
+```{r SE Solids - Usage}
+
+tot <- "SE|Solids"
+
+items <- c(
+  "SE|Solids|Input|T&D Losses",
+  "FE|CDR|Solids",
+  "FE|Transport|Solids",  
+  "FE|Buildings|Solids",
+  "FE|Non-energy Use|Industry|Solids",  
+  "FE|w/o Non-energy Use|Industry|Solids")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
 
 ### SE Liquids
 
@@ -311,6 +352,22 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
+### SE Liquids - Usage
+```{r SE Liquids - Usage}
+
+tot <- "SE|Liquids"
+
+items <- c(
+  "SE|Liquids|Input|T&D Losses",
+  "FE|CDR|Liquids",
+  "FE|Buildings|Liquids",
+  "FE|Non-energy Use|Industry|Liquids",
+  "FE|w/o Non-energy Use|Industry|Liquids",
+  "FE|Transport|Bunkers|Liquids",
+  "FE|Transport|w/o Bunkers|Liquids")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
 ### SE Gases
 ```{r SE Gases}
 
@@ -328,7 +385,21 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 ```
 
+### SE Gases - Usage
+```{r SE Gases - Usage}
 
+tot <- "SE|Gases"
+
+items <- c(
+  "SE|Gases|Input|T&D Losses",
+  "FE|CDR|Gases",
+  "FE|Transport|Bunkers|Gases",
+  "FE|Transport|w/o Bunkers|Gases",
+  "FE|Buildings|Gases",
+  "FE|Non-energy Use|Industry|Gases",
+  "FE|w/o Non-energy Use|Industry|Gases")
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
 
 
 
