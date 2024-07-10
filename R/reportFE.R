@@ -555,6 +555,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # ---- parameter
   pm_cesdata <- readGDX(gdx, "pm_cesdata")[, t, ]
 
+ # ---- variables
+  if(tran_mod == "edge_esm") {
+    vm_demFeForEs <- readGDX(gdx,name = c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found",react = "silent")[,t,]*TWa_2_EJ
+  }
+  
   # CES nodes, convert from TWa to EJ
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
 
