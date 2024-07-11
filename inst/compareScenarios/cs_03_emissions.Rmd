@@ -1,3 +1,5 @@
+\newpage
+
 # Emissions
 
 ## GHG - total
@@ -14,23 +16,36 @@ showLinePlotsWithTarget(data, items)
 showLinePlots(data, "Emi|GHG|w/ Bunkers")
 ```
 
+```{r GHG - total with national LULUCF accounting - should match UNFCCC reporting}
+showLinePlots(data, "Emi|GHG|w/ Bunkers|LULUCF national accounting")
+```
+
 
 ##  GHG Sectors
 
-```{r GHG Sectors}
-items <- c(
-  "Emi|GHG|Energy",
-  "Emi|GHG|Industrial Processes",
-  "Emi|GHG|Agriculture",
-  "Emi|GHG|Waste")
-walk(items, showLinePlots, data = data)
+### GHG Energy
+```{r GHG Energy}
+showLinePlots(data, "Emi|GHG|Energy")
 ```
 
+### GHG Industrial Processes
+```{r GHG Industrial Processes}
+showLinePlots(data, "Emi|GHG|Industrial Processes")
+```
+
+### GHG Agriculture
+```{r GHG Agriculture}
+showLinePlots(data, "Emi|GHG|Agriculture")
+```
+
+### GHG Waste
+```{r GHG Waste}
+showLinePlots(data, "Emi|GHG|Waste")
+```
 
 ## GHG - Market
 
 ### ETS
-
 ```{r GHG ETS}
 items <- "Emi|GHG|ETS"
 showLinePlots(data, items)
@@ -39,7 +54,6 @@ showLinePlotsWithTarget(data, items)
 
 
 ### ESR
-
 ```{r GHG ESR}
 items <- "Emi|GHG|ESR"
 showLinePlots(data, items)
@@ -50,16 +64,13 @@ Note: Reduction targets wrt 2005
 
 
 ### Other - Outside ETS and ESR
-
 ```{r GHG Other}
 showLinePlots(data, "Emi|GHG|Outside ETS and ESR")
 ```
 
 
 ## CO2
-
 ### CO2 by sector (net emissions, incl. BECCS)
-
 ```{r CO2 by sector net incl. BECCS}
 tot <- "Emi|CO2"
 items <- c(
@@ -214,7 +225,7 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-### Process Emissions Cement
+#### Process Emissions Cement
 
 ```{r}
 items <- c(
@@ -225,7 +236,7 @@ showLinePlots(data, items)
 ```
 
 
-### Process Emissions Chemicals
+#### Process Emissions Chemicals
 
 ```{r}
 items <- c(
@@ -233,7 +244,7 @@ items <- c(
 showLinePlots(data, items)
 ```
 
-### Process Emissions Metals
+#### Process Emissions Metals
 
 ```{r}
 items <- c(
@@ -250,6 +261,14 @@ items <- c(
 showLinePlots(data, items)
 ```
 
+```{r CO2 Land-Use Change - LULUCF national accounting}
+items <- c(
+  "Emi|CO2|Land-Use Change|LULUCF national accounting", # scenario
+  "Emi|CO2|Land Use") # historical
+showLinePlots(data, items)
+```
+
+
 
 ### non-BECCS CDR
 
@@ -258,8 +277,8 @@ showLinePlots(data, "Emi|CO2|non-BECCS CDR")
 ```
 
 ### CDR
-
-```{r CO2 CDR}
+#### CDR compared to other CO2 emissions
+```{r CDR compared to other CO2 emissions}
 tot <- "Emi|CO2"
 items <- c(
   "Emi|CO2|Gross|Energy and Industrial Processes",
@@ -272,7 +291,7 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-
+#### Only CDR
 ```{r CO2 CDR Detail}
 tot <- "Emi|CO2|CDR"
 items <- c(
@@ -286,8 +305,8 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
-
-```{r CO2 CDR Subcategories}
+#### CDR Subcategories - Line
+```{r CO2 CDR Subcategories - Line}
 cdrVars <-
   levels(data$variable) %>%
   str_subset(fixed("Emi|CO2|CDR|"))

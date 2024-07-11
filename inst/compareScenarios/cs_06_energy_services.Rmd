@@ -153,8 +153,18 @@ showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 
 
 ## Transport
-### Energy Services for Passenger Transport per Capita - LinePlot
-```{r ES Transport}
+
+### ES Pass - Line
+```{r ES Pass - Line}
+items <- c(
+  "ES|Transport|Pass",
+  "ES|Transport|Pass|Road|LDV",
+  "ES|Transport|Pass|non-LDV")
+showMultiLinePlots(data, items)
+```
+
+### ES Pass - perCap - Line
+```{r ES Pass - perCap - Line}
 items <- c(
   "ES|Transport|Pass pCap",
   "ES|Transport|Pass|Road|LDV pCap",
@@ -163,8 +173,19 @@ showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-### Energy Services for Passenger Transport LDV per Capita - StackedBars
-```{r ES Transport passenger LDV per capita}
+### ES Pass LDV by tech - Bar
+```{r ES Pass LDV by tech - Bar}
+items <- c(
+  "ES|Transport|Pass|Road|LDV|BEV",
+  "ES|Transport|Pass|Road|LDV|FCEV",
+  "ES|Transport|Pass|Road|LDV|Gases",
+  "ES|Transport|Pass|Road|LDV|Hybrid Electric",
+  "ES|Transport|Pass|Road|LDV|Liquids")
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
+```
+
+### ES Pass LDV by tech - perCap - Bar
+```{r ES Pass LDV by tech - perCap - Bar}
 items <- c(
   "ES|Transport|Pass|Road|LDV|BEV pCap",
   "ES|Transport|Pass|Road|LDV|FCEV pCap",
@@ -174,16 +195,33 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
-### Energy Services for Freight Transport per Capita - LinePlot
-```{r ES transport freight per capita}
+### ES Freight - Line
+```{r ES Freight - Line}
+items <- c(
+  "ES|Transport|Freight")
+showMultiLinePlots(data, items)
+```
+
+### ES Freight - perCap - Line
+```{r ES Freight - perCap - Line}
 items <- c(
   "ES|Transport|Freight pCap")
 showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
 
-### Energy Services for Freight Road Transport per Capita - StackedBars
-```{r ES transport freight road per capita}
+### ES Freight Road by tech - Bar
+```{r ES Freight Road by tech - Bar}
+items <- c(
+  "ES|Transport|Freight|Road|Electric",
+  "ES|Transport|Freight|Road|FCEV",
+  "ES|Transport|Freight|Road|Gases",
+  "ES|Transport|Freight|Road|Liquids")
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
+```
+
+### ES Freight Road by tech - perCap - Bar
+```{r ES Freight Road by tech - perCap - Bar}
 items <- c(
   "ES|Transport|Freight|Road|Electric pCap",
   "ES|Transport|Freight|Road|FCEV pCap",
@@ -201,6 +239,19 @@ items <- c(
   "Stock|Transport|LDV|FCEV",
   "Stock|Transport|LDV|NG",
   "Stock|Transport|LDV|Liquids",
+  NULL)
+showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
+```
+
+### LDV Vehicles Stock - perCap - EDGE-T
+```{r LDV Vehicles Stock - perCap - EDGE-T}
+tot <- "Stock|Transport|LDV pCap"
+items <- c(
+  "Stock|Transport|LDV|BEV pCap",
+  "Stock|Transport|LDV|Hybrid Electric pCap",  
+  "Stock|Transport|LDV|FCEV pCap",
+  "Stock|Transport|LDV|NG pCap",
+  "Stock|Transport|LDV|Liquids pCap",
   NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
