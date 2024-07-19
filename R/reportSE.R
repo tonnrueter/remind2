@@ -373,7 +373,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   # SE demand of specific energy system technologies
-  vm_demSeOth <- readGDX(gdx, "vm_demSeOth", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+  v_demSeOth <- readGDX(gdx, c("v_demSeOth","vm_demSeOth"), field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   # conversion efficiency
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
 
@@ -390,10 +390,10 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seliqsyn", all_te = "MeOH"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Liquids (EJ/yr)"),
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "segasyn", all_te = "h22ch4"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Gases (EJ/yr)")
   )
-  # hydrogen used for other energy system technologies subsumed in vm_demSeOth
+  # hydrogen used for other energy system technologies subsumed in v_demSeOth
   # e.g. co-firing of h2 in csp
       tmp1 <- mbind(tmp1,
-                    setNames(dimSums(mselect(vm_demSeOth, all_enty = "seh2"), dim = 3),
+                    setNames(dimSums(mselect(v_demSeOth, all_enty = "seh2"), dim = 3),
                     "SE|Input|Hydrogen|Other Energy System Consumption (EJ/yr)"))
 
 
