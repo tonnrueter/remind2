@@ -922,13 +922,13 @@ reportLCOE <- function(gdx, output.type = "both"){
   vm_capFac <- readGDX(gdx, "vm_capFac", field="l", restore_zeros = F)[,ttot_from2005,]
 
   # calculate renewable capacity factors of new plants
-  vm_capDistr <- readGDX(gdx, c("vm_capDistr","v_capDistr"), field = "l", restore_zeros = F)
+  v_capDistr <- readGDX(gdx, c("vm_capDistr","v_capDistr"), field = "l", restore_zeros = F)
   pm_dataren <- readGDX(gdx, "pm_dataren", restore_zeros = F)
 
 
   ### determine capacity factor of highest free grade for renewables
   # RE capacity distribution over grades
-  df.CapDistr <- as.quitte(vm_capDistr) %>%
+  df.CapDistr <- as.quitte(v_capDistr) %>%
     select(region, all_te, period,  rlf, value) %>%
     rename(tech = all_te, CapDistr = value)
 
