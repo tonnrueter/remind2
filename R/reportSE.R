@@ -25,7 +25,6 @@
 #' @importFrom rlang sym
 
 reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
-
   ####### get realisations #########
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
@@ -66,7 +65,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   pm_prodCouple <- mbind(pm_prodCouple, pm_prodCoupleEmi)
   pm_prodCouple[is.na(pm_prodCouple)] <- 0
 
-  p_macBase <- readGDX(gdx, c("p_macBaseMagpie", "pm_macBaseMagpie","p_macBase"), format = "first_found")
+  p_macBase <- readGDX(gdx, c("p_macBaseMagpie", "pm_macBaseMagpie", "p_macBase"), format = "first_found")
   #  p_macEmi  <- readGDX(gdx,"p_macEmi")
   ## variables
   vm_prodSe <- readGDX(gdx, name = c("vm_prodSe", "v_seprod"), field = "l", restore_zeros = FALSE, format = "first_found") * pm_conv_TWa_EJ
@@ -103,7 +102,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   ####### internal function for reporting ###########
 
   se.prod <- function(vm_prodSe, dataoc, oc2te, entySe, enty.input, se.output, te = te_pese2se,
-                      name = NULL, storageLoss = storLoss, all_pety = entyPe, storageLossOnly = F) {
+                      name = NULL, storageLoss = storLoss, all_pety = entyPe, storageLossOnly = FALSE) {
 
     if (storageLossOnly && is.null(storageLoss)) {
       return(NULL)
@@ -118,13 +117,13 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
       warning(paste("se.output ", setdiff(se.output, abind::abind(all_pety, entySe)), " is not element of entyPe or entySe"))
     }
 
-    if (storageLossOnly == F) {
+    if (storageLossOnly == FALSE) {
       ## secondary energy production with secarrier as a main product
-      x1 <- dimSums(mselect(vm_prodSe, all_enty = enty.input, all_enty1 = se.output, all_te = te), dim = 3, na.rm = T)
+      x1 <- dimSums(mselect(vm_prodSe, all_enty = enty.input, all_enty1 = se.output, all_te = te), dim = 3, na.rm = TRUE)
       ## secondary energy production with secarrier as a couple product
       ## identify all oc techs with secarrier as a couple product
       sub_oc2te <- oc2te[(oc2te$all_enty %in% enty.input) & (oc2te$all_enty1 %in% entySe) & (oc2te$all_enty2 %in% se.output) & (oc2te$all_te %in% te), ]
-      x2 <- dimSums(vm_prodSe[sub_oc2te] * dataoc[sub_oc2te], dim = 3, na.rm = T)
+      x2 <- dimSums(vm_prodSe[sub_oc2te] * dataoc[sub_oc2te], dim = 3, na.rm = TRUE)
     }
 
     ## storage losses
@@ -132,7 +131,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     if ((nrow(input.pe2se) == 0) || (is.null(storageLoss))) {
       x3 <- 0
     } else {
-      x3 <- dimSums(storageLoss[input.pe2se], dim = 3, na.rm = T)
+      x3 <- dimSums(storageLoss[input.pe2se], dim = 3, na.rm = TRUE)
     }
 
     if (storageLossOnly) {
@@ -147,7 +146,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   se.prodLoss <- function(vm_prodSe, dataoc, oc2te, entySe, enty.input, se.output, te = te_pese2se,
                           name = NULL, storageLoss = storLoss, all_pety = entyPe) {
-    return(se.prod(vm_prodSe, dataoc, oc2te, entySe, enty.input, se.output, te, name, storageLoss, all_pety, storageLossOnly = T))
+    return(se.prod(vm_prodSe, dataoc, oc2te, entySe, enty.input, se.output, te, name, storageLoss, all_pety, storageLossOnly = TRUE))
   }
 
   ## reporting should adhere to the following logic:
@@ -220,15 +219,12 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   if ("windoff" %in% te) {
     tmp1 <- mbind(tmp1,
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",       name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",   name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",    name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",
-                                                                                    name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind","windoff"),
-                                                                                    name = "SE|Electricity|+|Wind (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind","windoff"),
-                                                                                    name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",                   name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",               name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",                name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",            name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),      name = "SE|Electricity|+|Wind (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),  name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
     )
   } else {
     tmp1 <- mbind(tmp1,
@@ -350,8 +346,8 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   ## Trade
   if (module2realisation["trade", 2] == "se_trade") {
 
-    vm_Mport <- readGDX(gdx, "vm_Mport", field = "l", restore_zeros = F)[, t, ]
-    vm_Xport <- readGDX(gdx, "vm_Xport", field = "l", restore_zeros = F)[, t, ]
+    vm_Mport <- readGDX(gdx, "vm_Mport", field = "l", restore_zeros = FALSE)[, t, ]
+    vm_Xport <- readGDX(gdx, "vm_Xport", field = "l", restore_zeros = FALSE)[, t, ]
 
     tmp1 <- mbind(tmp1,
       setNames(mselect(vm_Mport - vm_Xport, all_enty = "seh2") * pm_conv_TWa_EJ,
@@ -368,17 +364,15 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   # SE|Input|X|Y variables denote the demand of energy carrier X
   # flowing into sector/production of Y.
 
-  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+  vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = FALSE)[, y, ] * pm_conv_TWa_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
 
   # SE demand
-  vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
-
-  # SE demand of specific energy system technologies (ensure that all regions have a value)
+  vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = FALSE)[, y, ] * pm_conv_TWa_EJ
+  # SE demand of specific energy system technologies
   v_demSeOth <- readGDX(gdx, c("v_demSeOth", "vm_demSeOth"), field = "l", restore_zeros = FALSE)[, y, ] * pm_conv_TWa_EJ
-
   # conversion efficiency
-  pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
+  pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = FALSE)[, y, ]
 
   # hydrogen used for electricity production via H2 turbines
   tmp1 <- mbind(tmp1,
@@ -404,15 +398,15 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   # SE electricity use
 
   ### calculation of electricity use for own consumption of energy system
-  vm_prodFe <- readGDX(gdx, "vm_prodFe", field = "l", restore_zeros = F)
-  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)
+  vm_prodFe <- readGDX(gdx, "vm_prodFe", field = "l", restore_zeros = FALSE)
+  vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = FALSE)
 
   # filter for coupled production coefficents which consume seel
   # (have all_enty2=seel and are negative)
   teprodCoupleSeel <- getNames(mselect(pm_prodCouple, all_enty2 = "seel"), dim = 3)
   CoeffOwnConsSeel <- pm_prodCouple[, , teprodCoupleSeel]
   CoeffOwnConsSeel[CoeffOwnConsSeel > 0] <- 0
-  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[, , "ccsinje", invert = T]
+  CoeffOwnConsSeel_woCCS <- CoeffOwnConsSeel[, , "ccsinje", invert = TRUE]
 
   # FE and SE production that has own consumption of electricity
   # calculate vm_prodSe back to TWa (was in EJ before), but prod couple coefficient is defined in TWa(input)/Twa(output)
@@ -420,8 +414,8 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   tmp1 <- mbind(tmp1, setNames(
     -pm_conv_TWa_EJ *
-      (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[, , getNames(CoeffOwnConsSeel_woCCS, dim = 3)], dim = 3, na.rm = T) +
-        dimSums(CoeffOwnConsSeel[, , "ccsinje"] * vm_co2CCS[, , "ccsinje"], dim = 3,  na.rm = T)),
+      (dimSums(CoeffOwnConsSeel_woCCS * prodOwnCons[, , getNames(CoeffOwnConsSeel_woCCS, dim = 3)], dim = 3, na.rm = TRUE) +
+        dimSums(CoeffOwnConsSeel[, , "ccsinje"] * vm_co2CCS[, , "ccsinje"], dim = 3,  na.rm = TRUE)),
     "SE|Input|Electricity|Self Consumption Energy System (EJ/yr)"))
 
   # electricity for central ground heat pumps
@@ -433,12 +427,12 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   # electricity for fuel extraction, e.g. electricity used for oil and gas extraction
 
   # read in with restore_zero = F first, to get non-zero third dimension
-  pm_fuExtrOwnCons_reduced <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = F)
+  pm_fuExtrOwnCons_reduced <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = FALSE)
   # read in again with restore_zero = T to get all regions in case the parameter is zero for some regions
-  pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = T)[,,getNames(pm_fuExtrOwnCons_reduced)]
-  vm_fuExtr <- readGDX(gdx, "vm_fuExtr", field = "l", restore_zeros = F)[,y,]
+  pm_fuExtrOwnCons <- readGDX(gdx, "pm_fuExtrOwnCons", restore_zeros = TRUE)[, , getNames(pm_fuExtrOwnCons_reduced)]
+  vm_fuExtr <- readGDX(gdx, "vm_fuExtr", field = "l", restore_zeros = FALSE)[, y, ]
   pe2rlf <- readGDX(gdx, "pe2rlf")
-  pe2rlfemi <- pe2rlf %>% filter(!!sym("all_enty") %in% getNames(pm_fuExtrOwnCons, dim=2))
+  pe2rlfemi <- pe2rlf %>% filter(!!sym("all_enty") %in% getNames(pm_fuExtrOwnCons, dim = 2))
 
 
   # calculate electricity for fuel extraction as in q32_balSe
@@ -448,14 +442,14 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
                   # sum over all PE carriers and extraction grades
                   dimSums(
                     # sum over pm_fuExtrOwnCons to reduce all_enty dimensions
-                    dimSums(mselect( pm_fuExtrOwnCons, all_enty = "seel"), dim = 3.1)
-                    * vm_fuExtr[,,getNames(pm_fuExtrOwnCons, dim=2)], dim=3)
+                    dimSums(mselect(pm_fuExtrOwnCons, all_enty = "seel"), dim = 3.1)
+                    * vm_fuExtr[, , getNames(pm_fuExtrOwnCons, dim = 2)], dim = 3)
                     * pm_conv_TWa_EJ,
                   "SE|Input|Electricity|PE Production (EJ/yr)"))
 
   # set to zero in 2005 as the fuel production electricity demand is not included in the SE balance equation in this year
   # due to incompatibilities with the InitialCap module
-  tmp1[,"y2005","SE|Input|Electricity|PE Production (EJ/yr)"] <- 0
+  tmp1[, "y2005", "SE|Input|Electricity|PE Production (EJ/yr)"] <- 0
 
   # share of electrolysis H2 in total H2
   p_shareElec_H2 <- collapseNames(tmp1[, , "SE|Hydrogen|+|Electricity (EJ/yr)"] / tmp1[, , "SE|Hydrogen (EJ/yr)"])
