@@ -83,8 +83,8 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
 
 
   tmp <- mbind(tmp,setNames(
-                   output[r,,"Energy Investments (billion US$2005/yr)"]
-                  -output[r,,"Energy Investments|Electricity (billion US$2005/yr)"],"Energy Investments|Non-Electricity (billion US$2005/yr)"))
+                   output[r,,"Energy Investments (billion US$2017/yr)"]
+                  -output[r,,"Energy Investments|Electricity (billion US$2017/yr)"],"Energy Investments|Non-Electricity (billion US$2017/yr)"))
   # gas capacity factor
   tmp <- mbind(tmp,setNames(
                    output[r,,"SE|Electricity|Gas (EJ/yr)"] / output[r,,"Cap|Electricity|Gas (GW)"] / TWa_2_EJ * 1000 * 100,
@@ -142,18 +142,18 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
 
     setNames(
         output[,,"FE (EJ/yr)"] * 1000
-      / output[,,"GDP|MER (billion US$2005/yr)"],
-      "Intensity|GDP|Final Energy (MJ/US$2005)"),
+      / output[,,"GDP|MER (billion US$2017/yr)"],
+      "Intensity|GDP|Final Energy (MJ/US$2017)"),
 
     setNames(
-        output[,,"GDP|MER (billion US$2005/yr)"]
+        output[,,"GDP|MER (billion US$2017/yr)"]
       / output[,,"FE (EJ/yr)"],
-      "Productivity|GDP|MER|Final Energy (US$2005/GJ)"),
+      "Productivity|GDP|MER|Final Energy (US$2017/GJ)"),
 
     setNames(
-        output[,,"GDP|PPP (billion US$2005/yr)"]
+        output[,,"GDP|PPP (billion US$2017/yr)"]
       / output[,,"FE (EJ/yr)"],
-      "Productivity|GDP|PPP|Final Energy (US$2005/GJ)"),
+      "Productivity|GDP|PPP|Final Energy (US$2017/GJ)"),
 
     setNames(
         output[,,"Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)"]
@@ -167,18 +167,18 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
 
     setNames(
         output[,,"Emi|GHG (Mt CO2eq/yr)"]
-      / output[,,"GDP|MER (billion US$2005/yr)"],
-      "Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"),
+      / output[,,"GDP|MER (billion US$2017/yr)"],
+      "Intensity|GDP|GHG (Mt CO2-equiv/US$2017)"),
 
     setNames(
-        output[,,"GDP|MER (billion US$2005/yr)"]
+        output[,,"GDP|MER (billion US$2017/yr)"]
       / output[,,"Population (million)"],
-      "GDP|per capita|MER (kUS$2005/per capita)"),
+      "GDP|per capita|MER (kUS$2017/per capita)"),
 
     setNames(
-        output[,,"GDP|PPP (billion US$2005/yr)"]
+        output[,,"GDP|PPP (billion US$2017/yr)"]
       / output[,,"Population (million)"],
-      "GDP|per capita|PPP (kUS$2005/per capita)"),
+      "GDP|per capita|PPP (kUS$2017/per capita)"),
 
     setNames(
         output[,,"Welfare|Real and undiscounted|Yearly (arbitrary unit/yr)"]
@@ -231,9 +231,9 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
 
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
-    output[,,"FE|Transport|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
-    output[,,"FE|Transport|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
-    output[,,"FE|Transport|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"],
+    output[,,"FE|Transport|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2017/GJ)"] +
+    output[,,"FE|Transport|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2017/GJ)"] +
+    output[,,"FE|Transport|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2017/GJ)"],
                        "Expenditure|Transport|Fuel (billion $US/yr)"))
 
   # calculate intensities growth
@@ -245,14 +245,14 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
     int_gr[,t,"Intensity Growth|GDP|Final Energy (% pa)"] <-
         (
           (
-              (tmp[,t,"Intensity|GDP|Final Energy (MJ/US$2005)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|GDP|Final Energy (MJ/US$2005)"],t))
+              (tmp[,t,"Intensity|GDP|Final Energy (MJ/US$2017)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|GDP|Final Energy (MJ/US$2017)"],t))
            ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - getYears(tmp[,(which(getYears(tmp)==t)-1),],as.integer=TRUE) ) )
           ) - 1
         ) * 100
     int_gr[,t,"Intensity Growth|GDP|Final Energy to 2005 (% pa)"] <-
       (
         (
-          (tmp[,t,"Intensity|GDP|Final Energy (MJ/US$2005)"] / setYears(tmp[,2005,"Intensity|GDP|Final Energy (MJ/US$2005)"],t))
+          (tmp[,t,"Intensity|GDP|Final Energy (MJ/US$2017)"] / setYears(tmp[,2005,"Intensity|GDP|Final Energy (MJ/US$2017)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - 2005 ) )
         ) - 1
       ) * 100
@@ -273,14 +273,14 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
     int_gr[,t,"Intensity Growth|GDP|CO2-equiv (% pa)"] <-
       (
         (
-          (tmp[,t,"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"],t))
+          (tmp[,t,"Intensity|GDP|GHG (Mt CO2-equiv/US$2017)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|GDP|GHG (Mt CO2-equiv/US$2017)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - getYears(tmp[,(which(getYears(tmp)==t)-1),],as.integer=TRUE) ) )
         ) - 1
       ) * 100
     int_gr[,t,"Intensity Growth|GDP|CO2-equiv to 2005 (% pa)"] <-
       (
         (
-          (tmp[,t,"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"] / setYears(tmp[,2005,"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"],t))
+          (tmp[,t,"Intensity|GDP|GHG (Mt CO2-equiv/US$2017)"] / setYears(tmp[,2005,"Intensity|GDP|GHG (Mt CO2-equiv/US$2017)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - 2005 ) )
         ) - 1
       ) * 100
@@ -334,7 +334,7 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
           tribble(
             ~unit,                  ~new.unit,    ~factor,
             'Mt/yr',                't/yr',       1,
-            'billion US$2005/yr',   'US$2005/yr', 1e-3),
+            'billion US$2017/yr',   'US$2017/yr', 1e-3),
 
           'unit'
         ) %>%
@@ -361,7 +361,7 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
         select(-'Cell') %>%
         # join with population numbers
         left_join(
-          output[,,'GDP|PPP (billion US$2005/yr)'] %>%
+          output[,,'GDP|PPP (billion US$2017/yr)'] %>%
             as.data.frame() %>%
             as_tibble() %>%
             select('Region', 'Year', population = 'Value'),
@@ -374,8 +374,8 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
           tribble(
             ~unit,                  ~new.unit,    ~factor,
             # Mt/$bn * 1e6 t/Mt * 1e-3 $bn/$m = t/$m
-            'Mt/yr',                't/million US$2005',   1e3,
-            'billion US$2005/yr',   'US$2005/US$2005',     1     # $bn/$bn = $/$
+            'Mt/yr',                't/million US$2017',   1e3,
+            'billion US$2017/yr',   'US$2017/US$2017',     1     # $bn/$bn = $/$
           ),
 
           'unit'
