@@ -18,8 +18,8 @@ options(mip.histRefModel = histRefModel) # nolint
 # The new variable "OldName pCap" will be available in the plot sections.
 pCapVariables <- tribble(
   ~variable, ~newUnit, ~conversionFactor,
-  "GDP|PPP", "kUS$2005/pCap", 1e6, # creates "GDP|PPP pCap" which is equal to reported variable "GDP|per capita|PPP"
-  "GDP|MER", "kUS$2005/pCap", 1e6, # creates "GDP|MER pCap" which is equal to reported variable "GDP|per capita|MER"
+  "GDP|PPP", "kUS$2017/pCap", 1e6, # creates "GDP|PPP pCap" which is equal to reported variable "GDP|per capita|PPP"
+  "GDP|MER", "kUS$2017/pCap", 1e6, # creates "GDP|MER pCap" which is equal to reported variable "GDP|per capita|MER"
   "FE", "GJ/yr/pCap", 1e9,
   "FE|CDR", "GJ/yr/pCap", 1e9,
   "FE|Transport", "GJ/yr/pCap", 1e9,
@@ -133,11 +133,11 @@ dataGDP <-
 # The new variable "OldName pGDP_PPP" will be available in the plot sections.
 pGdpVariables <- tribble(
   ~variable, ~newUnit, ~conversionFactor,
-  "FE", "MJ/US$2005/pCap", 1e3,
-  "FE|CDR", "MJ/US$2005/pCap", 1e3,
-  "FE|Transport", "MJ/US$2005/pCap", 1e3,
-  "FE|Buildings", "MJ/US$2005/pCap", 1e3,
-  "FE|Industry", "MJ/US$2005/pCap", 1e3
+  "FE", "MJ/US$2017/pCap", 1e3,
+  "FE|CDR", "MJ/US$2017/pCap", 1e3,
+  "FE|Transport", "MJ/US$2017/pCap", 1e3,
+  "FE|Buildings", "MJ/US$2017/pCap", 1e3,
+  "FE|Industry", "MJ/US$2017/pCap", 1e3
 )
 
 dataPGdp <-
