@@ -58,7 +58,7 @@ Imports:
     lucode2 (>= 0.43.0),
     lusweave,
     madrat (>= 3.11.3),
-    mip (>= 0.148.9),
+    mip (>= 0.149.2),
     openxlsx,
     piamInterfaces (>= 0.17.11),
     piamPlotComparison (>= 0.0.10),
