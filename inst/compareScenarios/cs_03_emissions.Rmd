@@ -5,10 +5,18 @@
 ## GHG - total
 
 ```{r GHG total}
+
+showLinePlots(
+  data, 
+  vars = "Emi|GHG", 
+  histVars = c("Emi|GHGtot", "Emi|GHG")
+)
+
 items <- c(
-  "Emi|GHG", # scenario
-  "Emi|GHGtot") # historical
-showLinePlots(data, items)
+  "scenario" = "Emi|GHG", # scenario
+  "historical" = "Emi|GHGtot" # historical
+) 
+
 showLinePlotsWithTarget(data, items)
 ```
 
@@ -99,20 +107,22 @@ showLinePlots(data, "Emi|CO2")
 ### Energy and Industrial Processes - Net (incl BECCS)
 
 ```{r CO2 Energy and Industry}
-items <- c(
-  "Emi|CO2|Energy and Industrial Processes", # scenario
-  "Emi|CO2|Fossil Fuels and Industry") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Energy and Industrial Processes", 
+  histVars = "Emi|CO2|Fossil Fuels and Industry"
+)
 ```
 
 
 ### Energy and Industrial Processes - Gross
 
 ```{r CO2 Energy and Industry Gross}
-items <- c(
-  "Emi|CO2|Gross|Energy and Industrial Processes", # scenario
-  "Emi|CO2|Fossil Fuels and Industry") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Gross|Energy and Industrial Processes", 
+  histVars = "Emi|CO2|Fossil Fuels and Industry"
+)
 ```
 
 
@@ -126,76 +136,76 @@ showLinePlots(data, "Emi|CO2|Energy")
 ### Energy Supply
 
 ```{r CO2 Energy Supply}
-items <- c(
-  "Emi|CO2|Energy|Supply", # scenario
-  "Emi|CO2|Fossil Fuels and Industry|Energy Supply") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Energy|Supply", 
+  histVars = c("Emi|CO2|Energy|Supply", "Emi|CO2|Fossil Fuels and Industry|Energy Supply")
+)
 ```
 
 
 ### Electricity
 
 ```{r CO2 Electricity}
-items <- c(
-  "Emi|CO2|Energy|Supply|Electricity w/ couple prod", # scenario
-  "Emi|CO2|Energy|Supply|Electricity") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Energy|Supply|Electricity w/ couple prod", 
+  histVars = c("Emi|CO2|Energy|Supply|Electricity w/ couple prod", "Emi|CO2|Energy|Supply|Electricity")
+)
 ```
 
 
 ### Electricity and Heat
 
 ```{r CO2 Electricity and Heat}
-item <- "Emi|CO2|Energy|Supply|Electricity and Heat"
-showLinePlots(data, item)
+showLinePlots(data, vars = "Emi|CO2|Energy|Supply|Electricity and Heat")
 ```
 
 
 ### Buildings
 
 ```{r CO2 Buildings}
-items <- c(
-  "Emi|CO2|Energy|Demand|Buildings", # scenario
-  "Emi|CO2|Buildings|Direct") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Energy|Demand|Buildings", 
+  histVars = c("Emi|CO2|Energy|Demand|Buildings", "Emi|CO2|Buildings|Direct")
+)
 ```
 
 
 ### Industry
 
 ```{r CO2 Industry}
-items <- c(
-  "Emi|CO2|Energy|Demand|Industry", # scenario
-  "Emi|CO2|Industry|Direct") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Energy|Demand|Industry",
+  histVars = c("Emi|CO2|Energy|Demand|Industry", "Emi|CO2|Industry|Direct")
+)
 ```
 
 
 ### Industry, Gross
 
 ```{r CO2 Industry Gross}
-items <- c(
-  "Emi|CO2|Gross|Energy|Demand|Industry", # scenario
-  "Emi|CO2|Industry|Direct") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Gross|Energy|Demand|Industry",
+  histVars = "Emi|CO2|Industry|Direct"
+)
 ```
 
 
 ### Industry with Industrial Processes
 
 ```{r CO2 Industry with Industrial Processes}
-item <- "Emi|CO2|Industry"
-showLinePlots(data, item)
+showLinePlots(data, "Emi|CO2|Industry")
 ```
 
 
 ### Transport
 
 ```{r CO2 Transport}
-items <- c(
-  "Emi|CO2|Energy|Demand|Transport"
-  ) # scenario
-showLinePlots(data, items)
+showLinePlots(data, "Emi|CO2|Energy|Demand|Transport")
 ```
 
 
@@ -209,11 +219,7 @@ showLinePlots(data, "Emi|CO2|Energy|Demand|Transport|International Bunkers")
 ### Process Emissions
 
 ```{r CO2 Process Emissions}
-items <- c(
-  "Emi|CO2|Industrial Processes"#, # scenario
-  # "Emi|CO2|FFaI|Industry|Process"
-  ) # historical
-showLinePlots(data, items)
+showLinePlots(data, "Emi|CO2|Industrial Processes")
 ```
 
 ```{r CO2 Process Emissions}
@@ -228,44 +234,42 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 #### Process Emissions Cement
 
 ```{r}
-items <- c(
-  "Emi|CO2|Industrial Processes|Cement",
-  "Emi|CO2|Industrial Processes|Minerals" # to display historical data from UNFCCC
-  ) 
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Industrial Processes|Cement", 
+  histVars = c("Emi|CO2|Industrial Processes|Cement", "Emi|CO2|Industrial Processes|Minerals")
+)
 ```
 
 
 #### Process Emissions Chemicals
 
 ```{r}
-items <- c(
-  "Emi|CO2|Industrial Processes|Chemicals") 
-showLinePlots(data, items)
+showLinePlots(data, "Emi|CO2|Industrial Processes|Chemicals")
 ```
 
 #### Process Emissions Metals
 
 ```{r}
-items <- c(
-  "Emi|CO2|Industrial Processes|Metals") 
-showLinePlots(data, items)
+showLinePlots(data, "Emi|CO2|Industrial Processes|Metals")
 ```
 
 ### Land-Use Change
 
 ```{r CO2 Land-Use Change}
-items <- c(
-  "Emi|CO2|Land-Use Change", # scenario
-  "Emi|CO2|Land Use") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Land-Use Change", 
+  c("Emi|CO2|Land-Use Change", "Emi|CO2|Land Use")
+)
 ```
 
 ```{r CO2 Land-Use Change - LULUCF national accounting}
-items <- c(
-  "Emi|CO2|Land-Use Change|LULUCF national accounting", # scenario
-  "Emi|CO2|Land Use") # historical
-showLinePlots(data, items)
+showLinePlots(
+  data, 
+  vars = "Emi|CO2|Land-Use Change|LULUCF national accounting",
+  histVars = "Emi|CO2|Land Use"
+)
 ```
 
 
