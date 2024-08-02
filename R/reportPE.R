@@ -120,7 +120,7 @@ reportPE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   tmp2 <- mbind(tmp2, setNames(dimSums(mselect(prodSE, all_enty = "pehyd"), dim = 3),    "PE|+|Hydro (EJ/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(mselect(prodSE, all_enty = "pewin"), dim = 3),    "PE|+|Wind (EJ/yr)"))
   if ("windon" %in% te) {
-    tmp2 <- mbind(tmp2, setNames(dimSums(mselect(prodSE, all_enty = "pewin", all_te = "windon"), dim = 3),    "PE|Wind|+|Onshore (EJ/yr)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(mselect(prodSE, all_enty = "pewin", all_te = "windon"), dim = 3),  "PE|Wind|+|Onshore (EJ/yr)"))
     tmp2 <- mbind(tmp2, setNames(dimSums(mselect(prodSE, all_enty = "pewin", all_te = "windoff"), dim = 3), "PE|Wind|+|Offshore (EJ/yr)"))
   } else {
     tmp2 <- mbind(tmp2, setNames(dimSums(mselect(prodSE, all_enty = "pewin", all_te = "wind"), dim = 3),    "PE|Wind|+|Onshore (EJ/yr)"))

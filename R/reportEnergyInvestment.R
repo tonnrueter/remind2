@@ -115,7 +115,7 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL, t = c(seq(2005,
   tmp <- mbind(tmp, setNames(inv_se(ie = "pebiolc", te = tenoccs, oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv), "Energy Investments|Electricity|Biomass|+|w/o CC (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "peur", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),                  "Energy Investments|Electricity|+|Nuclear (billion US$2005/yr)"))
   tmp <- mbind(tmp, setNames(inv_se(ie = "pesol", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv),                 "Energy Investments|Electricity|+|Solar (billion US$2005/yr)"))
-  if ("windon" %in% te) {
+  if ("windon" %in% all_te) {
     tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv, te = "windon"),  "Energy Investments|Electricity|Wind|+|Onshore (billion US$2005/yr)"))
     tmp <- mbind(tmp, setNames(inv_se(ie = "pewin", oe = "seel", pe2se, adjte, v_directteinv, v_adjustteinv, te = "windoff"),   "Energy Investments|Electricity|Wind|+|Offshore (billion US$2005/yr)"))
   } else {

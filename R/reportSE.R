@@ -40,6 +40,12 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   pe2se    <- readGDX(gdx, "pe2se")
   se2se    <- readGDX(gdx, "se2se")
   all_te   <- readGDX(gdx, "all_te")
+  if ("windon" %in% as.vector(all_te)) { # remove wind when it should be called windon
+    all_te <- as.vector(all_te)
+    all_te <- all_te[all_te != "wind"]
+    all_te <- all_te[all_te != "storwind"]
+    all_te <- all_te[all_te != "gridwind"]
+  }
   te       <- readGDX(gdx, "te")
   tefosccs <- readGDX(gdx, c("teFosCCS", "tefosccs"), format = "first_found")
   teccs    <- readGDX(gdx, c("teCCS", "teccs"), format = "first_found")
@@ -217,20 +223,23 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "spv",  name = "SE|Electricity|Curtailment|Solar|+|PV (EJ/yr)")
   )
 
-  if ("windoff" %in% te) {
+  if ("windon" %in% te) {
     tmp1 <- mbind(tmp1,
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",                   name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",               name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",                name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",            name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),      name = "SE|Electricity|+|Wind (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),  name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windon",                   name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windon",               name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",                  name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",              name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("windon", "windoff"),     name = "SE|Electricity|+|Wind (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("windon", "windoff"), name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
     )
   } else {
     tmp1 <- mbind(tmp1,
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",       name = "SE|Electricity|+|Wind (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",       name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",   name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",                     name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",                 name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",                  name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",              name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
+      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),       name = "SE|Electricity|+|Wind (EJ/yr)"),
+      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),   name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
     )
   }
 
