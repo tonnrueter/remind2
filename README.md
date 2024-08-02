@@ -9,7 +9,6 @@ R package **remind2**, version **1.155.0**
 Contains the REMIND-specific routines for data and model
     output manipulation.
 
-
 ## Installation
 
 For installation of the most recent package version an additional repository has to be added in R:
@@ -17,17 +16,18 @@ For installation of the most recent package version an additional repository has
 ```r
 options(repos = c(CRAN = "@CRAN@", pik = "https://rse.pik-potsdam.de/r/packages"))
 ```
+
 The additional repository can be made available permanently by adding the line above to a file called `.Rprofile` stored in the home folder of your system (`Sys.glob("~")` in R returns the home directory).
 
 After that the most recent version of the package can be installed using `install.packages`:
 
-```r 
+```r
 install.packages("remind2")
 ```
 
 Package updates can be installed using `update.packages` (make sure that the additional repository has been added before running that command):
 
-```r 
+```r
 update.packages()
 ```
 
@@ -49,24 +49,20 @@ In case of questions / problems please contact Renato Rodrigues <renato.rodrigue
 
 To cite package **remind2** in publications use:
 
-<<<<<<< HEAD
-Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Duerrwaechter J, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P, Weigmann P, Rüter T (2024). _remind2: The REMIND R package (2nd generation)_. R package version 1.155.0, <https://github.com/pik-piam/remind2>.
-=======
-Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Duerrwaechter J, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P, Weigmann P, Rüter T (2024). _remind2: The REMIND R package (2nd generation)_. R package version 1.149.0, <https://github.com/pik-piam/remind2>.
->>>>>>> 59268ed (activate windon, still compatible with wind)
+Rodrigues R, Baumstark L, Benke F, Dietrich J, Dirnaichner A, Duerrwaechter J, Führlich P, Giannousakis A, Hasse R, Hilaire J, Klein D, Koch J, Kowalczyk K, Levesque A, Malik A, Merfort A, Merfort L, Morena-Leiva S, Pehl M, Pietzcker R, Rauner S, Richters O, Rottoli M, Schötz C, Schreyer F, Siala K, Sörgel B, Spahr M, Strefler J, Verpoort P, Weigmann P, Rüter T (2024). _remind2: The REMIND R package (2nd generation)_. R package version 1.155.0, [https://github.com/pik-piam/remind2](https://github.com/pik-piam/remind2).
+
+
+
+
 
 A BibTeX entry for LaTeX users is
 
- ```latex
+```latex
 @Manual{,
   title = {remind2: The REMIND R package (2nd generation)},
   author = {Renato Rodrigues and Lavinia Baumstark and Falk Benke and Jan Philipp Dietrich and Alois Dirnaichner and Jakob Duerrwaechter and Pascal Führlich and Anastasis Giannousakis and Robin Hasse and Jérome Hilaire and David Klein and Johannes Koch and Katarzyna Kowalczyk and Antoine Levesque and Aman Malik and Anne Merfort and Leon Merfort and Simón Morena-Leiva and Michaja Pehl and Robert Pietzcker and Sebastian Rauner and Oliver Richters and Marianna Rottoli and Christof Schötz and Felix Schreyer and Kais Siala and Björn Sörgel and Mike Spahr and Jessica Strefler and Philipp Verpoort and Pascal Weigmann and Tonn Rüter},
   year = {2024},
-<<<<<<< HEAD
   note = {R package version 1.155.0},
-=======
-  note = {R package version 1.149.0},
->>>>>>> 59268ed (activate windon, still compatible with wind)
   url = {https://github.com/pik-piam/remind2},
 }
 ```
