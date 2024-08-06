@@ -373,7 +373,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   # SE demand of specific energy system technologies
-  v_demSeOth <- readGDX(gdx, c("v_demSeOth","vm_demSeOth"), field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+  v_demSeOth <- readGDX(gdx, c("v_demSeOth","vm_demSeOth"), field = "l", restore_zeros = T)[, y, ] * pm_conv_TWa_EJ
   # conversion efficiency
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
 
