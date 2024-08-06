@@ -1044,7 +1044,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   #### Non-energy Use Reporting ----
 
   # in case the current non-energy use implementation creates negative values, set them to 0
-  if (any(out < 0)) {
+  if (any(out < 0, na.rm = TRUE)) {
     out[out < 0] <- 0
   }
 
