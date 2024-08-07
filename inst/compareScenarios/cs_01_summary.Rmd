@@ -306,6 +306,10 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```{r CO2 Prices}
 showLinePlots(data, "Price|Carbon")
 showRegiLinePlots(data, "Price|Carbon")
+
+if ("Price|Carbon|SCC" %in% data$variable) {
+  showAreaAndBarPlots(data, c("Price|Carbon|SCC", "Price|Carbon|Guardrail"), "Price|Carbon", scales = "fixed")
+}
 ```
 
 ```{r CO2 Prices per sector}
