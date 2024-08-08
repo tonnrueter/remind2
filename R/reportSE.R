@@ -372,8 +372,10 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
-  # SE demand of specific energy system technologies
-  v_demSeOth <- readGDX(gdx, c("v_demSeOth","vm_demSeOth"), field = "l", restore_zeros = T)[, y, ] * pm_conv_TWa_EJ
+  # SE demand of specific energy system technologies (ensure that all regions have a value)
+  v_demSeOth <- readGDX(gdx, c("v_demSeOth", "vm_demSeOth"), field = "l", restore_zeros = FALSE)[, y, ] * pm_conv_TWa_EJ
+  matrixRegionsYears <- new.magpie(cells_and_regions = getRegions(dataoc), years = y, fill = 0, sets = getSets(v_demSeOth, fulldim = FALSE))
+  v_demSeOth <- matchDim(v_demSeOth, matrixRegionsYears, dim=1, fill=0)  
   # conversion efficiency
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
 
