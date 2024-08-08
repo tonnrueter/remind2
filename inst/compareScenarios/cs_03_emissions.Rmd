@@ -312,6 +312,18 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
+#### Ocean CDR
+```{r Ocean CDR}
+tot <- "Emi|CO2|CDR|net OAE"
+items <- c(
+  "Emi|CO2|CDR|net OAE|Ocean Uptake|traditional calciner",
+  "Emi|CO2|CDR|net OAE|Ocean Uptake|electric calciner",
+  "Emi|CO2|CDR|net OAE|Released emissions",
+  "Emi|CO2|CDR|net OAE|Unavoidable emissions"
+)
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
 #### CDR Subcategories - Line
 ```{r CO2 CDR Subcategories - Line}
 cdrVars <-
