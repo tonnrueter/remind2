@@ -234,7 +234,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
     out <- dimSums(                                       # sum OMF over technologies (fixed operation & maintenance costs)
       collapseNames(pm_data[,,"omf"])[,,e2e_allte] *
         (dimSums((v_investcost[,,e2e_allte] * vm_cap[,,e2e_allte])[teall2rlf],dim=3.2,na.rm=T)   # sum over rlf
-        )[,, e2e_allte],dim=3, na.rm=T) # windoffshore-todo: was e2e_allte, but need something like teall2rlf$e2e_allte to prevent problems when wind is absent
+        )[,, e2e_allte],dim=3, na.rm=T)
 
     if(!is.null(vm_prodE) & !length(e2e_allte)==0) {     # if either SE or FE is produced, then variable O&M is added
        out <- out + dimSums(collapseNames(pm_data[,,"omv"])[,,sub_e2e$all_te] * dimSums(vm_prodE[sub_e2e],dim=c(3.1,3.2),na.rm=T)
