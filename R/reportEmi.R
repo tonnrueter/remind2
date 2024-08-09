@@ -396,7 +396,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     # in some regions of the Global South waste data was not available, take shares from OAS region here
     Regi.WasteShares.NA <- WasteShares %>%
                         as_tibble() %>%
-                        dplyr::filter(is.na(value)) %>%
+                        dplyr::filter(is.na(.data$value)) %>%
                         pull(.data$V2) %>%
                         unique() %>%
                         as.vector()
@@ -971,10 +971,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     subsector_emissions <- rbind(subsector_emissions,
                                  out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"] %>%
                                    as_tibble() %>%
-                                   rename( regi = all_regi,
-                                           t = tall,
-                                           subsector_emissions = value) %>%
-                                   select(.data$regi,.data$t,.data$subsector_emissions) %>%
+                                   rename( regi = 'all_regi',
+                                           t = 'tall',
+                                           subsector_emissions = 'value') %>%
+                                   select('regi','t','subsector_emissions') %>%
                                    mutate( sety = "sesowst",
                                            fety = "fesos",
                                            emiMkt = "ES",
