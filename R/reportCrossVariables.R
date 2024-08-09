@@ -227,7 +227,7 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
         + dimSums(mselect(tmp, list(variable = 'SE|Electricity|Net Imports (EJ/yr)')),
                   dim = 3)
         ),
-      "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (Percent)"))
+      "Secondary Energy|Electricity|Share of renewables in gross demand|Estimation (%)"))
 
   # Energy expenditures
   tmp <- mbind(tmp,setNames(
