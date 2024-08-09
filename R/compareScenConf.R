@@ -59,20 +59,21 @@ compareScenConf <- function(fileList = NULL, remindPath = "/p/projects/rd3mod/gi
   if (! is.null(remindPath)) {
     cfg <- gms::readDefaultConfig(remindPath)
     # enable script to match default data not in gms
-    try(cfg$gms[["output"]] <- paste0(cfg$output, collapse = ","))
-    try(cfg$gms[["model"]] <- cfg$model)
-    try(cfg$gms[["regionmapping"]] <- cfg$regionmapping)
-    try(cfg$gms[["inputRevision"]] <- cfg$inputRevision)
+    cfg$gms[["output"]] <- paste0(cfg$output, collapse = ",")
+    for (switch in setdiff(names(cfg), c("output", "gms"))) {
+      cfg$gms[[switch]] <- cfg[[switch]]
+    }
   }
 
-  readCheckScenarioConfig <- function(csvFile, ...) {
-    return(read.csv2(csvFile, stringsAsFactors = FALSE, row.names = row.names,
-                            comment.char = "#", na.strings = "", dec = "."))
-  }
   if (expanddata) {
-    message("Loading R helper functions from remindmodel.") # overwrite readCheckScenarioConfig
+    message("Loading R helper functions from ", remindPath, ".") # overwrite readCheckScenarioConfig
     remindRscripts <- list.files(file.path(remindPath, "scripts", "start"), pattern = "\\.R$", full.names = TRUE)
-    invisible(sapply(remindRscripts, source, local = TRUE))
+    invisible(sapply(remindRscripts, source))
+  } else {
+    readCheckScenarioConfig <- function(csvFile, ...) {
+      return(read.csv2(csvFile, stringsAsFactors = FALSE, row.names = row.names,
+                            comment.char = "#", na.strings = "", dec = "."))
+    }
   }
   settings1 <- readCheckScenarioConfig(fileList[[1]], remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
   settings2 <- readCheckScenarioConfig(fileList[[2]], remindPath = remindPath, fillWithDefault = TRUE, testmode = TRUE)
@@ -119,9 +120,11 @@ compareScenConf <- function(fileList = NULL, remindPath = "/p/projects/rd3mod/gi
         for (c in jointCols) {
           # print only if different, if description was changed print only this fact
           if (! identical(toString(settings1[sold, c]), toString(settings2[s, c]))) {
+            defaultinfo <- if (c %in% names(cfg$gms)) paste0(" (default: ", cfg$gms[[c]], ")")
             m <- c(m, paste0("    ", ifelse(c %in% renamedCols, paste(names(which(renamedCols == c)), "-> "), ""), c,
-                   ": ", ifelse(c == "description", "was changed", paste0(settings1[sold, c], " -> ", settings2[s, c])),
-                   ifelse(is.null(remindPath) || is.null(cfg$gms[[c]]), "", paste0(" (default: ", cfg$gms[[c]], ")"))))
+                   ": ", ifelse(c == "description", "was changed",
+                                paste0(ifelse(c %in% addedCols, "NA", settings1[sold, c]), " -> ", settings2[s, c])),
+                   defaultinfo))
           }
         }
       }
