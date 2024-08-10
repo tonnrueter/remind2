@@ -80,6 +80,7 @@ pCapVariables <- tribble(
   "Emi|CO2|CDR|BECCS", "t CO2eq/yr/pCap", 1e6,
   "Emi|CO2|CDR|Industry CCS|Synthetic Fuels", "t CO2eq/yr/pCap", 1e6,
   "Emi|CO2|CDR|DACCS", "t CO2eq/yr/pCap", 1e6,
+  "Emi|CO2|CDR|OAE", "t CO2eq/yr/pCap", 1e6,
   "Emi|CO2|CDR|EW", "t CO2eq/yr/pCap", 1e6,
   "Emi|CO2", "t CO2eq/yr/pCap", 1e6,
   "Emi|CO2|Land-Use Change", "t CO2eq/yr/pCap", 1e6,

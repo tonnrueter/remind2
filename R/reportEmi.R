@@ -204,7 +204,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   }
 
   s33_capture_rate <- readGDX(gdx, "s33_capture_rate", react = "silent")
-  te_oae33 <- readGDX(gdx, "te_oae33")
+  te_oae33 <- readGDX(gdx, "te_oae33", react = "silent")
   if (is.null(s33_capture_rate)) {
     s33_capture_rate <- 0.9
     te_oae33 <- c("oae_el", "oae_ng")
