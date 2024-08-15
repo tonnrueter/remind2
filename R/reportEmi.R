@@ -956,30 +956,67 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       'Other Industry|+|Gases',             'otherInd',    NULL,         'fegas',
       'Other Industry|Gases|+|Fossil',      'otherInd',    'segafos',    'fegas',
 
+      'Steel|Solids|+|Waste',              'steel',       'sesowst',    'fesos',
+      'Cement|Solids|+|Waste',             'cement',      'sesowst',    'fesos',
+      'Chemicals|Solids|+|Waste',          'chemicals',   'sesowst',    'fesos',
       'Other Industry|Solids|+|Waste',     'otherInd',    'sesowst',    'fesos'
+
     ) %>%
         mutate(
           variable = paste0(variable_prefix, .data$variable, variable_postfix))
 
 
 
-    # Attribute all waste emissions in industry to subsector "other industry"
+
+    # Attribute all waste emissions in industry to subsector by their share of solids in total industry
+
+    # share of subsector solids in total industy solids
+    SolidShareSubsec <- mbind(
+                          setNames(output[,,"FE|Industry|Steel|+|Solids (EJ/yr)"] / output[,,"FE|Industry|+|Solids (EJ/yr)"],
+                                    "steel"),
+                          setNames(output[,,"FE|Industry|Cement|+|Solids (EJ/yr)"] / output[,,"FE|Industry|+|Solids (EJ/yr)"],
+                                    "cement"),
+                          setNames(output[,,"FE|Industry|Chemicals|+|Solids (EJ/yr)"] / output[,,"FE|Industry|+|Solids (EJ/yr)"],
+                                   "chemicals"),
+                          setNames(output[,,"FE|Industry|Other Industry|+|Solids (EJ/yr)"] / output[,,"FE|Industry|+|Solids (EJ/yr)"],
+                                   "otherInd")) %>%
+                          collapseDim()
+
+    getSets(SolidShareSubsec) <- c("all_regi","ttot","secInd37")
+
+
+    # Attribute industry waste emissions to subsectors by subsector solids share
     EmiIndSubSec <- mbind(EmiIndSubSec,
-                          setNames(out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"] / GtC_2_MtCO2,
-                             "sesowst.fesos.otherInd.ES"))
+                          setNames(out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"]
+                                   * SolidShareSubsec[getRegions(out),,"steel"]
+                                   / GtC_2_MtCO2,
+                             "sesowst.fesos.steel.ETS"),
+
+                          setNames(out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"]
+                                   * SolidShareSubsec[getRegions(out),,"cement"]
+                                   / GtC_2_MtCO2,
+                                   "sesowst.fesos.cement.ETS"),
+
+                          setNames(out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"]
+                                   * SolidShareSubsec[getRegions(out),,"chemicals"]
+                                   / GtC_2_MtCO2,
+                                   "sesowst.fesos.chemicals.ETS"),
+
+                          setNames(out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"]
+                                   * SolidShareSubsec[getRegions(out),,"otherInd"]
+                                   / GtC_2_MtCO2,
+                                   "sesowst.fesos.otherInd.ES"))
 
     subsector_emissions <- rbind(subsector_emissions,
-                                 out[,,"Emi|CO2|Energy|Demand|Industry|Waste (Mt CO2/yr)"] %>%
+                                 EmiIndSubSec[,,"sesowst.fesos"] %>%
                                    as_tibble() %>%
                                    rename( regi = 'all_regi',
                                            t = 'tall',
-                                           subsector_emissions = 'value') %>%
-                                   select('regi','t','subsector_emissions') %>%
-                                   mutate( sety = "sesowst",
-                                           fety = "fesos",
-                                           emiMkt = "ES",
-                                           secInd37 = "otherInd")) %>%
-                                   mutate( subsector_emissions = .data$subsector_emissions / as.vector(GtC_2_MtCO2))
+                                           sety = 'all_enty',
+                                           fety = 'all_enty1',
+                                           emiMkt = 'all_emiMkt',
+                                           subsector_emissions = 'value'))
+
 
     # if feedstocks are represented in REMIND
     if (!is.null(v37_plasticsCarbon)) {
