@@ -371,24 +371,25 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
   if (!is.null(vm_incinerationEmi)) {
 
-
-
     # read historical shares of waste energy use derived from IEA energy balances
-    # if EU21 regionmapping
-    if( !is.null(regionSubsetList) & "EUR" %in% names(regionSubsetList)){
-      WasteShares <- read.csv(system.file("extdata", "WasteShares_EU21.cs4r", package = "remind2"),
-                              sep = ",", skip = 4, header = F) %>%
-        as.magpie()
 
-    # if H12 regionmapping
-    } else {
+    # create hash for regionmapping
+    region_hash <- digest::digest(sort(readGDX(gdx, "all_regi")), "xxhash32")
 
-      WasteShares <- read.csv(system.file("extdata", "WasteShares_H12.cs4r", package = "remind2"),
-                              sep = ",", skip = 4, header = F) %>%
-        as.magpie()
+    # assign waste share file for regionmapping
+    # currently only regionmapping H12 and EU21 are supported
+    # for further regionmappings, please create new WasteShare files via mrremind::calcWasteEnergyUseShares()
+    WasteShares_file <- switch(region_hash,
+                               "69585993" = "WasteShares_H12.cs4r",
+                               "8c818b67" = "WasteShares_EU21.cs4r")
+    if (is.null(WasteShares_file)) {
+      stop("No waste shares data found for regions in .gdx file.")
+    }
 
-      }
-
+    WasteShares <- read.csv(system.file("extdata", WasteShares_file,
+                                        package = "remind2"),
+                            header = FALSE, comment.char = "*") %>%
+      as.magpie()
 
     # take shares from 2019 to distribute waste incineration emissions over sectors for all years
     WasteShares <- magclass::collapseDim(WasteShares[,"y2019",])
