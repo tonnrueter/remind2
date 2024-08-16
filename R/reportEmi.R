@@ -313,15 +313,10 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   vm_incinerationEmi <- readGDX(gdx, 'o37_incinerationEmi', restore_zeros = FALSE, spatial = 2,
                                   react = 'silent')
 
-  if (is.null(vm_incinerationEmi)) {
-      vm_incinerationEmi <- readGDX(gdx, "vm_incinerationEmi", field = "l",
+  vm_incinerationEmi <- readGDX(gdx, "vm_incinerationEmi", field = "l",
                                     restore_zeros = FALSE, spatial = 2,
                                     react = "silent")[,t,]
-  }
-  else {
-      vm_incinerationEmi <- magclass::matchDim(vm_incinerationEmi, v37_plasticsCarbon,
-                                   fill = 0)
-  }
+
 
   vm_incinerationCCS <- readGDX(gdx, 'vm_incinerationCCS', field = 'l',
                                   restore_zeros = FALSE, spatial = 2,
@@ -358,8 +353,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # as these variables are calculated bottom-up, while for variable above they are contained in REMIND emissios variables,
   # on which those variables are based.
 
-
-  if (!is.null(vm_incinerationEmi)) {
 
     # read historical shares of waste energy use derived from IEA energy balances
 
@@ -423,7 +416,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       if (Check != 1) {
         WasteShares[r,,"Waste for CommPub|Share in Waste for FE"] <- 1 - WasteShares[r,,"Waste for Industry|Share in Waste for FE"]
       }
-    }
+
 
 
     # total fossil waste incineration emissions
