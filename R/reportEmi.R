@@ -1402,8 +1402,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
 
   ### report industry captured CO2 ----
-  if (!is.null(pm_IndstCO2Captured)) {
-
     variable_prefix  <- 'Carbon Management|Carbon Capture|Industry Energy|'
     variable_postfix <- ' (Mt CO2/yr)'
 
@@ -1478,34 +1476,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
           x[['variable']])
       }) %>%
         mbind())
-
-  } else {
-
-
-      # calculate bioenergy shares in industry solids, liquids and gases per subsector
-      BioShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesobio", "seliqbio", "segabio"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
-      # calculate synfuel shares in industry liquids and gases per subsector, only liquids and gases synfuels exist
-      SynShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("seliqsyn", "segasyn"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
-      # calculate fossil shares in industry solids, liquids and gases per subsector
-      FosShare.FE.Indst <- dimSums(mselect(dimSums(o37_demFeIndSub, dim = c(3.4)) / dimSums(o37_demFeIndSub, dim = c(3.1, 3.4)), all_enty = c("sesofos", "seliqfos", "segafos"), all_enty1 = c("fesos", "fehos", "fegas")), dim = c(3.1))
-
-      # if no solids/liquids/gases in subsector -> NaN, set share to zero
-      BioShare.FE.Indst[is.nan(BioShare.FE.Indst)] <- 0
-      SynShare.FE.Indst[is.nan(SynShare.FE.Indst)] <- 0
-      FosShare.FE.Indst[is.nan(FosShare.FE.Indst)] <- 0
-
-      out <- mbind(out,
-                   setNames(dimSums(BioShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
-                            "Carbon Management|Carbon Capture|Industry Energy|+|Biomass (Mt CO2/yr)"),
-                   # only liquids and gases synfuels exist, so exclude solids here
-                   setNames(dimSums(SynShare.FE.Indst * mselect(vm_emiIndCCS_Sub, all_enty1 = c("fehos", "fegas")), dim = 3) * GtC_2_MtCO2,
-                            "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"),
-                   setNames(dimSums(FosShare.FE.Indst * vm_emiIndCCS_Sub, dim = 3) * GtC_2_MtCO2,
-                            "Carbon Management|Carbon Capture|Industry Energy|+|Fossil (Mt CO2/yr)"))
-
-      dimSums(vm_emiIndCCS[, , emiInd37_fuel], dim = 3) * GtC_2_MtCO2
-
-   }
 
   ### venting of captured carbon ----
   # This occurs when carbon capture capacities are still operating,
