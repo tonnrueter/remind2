@@ -155,25 +155,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   ### Carbon management variables
   # total captured CO2
   vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = F)[, t, ]
-
   vm_emiCdrTeDetail <- readGDX(gdx, c("vm_emiCdrTeDetail","v33_emi"), field = "l", restore_zeros = F, react = "silent")[, t, ]
 
-  if (is.null(vm_emiCdrTeDetail)) { # compatibility with the CDR module before the portfolio was added
-    # captured CO2 by DAC
-    v33_emiDAC <- readGDX(gdx, "v33_emiDAC", field = "l", restore_zeros = F, react = "silent")[, t, ]
-    if (is.null(v33_emiDAC)) {
-      v33_emiDAC <- new.magpie(getItems(vm_co2capture, "all_regi"), getItems(vm_co2capture, "ttot"), fill = 0)
-    }
-    # captured CO2 by Enhanced Weathering
-    v33_emiEW <- readGDX(gdx, "v33_emiEW", field = "l", restore_zeros = F, react = "silent")[, t, ]
-    if (is.null(v33_emiEW)) {
-      v33_emiEW <- new.magpie(getItems(vm_co2capture, "all_regi"), getItems(vm_co2capture, "ttot"), fill = 0)
-    }
-    # variable used in the rest of the reporting
-    vm_emiCdrTeDetail <- mbind(v33_emiDAC, v33_emiEW)
-    vm_emiCdrTeDetail <- setNames(vm_emiCdrTeDetail, c("dac", "weathering"))
-  }
-  # stored CO2
+   # stored CO2
   vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = F)[, t, ]
   # CO2 captured by industry sectors
   vm_emiIndCCS <- readGDX(gdx, "vm_emiIndCCS", field = "l", restore_zeros = FALSE)[, t, ]
