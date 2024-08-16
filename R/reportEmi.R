@@ -2482,26 +2482,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   )
 
 
-  # if non-energy use variables exist, also do bunker correction for variables
-  # w/o non-energy use
-  if (   "FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)
-      && "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output)
-      && "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output)
-      && "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)
-      && exists('emi.vars.wNonEn')) {
-
-    emi.vars.wBunkers.wNonEn <- intersect(emi.vars.wBunkers, emi.vars.wNonEn)
-
-    # remove all pluses from the "Emi w/o Non-energy Use" variables as they do not cover sectors in which non-energy use not relevant and checking aggregation does not make sense
-    emi.vars.wBunkers.wNonEn <- deletePlus(emi.vars.wBunkers.wNonEn)
-
-    emi.vars.wBunkers.wNonEn <- gsub("Emi\\|CO2", "Emi|CO2|w/o Non-energy Use", emi.vars.wBunkers.wNonEn)
-    emi.vars.wBunkers.wNonEn <- gsub("Emi\\|GHG", "Emi|GHG|w/o Non-energy Use", emi.vars.wBunkers.wNonEn)
-
-    emi.vars.wBunkers <- c(emi.vars.wBunkers, emi.vars.wBunkers.wNonEn)
-
-  }
-
   # add emissions variables with LULUCF national accounting
   if (!is.null(p47_LULUCFEmi_GrassiShift)) {
 
@@ -2509,18 +2489,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                                    "Emi|GHG|LULUCF national accounting (Mt CO2eq/yr)",
                                    "Emi|CO2|LULUCF national accounting (Mt CO2/yr)" )
 
-    # add bunker correction for emissions variables with LULUCF national accounting and w/o non-energy use
-    if (   "FE|Non-energy Use|Industry (EJ/yr)" %in% getNames(output)
-        && "FE|Non-energy Use|Industry|+|Liquids (EJ/yr)" %in% getNames(output)
-        && "FE|Non-energy Use|Industry|+|Gases (EJ/yr)" %in% getNames(output)
-        && "FE|Non-energy Use|Industry|+|Solids (EJ/yr)" %in% getNames(output)
-        && exists('emi.vars.wNonEn')) {
-
-      emi.vars.wBunkers <- c(emi.vars.wBunkers,
-                             "Emi|GHG|w/o Non-energy Use|LULUCF national accounting (Mt CO2eq/yr)",
-                             "Emi|CO2|w/o Non-energy Use|LULUCF national accounting (Mt CO2/yr)" )
-
-    }
   }
 
   # variable names for emission variables with bunkers, insert w/ Bunkers
