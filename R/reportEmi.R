@@ -2472,6 +2472,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     "Emi|CO2|Energy and Industrial Processes (Mt CO2/yr)",
     "Emi|CO2|Energy|+|Demand (Mt CO2/yr)",
     "Emi|CO2|Energy|Demand|+|Transport (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|Transport|+|Liquids (Mt CO2/yr)",
+    "Emi|CO2|Energy|Demand|++|Liquids (Mt CO2/yr)",
     "Emi|CO2|++|Outside ETS and ESR (Mt CO2/yr)",
     "Emi|CO2|w/o Land-Use Change (Mt CO2/yr)",
 
