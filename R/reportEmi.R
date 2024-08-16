@@ -119,10 +119,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   vm_emiMacSector <- readGDX(gdx, "vm_emiMacSector", field = "l", restore_zeros = F)
   # energy extraction energy-related CO2 emissions
   v_emiEnFuelEx <- readGDX(gdx, "v_emiEnFuelEx", field = "l", restore_zeros = F)
-  # set to zero if not available
-  if (is.null(v_emiEnFuelEx)) {
-    v_emiEnFuelEx <- vm_emiMacSector[, , "co2"] * 0
-  }
 
   ### for emissions of energy system technologies
   # emission factors of technologies
