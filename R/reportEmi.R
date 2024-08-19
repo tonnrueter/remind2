@@ -1033,48 +1033,11 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                  "Emi|CO2|+|Energy (Mt CO2/yr)")
   )
 
-  ### 2.2 Non-energy CO2 emissions ----
-  # (following q_emiAllMkt)
-  ### 2.2.1 Industrial Process Emissions ----
+  ### 2.2 Industrial Process Emissions ----
 
   # calculate chemical process emissions from feedstocks treatment
   EmiFac_NonEn.co2 <- collapseDim(pm_emifacNonEnergy[,,"co2"])
   EmiProcess_Feedstocks <- pm_emifacNonEnergy[,,"co2"] * vm_demFENonEnergySector[,,getNames(EmiFac_NonEn.co2)]
-
-  # add industrial process emissions in steel and chemicals specifically for ARIADNE project where those emissions are included for Germany
-  if (any(vm_emiMacSector[,,"co2steel"] > 0)) {
-
-    emiMAC_InstProcess <- c("co2cement_process","co2steel","co2chemicals")
-
-    # (following q_emiAllMkt)
-    out <- mbind(out,
-                 # industrial process CO2 (so far only cement process emissions in REMIND)
-                 #TO DO: add emissions from chemicals sector (feedstocks) after discussing it with ARIADNE team
-                 setNames((dimSums(vm_emiMacSector[, , emiMAC_InstProcess], dim = 3)
-                           # add captured CO2 from cement process which is not stored but used for CCU
-                           + vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
-                          "Emi|CO2|+|Industrial Processes (Mt CO2/yr)"),
-                 # process industry cement CO2
-                 setNames((dimSums(vm_emiMacSector[, , "co2cement_process"], dim = 3)
-                           # add captured CO2 from cement process which is not stored
-                           + vm_emiIndCCS[, , "co2cement_process"]*(1-p_share_CCS)) * GtC_2_MtCO2,
-                          "Emi|CO2|Industrial Processes|+|Cement (Mt CO2/yr)"),
-                 # process industry steel CO2
-                 setNames(dimSums(vm_emiMacSector[, , "co2steel"], dim = 3) * GtC_2_MtCO2,
-                           "Emi|CO2|Industrial Processes|+|Steel (Mt CO2/yr)"),
-                  # process industry steel CO2
-                          setNames(dimSums(vm_emiMacSector[, , "co2chemicals"], dim = 3) * GtC_2_MtCO2,
-                                    "Emi|CO2|Industrial Processes|+|Chemicals (Mt CO2/yr)"),
-                 # land-use change CO2
-                 setNames(dimSums(vm_emiMacSector[, , "co2luc"], dim = 3) * GtC_2_MtCO2,
-                          "Emi|CO2|+|Land-Use Change (Mt CO2/yr)"),
-                 # negative emissions from (non-BECCS) CDR (DACCS, EW)
-                 setNames((vm_emiCdrTeDetail[, , "weathering"] + vm_emiCdrTeDetail[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
-                          "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
-    )
-  } else {
-    # in standard runs no steel and chemicals process emissions
-    # (following q_emiAllMkt)
 
     out <- mbind(out,
                 # industrial process CO2 (so far only cement process emissions in REMIND)
@@ -1102,7 +1065,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                setNames((vm_emiCdrTeDetail[, , "weathering"] + vm_emiCdrTeDetail[, , "dac"] * p_share_CCS) * GtC_2_MtCO2,
                         "Emi|CO2|+|non-BECCS CDR (Mt CO2/yr)")
     )
-  }
+
 
   #### total energy and industry CO2 emissions
   # Emi|CO2|Energy|Waste|+|Plastics Incineration and Emi|CO2|Energy|Waste|+|Feedstocks unknown fate
