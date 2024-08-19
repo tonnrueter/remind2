@@ -11,7 +11,7 @@
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
 #'
-#' @author Felix Schreyer, Simón Moreno Leiva
+#' @author Felix Schreyer
 #' @examples
 #' \dontrun{
 #' reportEmi(gdx)
@@ -40,7 +40,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
   # Read Data from GDX ----
 
-  ####### get realisations #########
+  # get realisations
   module2realisation <- readGDX(gdx, "module2realisation")
   rownames(module2realisation) <- module2realisation$modules
 
@@ -1095,7 +1095,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # (also adding first and second product emissions of coupled production technologies)
 
 
-  ### carbon capture
+  ### 3.1 Carbon Capture (General) ----
 
   # calculate captured CO2 per pe2se technology
   sel_pm_emifac_pe2seCCO2 <- if(getSets(pm_emifac)[[6]] == "emiAll"){
@@ -1314,7 +1314,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   )
 
 
-  ### report industry captured CO2 ----
+  ### 3.2 Carbon Capture (Industry-specific) ----
     variable_prefix  <- 'Carbon Management|Carbon Capture|Industry Energy|'
     variable_postfix <- ' (Mt CO2/yr)'
 
@@ -1390,7 +1390,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       }) %>%
         mbind())
 
-  ### venting of captured carbon ----
+  # venting of captured carbon
   # This occurs when carbon capture capacities are still operating,
   # while CCS/CCU capacities are deprecated and reach end of their lifetime.
   # Then, captured carbon needs to be vented to the atmosphere.
@@ -1400,7 +1400,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                         "Carbon Management|Venting of Captured Carbon (Mt CO2/yr)")
   )
 
-  ### carbon usage ----
+  ### 3.3 Carbon usage ----
 
   # storage/usage of captured carbon
   out <- mbind(out,
@@ -1425,7 +1425,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
                           "Carbon Management|Share of Stored CO2 from Captured CO2 (%)")
   )
 
-  ### carbon storage ----
+  ### 3.4 Carbon storage ----
 
   # maximum annual carbon storage and share that is used
   out <- mbind(out,
@@ -1610,7 +1610,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   )
 
 
-  ## 4. Gross Emissions (excl. negative emissions from storing non-fossil carbon from bioenergy or synthetic fuels) ----
+  ## 4. Gross Emissions ----
+  # (excl. negative emissions from storing non-fossil carbon from bioenergy or synthetic fuels)
 
   #### calculate gross emissions
 
@@ -1677,9 +1678,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
 
 
-  ###########################
-  ## total gross variables ##
-  ###########################
+  # total gross variables
   out <- mbind(out,
                  # total gross energy emissions
                  setNames(out[, , "Emi|CO2|+|Energy (Mt CO2/yr)"]
@@ -2284,7 +2283,8 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
 
     )
 
-  ## 7. Further Variables used for comparisons or in other scripts ----
+  ## 7. Further Variables ----
+  # (used for comparisons or in other scripts)
 
   # required for aggregation of carbon price in reportPrices.R
   out <- mbind(out,
@@ -2379,7 +2379,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
   }
 
-  ## aggregate intensive variables ----
+  ## 8. Aggregate intensive variables ----
   .regionSubsetList <- c(list('GLO' = getItems(vm_co2CCS, dim = 'all_regi')),
                          regionSubsetList)
   i <- seq_along(.regionSubsetList)
@@ -2402,7 +2402,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
       ifelse(is.finite(.), ., 0)   # set NaN (division by 0) to 0
   }
 
-  # Bunker Correction ----
+  # 9. Bunker Correction ----
 
   ### variables for which bunker emissions should be subtracted
 
