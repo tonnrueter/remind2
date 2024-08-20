@@ -34,5 +34,5 @@ reportEmi(gdx)
 }
 }
 \author{
-Felix Schreyer, Simón Moreno Leiva
+Felix Schreyer
 }
