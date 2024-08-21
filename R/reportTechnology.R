@@ -252,7 +252,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   int2ext <- get_global_mapping(category, unit, techmap)
   
   if (CDR_mod != "off") {
-    unit <- "US$2005/t CO2 yr"
+    unit <- "US$2005/t CO2/yr"
     factor <- 1000 / 3.6
     tmp <- bind_category(tmp, v_investcost, category, unit, factor, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
@@ -275,7 +275,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   }
 
   if (CDR_mod != "off") {
-    unit <- "US$2005/t CO2 yr"
+    unit <- "US$2005/t CO2/yr"
     factor <- 1000 / 3.6
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
@@ -339,7 +339,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   if (CDR_mod != "off") {
     ## op costs for CDR technologies ###
     category <- "OM Cost|fixed"
-    unit <- "US$2005/t CO2 yr"
+    unit <- "US$2005/t CO2/yr"
     tmp <- bind_category(tmp, omf * v_investcost, category, unit, 1000 / 3.66, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
   }

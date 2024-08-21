@@ -23,7 +23,7 @@
 #'
 #' @importFrom dplyr %>% case_when distinct filter inner_join tibble left_join rename
 #' @importFrom gdx readGDX
-#' @importFrom magclass mbind getYears getRegions setNames dimExists new.magpie lowpass complete_magpie getItems<- getNames
+#' @importFrom magclass mbind getYears getRegions setNames dimExists new.magpie lowpass complete_magpie getItems<- getNames unitsplit
 #' @importFrom quitte df.2.named.vector getColValues
 #' @importFrom readr read_csv
 #' @importFrom madrat toolAggregate
@@ -955,34 +955,29 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   }
 
   ## add weights definition for region aggregation for FE prices that were added automatically
-  if(length(pm_FEPrice_by_FE) > 0) {
+  if (length(pm_FEPrice_by_FE) > 0) {
     margPriceVars <- grep("Price|Final Energy|", getItems(out,3), fixed = TRUE, value = TRUE)
     margPriceVars <- setdiff(margPriceVars, names(int2ext))
     vars <- gsub("US\\$2005/GJ", "EJ/yr", gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
     names(vars) <- margPriceVars
     vars <- gsub("Efuel","Hydrogen",vars) ###warning FE variable should be renamed and this line should be removed in the future
-    # for(var in vars){ # display price variables with no matching FE weight
-    #   if(!(var %in% getItems(output,3))){
-    #     print(var)
-    #   }
-    # }
     vars <- vars[vars %in% getItems(output,3)]
     int2ext <- c(int2ext, vars)
   }
 
-  ## moving averages and rawdata
-  avgs <- getNames(out.lowpass)
-  rawdata <- getNames(out.rawdata)
-  ## exclude detailed FE prices from global aggregation
-  avgs <- setdiff(avgs, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", avgs, value = TRUE))
-  rawdata <- setdiff(rawdata, grep("Total LCOE|Transport and Distribution|Other Taxes|Fuel Cost|Carbon Price Component", rawdata, value = TRUE))
-  int2ext <- c(int2ext,
-               stats::setNames(int2ext[gsub("\\|Moving Avg", "", avgs)], avgs),
-               stats::setNames(int2ext[gsub("\\|Rawdata", "", rawdata)], rawdata)
-              )
+  int2ext <- int2ext[! is.na(int2ext)]
 
-  ## filtering out vars with missing moving average / rawdata weights
-  int2ext <- int2ext[!is.na(int2ext)]
+  ## add subvariables, plus moving averages and rawdata
+  .addSubvariable <- function(int2ext, subvar) {
+    split <- unitsplit(names(int2ext))
+    for (sv in subvar) {
+      int2ext <- c(int2ext, stats::setNames(int2ext, paste0(split$variable, sv, " (", split$unit, ")")))
+    }
+    return(int2ext)
+  }
+  int2ext <- .addSubvariable(int2ext, c("|Fuel Cost", "|Other Taxes", "|Total LCOE", "|Transport and Distribution"))
+  int2ext <- .addSubvariable(int2ext, c("|Moving Avg", "|Rawdata"))
+  int2ext <- int2ext[names(int2ext) %in% getNames(out)]
 
   # # ---- internal price variables used for model diagnostics -----
 
@@ -1030,19 +1025,14 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   # add global prices
   map <- data.frame(region=getRegions(out),world="GLO",stringsAsFactors=FALSE)
-  tmp_GLO <- new.magpie("GLO",getYears(out),getNames(out),fill=0)
+  tmp_GLO <- new.magpie("GLO", getYears(out), getNames(out), fill = NA)
 
   int2ext <- int2ext[intersect(names(int2ext), getNames(out))] # select only data that exists
 
   for (i2e in names(int2ext)) {
-    tmp_GLO["GLO",,i2e] <- toolAggregate(out[,,i2e], rel = map, weight = output[map$region,,int2ext[i2e]], zeroWeight = "allow")
-    for(t in getYears(out)){
-      if(all(output[map$region,t,int2ext[i2e]]==0)){
-        tmp_GLO["GLO",t,i2e] <- NA
-      }
-    }
+    tmp_GLO["GLO",,i2e] <- toolAggregate(out[,,i2e], rel = map, weight = output[map$region,,int2ext[i2e]], zeroWeight = "setNA")
   }
-  out <- mbind(out,tmp_GLO)
+  out <- mbind(out, tmp_GLO)
 
   # add other region aggregations
   if (!is.null(regionSubsetList)){
@@ -1063,8 +1053,6 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     }
     out <- mbind(out, tmp_RegAgg)
   }
-
-  out[is.na(out)] <- 0  # out is NA if weight is zero for all regions within the GLO or the specific region aggregation. Therefore, we replace all NAs with zeros.
 
   # prices that are same for all regions, including GLO
   glob_price <- new.magpie(getRegions(out),getYears(out),fill=0)
