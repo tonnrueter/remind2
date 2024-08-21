@@ -91,7 +91,6 @@ items <- c(
   "Emi|CO2|Energy|Supply|Electricity w/ couple prod",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW",
-  "Emi|CO2|Energy|Waste"
   )
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
