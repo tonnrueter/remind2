@@ -960,7 +960,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     # KK: Mappings from gams set names to names in mifs. If new CDR methods are added to REMIND, please add
     # the method to CDR_te_list: "<method name in REMIND>"="<method name displayed in reporting>"
     # If a final energy carrier not included in CDR_FE_list is used, please also add it to the list.
-    CDR_te_list <- list("dac"="DAC", "weathering"="EW")
+    CDR_te_list <- list("dac"="DAC", "weathering"="EW", "oae_ng"="OAE, traditional calciner", "oae_el"="OAE, electric calciner")
     CDR_FE_list <- list("feels"="Electricity", "fegas"="Gases", "fehes"="Heat", "feh2s"="Hydrogen", "fedie"="Diesel")
 
     # loop to compute variables "FE|CDR|++|<CDR technology> (EJ/yr)" and "FE|CDR|<CDR technology>|+|<FE type> (EJ/yr)",
