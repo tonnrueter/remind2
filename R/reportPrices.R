@@ -967,15 +967,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   int2ext <- int2ext[! is.na(int2ext)]
 
-  ## add subvariables, plus moving averages and rawdata
-  .addSubvariable <- function(int2ext, subvar) {
-    split <- unitsplit(names(int2ext))
-    for (sv in subvar) {
-      int2ext <- c(int2ext, stats::setNames(int2ext, paste0(split$variable, sv, " (", split$unit, ")")))
-    }
-    return(int2ext)
-  }
-  int2ext <- .addSubvariable(int2ext, c("|Fuel Cost", "|Other Taxes", "|Total LCOE", "|Transport and Distribution"))
+  ## add subvariables, plus moving averages and rawdata. .addSubvariable is defined at the bottom of this file
+  int2ext <- .addSubvariable(int2ext, c("|Fuel Cost", "|Other Taxes", "|Total LCOE",
+                                        "|Transport and Distribution", "|Carbon Price Component"))
   int2ext <- .addSubvariable(int2ext, c("|Moving Avg", "|Rawdata"))
   int2ext <- int2ext[names(int2ext) %in% getNames(out)]
 
@@ -1138,4 +1132,12 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
 
   getSets(out)[3] <- "variable"
   return(out)
+}
+
+.addSubvariable <- function(int2ext, subvar) {
+  split <- unitsplit(names(int2ext))
+  for (sv in subvar) {
+    int2ext <- c(int2ext, stats::setNames(int2ext, paste0(split$variable, sv, " (", split$unit, ")")))
+  }
+  return(int2ext)
 }
