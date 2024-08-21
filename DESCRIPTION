@@ -53,11 +53,9 @@ Imports:
     gdxrrw,
     ggplot2,
     gms,
-    htmltools,
-    knitr,
     lucode2 (>= 0.43.0),
     lusweave,
-    madrat (>= 3.11.3),
+    madrat (>= 3.13.0),
     mip (>= 0.149.2),
     openxlsx,
     piamInterfaces (>= 0.17.11),
@@ -75,12 +73,13 @@ Imports:
     tidyr,
     tidyselect,
     withr,
-    yaml,
     digest
 Suggests:
     covr,
     gridExtra,
+    htmltools,
     kableExtra,
+    knitr,
     testthat,
     tidyverse
 VignetteBuilder: 
