@@ -202,6 +202,58 @@ showLinePlots(
 showLinePlots(data, "Emi|CO2|Industry")
 ```
 
+### Waste Emissions
+
+#### Total Waste Emissions
+
+```{r total waste CO2}
+
+
+tot <- "Emi|CO2|Energy|Waste"
+items <- c(
+  "Emi|CO2|Energy|Waste|Feedstocks unknown fate",
+  "Emi|CO2|Energy|Waste|Plastics Incineration"
+  )
+
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+#### Waste Emissions from Plastics-Incineration
+```{r CO2 waste plastics incineration}
+
+showLinePlots(data, "Emi|CO2|Energy|Waste|Plastics Incineration")
+```
+
+#### Waste Emissions from Non-plastic Materials
+```{r CO2 waste non-plastic Materials}
+
+showLinePlots(data, "Emi|CO2|Energy|Waste|Feedstocks unknown fate")
+```
+
+#### Waste Emissions Attributed to Electricity
+```{r CO2 waste attributed to electricity}
+
+showLinePlots(data, "Emi|CO2|Energy|Supply|Electricity|Waste")
+```
+
+#### Waste Emissions Attributed to Heat
+```{r CO2 waste attributed to heat}
+
+showLinePlots(data, "Emi|CO2|Energy|Supply|Heat|Waste")
+```
+
+#### Waste Emissions Attributed to Industry
+```{r CO2 waste attributed to industry}
+
+showLinePlots(data, "Emi|CO2|Energy|Demand|Industry|Waste")
+```
+
+#### Waste Emissions Attributed to Buildings
+```{r CO2 waste attributed to buildings}
+
+showLinePlots(data, "Emi|CO2|Energy|Demand|Buildings|Waste")
+```
+
 
 ### Transport
 
@@ -223,7 +275,7 @@ showLinePlots(data, "Emi|CO2|Energy|Demand|Transport|International Bunkers")
 showLinePlots(data, "Emi|CO2|Industrial Processes")
 ```
 
-```{r CO2 Process Emissions}
+```{r CO2 Process Emissions by Sector}
 tot <- c("Emi|CO2|Industrial Processes")
 items <- c(
       "Emi|CO2|Industrial Processes|Chemicals",

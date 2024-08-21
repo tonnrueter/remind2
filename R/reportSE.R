@@ -370,12 +370,13 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
+
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = F)[, y, ] * pm_conv_TWa_EJ
+
   # SE demand of specific energy system technologies (ensure that all regions have a value)
   v_demSeOth <- readGDX(gdx, c("v_demSeOth", "vm_demSeOth"), field = "l", restore_zeros = FALSE)[, y, ] * pm_conv_TWa_EJ
-  matrixRegionsYears <- new.magpie(cells_and_regions = getRegions(dataoc), years = y, fill = 0, sets = getSets(v_demSeOth, fulldim = FALSE))
-  v_demSeOth <- matchDim(v_demSeOth, matrixRegionsYears, dim=1, fill=0)  
+
   # conversion efficiency
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", field = "l", restore_zeros = F)[, y, ]
 
@@ -392,12 +393,13 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "seliqsyn", all_te = "MeOH"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Liquids (EJ/yr)"),
       setNames(dimSums(mselect(vm_demSe, all_enty = "seh2", all_enty1 = "segasyn", all_te = "h22ch4"), dim = 3), "SE|Input|Hydrogen|Synthetic Fuels|+|Gases (EJ/yr)")
   )
+
   # hydrogen used for other energy system technologies subsumed in v_demSeOth
   # e.g. co-firing of h2 in csp
-      tmp1 <- mbind(tmp1,
-                    setNames(dimSums(mselect(v_demSeOth, all_enty = "seh2"), dim = 3),
-                    "SE|Input|Hydrogen|Other Energy System Consumption (EJ/yr)"))
-
+  seh2 <- setNames(dimSums(mselect(v_demSeOth, all_enty = "seh2"), dim = 3),
+                   "SE|Input|Hydrogen|Other Energy System Consumption (EJ/yr)")
+  seh2 <- magclass::matchDim(seh2, tmp1, dim = 1, fill = NA)
+  tmp1 <- mbind(tmp1, seh2)
 
   # SE electricity use
 
