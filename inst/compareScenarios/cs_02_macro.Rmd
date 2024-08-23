@@ -18,12 +18,26 @@ showLinePlots(data, "Population")
 
 ```{r GDP - MER}
 showLinePlots(data, "GDP|MER")
+
+for (item in grep("^GDP\\|MER\\|.*(Macro-Economic Climate Damage|chronic physical risk damage estimate)", levels(data$variable), value = TRUE)) {
+  showLinePlots(data, item)
+  showAreaAndBarPlots(data, item, "GDP|MER", scales = "fixed")
+}
 ```
 
 ## GDP - PPP
 
 ```{r GDP - PPP}
 showLinePlots(data, "GDP|PPP")
+
+for (item in grep("^GDP\\|PPP\\|.*(Macro-Economic Climate Damage|chronic physical risk damage estimate)", levels(data$variable), value = TRUE)) {
+  showLinePlots(data, item)
+  showAreaAndBarPlots(data, item, "GDP|PPP", scales = "fixed")
+}
+
+if ("Damage factor" %in% levels(data$variable)) {
+  showLinePlots(data, "Damage factor")
+}
 ```
 
 ## GDP - MER per Capita

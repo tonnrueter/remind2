@@ -172,7 +172,7 @@ reportLCOE <- function(gdx, output.type = "both"){
 
   # dac FE demand
   v33_FEdemand <- readGDX(gdx, name="v33_FEdemand", field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,teCDR]
-  DAC_ccsdemand <- readGDX(gdx, name="vm_ccs_cdr", field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,"ccsinje.1"]
+  DAC_ccsdemand <- readGDX(gdx, name="v33_co2emi_non_atm_gas", field="l", restore_zeros=FALSE, format="first_found")[, ttot_from2005, "dac"]
   v33_emi <- readGDX(gdx, name=c("v33_emi","vm_emiCdrTeDetail"), field="l",restore_zeros=FALSE,format="first_found")[,ttot_from2005,teCDR]
   pm_FEPrice <- readGDX(gdx, "pm_FEPrice")[,ttot_from2005,"indst.ETS"]
   fe2cdr <- readGDX(gdx, name="fe2cdr")
@@ -922,13 +922,13 @@ reportLCOE <- function(gdx, output.type = "both"){
   vm_capFac <- readGDX(gdx, "vm_capFac", field="l", restore_zeros = F)[,ttot_from2005,]
 
   # calculate renewable capacity factors of new plants
-  vm_capDistr <- readGDX(gdx, c("vm_capDistr","v_capDistr"), field = "l", restore_zeros = F)
+  v_capDistr <- readGDX(gdx, c("vm_capDistr","v_capDistr"), field = "l", restore_zeros = F)
   pm_dataren <- readGDX(gdx, "pm_dataren", restore_zeros = F)
 
 
   ### determine capacity factor of highest free grade for renewables
   # RE capacity distribution over grades
-  df.CapDistr <- as.quitte(vm_capDistr) %>%
+  df.CapDistr <- as.quitte(v_capDistr) %>%
     select(region, all_te, period,  rlf, value) %>%
     rename(tech = all_te, CapDistr = value)
 
@@ -1619,73 +1619,6 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
   # Levelized Cost of UE in Buildings Putty Realization ----
 
-  # if detailed buildings module on, calculate LCOE of fe2ue technologies
-  # following 36_modules/buildings/services_putty/presolve.gms
-
-  if (module2realisation["buildings",2] == "services_putty") {
-    p36_esCapCostImplicit <- readGDX(gdx, "p36_esCapCostImplicit", restore_zeros = F) # capital cost (incl. OMF and implicit discount rate)
-    t.run <- getYears(p36_esCapCostImplicit)
-    p36_fePrice <- readGDX(gdx, "p36_fePrice", restore_zeros = F)[,t.run,] # FE price
-    p36_inconvpen <- readGDX(gdx, "p36_inconvpen")[,t.run,getNames(p36_esCapCostImplicit)] # invonience penalty (on heating oil)
-    pm_fe2es <- readGDX(gdx, "pm_fe2es", restore_zeros = F)[,t.run,getNames(p36_esCapCostImplicit)] # fe2es efficiency
-    p36_logitCalibration <- readGDX(gdx, "p36_logitCalibration", restore_zeros = F)[,t.run,] # logit calibration factors (invoncenience cost for buildings technologies to match current UE)
-    fe2es_dyn36 <- readGDX(gdx,"fe2es_dyn36") # fe,ue,te mapping of fe2ue buildings technologies
-
-    # map FE price from FE dimension to technology dimension
-    p36_fePrice_ue <- p36_fePrice %>%
-                        as.quitte() %>%
-                        right_join(fe2es_dyn36) %>%
-                        select(region, period, all_teEs, value) %>%
-                        as.magpie(datacol=4)
-
-    # map ES tax to technology dimensions
-    ES_tax <- (pm_tau_fe_tax_ES_st+pm_tau_fe_sub_ES_st)[,t.run,fe2es.buildings$all_esty] %>%
-                as.quitte() %>%
-                right_join(fe2es_dyn36) %>%
-                select(region, period, all_teEs, value) %>%
-                as.magpie(datacol=4)
-
-
-    UE.LCOE.build <- new.magpie(getRegions(vm_costTeCapital), getYears(vm_costTeCapital),
-              c("Investment Cost (incl OMF and impl discount)",
-                 "Fuel Cost",
-                 "Inconvenience Cost",
-                 "ES Taxes",
-                 "Calibration Factor Mark-up",
-                 "Total LCOE")) %>%
-                add_dimension(dim=3.2, add = "all_teEs", nm = getNames(p36_esCapCostImplicit))
-
-
-    ### UE Buildings LCOE calculation
-    # always convert to  USD2015/MWh
-    # capital cost of UE technologies including OMF and including implicit discount rate on capital
-    UE.LCOE.build[,t.run,"Investment Cost (incl OMF and impl discount)"] <- p36_esCapCostImplicit * 1.2 / s_twa2mwh * 1e12
-    # fuel cost
-    UE.LCOE.build[,t.run,"Fuel Cost"] <- p36_fePrice_ue / pm_fe2es  * 1.2 / s_twa2mwh * 1e12
-    # inconvenience cost for environmental/health effects (e.g. traditional biomass, heating oil)
-    UE.LCOE.build[,t.run,"Inconvenience Cost"] <- p36_inconvpen / pm_fe2es  * 1.2 / s_twa2mwh * 1e12
-    # taxes on ES level (note: these taxes are also subsumed under FE taxes in the se2fe LCOE)
-    UE.LCOE.build[,t.run,"ES Taxes"] <- ES_tax / pm_fe2es  * 1.2 / s_twa2mwh * 1e12
-    # calibration factor mark-up on buildings technologies, these are other (inconvenience) cost to represent current UE shares, they fade-out over time
-    UE.LCOE.build[,t.run,"Calibration Factor Mark-up"] <- p36_logitCalibration  * 1.2 / s_twa2mwh * 1e12
-    # total LCOE
-    UE.LCOE.build[,,"Total LCOE"] <- UE.LCOE.build[,,"Investment Cost (incl OMF and impl discount)"] +
-                                      UE.LCOE.build[,,"Fuel Cost"] +
-                                      UE.LCOE.build[,,"Inconvenience Cost"] +
-                                      UE.LCOE.build[,,"Calibration Factor Mark-up"] +
-                                      UE.LCOE.build[,,"ES Taxes"]
-
-    # add dimensions to fit to other tech LCOE
-    UE.LCOE.build <- UE.LCOE.build %>%
-                          as.quitte() %>%
-                          left_join(fe2es_dyn36) %>%
-                          mutate( sector = "buildings",  type = "marginal", unit ="US$2015/MWh", type ="marginal" ) %>%
-                          rename(cost = data, tech = all_teEs, output = all_esty) %>%
-                          select(region, period, type, output, tech, sector, unit,  cost, value) %>%
-                          as.magpie(datacol=9)
-
-  }
-
 
 # Transform LCOE to output format ----
 
@@ -1714,9 +1647,6 @@ df.co2price.weighted <- df.pomeg.expand %>%
 
     # add DAC levelized cost, buildings UE LCOE to marginal LCOE
     LCOE.mar.out <- mbind(LCOE.mar.out, LCOD)
-    if (module2realisation["buildings",2] == "services_putty") {
-      LCOE.mar.out <- mbind(LCOE.mar.out, UE.LCOE.build)
-    }
     # bind to previous calculations (if there are)
     LCOE.out <- mbind(LCOE.out,LCOE.mar.out)
 
