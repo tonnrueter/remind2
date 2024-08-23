@@ -11,6 +11,7 @@ AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
 - checking installed package size
+- no visible global function definition for ':='
 AutocreateReadme: yes
 allowLinterWarnings: yes
 enforceVersionUpdate: yes
