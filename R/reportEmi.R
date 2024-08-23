@@ -471,9 +471,22 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     }
 
 
-    # total fossil waste incineration emissions
+    # total fossil waste incineration emissions + CCU from captured waste carbon
+    # as CCU gets accounted at CO2 origin (see above)
     # (non-fossil waste incineration emissions currently not accounted)
-    EmiWasteInc <- setNames(dimSums(vm_incinerationEmi[,,entySEfos], dim=3) * GtC_2_MtCO2,
+
+    if (exists('vm_incinerationCCS')) {
+      # calculate captured waste carbon used for CCU (not stored but released)
+      WasteCCU <- dimSums(vm_incinerationCCS, dim=3) * (1 - dimSums(vm_co2CCS, dim=3) / dimSums(vm_co2capture, dim=3))
+      WasteCCU[is.na(WasteCCU)] <- 0
+    } else {
+      # set to zero for GDXs where no waste carbon capture implemented
+      WasteCCU <- dimSums(vm_incinerationEmi[,,entySEfos], dim=3) * 0
+    }
+
+    EmiWasteInc <- setNames(( dimSums(vm_incinerationEmi[,,entySEfos], dim=3)
+                              + WasteCCU
+                              )* GtC_2_MtCO2,
                               "Emi|CO2|Energy|Waste|Plastics Incineration (Mt CO2/yr)")
 
 
