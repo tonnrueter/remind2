@@ -91,6 +91,7 @@ items <- c(
   "Emi|CO2|Energy|Supply|Electricity w/ couple prod",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|EW",
+  "Emi|CO2|CDR|OAE"
   )
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
@@ -341,6 +342,7 @@ items <- c(
   "Emi|CO2|CDR|BECCS",
   "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
+  "Emi|CO2|CDR|OAE",
   "Emi|CO2|CDR|EW"
 )
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
@@ -355,7 +357,20 @@ items <- c(
   "Emi|CO2|CDR|BECCS|Industry",
   "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
+  "Emi|CO2|CDR|OAE",
   "Emi|CO2|CDR|EW"
+)
+showAreaAndBarPlots(data, items, tot, scales = "fixed")
+```
+
+#### Ocean CDR
+```{r Ocean CDR}
+tot <- "Emi|CO2|CDR|net OAE"
+items <- c(
+  "Emi|CO2|CDR|net OAE|Ocean Uptake|traditional calciner",
+  "Emi|CO2|CDR|net OAE|Ocean Uptake|electric calciner",
+  "Emi|CO2|CDR|net OAE|Released emissions",
+  "Emi|CO2|CDR|net OAE|Unavoidable emissions"
 )
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
@@ -403,6 +418,7 @@ items <- c(
   "Emi|CO2|Cumulated|CDR|BECCS|Industry",
   "Emi|CO2|Cumulated|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|Cumulated|CDR|DACCS",
+  "Emi|CO2|Cumulated|CDR|OAE",
   "Emi|CO2|Cumulated|CDR|EW")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
