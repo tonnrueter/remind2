@@ -603,6 +603,9 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   if (!is.null(regionSubsetList))
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
+  # cannot be summed for aggregation
+  tmp[c("GLO", names(regionSubsetList)),,"Costs|Biomass|Adjfactor (unitless)"] <- NA
+
   getSets(tmp)[3] <- "variable"
   return(tmp)
 }
