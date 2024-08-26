@@ -23,6 +23,7 @@
 #' @importFrom magclass getYears getRegions mbind setNames mselect
 #' new.magpie setYears mcalc
 #' @importFrom tibble as_tibble
+#' @importFrom data.table :=
 #' @importFrom tidyselect everything
 #' @importFrom madrat toolAggregate
 #'
@@ -234,7 +235,7 @@ reportCrossVariables <- function(gdx, output = NULL, regionSubsetList = NULL,
     output[,,"FE|Transport|Liquids (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Liquids (US$2005/GJ)"] +
     output[,,"FE|Transport|Hydrogen (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Hydrogen (US$2005/GJ)"] +
     output[,,"FE|Transport|Electricity (EJ/yr)"] * output[,,"Price|Final Energy|Transport|Electricity (US$2005/GJ)"],
-                       "Expenditure|Transport|Fuel (billion $US/yr)"))
+                       "Expenditure|Transport|Fuel (billion US$2005/yr)"))
 
   # calculate intensities growth
   int_gr <- new.magpie(getRegions(tmp),getYears(tmp),c("Intensity Growth|GDP|Final Energy (% pa)","Intensity Growth|GDP|Final Energy to 2005 (% pa)",

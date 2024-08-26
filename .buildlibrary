@@ -1,4 +1,4 @@
-ValidationKey: '229756496'
+ValidationKey: '229791032'
 AcceptedWarnings:
 - 'Warning: package ''.*'' was built under R version'
 - 'Warning: namespace ''.*'' is not available and has been replaced'
@@ -11,7 +11,6 @@ AcceptedNotes:
 - Imports includes .* non-default packages.
 - unable to verify current time
 - checking installed package size
-- no visible global function definition for ':='
 AutocreateReadme: yes
 allowLinterWarnings: yes
 enforceVersionUpdate: yes
