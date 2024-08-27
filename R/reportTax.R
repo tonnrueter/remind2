@@ -304,9 +304,8 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
 
   # select variables that cannot be aggregated by simply sums and set their values to NA
-  vars <- getNames(out)[grepl("rate", getNames(out))]
-  out["GLO",,vars] <- NA
-  out[names(regionSubsetList),,vars] <- NA
+  vars <- grep("[Rr]ate", getNames(out), value = TRUE)
+  out[c("GLO", names(regionSubsetList)),,vars] <- NA
 
   getSets(out)[3] <- "variable"
   return(out)
