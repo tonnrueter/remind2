@@ -1,8 +1,8 @@
 Type: Package
 Package: remind2
 Title: The REMIND R package (2nd generation)
-Version: 1.151.1
-Date: 2024-08-23
+Version: 1.151.2
+Date: 2024-08-26
 Authors@R: c(
     person("Renato", "Rodrigues", , "renato.rodrigues@pik-potsdam.de", role = c("aut", "cre")),
     person("Lavinia", "Baumstark", role = "aut"),
@@ -49,12 +49,9 @@ Imports:
     data.table,
     dplyr (>= 1.1.1),
     gdx (>= 1.53.0),
-    gdxdt,
     gdxrrw,
     ggplot2,
     gms,
-    htmltools,
-    knitr,
     lucode2 (>= 0.43.0),
     lusweave,
     madrat (>= 3.11.3),
@@ -70,11 +67,11 @@ Imports:
     reshape2,
     rlang,
     rmarkdown,
-    rmndt,
     tibble,
     tidyr,
     tidyselect,
     withr,
+    knitr,
     yaml,
     digest
 Suggests:
