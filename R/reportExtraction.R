@@ -275,12 +275,16 @@ grades[is.na(grades)] <- 0
   out <- mbind(tmp1, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8)
   ####### add global value #############
   out <- mbind(out, dimSums(out, dim = 1))
-
   out <- mbind(out, tmp2)
 
   # add other region aggregations
-  if (!is.null(regionSubsetList))
+  if (!is.null(regionSubsetList)) {
     out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
+  }
+
+  # costs cannot be summed for aggregation
+  costvars <- grep("Average Supply Costs", getNames(out), value = TRUE)
+  out[c("GLO", names(regionSubsetList)),,costvars] <- NA
 
   getSets(out)[3] <- "variable"
   return(out)

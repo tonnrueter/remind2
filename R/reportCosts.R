@@ -265,7 +265,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   if(!is.null(cost_mag)) {tmp <- mbind(tmp,setNames(cost_mag * 1000, "Costs|Biomass|MAgPIE (billion US$2017/yr)"))}
   tmp <- mbind(tmp,setNames(cost_emu_pre                     * 1000, "Costs|Biomass|Price integral presolve (billion US$2017/yr)"))
   tmp <- mbind(tmp,setNames(cost_emu                         * 1000, "Costs|Biomass|Price integral (billion US$2017/yr)"))
-  tmp <- mbind(tmp,setNames(bio_cost_adjfac,                         "Costs|Biomass|Adjfactor (-)"))
+  tmp <- mbind(tmp,setNames(bio_cost_adjfac,                         "Costs|Biomass|Adjfactor (unitless)"))
 
   if(!is.null(totLUcosts))        {tmp <- mbind(tmp,setNames(totLUcosts                                 * 1000, "Costs|Land Use (billion US$2017/yr)"))}
   if(!is.null(totLUcostsWithMAC)) {tmp <- mbind(tmp,setNames(totLUcostsWithMAC                          * 1000, "Costs|Land Use with MAC-costs from MAgPIE (billion US$2017/yr)"))}
@@ -602,6 +602,9 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   # add other region aggregations
   if (!is.null(regionSubsetList))
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
+
+  # cannot be summed for aggregation
+  tmp[c("GLO", names(regionSubsetList)),,"Costs|Biomass|Adjfactor (unitless)"] <- NA
 
   getSets(tmp)[3] <- "variable"
   return(tmp)
