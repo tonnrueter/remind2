@@ -81,7 +81,6 @@ reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL,t=c(seq(2005,206
   currAcc_bau <- dimSums( (Xport_bau[,,trade] - Mport_bau[,,trade] ) * pm_pvp_bau[,,trade]/setNames(pm_pvp_bau[,,'good'],NULL),dim = 3)
   currAcc     <- dimSums( (Xport[,,trade] - Mport[,,trade] ) * pm_pvp[,,trade]/setNames(pm_pvp[,,'good'],NULL),dim = 3)
   ####### calculate reporting parameters ############
-
   tmp <- NULL
   tmp <- mbind(tmp,setNames((cons_bau - cons) * 1000, "Policy Cost|Consumption Loss (billion US$2017/yr)" ))
   tmp <- mbind(tmp,setNames((cons_bau - cons)/(cons_bau + 1e-10) * 100, "Policy Cost|Consumption Loss|Relative to Reference Consumption (%)"))
