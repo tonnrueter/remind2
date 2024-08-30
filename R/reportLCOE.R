@@ -360,31 +360,20 @@ v33_emiEW <- add_columns(v33_emiEW, addnm = c("y2005", "y2010", "y2015", "y2020"
  te_annual_grid_cost_wadj <- new.magpie(getRegions(te_inv_annuity), ttot_from2005, magclass::getNames(te_inv_annuity), fill = 0)
 
 
-  if ("windon" %in% all_te) {
-    te_annual_grid_cost[, , te2grid$all_te] <-
-      collapseNames(te_annual_inv_cost[, ttot_from2005, "gridwindon"] + te_annual_OMF_cost[, , "gridwindon"]) *
-      1 / vm_VRE_prodSe_grid *
-      # this multiplcative factor is added to reflect higher grid demand of wind, see q32_limitCapTeGrid
-      grid_factor_tech * vm_prodSe[, , te2grid$all_te]
+gridwindonStr <- ifelse("windon" %in% all_te, "gridwindon", "gridwind")
 
-    te_annual_grid_cost_wadj[, , te2grid$all_te] <-
-      collapseNames(te_annual_inv_cost_wadj[, ttot_from2005, "gridwindon"] + te_annual_OMF_cost[, , "gridwindon"]) *
-      1 / vm_VRE_prodSe_grid *
-      # this multiplcative factor is added to reflect higher grid demand of wind, see q32_limitCapTeGrid
-      grid_factor_tech * vm_prodSe[, , te2grid$all_te]
-  } else {
-    te_annual_grid_cost[, , te2grid$all_te] <-
-      collapseNames(te_annual_inv_cost[, ttot_from2005, "gridwind"] + te_annual_OMF_cost[, , "gridwind"]) *
-      1 / vm_VRE_prodSe_grid *
-      # this multiplcative factor is added to reflect higher grid demand of wind, see q32_limitCapTeGrid
-      grid_factor_tech * vm_prodSe[, , te2grid$all_te]
+te_annual_grid_cost[, , te2grid$all_te] <-
+  collapseNames(te_annual_inv_cost[, ttot_from2005, gridwindonStr] + te_annual_OMF_cost[, , gridwindonStr]) *
+  1 / vm_VRE_prodSe_grid *
+  # this multiplcative factor is added to reflect higher grid demand of wind, see q32_limitCapTeGrid
+  grid_factor_tech * vm_prodSe[, , te2grid$all_te]
 
-    te_annual_grid_cost_wadj[, , te2grid$all_te] <-
-      collapseNames(te_annual_inv_cost_wadj[, ttot_from2005, "gridwind"] + te_annual_OMF_cost[, , "gridwind"]) *
-      1 / vm_VRE_prodSe_grid *
-      # this multiplcative factor is added to reflect higher grid demand of wind, see q32_limitCapTeGrid
-      grid_factor_tech * vm_prodSe[, , te2grid$all_te]
-  }
+te_annual_grid_cost_wadj[, , te2grid$all_te] <-
+  collapseNames(te_annual_inv_cost_wadj[, ttot_from2005, gridwindonStr] + te_annual_OMF_cost[, , gridwindonStr]) *
+  1 / vm_VRE_prodSe_grid *
+  # this multiplcative factor is added to reflect higher grid demand of wind, see q32_limitCapTeGrid
+  grid_factor_tech * vm_prodSe[, , te2grid$all_te]
+  
 
 
  # 7. sub-part: ccs injection cost (for technologies capturing CO2) ----

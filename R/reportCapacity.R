@@ -61,40 +61,44 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
 
   dataoc[dataoc < 0] <- 0
 
+  # determine whether onshore wind is called wind or windon
+  if ("windon" %in% magclass::getNames(vm_cap, dim = 1)) {
+    windonStr <- "windon"
+    storwindonStr <- "storwindon"
+  } else {
+    windonStr <- "wind"
+    storwindonStr <- "storwind"
+  }
 
   # build reporting
   tmp1 <- NULL
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("tnrs", "fnrs")], dim = 3),                                 "Cap|Electricity|Nuclear (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("spv", "csp")], dim = 3),                                   "Cap|Electricity|Solar (GW)"))
-  if ("windon" %in% magclass::getNames(vm_cap, dim = 1)) {
-    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("windon", "windoff")], dim = 3),                          "Cap|Electricity|Wind (GW)"))
-  } else {
-    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("wind", "windoff")], dim = 3),                            "Cap|Electricity|Wind (GW)"))
-  }
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "hydro"], dim = 3),                                           "Cap|Electricity|Hydro (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "dot"], dim = 3),                                             "Cap|Electricity|Oil (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("igcc", "pc", "coalchp", "igccc")], dim = 3),               "Cap|Electricity|Coal (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3),               "Cap|Electricity|Gas (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("bioigccc", "biochp", "bioigcc")], dim = 3),                "Cap|Electricity|Biomass (GW)"))
-  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "geohdr"], dim = 3),                                          "Cap|Electricity|Geothermal (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("tnrs", "fnrs")], dim = 3),                   "Cap|Electricity|Nuclear (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("spv", "csp")], dim = 3),                     "Cap|Electricity|Solar (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c(windonStr, "windoff")], dim = 3),             "Cap|Electricity|Wind (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "hydro"], dim = 3),                             "Cap|Electricity|Hydro (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "dot"], dim = 3),                               "Cap|Electricity|Oil (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("igcc", "pc", "coalchp", "igccc")], dim = 3), "Cap|Electricity|Coal (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3), "Cap|Electricity|Gas (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("bioigccc", "biochp", "bioigcc")], dim = 3),  "Cap|Electricity|Biomass (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , "geohdr"], dim = 3),                            "Cap|Electricity|Geothermal (GW)"))
   if (all(c("h2turbVRE", "h2turb") %in% magclass::getNames(vm_cap, dim = 1))) {
-    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("h2turb", "h2turbVRE")], dim = 3),                        "Cap|Electricity|Hydrogen (GW)"))
+    tmp1 <- mbind(tmp1, setNames(dimSums(vm_cap[, , c("h2turb", "h2turbVRE")], dim = 3),          "Cap|Electricity|Hydrogen (GW)"))
   }
-  tmp1 <- mbind(tmp1, setNames(dimSums(tmp1, dim = 3),                                                          "Cap|Electricity (GW)"))
+  tmp1 <- mbind(tmp1, setNames(dimSums(tmp1, dim = 3),                                            "Cap|Electricity (GW)"))
 
   tmp7 <- NULL
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2c")], dim = 3),         "Cap|Hydrogen|Gas|w/ CC (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2")], dim = 3),         "Cap|Hydrogen|Gas|w/o CC (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2", "gash2c")], dim = 3),         "Cap|Hydrogen|Gas (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("coalh2c")], dim = 3),         "Cap|Hydrogen|Coal|w/ CC (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("coalh2")], dim = 3),         "Cap|Hydrogen|Coal|w/o CC (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("coalh2", "coalh2c")], dim = 3),         "Cap|Hydrogen|Coal (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2c")], dim = 3),         "Cap|Hydrogen|Biomass|w/ CC (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2")], dim = 3),         "Cap|Hydrogen|Biomass|w/o CC (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2", "bioh2c")], dim = 3),         "Cap|Hydrogen|Biomass (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("elh2", "elh2VRE")], dim = 3),         "Cap|Hydrogen|Electricity (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("elh2", "elh2VRE")], dim = 3) / pm_eta_conv[, , "elh2"],         "Cap (GWel)|Hydrogen|Electricity (GW)"))
-  tmp7 <- mbind(tmp7, setNames(dimSums(tmp7, dim = 3),                      "Cap|Hydrogen (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2c")], dim = 3),                                    "Cap|Hydrogen|Gas|w/ CC (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2")], dim = 3),                                     "Cap|Hydrogen|Gas|w/o CC (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("gash2", "gash2c")], dim = 3),                           "Cap|Hydrogen|Gas (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("coalh2c")], dim = 3),                                   "Cap|Hydrogen|Coal|w/ CC (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("coalh2")], dim = 3),                                    "Cap|Hydrogen|Coal|w/o CC (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("coalh2", "coalh2c")], dim = 3),                         "Cap|Hydrogen|Coal (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2c")], dim = 3),                                    "Cap|Hydrogen|Biomass|w/ CC (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2")], dim = 3),                                     "Cap|Hydrogen|Biomass|w/o CC (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("bioh2", "bioh2c")], dim = 3),                           "Cap|Hydrogen|Biomass (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("elh2", "elh2VRE")], dim = 3),                           "Cap|Hydrogen|Electricity (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(vm_cap[, , c("elh2", "elh2VRE")], dim = 3) / pm_eta_conv[, , "elh2"], "Cap (GWel)|Hydrogen|Electricity (GW)"))
+  tmp7 <- mbind(tmp7, setNames(dimSums(tmp7, dim = 3),                                                       "Cap|Hydrogen (GW)"))
 
   tmp <- NULL
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "igccc"], dim = 3),                          "Cap|Electricity|Coal|IGCC|w/ CC (GW)"))
@@ -112,22 +116,14 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biochp", "bioigcc")], dim = 3),           "Cap|Electricity|Biomass|w/o CC (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "biochp"], dim = 3),                         "Cap|Electricity|Biomass|CHP (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "dot"], dim = 3),                            "Cap|Electricity|Oil|w/o CC (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biochp", "gaschp", "coalchp")], dim = 3), "Cap|Electricity|CHP (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "spv"], dim = 3),                            "Cap|Electricity|Solar|PV (GW)"))
   tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "csp"], dim = 3),                            "Cap|Electricity|Solar|CSP (GW)"))
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("biochp", "gaschp", "coalchp")], dim = 3), "Cap|Electricity|CHP (GW)"))
-
-  if ("windon" %in% magclass::getNames(vm_cap, dim = 1)) {
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windon"], dim = 3),                       "Cap|Electricity|Wind|Onshore (GW)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windoff"], dim = 3),                      "Cap|Electricity|Wind|Offshore (GW)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwindon"], dim = 3) * 1.2,             "Cap|Electricity|Storage|Battery|For Wind (GW)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwindoff"], dim = 3) * 1.2,            "Cap|Electricity|Storage|Battery|For Wind Offshore (GW)"))
-  } else {
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "wind"], dim = 3),                         "Cap|Electricity|Wind|Onshore (GW)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windoff"], dim = 3),                      "Cap|Electricity|Wind|Offshore (GW)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwind"], dim = 3) * 1.2,               "Cap|Electricity|Storage|Battery|For Wind (GW)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwindoff"], dim = 3) * 1.2,            "Cap|Electricity|Storage|Battery|For Wind Offshore (GW)"))
-  }
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storspv"], dim = 3) * 4,         "Cap|Electricity|Storage|Battery|For PV (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , windonStr], dim = 3),                        "Cap|Electricity|Wind|Onshore (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "windoff"], dim = 3),                        "Cap|Electricity|Wind|Offshore (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storspv"], dim = 3) * 4,                    "Cap|Electricity|Storage|Battery|For PV (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , storwindonStr], dim = 3) * 1.2,              "Cap|Electricity|Storage|Battery|For Wind (GW)"))
+  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "storwindoff"], dim = 3) * 1.2,              "Cap|Electricity|Storage|Battery|For Wind Offshore (GW)"))
 
   # heat
   tmp_chp <- NULL
@@ -166,50 +162,38 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3),        "New Cap|Electricity|Gas (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("igccc", "igcc", "pc", "coalchp")], dim = 3),        "New Cap|Electricity|Coal (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioigccc", "biochp", "bioigcc")], dim = 3),         "New Cap|Electricity|Biomass (GW/yr)"))
-  if ("windon" %in% magclass::getNames(vm_deltaCap, dim = 1)) {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("geohdr", "hydro", "spv", "csp", "windon", "windoff")], dim = 3), "New Cap|Electricity|Non-Biomass Renewables (GW/yr)"))
-  } else {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("geohdr", "hydro", "spv", "csp", "wind")], dim = 3), "New Cap|Electricity|Non-Biomass Renewables (GW/yr)"))
-  }
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("geohdr", "hydro", "spv", "csp", windonStr, "windoff")], dim = 3), "New Cap|Electricity|Non-Biomass Renewables (GW/yr)"))
+
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("tnrs", "fnrs")], dim = 3),                          "New Cap|Electricity|Nuclear (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "dot"], dim = 3),                                      "New Cap|Electricity|Oil (GW/yr)"))
   tmp2 <- mbind(tmp2, setNames(dimSums(tmp2, dim = 3),                                                        "New Cap|Electricity (GW/yr)"))
 
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "geohdr"], dim = 3),         "New Cap|Electricity|Geothermal (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "igccc"], dim = 3),          "New Cap|Electricity|Coal|IGCC|w/ CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "igcc"], dim = 3),           "New Cap|Electricity|Coal|IGCC|w/o CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngccc"], dim = 3),          "New Cap|Electricity|Gas|CC|w/ CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngcc"], dim = 3),           "New Cap|Electricity|Gas|CC|w/o CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "spv"], dim = 3),            "New Cap|Electricity|Solar|PV (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "csp"], dim = 3),            "New Cap|Electricity|Solar|CSP (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "geohdr"], dim = 3),                "New Cap|Electricity|Geothermal (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "igccc"], dim = 3),                 "New Cap|Electricity|Coal|IGCC|w/ CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "igcc"], dim = 3),                  "New Cap|Electricity|Coal|IGCC|w/o CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngccc"], dim = 3),                 "New Cap|Electricity|Gas|CC|w/ CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngcc"], dim = 3),                  "New Cap|Electricity|Gas|CC|w/o CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "spv"], dim = 3),                   "New Cap|Electricity|Solar|PV (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "csp"], dim = 3),                   "New Cap|Electricity|Solar|CSP (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , windonStr], dim = 3),               "New Cap|Electricity|Wind|Onshore (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "windoff"], dim = 3),               "New Cap|Electricity|Wind|Offshore (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(windonStr, "windoff")], dim = 3), "New Cap|Electricity|Wind (GW/yr)"))
 
-  if ("windon" %in% magclass::getNames(vm_deltaCap, dim = 1)) {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "windon"], dim = 3),               "New Cap|Electricity|Wind|Onshore (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "windoff"], dim = 3),              "New Cap|Electricity|Wind|Offshore (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("windon", "windoff")], dim = 3), "New Cap|Electricity|Wind (GW/yr)"))
-  } else {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "wind"], dim = 3),                 "New Cap|Electricity|Wind|Onshore (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "windoff"], dim = 3),              "New Cap|Electricity|Wind|Offshore (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("wind", "windoff")], dim = 3),   "New Cap|Electricity|Wind (GW/yr)"))
-  }
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "hydro"], dim = 3),         "New Cap|Electricity|Hydro (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngccc"], dim = 3),          "New Cap|Electricity|Gas|w/ CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("ngcc", "ngt", "gaschp")], dim = 3), "New Cap|Electricity|Gas|w/o CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngt"], dim = 3),            "New Cap|Electricity|Gas|GT (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "hydro"], dim = 3),                     "New Cap|Electricity|Hydro (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngccc"], dim = 3),                     "New Cap|Electricity|Gas|w/ CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("ngcc", "ngt", "gaschp")], dim = 3),  "New Cap|Electricity|Gas|w/o CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "ngt"], dim = 3),                       "New Cap|Electricity|Gas|GT (GW/yr)"))
   if (all(c("h2turbVRE", "h2turb") %in% magclass::getNames(vm_cap, dim = 1))) {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h2turb", "h2turbVRE")], dim = 3),            "New Cap|Electricity|Hydrogen (GW/yr)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h2turb", "h2turbVRE")], dim = 3),  "New Cap|Electricity|Hydrogen (GW/yr)"))
   }
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "igccc"], dim = 3),                    "New Cap|Electricity|Coal|w/ CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("igcc", "pc", "coalchp")], dim = 3), "New Cap|Electricity|Coal|w/o CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "bioigccc"], dim = 3),                 "New Cap|Electricity|Biomass|w/ CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biochp", "bioigcc")], dim = 3),     "New Cap|Electricity|Biomass|w/o CC (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("spv", "csp")], dim = 3),           "New Cap|Electricity|Solar (GW/yr)"))
-  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "storspv"], dim = 3) * 4,            "New Cap|Electricity|Storage|Battery|For PV (GW/yr)"))
-  if ("storwindon" %in% magclass::getNames(vm_deltaCap, dim = 1)) {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("storwindon", "storwindoff")], dim = 3) * 1.2,   "New Cap|Electricity|Storage|Battery|For Wind (GW/yr)"))
-  } else {
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "storwind"], dim = 3) * 1.2,       "New Cap|Electricity|Storage|Battery|For Wind (GW/yr)"))
-  }
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "igccc"], dim = 3),                     "New Cap|Electricity|Coal|w/ CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("igcc", "pc", "coalchp")], dim = 3),  "New Cap|Electricity|Coal|w/o CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "bioigccc"], dim = 3),                  "New Cap|Electricity|Biomass|w/ CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biochp", "bioigcc")], dim = 3),      "New Cap|Electricity|Biomass|w/o CC (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("spv", "csp")], dim = 3),             "New Cap|Electricity|Solar (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "storspv"], dim = 3) * 4,               "New Cap|Electricity|Storage|Battery|For PV (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(storwindonStr, "storwindoff")], dim = 3) * 1.2, "New Cap|Electricity|Storage|Battery|For Wind (GW/yr)"))
+
 
   # Newly built capacities hydrogen
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioh2c", "bioh2")], dim = 3),   "New Cap|Hydrogen|Biomass (GW/yr)"))

@@ -40,18 +40,12 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   pe2se    <- readGDX(gdx, "pe2se")
   se2se    <- readGDX(gdx, "se2se")
   all_te   <- readGDX(gdx, "all_te")
-  if ("windon" %in% as.vector(all_te)) { # remove wind when it should be called windon
-    all_te <- as.vector(all_te)
-    all_te <- all_te[all_te != "wind"]
-    all_te <- all_te[all_te != "storwind"]
-    all_te <- all_te[all_te != "gridwind"]
-  }
   te       <- readGDX(gdx, "te")
   tefosccs <- readGDX(gdx, c("teFosCCS", "tefosccs"), format = "first_found")
   teccs    <- readGDX(gdx, c("teCCS", "teccs"), format = "first_found")
   tenoccs  <- readGDX(gdx, c("teNoCCS", "tenoccs"), format = "first_found")
   techp    <- readGDX(gdx, c("teChp", "techp"), format = "first_found")
-  terenew_nobio <- readGDX(gdx, c("teReNoBio", "terenew_nobio"), format = "first_found")
+  teReNoBio <- readGDX(gdx, c("teReNoBio", "terenew_nobio"), format = "first_found")
   pebio    <- readGDX(gdx, c("peBio", "pebio"), format = "first_found")
   entySe   <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
   entyPe   <- readGDX(gdx, c("entyPe", "pety"), format = "first_found")
@@ -165,6 +159,9 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(vm_prodSe, dataoc, oc2te, entySe, pebio, entySe, name = "SE|Biomass (EJ/yr)")
   )
 
+
+  windonStr <- ifelse ("windon" %in% te, "windon", "wind")
+
   ## Electricity
   tmp1 <- mbind(tmp1,
     se.prod(vm_prodSe, dataoc, oc2te, entySe, append(entyPe, "seh2"), "seel",   name = "SE|Electricity (EJ/yr)"), # seh2 to account for se2se production once we add h2 to elec technology
@@ -203,8 +200,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "peoil", "seel", te = tenoccs,    name = "SE|Electricity|Oil|w/o CC (EJ/yr)"),
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "peoil", "seel", te = "dot",      name = "SE|Electricity|Oil|DOT (EJ/yr)"),
 
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, entyPe, "seel", te = terenew_nobio,
-                                                                                name = "SE|Electricity|Non-Biomass Renewables (EJ/yr)"),
+    se.prod(vm_prodSe, dataoc, oc2te, entySe, entyPe, "seel", te = teReNoBio,   name = "SE|Electricity|Non-Biomass Renewables (EJ/yr)"),
 
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "peur", "seel",                   name = "SE|Electricity|+|Nuclear (EJ/yr)"),
 
@@ -212,36 +208,25 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
     se.prod(vm_prodSe, dataoc, oc2te, entySe, "pehyd", "seel",                  name = "SE|Electricity|+|Hydro (EJ/yr)"),
 
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel",                  name = "SE|Electricity|+|Solar (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "csp",      name = "SE|Electricity|Solar|+|CSP (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "spv",      name = "SE|Electricity|Solar|+|PV (EJ/yr)"),
-    se.prod(vm_prodSe, dataoc, oc2te, entySe, c("pewin", "pesol"), "seel",      name = "SE|Electricity|WindSolar (EJ/yr)"),
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, c("pewin", "pesol"), "seel",  name = "SE|Electricity|WindSolar (EJ/yr)"),
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel",              name = "SE|Electricity|+|Solar (EJ/yr)"),
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "csp",  name = "SE|Electricity|Solar|+|CSP (EJ/yr)"),
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "spv",  name = "SE|Electricity|Solar|+|PV (EJ/yr)"),
 
     se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, c("pewin", "pesol"), "seel",  name = "SE|Electricity|Curtailment (EJ/yr)"),
     se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel",              name = "SE|Electricity|Curtailment|+|Solar (EJ/yr)"),
     se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "csp",  name = "SE|Electricity|Curtailment|Solar|+|CSP (EJ/yr)"),
-    se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "spv",  name = "SE|Electricity|Curtailment|Solar|+|PV (EJ/yr)")
+    se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pesol", "seel", te = "spv",  name = "SE|Electricity|Curtailment|Solar|+|PV (EJ/yr)"),
+
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c(windonStr, "windoff"), name = "SE|Electricity|+|Wind (EJ/yr)"),
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = windonStr,               name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
+    se.prod(    vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",               name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
+    
+    se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c(windonStr, "windoff"), name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)"),
+    se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = windonStr,               name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
+    se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",               name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)")
   )
 
-  if ("windon" %in% te) {
-    tmp1 <- mbind(tmp1,
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windon",                   name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windon",               name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",                  name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",              name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("windon", "windoff"),     name = "SE|Electricity|+|Wind (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("windon", "windoff"), name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
-    )
-  } else {
-    tmp1 <- mbind(tmp1,
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",                     name = "SE|Electricity|Wind|+|Onshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "wind",                 name = "SE|Electricity|Curtailment|Wind|+|Onshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",                  name = "SE|Electricity|Wind|+|Offshore (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = "windoff",              name = "SE|Electricity|Curtailment|Wind|+|Offshore (EJ/yr)"),
-      se.prod(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),       name = "SE|Electricity|+|Wind (EJ/yr)"),
-      se.prodLoss(vm_prodSe, dataoc, oc2te, entySe, "pewin", "seel", te = c("wind", "windoff"),   name = "SE|Electricity|Curtailment|+|Wind (EJ/yr)")
-    )
-  }
 
   ## Gases
   if (!(is.null(vm_macBase) & is.null(vm_emiMacSector))) {
