@@ -115,12 +115,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # FE demand per industry subsector
   o37_demFeIndSub <- readGDX(gdx, "o37_demFeIndSub", restore_zeros = FALSE,
                              format = "first_found", react = 'silent')
-  if (!(is.null(o37_demFeIndSub) | 0 == length(o37_demFeIndSub))) {
     o37_demFeIndSub <- o37_demFeIndSub[,t,]
     o37_demFeIndSub[is.na(o37_demFeIndSub)] <- 0
     # convert to EJ
     o37_demFeIndSub <- o37_demFeIndSub * TWa_2_EJ
-  }
+
 
 
   ####### Realisation specific Variables ##########
@@ -654,9 +653,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   # Industry Module ----
   ## FE demand ----
-  if (!(is.null(o37_demFeIndSub) | 0 == length(o37_demFeIndSub))) {
-    # this reporting is only available for GDXs which have the reporting
-    # parameter o37_demFeIndSub
 
     # Big ol' table of variables to report, along with indices into
     # o37_demFeIndSub to select the right sets.  Indices can be either literal
@@ -892,7 +888,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                      .select_sum_name_multiply(o37_ProdIndRoute, .mixer_to_selector(mixer), factor=1e3))) # factor 1e3 converts Gt/yr to Mt/yr
       }
     }
-  }
+
 
   #--- Transport reporting ---
 
