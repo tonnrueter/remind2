@@ -22,9 +22,9 @@ Calculate marginals on the REMIND CES function and combine them to prices.
 }
 \details{
 Marginals are calculated analytically
-\deqn{\frac{\partial V_i}{\partial V_o} = \xi_i (\theta_i \delta_i)^{\rho_o} 
+\deqn{\frac{\partial V_i}{\partial V_o} = \xi_i (\theta_i \delta_i)^{\rho_o}
       {V_o}^{1 - \rho_o} {V_i}^{\rho_o - 1}}
 and prices by recursively applying the chain rule
-\deqn{\pi_i = \frac{\partial V_i}{\partial V_o} \pi_o 
+\deqn{\pi_i = \frac{\partial V_i}{\partial V_o} \pi_o
       \quad \forall (i,o) \in CES}
 }

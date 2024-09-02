@@ -899,17 +899,17 @@ reportFE <- function(gdx, regionSubsetList = NULL,
       setNames(dimSums(vm_demFeForEs_trnsp[,,"_frgt_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Freight (EJ/yr)"),
       setNames(dimSums(vm_demFeForEs_trnsp[,,"_pass_",pmatch=TRUE],dim=3,na.rm=T),"FE|Transport|Pass (EJ/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_frgt_",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # remove EJ conversion factor, conv. trillion to billion tkm
-               "ES|Transport|Freight (bn tkm/yr)"),
+               "ES|Transport|Freight (billion tkm/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_pass_",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # trillion to billion pkm
-               "ES|Transport|Pass (bn pkm/yr)"),
+               "ES|Transport|Pass (billion pkm/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_frgt_sm",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # trillion to billion tkm
-               "ES|Transport|Freight|Short-Medium distance (bn tkm/yr)"),
+               "ES|Transport|Freight|Short-Medium distance (billion tkm/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_pass_sm",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # trillion to billion pkm
-               "ES|Transport|Pass|Short-Medium distance (bn pkm/yr)"),
+               "ES|Transport|Pass|Short-Medium distance (billion pkm/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_frgt_lo",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # trillion to billion tkm
-               "ES|Transport|Freight|Long distance (bn tkm/yr)"),
+               "ES|Transport|Freight|Long distance (billion tkm/yr)"),
       setNames(dimSums(vm_cesIO[,,"entrp_pass_lo",pmatch=TRUE],dim=3,na.rm=T)/TWa_2_EJ * 1e3, # trillion to billion pkm
-               "ES|Transport|Pass|Long distance (bn pkm/yr)"))
+               "ES|Transport|Pass|Long distance (billion pkm/yr)"))
 
 
     # calculate total diesel and petrol liquids across all modes, needed in reportPrices
@@ -929,7 +929,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     # KK: Mappings from gams set names to names in mifs. If new CDR methods are added to REMIND, please add
     # the method to CDR_te_list: "<method name in REMIND>"="<method name displayed in reporting>"
     # If a final energy carrier not included in CDR_FE_list is used, please also add it to the list.
-    CDR_te_list <- list("dac"="DAC", "weathering"="EW")
+    CDR_te_list <- list("dac"="DAC", "weathering"="EW", "oae_ng"="OAE, traditional calciner", "oae_el"="OAE, electric calciner")
     CDR_FE_list <- list("feels"="Electricity", "fegas"="Gases", "fehes"="Heat", "feh2s"="Hydrogen", "fedie"="Diesel")
 
     # loop to compute variables "FE|CDR|++|<CDR technology> (EJ/yr)" and "FE|CDR|<CDR technology>|+|<FE type> (EJ/yr)",
