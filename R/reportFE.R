@@ -83,9 +83,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                      spatial = 2, restore_zeros = FALSE,
                                      react = "silent")[, t, ] * TWa_2_EJ
 
-  if (length(vm_demFENonEnergySector) == 0) {
-    vm_demFENonEnergySector <- NULL
-  }
 
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
   vm_demFeSector <- vm_demFeSector[demFemapping]
@@ -150,7 +147,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
 
   # calculate FE non-energy use and FE without non-energy use
-  if (!is.null(vm_demFENonEnergySector)) {
     vm_demFENonEnergySector <-  mselect(vm_demFENonEnergySector[demFemapping],
                                         all_enty1 = entyFe2sector2emiMkt_NonEn$all_enty,
                                         emi_sectors = entyFe2sector2emiMkt_NonEn$emi_sectors,
@@ -159,7 +155,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     # calculate FE without non-energy use
     vm_demFeSector_woNonEn <- vm_demFeSector
     vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector )]-vm_demFENonEnergySector
-  }
+
 
   # ---- FE total production (incl. non-energy use) ------
   out <- mbind(out,
@@ -1048,8 +1044,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     out[out < 0] <- 0
   }
 
-# report feedstocks use by carrier when available
-  if (!is.null(vm_demFENonEnergySector)) {
+# report feedstocks use by carrier
     # FE non-energy use variables
     out <- mbind(out,
                   setNames(dimSums(vm_demFENonEnergySector, dim=3),
@@ -1195,12 +1190,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           warning(e)
         }
       )
-  }
+
 
   ### FE w/o non-energy and w/o bunkers ----
-
-  # only try to add variables if non-energy use variables are available
-  if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
 
     out <- mbind(
       out,
@@ -1256,7 +1248,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         out[, , "FE|w/o Non-energy Use|Solids|+|Biomass (EJ/yr)"],
         "FE|w/o Bunkers|w/o Non-energy Use|Solids|Biomass (EJ/yr)")
       )
-  }
+
 
 
   ### Regional Aggregation ----
