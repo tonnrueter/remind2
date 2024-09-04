@@ -83,34 +83,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                      spatial = 2, restore_zeros = FALSE,
                                      react = "silent")[, t, ] * TWa_2_EJ
 
-  if (length(vm_demFENonEnergySector) == 0) {
-    vm_demFENonEnergySector <- NULL
-  }
 
   # only retain combinations of SE, FE, sector, and emiMkt which actually exist in the model (see qm_balFe)
   vm_demFeSector <- vm_demFeSector[demFemapping]
-
-  # adding transport gas empty object to keep support to transport complex module
-  # TODO: can be removed because transport "complex" is not used anymore?
-  if(all(grep("fegat", getItems(vm_demFeSector, 3)) == 0)){
-    extended_vm_demFeSector <- new.magpie(getItems(vm_demFeSector, 1),
-                                          getItems(vm_demFeSector, 2),
-                                          c(getItems(vm_demFeSector, 3),
-                                            "segabio.fegat.trans.ETS",
-                                            "segafos.fegat.trans.ETS",
-                                            "segasyn.fegat.trans.ETS",
-                                            "segabio.fegat.trans.ES",
-                                            "segafos.fegat.trans.ES",
-                                            "segasyn.fegat.trans.ES",
-                                            "segabio.fegat.trans.other",
-                                            "segafos.fegat.trans.other",
-                                            "segasyn.fegat.trans.other"),
-                                          fill=0,
-                                          sets = getSets(vm_demFeSector))
-    extended_vm_demFeSector[, , c(getItems(vm_demFeSector, 3))] <-
-      vm_demFeSector[, , c(getItems(vm_demFeSector, 3))]
-    vm_demFeSector <- extended_vm_demFeSector
-  }
 
   # only retain combinations of SE, FE, te which actually exist in the model (qm_balFe)
   vm_prodFe <- vm_prodFe[se2fe]
@@ -118,12 +93,11 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   # FE demand per industry subsector
   o37_demFeIndSub <- readGDX(gdx, "o37_demFeIndSub", restore_zeros = FALSE,
                              format = "first_found", react = 'silent')
-  if (!(is.null(o37_demFeIndSub) | 0 == length(o37_demFeIndSub))) {
     o37_demFeIndSub <- o37_demFeIndSub[,t,]
     o37_demFeIndSub[is.na(o37_demFeIndSub)] <- 0
     # convert to EJ
     o37_demFeIndSub <- o37_demFeIndSub * TWa_2_EJ
-  }
+
 
 
   ####### Realisation specific Variables ##########
@@ -150,7 +124,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
 
   # calculate FE non-energy use and FE without non-energy use
-  if (!is.null(vm_demFENonEnergySector)) {
     vm_demFENonEnergySector <-  mselect(vm_demFENonEnergySector[demFemapping],
                                         all_enty1 = entyFe2sector2emiMkt_NonEn$all_enty,
                                         emi_sectors = entyFe2sector2emiMkt_NonEn$emi_sectors,
@@ -159,7 +132,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     # calculate FE without non-energy use
     vm_demFeSector_woNonEn <- vm_demFeSector
     vm_demFeSector_woNonEn[,,getNames(vm_demFENonEnergySector )] <- vm_demFeSector[,,getNames(vm_demFENonEnergySector )]-vm_demFENonEnergySector
-  }
+
 
   # ---- FE total production (incl. non-energy use) ------
   out <- mbind(out,
@@ -658,9 +631,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   # Industry Module ----
   ## FE demand ----
-  if (!(is.null(o37_demFeIndSub) | 0 == length(o37_demFeIndSub))) {
-    # this reporting is only available for GDXs which have the reporting
-    # parameter o37_demFeIndSub
 
     # Big ol' table of variables to report, along with indices into
     # o37_demFeIndSub to select the right sets.  Indices can be either literal
@@ -896,7 +866,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                      .select_sum_name_multiply(o37_ProdIndRoute, .mixer_to_selector(mixer), factor=1e3))) # factor 1e3 converts Gt/yr to Mt/yr
       }
     }
-  }
+
 
   #--- Transport reporting ---
 
@@ -955,7 +925,6 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
   #--- CDR ---
 
-  if(cdr_mod == "portfolio") {
     v33_FEdemand  <- readGDX(gdx, name=c("v33_FEdemand"), field="l", restore_zeros=F)[,t,] * TWa_2_EJ
     # KK: Mappings from gams set names to names in mifs. If new CDR methods are added to REMIND, please add
     # the method to CDR_te_list: "<method name in REMIND>"="<method name displayed in reporting>"
@@ -975,35 +944,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                    variable_name))
       }
     }
-  }
 
-  if(cdr_mod != "off" && cdr_mod != "portfolio"){ # compatibility with the CDR module before portfolio was added
-    vm_otherFEdemand  <- readGDX(gdx,name=c("vm_otherFEdemand"),field="l",format="first_found")[,t,]*TWa_2_EJ
 
-    s33_rockgrind_fedem <- readGDX(gdx,"s33_rockgrind_fedem", react = "silent")
-    if (is.null(s33_rockgrind_fedem)){
-      s33_rockgrind_fedem  <- new.magpie("GLO",NULL,fill=0)
-    }
-    v33_grindrock_onfield  <- readGDX(gdx,name=c("v33_grindrock_onfield"),field="l",format="first_found",react = "silent")[,t,]
-    if (is.null(v33_grindrock_onfield)){
-      v33_grindrock_onfield  <- new.magpie(getRegions(vm_otherFEdemand),getYears(vm_otherFEdemand),fill=0)
-    }
 
-    out <- mbind(out,
-                 setNames(vm_otherFEdemand[,,"feh2s"],        "FE|CDR|DAC|+|Hydrogen (EJ/yr)"),
-                 setNames(vm_otherFEdemand[,,"fegas"],        "FE|CDR|DAC|+|Gases (EJ/yr)"),
-                 setNames(vm_otherFEdemand[,,"fehes"],        "FE|CDR|DAC|+|Heat (EJ/yr)"),
-                 setNames(vm_otherFEdemand[,,"fedie"],        "FE|CDR|EW|+|Diesel (EJ/yr)"),
-                 setNames(s33_rockgrind_fedem*dimSums(v33_grindrock_onfield[,,],dim=3,na.rm=T),        "FE|CDR|EW|+|Electricity (EJ/yr)")
-    )
-    out <- mbind(out,
-                 setNames(out[,,"FE|CDR|+|Electricity (EJ/yr)"] - out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|DAC|+|Electricity (EJ/yr)")
-    )
-    out <- mbind(out,
-                 setNames(out[,,"FE|CDR|DAC|+|Hydrogen (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Gases (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Electricity (EJ/yr)"] + out[,,"FE|CDR|DAC|+|Heat (EJ/yr)"], "FE|CDR|++|DAC (EJ/yr)"),
-                 setNames(out[,,"FE|CDR|EW|+|Diesel (EJ/yr)"] + out[,,"FE|CDR|EW|+|Electricity (EJ/yr)"], "FE|CDR|++|EW (EJ/yr)")
-    )
-  }
 
   #--- Additional Variables
 
@@ -1048,8 +991,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
     out[out < 0] <- 0
   }
 
-# report feedstocks use by carrier when available
-  if (!is.null(vm_demFENonEnergySector)) {
+# report feedstocks use by carrier
     # FE non-energy use variables
     out <- mbind(out,
                   setNames(dimSums(vm_demFENonEnergySector, dim=3),
@@ -1195,12 +1137,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
           warning(e)
         }
       )
-  }
+
 
   ### FE w/o non-energy and w/o bunkers ----
-
-  # only try to add variables if non-energy use variables are available
-  if ("FE|Non-energy Use (EJ/yr)" %in% getNames(out)) {
 
     out <- mbind(
       out,
@@ -1256,7 +1195,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         out[, , "FE|w/o Non-energy Use|Solids|+|Biomass (EJ/yr)"],
         "FE|w/o Bunkers|w/o Non-energy Use|Solids|Biomass (EJ/yr)")
       )
-  }
+
 
 
   ### Regional Aggregation ----
