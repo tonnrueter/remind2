@@ -8,7 +8,7 @@ switchValuesScenConf(switchname = NULL, directory = ".")
 }
 \arguments{
 \item{switchname}{string with switch that is searched in scenario config files.
-If NULL, prints all switches with only one value in main.gms and scenario config files}
+If NULL or '', prints all switches with only one value in main.gms and scenario config files}
 
 \item{directory}{path to REMIND directory}
 }
