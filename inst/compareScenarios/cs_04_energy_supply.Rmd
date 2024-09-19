@@ -8,8 +8,8 @@ items <- c(
   "Energy Investments|Electricity|Grid|BEV Chargers",
   "Energy Investments|Electricity|Grid|VRE support",
   "Energy Investments|Electricity|Grid|Normal",
-  "Energy Investments|Electricity|Hydrogen",
   "Energy Investments|Electricity|Storage",
+  "Energy Investments|Electricity|Hydrogen",
   "Energy Investments|Electricity|Solar",
   "Energy Investments|Electricity|Wind",
   "Energy Investments|Electricity|Hydro",
@@ -17,9 +17,9 @@ items <- c(
   "Energy Investments|Electricity|Geothermal",
   "Energy Investments|Electricity|Biomass|w/ CC",
   "Energy Investments|Electricity|Biomass|w/o CC",
-  "Energy Investments|Electricity|Oil",
   "Energy Investments|Electricity|Gas|w/ CC",
   "Energy Investments|Electricity|Gas|w/o CC",
+  "Energy Investments|Electricity|Oil",
   "Energy Investments|Electricity|Coal|w/ CC",
   "Energy Investments|Electricity|Coal|w/o CC",
   NULL)
@@ -28,20 +28,19 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
 ## Capacities Electricity
-
+### Mix of Electricity Capacities
 ```{r Capacities Electricity}
 items <- c(
-  "Cap|Electricity|Solar",
-  if ("Cap|Electricity|Wind|Offshore" %in% levels(data$variable))
-    c("Cap|Electricity|Wind|Onshore", "Cap|Electricity|Wind|Offshore")
-  else
-    "Cap|Electricity|Wind",
   "Cap|Electricity|Storage|Battery",
+  "Cap|Electricity|Hydrogen",
+  "Cap|Electricity|Solar|CSP",
+  "Cap|Electricity|Solar|PV",
+  "Cap|Electricity|Wind|Offshore",
+  "Cap|Electricity|Wind|Onshore",
   "Cap|Electricity|Hydro",
   "Cap|Electricity|Nuclear",  
   "Cap|Electricity|Geothermal",
   "Cap|Electricity|Biomass",
-  "Cap|Electricity|Hydrogen",
   "Cap|Electricity|Gas|w/ CC",
   "Cap|Electricity|Gas|w/o CC",
   "Cap|Electricity|Oil|w/o CC",
@@ -52,7 +51,30 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
-## Capacities electricity line plots
+### Coal
+```{r Cap Coal}
+showLinePlots(data, "Cap|Electricity|Coal")
+```
+
+### Oil
+```{r Cap Oil}
+showLinePlots(data, "Cap|Electricity|Oil")
+```
+
+### Gas
+```{r Cap Gas}
+showLinePlots(data, "Cap|Electricity|Gas")
+```
+
+### Biomass
+```{r Cap Biomass}
+showLinePlots(data, "Cap|Electricity|Biomass")
+```
+
+### Geothermal
+```{r Cap Geothermal}
+showLinePlots(data, "Cap|Electricity|Geothermal")
+```
 
 ### Nuclear
 ```{r Cap Nuclear}
@@ -74,26 +96,8 @@ showLinePlots(data, "Cap|Electricity|Wind|Offshore")
 ### Solar
 ```{r Cap Solar}
 showLinePlots(data, "Cap|Electricity|Solar")
-```
-
-### Coal
-```{r Cap Coal}
-showLinePlots(data, "Cap|Electricity|Coal")
-```
-
-### Gas
-```{r Cap Gas}
-showLinePlots(data, "Cap|Electricity|Gas")
-```
-
-### Oil
-```{r Cap Oil}
-showLinePlots(data, "Cap|Electricity|Oil")
-```
-
-### Biomass
-```{r Cap Biomass}
-showLinePlots(data, "Cap|Electricity|Biomass")
+showLinePlots(data, "Cap|Electricity|Solar|PV")
+showLinePlots(data, "Cap|Electricity|Solar|CSP")
 ```
 
 ### Hydrogen
@@ -101,7 +105,45 @@ showLinePlots(data, "Cap|Electricity|Biomass")
 showLinePlots(data, "Cap|Electricity|Hydrogen")
 ```
 
-## PE Mix
+### Storage Battery
+```{r Cap Hydro}
+showLinePlots(data, "Cap|Electricity|Storage|Battery")
+```
+
+
+## PE Extraction (before trade)
+### PE Coal Extraction
+```{r PE Coal Extraction}
+showLinePlots(data, "Res|Extraction|Coal")
+```
+
+### PE Oil Extraction
+```{r PE Oil Extraction}
+showLinePlots(data, "Res|Extraction|Oil")
+```
+
+### PE Gas Extraction
+```{r PE Gas Extraction}
+showLinePlots(data, "Res|Extraction|Gas")
+```
+
+### PE Biomass Production
+```{r PE Biomass Production}
+items <- c(
+  "PE|Production|Biomass|Lignocellulosic|Energy Crops",
+  "PE|Production|Biomass|Lignocellulosic|Residues",
+  "PE|Production|Biomass|1st Generation",
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
+```
+
+### PE Biomass Production - Energy Crops
+```{r PE Biomass - Energy Crops}
+showLinePlots(data, "Primary Energy Production|Biomass|Energy Crops")
+```
+
+
+## PE Consumption (after trade)
 ### PE Coal
 ```{r PE Coal}
 items <- c(
@@ -131,6 +173,13 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
+### PE Oil
+```{r PE Oil}
+items <- c(
+  "PE|Oil",
+  NULL)
+showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
+```
 
 ### PE Biomass
 ```{r PE Biomass}
@@ -148,15 +197,6 @@ items <- c(
 showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 ```
 
-### PE Oil
-```{r PE Oil}
-items <- c(
-  "PE|Oil",
-  NULL)
-showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
-```
-
-## Primary Energy line plots
 ### PE Coal - Line
 ```{r PE Coal}
 showLinePlots(data, "PE|Coal")
@@ -177,32 +217,13 @@ showLinePlots(data, "PE|Gas")
 showLinePlots(data, "PE|Biomass")
 ```
 
-### PE Biomass - Energy Crops - Line
-```{r PE Biomass - Energy Crops}
-showLinePlots(data, "Primary Energy Production|Biomass|Energy Crops")
-```
-
 ### PE Geothermal - Line
 ```{r PE Geothermal}
 showLinePlots(data, "PE|Geothermal")
 ```
 
-### PE Coal Extraction
-```{r PE Coal Extraction}
-showLinePlots(data, "Res|Extraction|Coal")
-```
 
-### PE Oil Extraction
-```{r PE Oil Extraction}
-showLinePlots(data, "Res|Extraction|Oil")
-```
-
-### PE Gas Extraction
-```{r PE Gas Extraction}
-showLinePlots(data, "Res|Extraction|Gas")
-```
-
-## Secondary Energy Mixes
+## SE Mix
 
 ### SE Electricity
 ```{r SE Electricity}
@@ -211,19 +232,19 @@ tot <- "SE|Electricity"
 
 items <- c(
   "SE|Electricity|Net Imports",
+  "SE|Electricity|Hydrogen",
   "SE|Electricity|Solar|CSP",
   "SE|Electricity|Solar|PV",
   "SE|Electricity|Wind|Onshore",
   "SE|Electricity|Wind|Offshore",
   "SE|Electricity|Hydro",  
-  "SE|Electricity|Hydrogen",
   "SE|Electricity|Nuclear",  
   "SE|Electricity|Geothermal",  
   "SE|Electricity|Biomass|w/ CC",
   "SE|Electricity|Biomass|w/o CC",
-  "SE|Electricity|Oil",  
   "SE|Electricity|Gas|w/ CC",
   "SE|Electricity|Gas|w/o CC",
+  "SE|Electricity|Oil",  
   "SE|Electricity|Coal|w/ CC",
   "SE|Electricity|Coal|w/o CC",
   NULL)
@@ -402,9 +423,7 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
 
-
-
-## Secondary Energy line plots - totals
+## SE Totals - line plots
 
 ### SE Electricity
 ```{r SE Electricity total line}
@@ -421,12 +440,10 @@ showLinePlots(data, "SE|Heat")
 showLinePlots(data, "SE|Hydrogen")
 ```
 
-
 ### SE Solids
 ```{r SE Solids total line}
 showLinePlots(data, "SE|Solids")
 ```
-
 
 ### SE Liquids
 ```{r SE Liquids total line}
@@ -441,24 +458,26 @@ showLinePlots(data, "SE|Gases")
 
 
 
-## Secondary Energy line plots - detail
+## SE Details - line plots
 
 
 ### SE Electricity
 ```{r SE Electricity detail line}
-showLinePlots(data, "SE|Electricity|Gas")
+
 showLinePlots(data, "SE|Electricity|Coal")
 showLinePlots(data, "SE|Electricity|Oil")
+showLinePlots(data, "SE|Electricity|Gas")
+showLinePlots(data, "SE|Electricity|Biomass")
+showLinePlots(data, "SE|Electricity|Geothermal")
 showLinePlots(data, "SE|Electricity|Nuclear")
 showLinePlots(data, "SE|Electricity|Hydro")
-showLinePlots(data, "SE|Electricity|Hydrogen")
 showLinePlots(data, "SE|Electricity|Wind")
 showLinePlots(data, "SE|Electricity|Wind|Onshore")
 showLinePlots(data, "SE|Electricity|Wind|Offshore")
 showLinePlots(data, "SE|Electricity|Solar")
 showLinePlots(data, "SE|Electricity|Solar|PV")
 showLinePlots(data, "SE|Electricity|Solar|CSP")
-showLinePlots(data, "SE|Electricity|Biomass")
+showLinePlots(data, "SE|Electricity|Hydrogen")
 ```
 
 
@@ -475,29 +494,28 @@ showLinePlots(data, "SE|Heat|Electricity|Heat Pump")
 ### SE Hydrogen
 ```{r SE Hydrogen detail line}
 
-showLinePlots(data,  "SE|Hydrogen|Biomass|w/ CC")
-showLinePlots(data,  "SE|Hydrogen|Biomass|w/o CC")
 showLinePlots(data,  "SE|Hydrogen|Coal|w/ CC")
 showLinePlots(data,  "SE|Hydrogen|Coal|w/o CC")
-showLinePlots(data,  "SE|Hydrogen|Electricity|VRE Storage Electrolysis")
-showLinePlots(data,  "SE|Hydrogen|Electricity|Standard Electrolysis")
 showLinePlots(data,  "SE|Hydrogen|Gas|w/ CC")
 showLinePlots(data,  "SE|Hydrogen|Gas|w/o CC")
+showLinePlots(data,  "SE|Hydrogen|Biomass|w/ CC")
+showLinePlots(data,  "SE|Hydrogen|Biomass|w/o CC")
+showLinePlots(data,  "SE|Hydrogen|Electricity|VRE Storage Electrolysis")
+showLinePlots(data,  "SE|Hydrogen|Electricity|Standard Electrolysis")
 showLinePlots(data,  "SE|Hydrogen|Net Imports")
 
 ```
 
 ### SE Solids
 ```{r SE Solids detail line}
+
 showLinePlots(data, "SE|Solids|Coal")
 showLinePlots(data, "SE|Solids|Biomass")
 showLinePlots(data, "SE|Solids|Traditional Biomass")
 ```
 
 ### SE Liquids
-
 ```{r SE Liquids detail line}
-
 
 showLinePlots(data, "SE|Liquids|Fossil|Oil")
 showLinePlots(data, "SE|Liquids|Fossil|Coal|w/ CC")
@@ -507,13 +525,12 @@ showLinePlots(data, "SE|Liquids|Fossil|Gas|w/o CC")
 showLinePlots(data, "SE|Liquids|Biomass|w/ CC")
 showLinePlots(data, "SE|Liquids|Biomass|w/o CC")
 showLinePlots(data, "SE|Liquids|Hydrogen")
-
-
 ```
 
 
 ### SE Gases
 ```{r SE Gases detail line}
+
 showLinePlots(data,  c("SE|Gases|Fossil|Natural Gas", "SE|Gases|Gas"))
 showLinePlots(data, "SE|Gases|Fossil|Coal")
 showLinePlots(data, "SE|Gases|Biomass")
