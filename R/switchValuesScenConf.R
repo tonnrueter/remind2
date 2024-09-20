@@ -1,7 +1,7 @@
 #' searches all scenario config files of REMIND directory for a switch and prints the occurences
 #'
 #' @param switchname string with switch that is searched in scenario config files.
-#'                   If NULL, prints all switches with only one value in main.gms and scenario config files
+#'                   If NULL or '', prints all switches with only one value in main.gms and scenario config files
 #' @param directory path to REMIND directory
 #' @author Oliver Richters
 #' @importFrom gms readDefaultConfig
@@ -10,8 +10,8 @@
 #' @export
 switchValuesScenConf <- function(switchname = NULL, directory = ".") {
   csvfiles <- Sys.glob(c(file.path(directory, "scenario_config*.csv"),
-                            file.path(directory, "config", "scenario_config*.csv"),
-                            file.path(directory, "config", "*", "scenario_config*.csv")))
+                         file.path(directory, "config", "scenario_config*.csv"),
+                         file.path(directory, "config", "*", "scenario_config*.csv")))
   maingmsdirectory <- directory
   if (! file.exists(file.path(directory, "main.gms")) && file.exists(file.path(dirname(directory), "main.gms"))) {
     maingmsdirectory <- dirname(directory)
@@ -27,7 +27,7 @@ switchValuesScenConf <- function(switchname = NULL, directory = ".") {
     message("\n### No main.gms found in directory ", maingmsdirectory, ". Please specify REMIND directory.")
     return(NULL)
   }
-  if (is.null(switchname)) {
+  if (is.null(switchname) || switchname == "") {
     message("\n### Printing all switches with only one value in main.gms and ",
             length(csvfiles), " scenario config files:")
     switchesUniqueValue <- NULL

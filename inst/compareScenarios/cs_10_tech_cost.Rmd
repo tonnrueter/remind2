@@ -42,9 +42,13 @@ showLinePlots(data, "Tech|Heat|Coal|Capital Costs")
 ## Learning renewables and storage vs. cumulative capacity (regional comparison)
 ```{r Learning renewables and storage vs. cumulative capacity (regional comparison)}
 showMultiLinePlotsByVariable(data, "Tech|Electricity|Solar|PV|Capital Costs", "Cumulative Cap|Electricity|Solar", scales = "fixed")
-showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Onshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Onshore", scales = "fixed", showHistorical = FALSE)
-showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Offshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Offshore", scales = "fixed", showHistorical = FALSE)
-showMultiLinePlotsByVariable(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs", "Cumulative Cap|Electricity|Storage|Battery|For PV", scales = "fixed", showHistorical = FALSE)
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Solar|PV|Capital Costs", "Cumulative Cap|Electricity|Solar", scales = "fixed", logscale = "xy")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Onshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Onshore", scales = "fixed")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Onshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Onshore", scales = "fixed", logscale = "xy")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Offshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Offshore", scales = "fixed")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Wind|Offshore|Capital Costs", "Cumulative Cap|Electricity|Wind|Offshore", scales = "fixed", logscale = "xy")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs", "Cumulative Cap|Electricity|Storage|Battery|For PV", scales = "fixed")
+showMultiLinePlotsByVariable(data, "Tech|Electricity|Storage|Battery|For PV|Capital Costs", "Cumulative Cap|Electricity|Storage|Battery|For PV", scales = "fixed", logscale = "xy")
 ```
 
 ## Capital cost of non-renewables vs. years (regional comparison)
