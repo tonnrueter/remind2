@@ -222,16 +222,16 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   op_costs <- function(ei,eo,te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost) {
     # Check whether a mapping with energy transfering technologies is given or just technologies
     if (!is.null(e2e)) {
-      sub_e2e         <- e2e[(e2e$all_enty %in% ei) & (e2e$all_enty1 %in% eo) & (e2e$all_te %in% te),]
+      sub_e2e         <- e2e[(e2e$all_enty %in% ei) & (e2e$all_enty1 %in% eo) & (e2e$all_te %in% te) & (e2e$all_te %in% teall2rlf$all_te),]
       # Save technologies to extra variables because in the "else" case there is no sub_e2e list that could be used
       e2e_allte       <- sub_e2e$all_te
     } else {
-      e2e_allte       <- te
+      e2e_allte       <- intersect(te, teall2rlf$all_te)
     }
 
     vm_cap <- dimSums(vm_cap,dim=3.2,na.rm = T) # get rid of grades which are not used in calculations below because all other variables dont have them neither
 
-    out <- dimSums(                                       # sum OMF over technologies
+    out <- dimSums(                                       # sum OMF over technologies (fixed operation & maintenance costs)
       collapseNames(pm_data[,,"omf"])[,,e2e_allte] *
         (dimSums((v_investcost[,,e2e_allte] * vm_cap[,,e2e_allte])[teall2rlf],dim=3.2,na.rm=T)   # sum over rlf
         )[,, e2e_allte],dim=3, na.rm=T)
