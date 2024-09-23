@@ -26,8 +26,9 @@ Read in primary energy information from GDX file, information used in
 convGDX2MIF.R for the reporting
 }
 \examples{
-
-\dontrun{reportPE(gdx)}
+\dontrun{
+reportPE(gdx)
+}
 
 }
 \author{

@@ -224,10 +224,6 @@ reportTax <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,5)
   p21_taxrevPE2SE0 <- readGDX(gdx, name=c("p21_taxrevPE2SE0"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevPE2SE0,"Net Taxes|PE2SE Technologies (billion US$2017/yr)"))
 
-  # exports tax
-  p21_taxrevXport0 <- readGDX(gdx, name=c("p21_taxrevXport0"), format= "first_found")[,t,]*1000
-  out <- mbind(out, setNames(p21_taxrevXport0,"Net Taxes|Exports (billion US$2017/yr)"))
-
   # SO2 tax
   p21_taxrevSO20 <- readGDX(gdx, name=c("p21_taxrevSO20"), format= "first_found")[,t,]*1000
   out <- mbind(out, setNames(p21_taxrevSO20,"Net Taxes|SO2 (billion US$2017/yr)"))
