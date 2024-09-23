@@ -95,21 +95,21 @@ reportSDPVariables <- function(
            + output[,,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"] * 0.36),
         "UE|Electricity and Hydrogen|Share|Transport|Pass (%)")},
 
-      if("Intensity|GDP|Final Energy|Transport (MJ/US$2005)" %!in% getNames(output)){
+      if("Intensity|GDP|Final Energy|Transport (MJ/US$2017)" %!in% getNames(output)){
       setNames(
         1e3*(output[,,"FE|Transport|+|Electricity (EJ/yr)"]
              + output[,,"FE|Transport|+|Liquids (EJ/yr)"]
              + output[,,"FE|Transport|+|Hydrogen (EJ/yr)"])
-        / output[,,"GDP|MER (billion US$2005/yr)"],
-        "Intensity|GDP|Final Energy|Transport (MJ/US$2005)")},
+        / output[,,"GDP|MER (billion US$2017/yr)"],
+        "Intensity|GDP|Final Energy|Transport (MJ/US$2017)")},
 
-      if("Intensity|GDP|Useful Energy|Transport (MJ/US$2005)" %!in% getNames(output)){
+      if("Intensity|GDP|Useful Energy|Transport (MJ/US$2017)" %!in% getNames(output)){
       setNames(
         1e3 * (output[,,"FE|Transport|Pass|+|Liquids (EJ/yr)"] * 0.23
                + output[,,"FE|Transport|Pass|+|Electricity (EJ/yr)"] * 0.64
                + output[,,"FE|Transport|Pass|+|Hydrogen (EJ/yr)"] * 0.36)
-        / output[,,"GDP|MER (billion US$2005/yr)"],
-        "Intensity|GDP|Useful Energy|Transport (MJ/US$2005)")})
+        / output[,,"GDP|MER (billion US$2017/yr)"],
+        "Intensity|GDP|Useful Energy|Transport (MJ/US$2017)")})
 
 
     return(tmp)
@@ -202,15 +202,15 @@ reportSDPVariables <- function(
   #SDG|SDG07|Intensity|GDP|UE
   addIntensityUE <- function(output){
 
-    vars <- c("UE|per capita|Transport (GJ/cap/yr)","UE|per capita|Industry (GJ/cap/yr)","UE|per capita|Buildings (GJ/cap/yr)","Population (million)","GDP|MER (billion US$2005/yr)")
+    vars <- c("UE|per capita|Transport (GJ/cap/yr)","UE|per capita|Industry (GJ/cap/yr)","UE|per capita|Buildings (GJ/cap/yr)","Population (million)","GDP|MER (billion US$2017/yr)")
     if(!(all(vars %in% getNames(output)))) # required variables not found
       return()
 
     tmp <- mbind(
-  if("Intensity|GDP|UE (MJ/US$2005)" %!in% getNames(output)){
+  if("Intensity|GDP|UE (MJ/US$2017)" %!in% getNames(output)){
       setNames(
-        ((output[,,"UE|per capita|Transport (GJ/cap/yr)"] + output[,,"UE|per capita|Industry (GJ/cap/yr)"]+ output[,,"UE|per capita|Buildings (GJ/cap/yr)"]) / 1e3 *output[,,"Population (million)"]) / (output[,,"GDP|MER (billion US$2005/yr)"] * 1e9),
-        "Intensity|GDP|UE (MJ/US$2005)")})
+        ((output[,,"UE|per capita|Transport (GJ/cap/yr)"] + output[,,"UE|per capita|Industry (GJ/cap/yr)"]+ output[,,"UE|per capita|Buildings (GJ/cap/yr)"]) / 1e3 *output[,,"Population (million)"]) / (output[,,"GDP|MER (billion US$2017/yr)"] * 1e9),
+        "Intensity|GDP|UE (MJ/US$2017)")})
 
     return(tmp)
   }

@@ -243,14 +243,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   ## capital costs ----
 
   category <- "Capital Costs"
-  unit <- "US$2005/kW"
+  unit <- "US$2017/kW"
   factor <- 1000.
 
   tmp <- bind_category(tmp, v_investcost, category, unit, factor, techmap)
   int2ext <- get_global_mapping(category, unit, techmap)
 
   if (CDR_mod != "off") {
-    unit <- "US$2005/t CO2/yr"
+    unit <- "US$2017/t CO2/yr"
     factor <- 1000 / 3.6
     tmp <- bind_category(tmp, v_investcost, category, unit, factor, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
@@ -259,7 +259,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   ### Capital cost including adjustment cost ----
   if (!is.null(v_adjustteinv_avg)) {
     category <- "Capital Costs|w/ Adj Costs"
-    unit <- "US$2005/kW"
+    unit <- "US$2017/kW"
     factor <- 1000.
 
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, techmap)
@@ -267,13 +267,13 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   }
 
   if (tran_mod == "complex") {
-    unit <- "US$2005/veh"
+    unit <- "US$2017/veh"
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, carmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, carmap))
   }
 
   if (CDR_mod != "off") {
-    unit <- "US$2005/t CO2/yr"
+    unit <- "US$2017/t CO2/yr"
     factor <- 1000 / 3.6
     tmp <- bind_category(tmp, v_investcost + v_adjustteinv_avg, category, unit, factor, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
@@ -322,14 +322,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   ## o&m fix costs ----
   category <- "OM Cost|fixed"
-  unit <- "US$2005/kW/yr"
+  unit <- "US$2017/kW/yr"
   tmp <- bind_category(tmp, omf * v_investcost, category, unit, 1000.)
   int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
 
   if (tran_mod == "complex") {
     ## op costs for cars ###
     category <- "Op Costs"
-    unit <- "US$2005/veh/yr"
+    unit <- "US$2017/veh/yr"
     tmp <- bind_category(tmp, omf * v_investcost, category, unit, 1000., carmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, carmap))
   }
@@ -337,14 +337,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   if (CDR_mod != "off") {
     ## op costs for CDR technologies ###
     category <- "OM Cost|fixed"
-    unit <- "US$2005/t CO2/yr"
+    unit <- "US$2017/t CO2/yr"
     tmp <- bind_category(tmp, omf * v_investcost, category, unit, 1000 / 3.66, cdrmap)
     int2ext <- c(int2ext, get_global_mapping(category, unit, cdrmap))
   }
 
   ## o&m variable costs ----
   category <- "OM Cost|variable"
-  unit <- "US$2005/GJ"
+  unit <- "US$2017/GJ"
   tmp <- bind_category(tmp, omv, category, unit, 1000. / 31.7098)
   int2ext <- c(int2ext, get_global_mapping(category, unit, techmap))
 

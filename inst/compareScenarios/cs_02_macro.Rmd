@@ -265,10 +265,10 @@ kaya <-
 kayaUnits <- tribble(
   ~variable, ~unit,
   "Population", "million",
-  "GDP_MER_by_Pop", "billion US$2005/yr/million",
-  "GDP_PPP_by_Pop", "billion US$2005/yr/million",
-  "FE_by_GDP_MER", "EJ/billion US$2005",
-  "FE_by_GDP_PPP", "EJ/billion US$2005",
+  "GDP_MER_by_Pop", "billion US$2017/yr/million",
+  "GDP_PPP_by_Pop", "billion US$2017/yr/million",
+  "FE_by_GDP_MER", "EJ/billion US$2017",
+  "FE_by_GDP_PPP", "EJ/billion US$2017",
   "emiCO2_by_FE", "EJ/Mt CO2")
 kayaVars <- kayaUnits$variable
 kaya <-

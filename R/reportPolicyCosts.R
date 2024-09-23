@@ -1,9 +1,9 @@
 #' Read in GDX and calculate policy costs, used in convGDX2MIF.R for the
 #' reporting
-#' 
+#'
 #' Read in GDX and calculate policy costs functions
-#' 
-#' 
+#'
+#'
 #' @param gdx a GDX as created by readGDX, or the file name of a gdx
 #' @param gdx_ref a reference GDX as created by readGDX, or the file name of a gdx
 #' @param regionSubsetList a list containing regions to create report variables region
@@ -11,12 +11,12 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
-#' 
+#'
 #' @author Lavinia Baumstark
 #' @examples
-#' 
+#'
 #' \dontrun{reportPolicyCosts(gdx)}
-#' 
+#'
 #' @export
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears mbind setNames
@@ -29,7 +29,7 @@ reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL,t=c(seq(2005,206
   pm_pvp_bau<- readGDX(gdx_ref,name=c("pm_pvp"),format = "first_found")
   pm_pvp    <- readGDX(gdx,name=c("pm_pvp"),format = "first_found")
   ## variables
-  cons_bau  <- readGDX(gdx_ref,name=c("vm_cons"),field="l",restore_zeros=FALSE,format="first_found") 
+  cons_bau  <- readGDX(gdx_ref,name=c("vm_cons"),field="l",restore_zeros=FALSE,format="first_found")
   gdp_bau   <- readGDX(gdx_ref,name=c("vm_cesIO"),field="l",restore_zeros=FALSE,format="first_found")[,,"inco"]
   Xport_bau <- readGDX(gdx_ref,name=c("vm_Xport"),field = "l",format = "first_found")
   Mport_bau <- readGDX(gdx_ref,name=c("vm_Mport"),field = "l",format = "first_found")
@@ -43,7 +43,7 @@ reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL,t=c(seq(2005,206
   v_costfu         <- readGDX(gdx,name=c("v_costFu","v_costfu"),         field="l",restore_zeros=FALSE,format="first_found")
   v_costom         <- readGDX(gdx,name=c("v_costOM","v_costom"),         field="l",                    format="first_found")
   v_costin         <- readGDX(gdx,name=c("v_costInv","v_costin"),         field = "l",format = "first_found")
-  
+
   ####### calculate minimal temporal and regional resolution #####
   y <- Reduce(intersect,list(getYears(cons),getYears(gdp),getYears(Xport),getYears(Mport),getYears(pm_pvp)))
   cons_bau  <- cons_bau[,y,]
@@ -81,16 +81,16 @@ reportPolicyCosts <- function(gdx,gdx_ref,regionSubsetList=NULL,t=c(seq(2005,206
   currAcc_bau <- dimSums( (Xport_bau[,,trade] - Mport_bau[,,trade] ) * pm_pvp_bau[,,trade]/setNames(pm_pvp_bau[,,'good'],NULL),dim = 3)
   currAcc     <- dimSums( (Xport[,,trade] - Mport[,,trade] ) * pm_pvp[,,trade]/setNames(pm_pvp[,,'good'],NULL),dim = 3)
   ####### calculate reporting parameters ############
-  tmp <- NULL 
-  tmp <- mbind(tmp,setNames((cons_bau - cons) * 1000, "Policy Cost|Consumption Loss (billion US$2005/yr)" ))
+  tmp <- NULL
+  tmp <- mbind(tmp,setNames((cons_bau - cons) * 1000, "Policy Cost|Consumption Loss (billion US$2017/yr)" ))
   tmp <- mbind(tmp,setNames((cons_bau - cons)/(cons_bau + 1e-10) * 100, "Policy Cost|Consumption Loss|Relative to Reference Consumption (%)"))
-  tmp <- mbind(tmp,setNames((gdp_bau - gdp) * 1000, "Policy Cost|GDP Loss (billion US$2005/yr)" ))
+  tmp <- mbind(tmp,setNames((gdp_bau - gdp) * 1000, "Policy Cost|GDP Loss (billion US$2017/yr)" ))
   tmp <- mbind(tmp,setNames((gdp_bau - gdp)/(gdp_bau + 1e-10) * 100, "Policy Cost|GDP Loss|Relative to Reference GDP (%)"))
-  tmp <- mbind(tmp,setNames((v_costfu +v_costin + v_costom  - (v_costfu_bau + v_costin_bau + v_costom_bau)) * 1000, "Policy Cost|Additional Total Energy System Cost (billion US$2005/yr)" ))
+  tmp <- mbind(tmp,setNames((v_costfu +v_costin + v_costom  - (v_costfu_bau + v_costin_bau + v_costom_bau)) * 1000, "Policy Cost|Additional Total Energy System Cost (billion US$2017/yr)" ))
   # Policy costs calculated as consumption losses net the effect of climate-policy induced changes in the current account
-  tmp <- mbind(tmp,setNames(((cons_bau + currAcc_bau) - (cons + currAcc)) * 1000, "Policy Cost|Consumption + Current Account Loss (billion US$2005/yr)" ))
+  tmp <- mbind(tmp,setNames(((cons_bau + currAcc_bau) - (cons + currAcc)) * 1000, "Policy Cost|Consumption + Current Account Loss (billion US$2017/yr)" ))
   tmp <- mbind(tmp,setNames(((cons_bau + currAcc_bau) - (cons + currAcc))/(cons_bau + currAcc_bau + 1e-10) * 100, "Policy Cost|Consumption + Current Account Loss|Relative to Reference Consumption + Current Account (%)" ))
-  
+
   # add other region aggregations
   if (!is.null(regionSubsetList))
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))

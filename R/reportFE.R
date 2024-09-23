@@ -532,7 +532,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
   if(tran_mod == "edge_esm") {
     vm_demFeForEs <- readGDX(gdx,name = c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found",react = "silent")[,t,]*TWa_2_EJ
   }
-  
+
   # CES nodes, convert from TWa to EJ
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")[,t,]*TWa_2_EJ
 
@@ -627,7 +627,7 @@ reportFE <- function(gdx, regionSubsetList = NULL,
                                     dim = 3, na.rm = TRUE),
                             "UE|Buildings (EJ/yr)"))
     }
-  } 
+  }
 
   # Industry Module ----
   ## FE demand ----
@@ -831,15 +831,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
         "Production|Industry|Steel (Mt/yr)",                          c("ue_steel_primary", "ue_steel_secondary"),
         "Production|Industry|Steel|Primary (Mt/yr)",                  "ue_steel_primary",
         "Production|Industry|Steel|Secondary (Mt/yr)",                "ue_steel_secondary",
-        "Value Added|Industry|Chemicals (billion US$2005/yr)",        "ue_chemicals",
-        "Value Added|Industry|Other Industry (billion US$2005/yr)",   "ue_otherInd")
+        "Value Added|Industry|Chemicals (billion US$2017/yr)",        "ue_chemicals",
+        "Value Added|Industry|Other Industry (billion US$2017/yr)",   "ue_otherInd")
 
       # calculate and bind to out
       out <- mbind(
         c(list(out), # pass a list of magpie objects
           # as vm_cesIO was multiplied by TWa_2_EJ in the beginning of the
           # script, needs to be converted back to REMIND units here and then
-          # scaled by 1e3 for obtaining Mt or billion US$2005
+          # scaled by 1e3 for obtaining Mt or billion US$2017
           .select_sum_name_multiply(vm_cesIO, .mixer_to_selector(mixer),
                                     factor=1e3 / TWa_2_EJ),
           # report CES node of total industry as internal variable (for model
@@ -1235,9 +1235,9 @@ reportFE <- function(gdx, regionSubsetList = NULL,
             'FE|Industry|Steel|++|Secondary (EJ/yr)',
             'Production|Industry|Steel|Secondary (Mt/yr)',
             'FE|Industry|+++|Chemicals (EJ/yr)',
-            'Value Added|Industry|Chemicals (billion US$2005/yr)',
+            'Value Added|Industry|Chemicals (billion US$2017/yr)',
             'FE|Industry|+++|Other Industry (EJ/yr)',
-            'Value Added|Industry|Other Industry (billion US$2005/yr)') %>%
+            'Value Added|Industry|Other Industry (billion US$2017/yr)') %>%
           `%in%`(getNames(out)))) {
 
     out <- mbind(
@@ -1265,15 +1265,15 @@ reportFE <- function(gdx, regionSubsetList = NULL,
 
       setNames(
         ( out[,,'FE|Industry|+++|Chemicals (EJ/yr)']
-        / out[,,'Value Added|Industry|Chemicals (billion US$2005/yr)']
+        / out[,,'Value Added|Industry|Chemicals (billion US$2017/yr)']
         ) * 1e3,
-        'FE|Industry|Specific Energy Consumption|Chemicals (MJ/US$2005)'),
+        'FE|Industry|Specific Energy Consumption|Chemicals (MJ/US$2017)'),
 
       setNames(
         ( out[,,'FE|Industry|+++|Other Industry (EJ/yr)']
-        / out[,,'Value Added|Industry|Other Industry (billion US$2005/yr)']
+        / out[,,'Value Added|Industry|Other Industry (billion US$2017/yr)']
         ) * 1e3,
-        'FE|Industry|Specific Energy Consumption|Other Industry (MJ/US$2005)')
+        'FE|Industry|Specific Energy Consumption|Other Industry (MJ/US$2017)')
     )
   }
 

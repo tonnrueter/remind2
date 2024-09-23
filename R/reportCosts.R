@@ -140,9 +140,9 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
     #febalForUe.m <- dimReduce(febalForUe.m, dim_exclude = 2)
     demFeTrans.m <- readGDX(gdx,name=c("q35_demFeTrans"),types="equations",restore_zeros=FALSE,field="m",format="first_found")
     y1 <- Reduce(intersect,list(getYears(demFeTrans.m),getYears(budget.m),getYears(vm_demFeSector)))
-    price_fe_trans_emiMkt <- abs(demFeTrans.m[,y1,]/(budget.m[,y1,]+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in transportation per emission market (US$2005/GJ)
+    price_fe_trans_emiMkt <- abs(demFeTrans.m[,y1,]/(budget.m[,y1,]+1e-10)) * 1000 / pm_conv_TWa_EJ # price of final energy in transportation per emission market (US$2017/GJ)
     quant_fe_trans_emiMkt <-  dimSums(dimSums(vm_demFeSector[,y1,"trans"],dim=c(3.1), na.rm=T),dim=c(3.2), na.rm=T)[,,getNames(price_fe_trans_emiMkt[,y1,])] # quantity of final energy in transportation per emission market
-    price_fe_trans <- dimSums(price_fe_trans_emiMkt*quant_fe_trans_emiMkt,dim=3.2,na.rm=T) / dimSums(quant_fe_trans_emiMkt,dim=3,na.rm=T) # price of final energy in transportation (US$2005/GJ)
+    price_fe_trans <- dimSums(price_fe_trans_emiMkt*quant_fe_trans_emiMkt,dim=3.2,na.rm=T) / dimSums(quant_fe_trans_emiMkt,dim=3,na.rm=T) # price of final energy in transportation (US$2017/GJ)
     febalForUe.m <- price_fe_trans
   } else {
     febalForUe.m <- readGDX(gdx,name=c("q_balFeForUe","q_balFe","q_febal"),types="equations",field="m",format="first_found",restore_zeros=FALSE)
@@ -264,18 +264,18 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   ########## Biomass costs ##############
   #######################################
 
-  if(!is.null(cost_mag)) {tmp <- mbind(tmp,setNames(cost_mag * 1000, "Costs|Biomass|MAgPIE (billion US$2005/yr)"))}
-  tmp <- mbind(tmp,setNames(cost_emu_pre                     * 1000, "Costs|Biomass|Price integral presolve (billion US$2005/yr)"))
-  tmp <- mbind(tmp,setNames(cost_emu                         * 1000, "Costs|Biomass|Price integral (billion US$2005/yr)"))
+  if(!is.null(cost_mag)) {tmp <- mbind(tmp,setNames(cost_mag * 1000, "Costs|Biomass|MAgPIE (billion US$2017/yr)"))}
+  tmp <- mbind(tmp,setNames(cost_emu_pre                     * 1000, "Costs|Biomass|Price integral presolve (billion US$2017/yr)"))
+  tmp <- mbind(tmp,setNames(cost_emu                         * 1000, "Costs|Biomass|Price integral (billion US$2017/yr)"))
   tmp <- mbind(tmp,setNames(bio_cost_adjfac,                         "Costs|Biomass|Adjfactor (unitless)"))
 
-  if(!is.null(totLUcosts))        {tmp <- mbind(tmp,setNames(totLUcosts                                 * 1000, "Costs|Land Use (billion US$2005/yr)"))}
-  if(!is.null(totLUcostsWithMAC)) {tmp <- mbind(tmp,setNames(totLUcostsWithMAC                          * 1000, "Costs|Land Use with MAC-costs from MAgPIE (billion US$2005/yr)"))}
-  if(!is.null(costsLuMACLookup))  {tmp <- mbind(tmp,setNames(costsLuMACLookup                           * 1000, "Costs|Land Use|MAC-costs Lookup (billion US$2005/yr)"))}
-  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpie],   dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs (billion US$2005/yr)"))
-  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpieN2O],dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs|N2O (billion US$2005/yr)"))
-  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpieCH4],dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs|CH4 (billion US$2005/yr)"))
-  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpieCO2],dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs|CO2 (billion US$2005/yr)"))
+  if(!is.null(totLUcosts))        {tmp <- mbind(tmp,setNames(totLUcosts                                 * 1000, "Costs|Land Use (billion US$2017/yr)"))}
+  if(!is.null(totLUcostsWithMAC)) {tmp <- mbind(tmp,setNames(totLUcostsWithMAC                          * 1000, "Costs|Land Use with MAC-costs from MAgPIE (billion US$2017/yr)"))}
+  if(!is.null(costsLuMACLookup))  {tmp <- mbind(tmp,setNames(costsLuMACLookup                           * 1000, "Costs|Land Use|MAC-costs Lookup (billion US$2017/yr)"))}
+  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpie],   dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs (billion US$2017/yr)"))
+  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpieN2O],dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs|N2O (billion US$2017/yr)"))
+  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpieCH4],dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs|CH4 (billion US$2017/yr)"))
+  if(!is.null(getNames(costsMAC))) tmp <- mbind(tmp,setNames(dimSums(costsMAC[,,emiMacMagpieCO2],dim=3,na.rm=T) * 1000, "Costs|Land Use|MAC-costs|CO2 (billion US$2017/yr)"))
 
   tmp    <- tmp[,y,]
 
@@ -284,7 +284,7 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   #######################################
 
   ##### Total
-  tmp  <- mbind(tmp,setNames(v_costfu * 1000, "Fuel supply costs (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(v_costfu * 1000, "Fuel supply costs (billion US$2017/yr)"))
 
   ##### Fuel costs for own ESM
   regi_on_gdx <- unique(readGDX(gdx, name = "regi2iso")[,1])
@@ -294,62 +294,62 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   cost <- v_costfu * 1000 - setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Coal ($/GJ)"] * Xport[,,"pecoal"]  * pm_conv_TWa_EJ,NULL) -
                             setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Gas ($/GJ)"]       * Xport[,,"pegas"]   * pm_conv_TWa_EJ,NULL) -
                             setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Oil ($/GJ)"]       * Xport[,,"peoil"]   * pm_conv_TWa_EJ,NULL) -
-                            setNames(output[regi_on_gdx,,"Price|Primary Energy|Biomass|Modern|Rawdata (US$2005/GJ)"]  * Xport[,,"pebiolc"] * pm_conv_TWa_EJ,NULL) -
+                            setNames(output[regi_on_gdx,,"Price|Primary Energy|Biomass|Modern|Rawdata (US$2017/GJ)"]  * Xport[,,"pebiolc"] * pm_conv_TWa_EJ,NULL) -
                             setNames(output[regi_on_gdx,,"Res|Average Supply Costs|Uranium ($/GJ)"]   * Xport[,,"peur"]    * pm_conv_TWa_EJ * 4.43,NULL) +
                             dimSums(Mport[,,trade_pe] * pebal.m[,,trade_pe] / (budget.m + 1.e-10), dim=3,na.rm=T) * 1000 # imports valued with domestic market price
 
-  tmp  <- mbind(tmp,setNames(cost, "Fuel costs for own ESM (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Fuel costs for own ESM (billion US$2017/yr)"))
 
   ##### Import fuel costs
   cost<- cost_Mport(trade_pe,pm_petradecost2_Mp_fin,pm_pvp,budget.m,Mport)
-  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs (billion US$2017/yr)"))
 
   ###### Import fuel costs|Coal
   cost<- cost_Mport("pecoal",pm_petradecost2_Mp_fin,pm_pvp,budget.m,Mport)
-  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Coal (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Coal (billion US$2017/yr)"))
 
   ###### Import fuel costs|Gas
   cost<- cost_Mport("pegas",pm_petradecost2_Mp_fin,pm_pvp,budget.m,Mport)
-  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Gas (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Gas (billion US$2017/yr)"))
 
   ###### Import fuel costs|Oil
   cost<- cost_Mport("peoil",pm_petradecost2_Mp_fin,pm_pvp,budget.m,Mport)
-  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Oil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Oil (billion US$2017/yr)"))
 
   ###### Import fuel costs|Uranium
   cost<- cost_Mport("peur",pm_petradecost2_Mp_fin,pm_pvp,budget.m,Mport)
-  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Uranium (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Uranium (billion US$2017/yr)"))
 
   ###### Import fuel costs|Pebiolc
   cost<- cost_Mport("pebiolc",pm_petradecost2_Mp_fin,pm_pvp,budget.m,Mport)
-  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Biomass (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Import Fuel costs|+|Biomass (billion US$2017/yr)"))
 
   ###### Export Fuel Costs|Coal
   cost <- output[regi_on_gdx,,"Res|Average Supply Costs|Coal ($/GJ)"] * Xport[,,"pecoal"] * pm_conv_TWa_EJ
-  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Coal (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Coal (billion US$2017/yr)"))
 
   ###### Export Fuel Costs|Gas
   cost <- output[regi_on_gdx,,"Res|Average Supply Costs|Gas ($/GJ)"] * Xport[,,"pegas"] * pm_conv_TWa_EJ
-  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Gas (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Gas (billion US$2017/yr)"))
 
   ###### Export Fuel Costs|Oil
   cost <- output[regi_on_gdx,,"Res|Average Supply Costs|Oil ($/GJ)"] * Xport[,,"peoil"] * pm_conv_TWa_EJ
-  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Oil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Oil (billion US$2017/yr)"))
 
   ###### Export Fuel Costs|Biomass
   #cost <- output[regi_on_gdx,,"Res|Average Supply Costs|Biomass ($/GJ)"] * Xport[,,"pebiolc"]
-  #tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Biomass (billion US$2005/yr)"))
+  #tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Biomass (billion US$2017/yr)"))
 
   ###### Export Fuel Costs|Uranium
   cost <- output[regi_on_gdx,,"Res|Average Supply Costs|Uranium ($/GJ)"] * Xport[,,"peur"] * p_eta_conv[,,"tnrs"] * pm_conv_TWa_EJ
-  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Uranium (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost, "Export Fuel costs|Uranium (billion US$2017/yr)"))
 
   #######################################
   ########## Energy System costs ########
   #######################################
 
-  cost <- (v_costin + v_costom) * 1000 + tmp[,,"Fuel costs for own ESM (billion US$2005/yr)"]
-  tmp  <- mbind(tmp,setNames(cost,"Energy system costs (billion US$2005/yr)"))
+  cost <- (v_costin + v_costom) * 1000 + tmp[,,"Fuel costs for own ESM (billion US$2017/yr)"]
+  tmp  <- mbind(tmp,setNames(cost,"Energy system costs (billion US$2017/yr)"))
 
   #######################################
   ########## Energy costs ###############
@@ -358,27 +358,27 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
     x[setdiff(getRegions(x), c('GLO', names(regionSubsetList))),,]
   }
 
-  price_feeli <- dimSums(output[,,'Price|Final Energy|Industry|Electricity (US$2005/GJ)'],
+  price_feeli <- dimSums(output[,,'Price|Final Energy|Industry|Electricity (US$2017/GJ)'],
                          dim = 3, na.rm = TRUE) %>%
     .drop_GLOs()
-  price_fegai <- dimSums(output[,,'Price|Final Energy|Industry|Gases (US$2005/GJ)'],
+  price_fegai <- dimSums(output[,,'Price|Final Energy|Industry|Gases (US$2017/GJ)'],
                          dim = 3, na.rm = TRUE) %>%
     .drop_GLOs()
-  price_feh2i <- dimSums(output[,,'Price|Final Energy|Industry|Hydrogen (US$2005/GJ)'],
+  price_feh2i <- dimSums(output[,,'Price|Final Energy|Industry|Hydrogen (US$2017/GJ)'],
                          dim = 3, na.rm = TRUE) %>%
     .drop_GLOs()
-  price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2005/GJ)")
+  price_fedie <- abs(febalForUe.m[,,"fedie"]/(budget.m+1e-10)) * 1000 / pm_conv_TWa_EJ # "Price|Final Energy|Diesel (US$2017/GJ)")
 
   tmp  <- mbind(
     tmp,
 
-    setNames(price_feeli * CDR_FEdemand[,,"feels"] * pm_conv_TWa_EJ, "Energy costs CDR|Electricity (billion US$2005/yr)"),
-    setNames(price_fedie * CDR_FEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2005/yr)"),
+    setNames(price_feeli * CDR_FEdemand[,,"feels"] * pm_conv_TWa_EJ, "Energy costs CDR|Electricity (billion US$2017/yr)"),
+    setNames(price_fedie * CDR_FEdemand[,,"fedie"] * pm_conv_TWa_EJ, "Energy costs CDR|Diesel (billion US$2017/yr)"),
     setNames((price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
-                     "Energy costs CDR|Heat (billion US$2005/yr)"),
+                     "Energy costs CDR|Heat (billion US$2017/yr)"),
     setNames((price_feeli * CDR_FEdemand[,,"feels"] + price_fedie * CDR_FEdemand[,,"fedie"] +
                                price_fegai * CDR_FEdemand[,,"fegas"] + price_feh2i * CDR_FEdemand[,,"feh2s"]) * pm_conv_TWa_EJ,
-                             "Energy costs CDR (billion US$2005/yr)"))
+                             "Energy costs CDR (billion US$2017/yr)"))
 
   #######################################
   ########## Total Energy costs #########
@@ -388,154 +388,154 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   cost1 <- op_costs(ei=temapall$all_enty,eo=sety,te=teall2rlf$all_te,e2e=temapall,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs(ei=temapall$all_enty,eo=fety,te=teall2rlf$all_te,e2e=temapall,teall2rlf=teall2rlf,vm_prodE=vm_prodFe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost3 <- op_costs(ei=NULL,eo=NULL,te=tenotransform,e2e=NULL,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost1 + cost2 + cost3 + output[regi_on_gdx,,"Energy Investments|Supply (billion US$2005/yr)"], "Total Energy costs (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1 + cost2 + cost3 + output[regi_on_gdx,,"Energy Investments|Supply (billion US$2017/yr)"], "Total Energy costs (billion US$2017/yr)"))
 
   ##### Electricity|Fossil
   cost <- op_costs(ei=petyf,eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Fossil (billion US$2005/yr)"], "Total Energy costs|Electricity|Fossil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Fossil (billion US$2017/yr)"], "Total Energy costs|Electricity|Fossil (billion US$2017/yr)"))
 
   ##### Electricity|Non-fossil
   cost <- op_costs(ei=setdiff(pe2se$all_enty,petyf),eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Non-Fossil (billion US$2005/yr)"], "Total Energy costs|Electricity|Non-Fossil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Non-Fossil (billion US$2017/yr)"], "Total Energy costs|Electricity|Non-Fossil (billion US$2017/yr)"))
 
   ##### Electricity|Biomass
   cost <- op_costs(ei="pebiolc",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Biomass (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Biomass (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Biomass (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Biomass (billion US$2017/yr)"))
 
   cost <- op_costs(ei="pebiolc",eo="seel",te=teccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Biomass|w/ CC (billion US$2005/yr)"], "Total Energy costs|Electricity|Biomass|+|w/ CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Biomass|w/ CC (billion US$2017/yr)"], "Total Energy costs|Electricity|Biomass|+|w/ CC (billion US$2017/yr)"))
 
   cost <- op_costs(ei="pebiolc",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Biomass|w/o CC (billion US$2005/yr)"], "Total Energy costs|Electricity|Biomass|+|w/o CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Biomass|w/o CC (billion US$2017/yr)"], "Total Energy costs|Electricity|Biomass|+|w/o CC (billion US$2017/yr)"))
 
   ##### Electricity|Coal
   cost <- op_costs(ei="pecoal",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  cost <- cost + output[regi_on_gdx,,"Energy Investments|Electricity|Coal (billion US$2005/yr)"]
-  tmp  <- mbind(tmp,setNames(cost, "Total Energy costs|Electricity|+|Coal (billion US$2005/yr)"))
+  cost <- cost + output[regi_on_gdx,,"Energy Investments|Electricity|Coal (billion US$2017/yr)"]
+  tmp  <- mbind(tmp,setNames(cost, "Total Energy costs|Electricity|+|Coal (billion US$2017/yr)"))
 
   cost <- op_costs(ei="pecoal",eo="seel",te=teccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  cost <- cost + output[regi_on_gdx,,"Energy Investments|Electricity|Coal|w/ CC (billion US$2005/yr)"]
-  tmp  <- mbind(tmp,setNames(cost, "Total Energy costs|Electricity|Coal|+|w/ CC (billion US$2005/yr)"))
+  cost <- cost + output[regi_on_gdx,,"Energy Investments|Electricity|Coal|w/ CC (billion US$2017/yr)"]
+  tmp  <- mbind(tmp,setNames(cost, "Total Energy costs|Electricity|Coal|+|w/ CC (billion US$2017/yr)"))
 
   cost <- op_costs(ei="pecoal",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  cost <- cost + output[regi_on_gdx,,"Energy Investments|Electricity|Coal|w/o CC (billion US$2005/yr)"]
-  tmp  <- mbind(tmp,setNames(cost, "Total Energy costs|Electricity|Coal|+|w/o CC (billion US$2005/yr)"))
+  cost <- cost + output[regi_on_gdx,,"Energy Investments|Electricity|Coal|w/o CC (billion US$2017/yr)"]
+  tmp  <- mbind(tmp,setNames(cost, "Total Energy costs|Electricity|Coal|+|w/o CC (billion US$2017/yr)"))
 
   ##### Electricity|Gas
   cost <- op_costs(ei="pegas",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Gas (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Gas (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Gas (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Gas (billion US$2017/yr)"))
 
   cost <- op_costs(ei="pegas",eo="seel",te=teccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Gas|w/ CC (billion US$2005/yr)"], "Total Energy costs|Electricity|Gas|+|w/ CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Gas|w/ CC (billion US$2017/yr)"], "Total Energy costs|Electricity|Gas|+|w/ CC (billion US$2017/yr)"))
 
   cost <- op_costs(ei="pegas",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Gas|w/o CC (billion US$2005/yr)"], "Total Energy costs|Electricity|Gas|+|w/o CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Gas|w/o CC (billion US$2017/yr)"], "Total Energy costs|Electricity|Gas|+|w/o CC (billion US$2017/yr)"))
 
   ##### Electricity|Oil
   cost <- op_costs(ei="peoil",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Oil (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Oil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Oil (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Oil (billion US$2017/yr)"))
 
   cost <- op_costs(ei="peoil",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Oil|w/o CC (billion US$2005/yr)"], "Total Energy costs|Electricity|Oil|+|w/o CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Oil|w/o CC (billion US$2017/yr)"], "Total Energy costs|Electricity|Oil|+|w/o CC (billion US$2017/yr)"))
 
   ##### Electricity|Nuclear
   cost <- op_costs(ei="peur",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Nuclear (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Nuclear (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Nuclear (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Nuclear (billion US$2017/yr)"))
 
   ##### Electricity|Non-biomass renewables
   cost <- op_costs(ei=setdiff(perenew,pebio),eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Non-Bio Re (billion US$2005/yr)"], "Total Energy costs|Electricity|Non-Bio Re (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Non-Bio Re (billion US$2017/yr)"], "Total Energy costs|Electricity|Non-Bio Re (billion US$2017/yr)"))
 
   ##### Electricity|Solar
   cost <- op_costs(ei="pesol",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Solar (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Solar (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Solar (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Solar (billion US$2017/yr)"))
 
   ##### Electricity|Wind
   cost <- op_costs(ei="pewin",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Wind (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Wind (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Wind (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Wind (billion US$2017/yr)"))
 
   ##### Electricity|Hydro
   cost <- op_costs(ei="pehyd",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Hydro (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Hydro (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Hydro (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Hydro (billion US$2017/yr)"))
 
   ##### Electricity|Geothermal
   cost <- op_costs(ei="pegeo",eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Geothermal (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Geothermal (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Electricity|Geothermal (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Geothermal (billion US$2017/yr)"))
 
   costH2 <- NULL
   ##### Electricity|Hydrogen
   if ("h2turb" %in% se2se$all_te) {
     costH2 <- op_costs(ei="seh2",eo="seel",te=se2se$all_te,e2e=se2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-    tmp  <- mbind(tmp,setNames(costH2 + output[regi_on_gdx,,"Energy Investments|Electricity|Hydrogen (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Hydrogen (billion US$2005/yr)"))
+    tmp  <- mbind(tmp,setNames(costH2 + output[regi_on_gdx,,"Energy Investments|Electricity|Hydrogen (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Hydrogen (billion US$2017/yr)"))
   }
 
   ##### Electricity|Storage
   cost2 <- op_costs(ei=NULL,eo=NULL,te=stor,e2e=NULL,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost2 + output[regi_on_gdx,,"Energy Investments|Electricity|Storage (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Storage (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost2 + output[regi_on_gdx,,"Energy Investments|Electricity|Storage (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Storage (billion US$2017/yr)"))
 
   ##### Electricity|Grid
   cost2 <- op_costs(ei=NULL,eo=NULL,te=grid,e2e=NULL,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   costGrid3 <- op_costs(ei="seel",eo=se2fe$all_enty1,te=se2fe$all_te,e2e=se2fe,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost2 + costGrid3 + output[regi_on_gdx,,"Energy Investments|Electricity|Grid (billion US$2005/yr)"], "Total Energy costs|Electricity|+|Grid (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost2 + costGrid3 + output[regi_on_gdx,,"Energy Investments|Electricity|Grid (billion US$2017/yr)"], "Total Energy costs|Electricity|+|Grid (billion US$2017/yr)"))
 
   ##### Electricity
   cost <- op_costs(ei=pe2se$all_enty,eo="seel",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs(ei=NULL,eo=NULL,te=tenotransform,e2e=NULL,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost) # grid and storage
-  tmp  <- mbind(tmp,setNames(cost + cost2 + costGrid3 + costH2 + output[regi_on_gdx,,"Energy Investments|Electricity (billion US$2005/yr)"], "Total Energy costs|+|Electricity (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + cost2 + costGrid3 + costH2 + output[regi_on_gdx,,"Energy Investments|Electricity (billion US$2017/yr)"], "Total Energy costs|+|Electricity (billion US$2017/yr)"))
 
   ##### Heat
   #TiA: including investments, and operation and maintenance, BUT excluding input fuel costs
   cost_pe2se <- op_costs(ei=pe2se$all_enty,eo="sehe",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost_se2fe <- op_costs(ei="sehe",eo=se2fe$all_enty1,te=se2fe$all_te,e2e=se2fe,teall2rlf=teall2rlf,vm_prodE=vm_prodFe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Heat (billion US$2005/yr)"], "Total Energy costs|+|Heat (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Heat (billion US$2017/yr)"], "Total Energy costs|+|Heat (billion US$2017/yr)"))
 
   ##### Hydrogen
   #TiA: including investments, and operation and maintenance, BUT excluding input fuel costs
   cost_pe2se <- op_costs(ei=pe2se$all_enty,eo="seh2",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost_se2fe <- op_costs(ei="seh2",eo=se2fe$all_enty1,te=se2fe$all_te,e2e=se2fe,teall2rlf=teall2rlf,vm_prodE=vm_prodFe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Hydrogen (billion US$2005/yr)"], "Total Energy costs|+|Hydrogen (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Hydrogen (billion US$2017/yr)"], "Total Energy costs|+|Hydrogen (billion US$2017/yr)"))
 
   ##### Hydrogen|Fossil
   cost <- op_costs(ei=petyf,eo="seh2",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Hydrogen|Fossil (billion US$2005/yr)"], "Total Energy costs|Hydrogen|Fossil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Hydrogen|Fossil (billion US$2017/yr)"], "Total Energy costs|Hydrogen|Fossil (billion US$2017/yr)"))
 
   ##### Hydrogen|RE
   cost <- op_costs(ei=perenew,eo="seh2",te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Hydrogen|RE (billion US$2005/yr)"], "Total Energy costs|Hydrogen|RE (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Hydrogen|RE (billion US$2017/yr)"], "Total Energy costs|Hydrogen|RE (billion US$2017/yr)"))
 
   ##### Liquids
   #TiA: including investments, and operation and maintenance, BUT excluding input fuel costs
   cost_pe2se <- op_costs(ei=pe2se$all_enty,eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost_se2fe <- op_costs(ei=se_Liq,eo=se2fe$all_enty1,te=se2fe$all_te,e2e=se2fe,teall2rlf=teall2rlf,vm_prodE=vm_prodFe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Liquids (billion US$2005/yr)"], "Total Energy costs|+|Liquids (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost_pe2se + cost_se2fe + output[regi_on_gdx,,"Energy Investments|Liquids (billion US$2017/yr)"], "Total Energy costs|+|Liquids (billion US$2017/yr)"))
 
   ##### Liquids|Oil Ref
   costoil <- op_costs(ei="peoil",eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(costoil + output[regi_on_gdx,,"Energy Investments|Liquids|Oil Ref (billion US$2005/yr)"], "Total Energy costs|Liquids|Oil Ref (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(costoil + output[regi_on_gdx,,"Energy Investments|Liquids|Oil Ref (billion US$2017/yr)"], "Total Energy costs|Liquids|Oil Ref (billion US$2017/yr)"))
 
   ##### Liquids|Fossil
   cost <- op_costs(ei=petyf,eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil (billion US$2017/yr)"], "Total Energy costs|Liquids|Fossil (billion US$2017/yr)"))
 
   ##### Liquids|Fossil|w/o oil
-  tmp  <- mbind(tmp,setNames(cost - costoil + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil|w/o oil (billion US$2005/yr)"], "Total Energy costs|Liquids|Fossil|w/o oil (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost - costoil + output[regi_on_gdx,,"Energy Investments|Liquids|Fossil|w/o oil (billion US$2017/yr)"], "Total Energy costs|Liquids|Fossil|w/o oil (billion US$2017/yr)"))
 
   ##### Liquids|Bio
   cost <- op_costs(ei=perenew,eo=se_Liq,te=pe2se$all_te,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Bio (billion US$2005/yr)"], "Total Energy costs|Liquids|Bio (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|Liquids|Bio (billion US$2017/yr)"], "Total Energy costs|Liquids|Bio (billion US$2017/yr)"))
 
   ##### CO2 Trans&Stor
   cost <- op_costs(ei=ccs2te$all_enty,eo=ccs2te$all_enty1,te=ccs2te$all_te,e2e=ccs2te,teall2rlf=teall2rlf,vm_prodE=NULL,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|CO2 Trans&Stor (billion US$2005/yr)"], "Total Energy costs|+|CO2 Trans&Stor (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost + output[regi_on_gdx,,"Energy Investments|CO2 Trans&Stor (billion US$2017/yr)"], "Total Energy costs|+|CO2 Trans&Stor (billion US$2017/yr)"))
 
   ##### Other
-  tmp  <- mbind(tmp,setNames(tmp[,,"Total Energy costs (billion US$2005/yr)"]-
-                               tmp[,,"Total Energy costs|+|Electricity (billion US$2005/yr)"]-
-                               tmp[,,"Total Energy costs|+|Hydrogen (billion US$2005/yr)"]-
-                               tmp[,,"Total Energy costs|+|Liquids (billion US$2005/yr)"]-
-                               tmp[,,"Total Energy costs|+|Heat (billion US$2005/yr)"]-
-                               tmp[,,"Total Energy costs|+|CO2 Trans&Stor (billion US$2005/yr)"],
-                             "Total Energy costs|+|Other (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(tmp[,,"Total Energy costs (billion US$2017/yr)"]-
+                               tmp[,,"Total Energy costs|+|Electricity (billion US$2017/yr)"]-
+                               tmp[,,"Total Energy costs|+|Hydrogen (billion US$2017/yr)"]-
+                               tmp[,,"Total Energy costs|+|Liquids (billion US$2017/yr)"]-
+                               tmp[,,"Total Energy costs|+|Heat (billion US$2017/yr)"]-
+                               tmp[,,"Total Energy costs|+|CO2 Trans&Stor (billion US$2017/yr)"],
+                             "Total Energy costs|+|Other (billion US$2017/yr)"))
 
   #####################################
   ########## O & M costs ##############
@@ -547,10 +547,10 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   e2e=temapall
 
   ##### Total
-  tmp <- mbind(tmp,setNames(v_costom * 1000, "OandM costs (billion US$2005/yr)"))
+  tmp <- mbind(tmp,setNames(v_costom * 1000, "OandM costs (billion US$2017/yr)"))
 
   ##### CDR
-  tmp  <- mbind(tmp,setNames(vm_omcosts_cdr * 1000, "OandM costs CDR (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(vm_omcosts_cdr * 1000, "OandM costs CDR (billion US$2017/yr)"))
 
   #####################################
   ########## Operational costs ########
@@ -559,45 +559,45 @@ reportCosts <- function(gdx,output=NULL,regionSubsetList=NULL,t=c(seq(2005,2060,
   ##### Fossils
   cost1 <- op_costs(ei="pecoal",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs_part2_foss(pe="pecoal",se="seel",te=tenoccs,vm_prodSe,pe2se,p_dataeta,vm_costfu_ex,vm_fuelex,sm_tdptwyr2dpgj,pm_conv_TWa_EJ)
-  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Coal|w/o CC (billion US$2005/yr)"))
+  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Coal|w/o CC (billion US$2017/yr)"))
 
   cost1 <- op_costs(ei="pecoal",eo="seel",te=teccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs_part2_foss(pe="pecoal",se="seel",te=teccs,vm_prodSe,pe2se,p_dataeta,vm_costfu_ex,vm_fuelex,sm_tdptwyr2dpgj,pm_conv_TWa_EJ)
-  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Coal|w/ CC (billion US$2005/yr)"))
+  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Coal|w/ CC (billion US$2017/yr)"))
 
   cost1 <- op_costs(ei="pegas",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs_part2_foss(pe="pegas",se="seel",te=tenoccs,vm_prodSe,pe2se,p_dataeta,vm_costfu_ex,vm_fuelex,sm_tdptwyr2dpgj,pm_conv_TWa_EJ)
-  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Gas|w/o CC (billion US$2005/yr)"))
+  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Gas|w/o CC (billion US$2017/yr)"))
 
   cost1 <- op_costs(ei="pegas",eo="seel",te=teccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs_part2_foss(pe="pegas",se="seel",te=teccs,vm_prodSe,pe2se,p_dataeta,vm_costfu_ex,vm_fuelex,sm_tdptwyr2dpgj,pm_conv_TWa_EJ)
-  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Gas|w/ CC (billion US$2005/yr)"))
+  tmp   <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Gas|w/ CC (billion US$2017/yr)"))
 
   ##### Biomass
   price_pebiolc <- pebal.m[,,"pebiolc"] / (budget.m+1e-10) * 1000 / pm_conv_TWa_EJ
 
   cost1 <- op_costs(ei="pebiolc",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- price_pebiolc * op_costs_part2_bio_nuc(pe="pebiolc",se="seel",te=tenoccs,vm_prodSe,pe2se,p_dataeta,pm_conv_TWa_EJ)
-  tmp  <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Biomass|w/o CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Biomass|w/o CC (billion US$2017/yr)"))
 
   cost1 <- op_costs(ei="pebiolc",eo="seel",te=teccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- price_pebiolc * op_costs_part2_bio_nuc(pe="pebiolc",se="seel",te=teccs,vm_prodSe,pe2se,p_dataeta,pm_conv_TWa_EJ)
-  tmp  <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Biomass|w/ CC (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1+cost2, "Operational costs|Electricity|Biomass|w/ CC (billion US$2017/yr)"))
 
   ##### Nuclear
   cost1 <- op_costs(ei="peur",eo="seel",te="tnrs",e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
   cost2 <- op_costs_part2_bio_nuc(pe="peur",se="seel",te="tnrs",vm_prodSe,pe2se,p_dataeta,pm_conv_TWa_EJ)
-  tmp  <- mbind(tmp,setNames(cost1*cost2, "Operational costs|Electricity|Nuclear (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1*cost2, "Operational costs|Electricity|Nuclear (billion US$2017/yr)"))
 
   ##### Renewables
   cost1 <- op_costs(ei=setdiff(perenew,pebio),eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Electricity|Non-Bio Re (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Electricity|Non-Bio Re (billion US$2017/yr)"))
 
   cost1 <- op_costs(ei="pesol",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Electricity|Solar (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Electricity|Solar (billion US$2017/yr)"))
 
   cost1 <- op_costs(ei="pewin",eo="seel",te=tenoccs,e2e=pe2se,teall2rlf=teall2rlf,vm_prodE=vm_prodSe,pm_data=pm_data,vm_cap=vm_cap,v_investcost=v_investcost)
-  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Electricity|Wind (billion US$2005/yr)"))
+  tmp  <- mbind(tmp,setNames(cost1, "Operational costs|Electricity|Wind (billion US$2017/yr)"))
 
   # add global values
   tmp <- mbind(tmp, dimSums(tmp,dim=1))

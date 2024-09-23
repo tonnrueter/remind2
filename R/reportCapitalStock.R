@@ -54,15 +54,15 @@ reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),se
     if (tran_mod == "complex"){
         LDV35 <- readGDX(gdx,name=c("LDV35"),format="first_found")
         tmp <- mbind(tmp,setNames(dimSums( (vm_cap * v_investcost)[teue2rlf]
-                                         ,dim=c(3.1,3.2)) * 1000, "Est Capital Stock|ESM|Transp vehic (billion US$2005)"))
+                                         ,dim=c(3.1,3.2)) * 1000, "Est Capital Stock|ESM|Transp vehic (billion US$2017)"))
         tmp <- mbind(tmp,setNames(dimSums( (vm_cap * v_investcost)[teall2rlf][,,LDV35]
-                                         ,dim=c(3.1,3.2)) * 1000, "Est Capital Stock|ESM|Pet/EV LDV (billion US$2005)"))
+                                         ,dim=c(3.1,3.2)) * 1000, "Est Capital Stock|ESM|Pet/EV LDV (billion US$2017)"))
 
         tmp <- mbind(tmp,
                      setNames(
                          dimSums(mbind(vm_cap * v_investcost),
                                  dim = 3) * 1000,
-                         "Estimated Capital Stock|ESM (billion US$2005)"
+                         "Estimated Capital Stock|ESM (billion US$2017)"
                      )
                      )
 
@@ -124,7 +124,7 @@ reportCapitalStock <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),se
       eek_Ind <- setNames(vm_cesIO[,y,ppfKap_Ind],
                           paste0('Capital|Energy Efficiency|Industry|',
                                  mixer[mixer$pf %in% ppfKap_Ind,][['name']],
-                                 ' (billion US$2005)'))
+                                 ' (billion US$2017)'))
       # add industry EEK and global totals
       tmp <- mbind(tmp, mbind(eek_Ind, dimSums(eek_Ind, dim = 1)))
     }

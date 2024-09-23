@@ -218,16 +218,16 @@ reportMOFEX <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default") 
 
   # Fossil Fuel Prices
   peFossilPrices <- NULL
-  peFossilPrices <- mbind(peFossilPrices, setNames(fuel2pe.m[, , "pecoal"] / ts * tdptwyr2dpgj,   "Price|Coal|Primary Level (US$2005/GJ)"))
-  peFossilPrices <- mbind(peFossilPrices, setNames(fuel2pe.m[, , "peoil"] / ts * tdptwyr2dpgj,    "Price|Crude Oil|Primary Level (US$2005/GJ)"))
-  peFossilPrices <- mbind(peFossilPrices, setNames(fuel2pe.m[, , "pegas"] / ts * tdptwyr2dpgj,    "Price|Natural Gas|Primary Level (US$2005/GJ)"))
-  #  peFossilPrices <- mbind(peFossilPrices,setNames(lowpass(fuel2pe.m[,,"pegas"]/(budget.m+1e-10), fix="both", altFilter=match(2010,t)) * tdptwyr2dpgj,    "Price|Natural Gas|Primary Level|Moving Avg (US$2005/GJ)"))
+  peFossilPrices <- mbind(peFossilPrices, setNames(fuel2pe.m[, , "pecoal"] / ts * tdptwyr2dpgj,   "Price|Coal|Primary Level (US$2017/GJ)"))
+  peFossilPrices <- mbind(peFossilPrices, setNames(fuel2pe.m[, , "peoil"] / ts * tdptwyr2dpgj,    "Price|Crude Oil|Primary Level (US$2017/GJ)"))
+  peFossilPrices <- mbind(peFossilPrices, setNames(fuel2pe.m[, , "pegas"] / ts * tdptwyr2dpgj,    "Price|Natural Gas|Primary Level (US$2017/GJ)"))
+  #  peFossilPrices <- mbind(peFossilPrices,setNames(lowpass(fuel2pe.m[,,"pegas"]/(budget.m+1e-10), fix="both", altFilter=match(2010,t)) * tdptwyr2dpgj,    "Price|Natural Gas|Primary Level|Moving Avg (US$2017/GJ)"))
   # mapping of weights for the variables for global aggregation
   int2ext <- c(
-    "Price|Coal|Primary Level (US$2005/GJ)"                   = "PE|Coal (EJ/yr)",
-    "Price|Crude Oil|Primary Level (US$2005/GJ)"              = "PE|Oil (EJ/yr)",
-    "Price|Natural Gas|Primary Level (US$2005/GJ)"            = "PE|Gas (EJ/yr)"
-    #    "Price|Natural Gas|Primary Level|Moving Avg (US$2005/GJ)" = "PE|Production|Net|Gas (EJ/yr)"
+    "Price|Coal|Primary Level (US$2017/GJ)"                   = "PE|Coal (EJ/yr)",
+    "Price|Crude Oil|Primary Level (US$2017/GJ)"              = "PE|Oil (EJ/yr)",
+    "Price|Natural Gas|Primary Level (US$2017/GJ)"            = "PE|Gas (EJ/yr)"
+    #    "Price|Natural Gas|Primary Level|Moving Avg (US$2017/GJ)" = "PE|Production|Net|Gas (EJ/yr)"
   )
   map <- data.frame(region = getRegions(peFossilPrices), world = "GLO", stringsAsFactors = FALSE)
   peFossilPrices_GLO <- new.magpie("GLO", getYears(peFossilPrices), magclass::getNames(peFossilPrices), fill = 0)
@@ -247,11 +247,11 @@ reportMOFEX <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default") 
   peFossilGloPrices <- NULL
   glob_price <- new.magpie(getRegions(peQtys), getYears(peQtys), fill = 0)
   for (i in getRegions(glob_price)) glob_price[i, , ] <- tradebal.m[, , "peoil"] * tdptwyr2dpgj
-  peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                                       "Price|Oil|World Market (US$2005/GJ)"))
+  peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                                       "Price|Oil|World Market (US$2017/GJ)"))
   for (i in getRegions(glob_price)) glob_price[i, , ] <- tradebal.m[, , "pegas"] * tdptwyr2dpgj
-  peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                                       "Price|Gas|World Market (US$2005/GJ)"))
+  peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                                       "Price|Gas|World Market (US$2017/GJ)"))
   for (i in getRegions(glob_price)) glob_price[i, , ] <- tradebal.m[, , "pecoal"] * tdptwyr2dpgj
-  peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                                       "Price|Coal|World Market (US$2005/GJ)"))
+  peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                                       "Price|Coal|World Market (US$2017/GJ)"))
   for (i in getRegions(glob_price)) glob_price[i, , ] <- pm_pvp[, , "peoil"] * 1000
   peFossilGloPrices <- mbind(peFossilGloPrices, setNames(glob_price,                             "PVP1|Oil (billionDpTWyr)"))
   for (i in getRegions(glob_price)) glob_price[i, , ] <- pm_pvp[, , "pegas"] * 1000
