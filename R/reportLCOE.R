@@ -276,7 +276,7 @@ v33_emiEW <- add_columns(v33_emiEW, addnm = c("y2005", "y2010", "y2015", "y2020"
            setNames(vm_demPe[, , pe2se$all_te], pe2se$all_enty), pe2se$all_te)
 
  # 2.2 secondary fuel cost
- Fuel.Price <- mbind(pm_PEPrice, pm_SEPrice)[, , ] * 1e12 # convert from trUSD2005/TWa to USD2005/TWa [note: this already includes the CO2 price]
+ Fuel.Price <- mbind(pm_PEPrice, pm_SEPrice)[, , ] * 1e12 # convert from trUSD/TWa to USD/TWa [note: this already includes the CO2 price]
  Fuel.Price <- magclass::matchDim(Fuel.Price, vm_prodSe, dim = c(1), fill = 0)
 
  pm_SecFuel <- pm_prodCouple[, , getNames(pm_prodCouple)[pm_prodCouple[reg1, , ] < 0]] # keep only second fuel consumption, not co-production
@@ -293,9 +293,9 @@ v33_emiEW <- add_columns(v33_emiEW, addnm = c("y2005", "y2010", "y2015", "y2020"
   # calculation explanation:
           # units: -1 (so pm_SecFuel turns positive because consuming energy)
           # * electricity or heat demand (pm_SecFuel, TWa_input/TWa_mainOutput OR TWa/GtC)
-          # * electricity price (Fuel.Price, USD2005/TWa_inpu)
+          # * electricity price (Fuel.Price, USD2017/TWa_inpu)
           # * main Output (for pe2se: vm_prodSe (TWa_mainOutput); for ccsinje: amount of CO2 captured (vm_co2CCS, GtC))
-          # = te_annual_secFuel_cost = [USD2005]
+          # = te_annual_secFuel_cost = [USD2017]
 
 # 2.3 additional fuel demand of CDR module technologies
   te_annual_otherFuel_cost <- new.magpie(getRegions(te_inv_annuity), ttot_from2005, getNames(te_inv_annuity), fill = 0)

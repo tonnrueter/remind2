@@ -118,16 +118,16 @@ swfigure(sw,print,p,fig.width=1)
 
 Let's have a short look at the line plots. Line plots (234 ff). Here the plot code is already wrapped in a call to swfigure because we only want it in the PDF later.
 ```{r, eval=FALSE}
-swfigure(sw,mipLineHistorical, data[,,"Price|Final Energy|Liquids|Transport (US$2005/GJ)"],x_hist=NULL,
-                                  ylab='Price|Final Energy|Liquids|Transport [US$2005/GJ]',color.dim="region",facet.dim="scenario",color.dim.name="Region",
+swfigure(sw,mipLineHistorical, data[,,"Price|Final Energy|Liquids|Transport (US$2017/GJ)"],x_hist=NULL,
+                                  ylab='Price|Final Energy|Liquids|Transport [US$2017/GJ]',color.dim="region",facet.dim="scenario",color.dim.name="Region",
                                   legend.ncol=8,plot.priority=c("x_hist","x","x_proj"),sw_option="height=10,width=9")
 ```
 
 If we want to look at it directly, we just call mipLineHistorical()
 ```{r, eval=FALSE}
 library(mip)
-mipLineHistorical(data[,,"Price|Final Energy|Liquids|Transport (US$2005/GJ)"],x_hist=NULL,
-                                 ylab='Price|Final Energy|Liquids|Transport [US$2005/GJ]',color.dim="region",facet.dim="scenario",color.dim.name="Region",
+mipLineHistorical(data[,,"Price|Final Energy|Liquids|Transport (US$2017/GJ)"],x_hist=NULL,
+                                 ylab='Price|Final Energy|Liquids|Transport [US$2017/GJ]',color.dim="region",facet.dim="scenario",color.dim.name="Region",
                                  legend.ncol=8,plot.priority=c("x_hist","x","x_proj"))
 ```
 
