@@ -466,14 +466,14 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "tdh2t", "tdelt", "tdels", "tdhes", "tdbiosos", "tdbiogas", "tdh2s", "tdfoshos", "tdsyngat"
   )
 
-  vm_costTeCapital <- readGDX(gdx, "vm_costTeCapital", field = "l", restore_zeros = F)[, YearsFrom2005, tech] # [tr USD2005/TWh]
+  vm_costTeCapital <- readGDX(gdx, "vm_costTeCapital", field = "l", restore_zeros = F)[, YearsFrom2005, tech] # [tr USD2017/TWh]
   p_teAnnuity <- readGDX(gdx, c("p_teAnnuity","pm_teAnnuity"), restore_zeros = F)[, , tech]
   vm_capFac <- readGDX(gdx, "vm_capFac", field = "l", restore_zeros = F)[, YearsFrom2005, tech] * 8760
   pm_data_omf <- readGDX(gdx, "pm_data", restore_zeros = F)[, , "omf"][, , tech]
 
   price.investment <- vm_costTeCapital * p_teAnnuity / vm_capFac
   price.omf <- pm_data_omf * vm_costTeCapital / vm_capFac
-  price.td <- collapseDim(price.investment + price.omf)  * 1e6 / 3.6 # [tr USD2005/TWh] -> [USD2005/GJ]
+  price.td <- collapseDim(price.investment + price.omf)  * 1e6 / 3.6 # [tr USD2017/TWh] -> [USD2017/GJ]
   price.td[price.td == Inf] <- 0
 
   out <- mbind(
@@ -522,12 +522,12 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   pm_emifac <- readGDX(gdx, "pm_emifac", field = "l", restore_zeros = F)[, YearsFrom2005, "co2"][, , tech.fossil] # [GtC CO2/TWa]
   pm_emifac <- pm_emifac * 1e9 / s_twa2mwh / 3.6 # [GtC CO2/TWa] -> [tC CO2/GJ]
 
-  p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found", restore_zeros = F) # [USD2005/tC CO2]
+  p_priceCO2 <- readGDX(gdx,name=c("p_priceCO2","pm_priceCO2"),format="first_found", restore_zeros = F) # [USD2017/tC CO2]
   if(length(p_priceCO2) > 0) {
     p_priceCO2 <- add_columns(p_priceCO2, addnm = setdiff(YearsFrom2005, getYears(p_priceCO2)), dim = 2, fill = NA)
     p_priceCO2 <- add_columns(p_priceCO2, addnm = setdiff(getRegions(pm_emifac), getRegions(p_priceCO2)), dim = 1, fill = NA)
 
-    price.carbon <- collapseDim(pm_emifac * p_priceCO2) # [USD2005/GJ]
+    price.carbon <- collapseDim(pm_emifac * p_priceCO2) # [USD2017/GJ]
 
     out <- mbind(
       out,
@@ -551,9 +551,9 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
     "indst.fehos", "indst.fesos", "indst.feels", "indst.feh2s", "indst.fegas",
     "build.fepet", "indst.fepet"
   )
-  pm_tau_fe_tax <- readGDX(gdx, c("p21_tau_fe_tax","pm_tau_fe_tax"), format="first_found")[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
-  pm_tau_fe_sub <- readGDX(gdx, c("p21_tau_fe_sub","pm_tau_fe_sub"), format="first_found")[, YearsFrom2005, entyFe2Sector] # [tr USD2005/TWa]
-  price.tax <- (pm_tau_fe_tax + pm_tau_fe_sub) / s_twa2mwh / 3.6 * 1e12 # [USD2005/GJ]
+  pm_tau_fe_tax <- readGDX(gdx, c("p21_tau_fe_tax","pm_tau_fe_tax"), format="first_found")[, YearsFrom2005, entyFe2Sector] # [tr USD2017/TWa]
+  pm_tau_fe_sub <- readGDX(gdx, c("p21_tau_fe_sub","pm_tau_fe_sub"), format="first_found")[, YearsFrom2005, entyFe2Sector] # [tr USD2017/TWa]
+  price.tax <- (pm_tau_fe_tax + pm_tau_fe_sub) / s_twa2mwh / 3.6 * 1e12 # [USD2017/GJ]
 
   out <- mbind(
     out,
@@ -595,7 +595,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   ### Fuel Cost Component ----
 
   se <- c("seliqfos", "segafos", "seliqbio", "segabio", "seliqsyn", "segasyn", "seh2", "seel", "sesofos", "sehe", "sesobio")
-  pm_SEPrice <- readGDX(gdx, "pm_SEPrice")[, YearsFrom2005, se] / s_twa2mwh / 3.6 * 1e12 # [tr USD2005/TWa] -> [USD2005/GJ]
+  pm_SEPrice <- readGDX(gdx, "pm_SEPrice")[, YearsFrom2005, se] / s_twa2mwh / 3.6 * 1e12 # [tr USD2017/TWa] -> [USD2017/GJ]
   pm_eta_conv <- readGDX(gdx, "pm_eta_conv", restore_zeros = F)[, YearsFrom2005, tech]
   price.fuel <- pm_SEPrice / pm_eta_conv
 
@@ -958,7 +958,7 @@ reportPrices <- function(gdx, output=NULL, regionSubsetList=NULL,
   if (length(pm_FEPrice_by_FE) > 0) {
     margPriceVars <- grep("Price|Final Energy|", getItems(out,3), fixed = TRUE, value = TRUE)
     margPriceVars <- setdiff(margPriceVars, names(int2ext))
-    vars <- gsub("US\\$2005/GJ", "EJ/yr", gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
+    vars <- gsub("US\\$2017/GJ", "EJ/yr", gsub("Price\\|Final Energy\\|","FE|",margPriceVars))
     names(vars) <- margPriceVars
     vars <- gsub("Efuel","Hydrogen",vars) ###warning FE variable should be renamed and this line should be removed in the future
     vars <- vars[vars %in% getItems(output,3)]
