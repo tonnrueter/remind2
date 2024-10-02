@@ -73,16 +73,28 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   inv_se <- function(ie, oe, settofilter = pe2se, adjte, v_directteinv, v_adjustteinv, te = pe2se$all_te) {
     if (!is.character(settofilter)) {
       if (attr(settofilter, which = "gdxdata")$name %in% c("pe2se", "se2fe", "se2se", "temapall", "en2en")) {
-        sub1_pe2se <- settofilter[((settofilter$all_enty %in% ie) & (settofilter$all_enty1 %in% oe) & (settofilter$all_te %in% te) & !(settofilter$all_te %in% adjte)), ]
-        sub2_pe2se <- settofilter[((settofilter$all_enty %in% ie) & (settofilter$all_enty1 %in% oe) & (settofilter$all_te %in% te) & (settofilter$all_te %in% adjte)), ]
+
+        sub1_pe2se <- settofilter[((settofilter$all_enty %in% ie) &
+                                     (settofilter$all_enty1 %in% oe) &
+                                     (settofilter$all_te %in% te) &
+                                     !(settofilter$all_te %in% adjte)), ]
+
+        sub2_pe2se <- settofilter[((settofilter$all_enty %in% ie) &
+                                     (settofilter$all_enty1 %in% oe) &
+                                     (settofilter$all_te %in% te) &
+                                     (settofilter$all_te %in% adjte)), ]
+
         x1 <- dimSums(v_directteinv[, , sub1_pe2se$all_te], dim = 3) * 1000
-        x2 <- dimSums(v_directteinv[, , sub2_pe2se$all_te] + v_adjustteinv[, , sub2_pe2se$all_te], dim = 3) * 1000
+
+        x2 <- dimSums(v_directteinv[, , sub2_pe2se$all_te] +
+                        v_adjustteinv[, , sub2_pe2se$all_te], dim = 3) * 1000
       }
     } else {
       sub1_pe2se <- settofilter[((settofilter %in% te) & !(settofilter %in% adjte))]
-
       sub2_pe2se <- settofilter[((settofilter %in% te) & (settofilter %in% adjte))]
+
       x1 <- dimSums(v_directteinv[, , sub1_pe2se], dim = 3) * 1000
+
       x2 <- dimSums(v_directteinv[, , sub2_pe2se] + v_adjustteinv[, , sub2_pe2se], dim = 3) * 1000
     }
     if (is.magpie(x1) && is.magpie(x2)) {
