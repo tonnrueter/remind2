@@ -31,21 +31,22 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 206
   pm_conv_cap_2_MioLDV <- 650  # The world has ~715million cars in 2005 (IEA TECO2)
 
   # read sets
-  teall2rlf    <- readGDX(gdx, name = c("te2rlf", "teall2rlf"), format = "first_found")
-  teue2rlf     <- readGDX(gdx, name = c("teue2rlf", "tees2rlf"), format = "first_found")
+  teall2rlf <- readGDX(gdx, name = c("te2rlf", "teall2rlf"), format = "first_found")
+  teue2rlf <- readGDX(gdx, name = c("teue2rlf", "tees2rlf"), format = "first_found")
   # read variables
-  vm_cap       <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found")
-  vm_deltaCap  <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")
+  vm_cap <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found")
+  vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")
+  vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
   v_investcost <- readGDX(gdx, name = c("vm_costTeCapital", "v_costTeCapital", "v_investcost"), field = "l", format = "first_found")
-  vm_cesIO     <- readGDX(gdx, name = "vm_cesIO", field = "l")
+  vm_cesIO <- readGDX(gdx, name = "vm_cesIO", field = "l")
   # read parameters
   ppfKap_Ind <- readGDX(gdx, name = "ppfkap_industry_dyn37", react = "silent")
   steel_process_based <- "steel" %in% readGDX(gdx, "secInd37Prc", react = "silent")
 
   # calculate maximal temporal resolution
   y <- Reduce(intersect, list(getYears(vm_cap), getYears(v_investcost)))
-  vm_cap       <- vm_cap[, y, ]
-  vm_deltaCap  <- vm_deltaCap[, y, ]
+  vm_cap <- vm_cap[, y, ]
+  vm_deltaCap <- vm_deltaCap[, y, ]
   v_investcost <- v_investcost[, y, ]
 
   tmp <- NULL

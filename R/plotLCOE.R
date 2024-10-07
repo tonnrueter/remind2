@@ -34,7 +34,6 @@ plotLCOE <- function(LCOEfile, gdx, y = c(2015, 2020, 2030, 2040, 2050, 2060),
   variable <- NULL
   value <- NULL
   type <- NULL
-  vm_deltaCap <- NULL
   LCOE <- NULL
   all_te <- NULL
   output <- NULL
@@ -117,8 +116,8 @@ plotLCOE <- function(LCOEfile, gdx, y = c(2015, 2020, 2030, 2040, 2050, 2060),
   ### end plot settings
 
   # read in capacity additions from .mif, for second y axes of plot
-  vm_deltaCap <- readGDX(gdx, "vm_deltaCap", field = "l", restore_zeros = FALSE)
-
+  vm_deltaCap <- readGDX(gdx, "vm_deltaCap", field = "l", restore_zeros = FALSE) %>%
+    modifyInvestmentVariables()
 
   # calculate 15-year moving average capacity additions
   df.dC <- as.quitte(dimSums(vm_deltaCap, dim = 3.2) * 1e3) %>%

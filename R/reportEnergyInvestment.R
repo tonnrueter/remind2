@@ -52,9 +52,13 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   grid  <- readGDX(gdx, name = c("teGrid", "grid"), format = "first_found")
   pebio  <- readGDX(gdx, c("peBio", "pebio"), format = "first_found")
   ttot        <- readGDX(gdx, name = "ttot", format = "first_found")
+
   # read variables
+
+  # investment cost per technology
   v_directteinv <- readGDX(gdx, name = c("v_costInvTeDir", "vm_costInvTeDir", "v_directteinv"),
                            field = "l", format = "first_found")
+  # adjustment cost per technology
   v_adjustteinv <- readGDX(gdx, name = c("v_costInvTeAdj", "vm_costInvTeAdj", "v_adjustteinv"),
                            field = "l", format = "first_found")
 
@@ -62,11 +66,11 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   pm_data   <- readGDX(gdx, c("pm_data"), format = "first_found")
 
   # data preparation
-  ttot <- as.numeric(as.vector(readGDX(gdx, "ttot", format = "first_found")))
-  v_directteinv <- v_directteinv[, ttot, ]
-  v_adjustteinv <- v_adjustteinv[, ttot, ]
-  costRatioTdelt2Tdels <- pm_data[, , "inco0.tdelt"] / pm_data[, , "inco0.tdels"]
 
+  ttot <- as.numeric(as.vector(readGDX(gdx, "ttot", format = "first_found")))
+  v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ])
+  v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ])
+  costRatioTdelt2Tdels <- pm_data[, , "inco0.tdelt"] / pm_data[, , "inco0.tdels"]
 
   ####### internal function for reporting ###########
   ## "ie" stands for input energy, "oe" for output energy

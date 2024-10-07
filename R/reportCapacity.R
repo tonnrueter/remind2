@@ -50,6 +50,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   vm_cap      <- vm_cap[, ttot, ]
   vm_deltaCap <- vm_deltaCap[teall2rlf]
   vm_deltaCap <- vm_deltaCap[, ttot, ]
+  vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
   v_earlyreti <-   v_earlyreti[, ttot, ]
   t2005 <- ttot[ttot > 2004]
 
