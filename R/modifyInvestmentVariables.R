@@ -1,9 +1,13 @@
 #' Modify Investment Variables
 #'
-#' a helper to adapt investment variables in reporting after changes in https://github.com/remindmodel/remind/pull/1238
+#' a helper to adapt investment variables in reporting after changes in
+#' https://github.com/remindmodel/remind/pull/1238
 #'
-#' calculates the value of each timestep for a given maglcass object
-#' as the average of this timestep and the next timestep (last timestep remains unchanged)
+#' for a given magclass object, calculates the value of each timestep
+#' as the average of this timestep and the next timestep
+#' the data for the last timestep in the magclass object remains unchanged
+#'
+#' @param x a magclass object to be manipulated
 #'
 #'
 #' @author Falk Benke

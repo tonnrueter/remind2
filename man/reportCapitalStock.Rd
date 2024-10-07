@@ -28,8 +28,9 @@ Read in capital stock information from GDX file, information used in convGDX2MIF
 for the reporting
 }
 \examples{
-
-\dontrun{reportCapitalStock(gdx)}
+\dontrun{
+reportCapitalStock(gdx)
+}
 
 }
 \seealso{
