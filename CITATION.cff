@@ -3,7 +3,7 @@ message: If you use this software, please cite it using the metadata from this f
 type: software
 title: 'remind2: The REMIND R package (2nd generation)'
 version: 1.157.4
-date-released: '2024-10-07'
+date-released: '2024-10-08'
 abstract: Contains the REMIND-specific routines for data and model output manipulation.
 authors:
 - family-names: Rodrigues

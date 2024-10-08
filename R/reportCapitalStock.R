@@ -10,6 +10,8 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency for Moving Avg prices before cm_startyear
 #'
 #' @return MAgPIE object - contains the capital stock variables
 #' @author Lavinia Baumstark; Michaja Pehl
@@ -23,7 +25,9 @@
 #' @importFrom gdx readGDX
 #' @importFrom magclass getYears mbind setNames
 #' @importFrom dplyr tribble
-reportCapitalStock <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
+reportCapitalStock <- function(gdx, regionSubsetList = NULL,
+                               t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+                               gdx_ref = gdx_ref) {
 
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   tran_mod <- module2realisation[module2realisation$modules == "transport", 2]
@@ -135,5 +139,22 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 206
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
   getSets(tmp)[3] <- "variable"
+
+  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
+
+  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
+    message("reportCapitalStock loads price for < cm_startyear from gdx_ref.")
+    ref <- try(reportCapitalStock(gdx_ref, regionSubsetList = regionSubsetList, t = t))
+    if (!inherits(ref, "try-error")) {
+      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
+      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
+      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
+    } else {
+      message("failed to run reportCapitalStock on gdx_ref")
+    }
+  }
+
   return(tmp)
 }

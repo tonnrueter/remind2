@@ -22,7 +22,7 @@
 #' }
 #'
 #' @export
-#' @importFrom magclass mbind
+#' @importFrom magclass mbind is.magpie
 #' @importFrom gdx readGDX
 
 reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,

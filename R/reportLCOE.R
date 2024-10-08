@@ -20,6 +20,8 @@
 #' Can be either "average" (returns only average LCOE),
 #' "marginal" (returns only marginal LCOE), "both" (returns marginal and average LCOE) and
 #' and "marginal detail" (returns table to trace back how marginal LCOE are calculated).
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency for Moving Avg prices before cm_startyear
 #' @return MAgPIE object - LCOE calculated by model post-processing.
 #' Two types a) standing system LCOE b) new plant LCOE.
 #' @author Felix Schreyer, Robert Pietzcker, Lavinia Baumstark
@@ -36,7 +38,7 @@
 #' @importFrom quitte as.quitte overwrite getRegs getPeriods
 #' @importFrom tidyr spread gather expand fill
 
-reportLCOE <- function(gdx, output.type = "both") {
+reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
   # test whether output.type defined
   if (!output.type %in% c("marginal", "average", "both", "marginal detail")) {
     print("Unknown output type. Please choose either marginal, average, both or marginal detail.")
@@ -1607,13 +1609,28 @@ reportLCOE <- function(gdx, output.type = "both") {
   LCOE.out.inclGlobal[getRegions(LCOE.out), , ] <- LCOE.out
   LCOE.out.inclGlobal["GLO", , ] <- dimSums(LCOE.out, dim = 1) / length(getRegions(LCOE.out))
 
-
-
-  if (output.type %in% c("marginal detail")) {
-    return(df.LCOE)
+  if (output.type  == "marginal detail") {
+    tmp <- df.LCOE
   } else {
-    return(LCOE.out.inclGlobal)
+    tmp <- LCOE.out.inclGlobal
   }
 
-  return(LCOE.out)
+  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
+
+  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
+    message("reportLCOE loads price for < cm_startyear from gdx_ref.")
+    ref <- try(reportLCOE(gdx_ref, output.type = output.type))
+    if (!inherits(ref, "try-error")) {
+      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
+      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
+      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
+    } else {
+      message("failed to run reportLCOE on gdx_ref")
+    }
+  }
+
+  return(tmp)
+
 }

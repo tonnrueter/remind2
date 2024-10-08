@@ -30,7 +30,6 @@
 #' @importFrom readr read_csv
 #' @importFrom madrat toolAggregate
 #'
-
 #' @export
 reportPrices <- function(gdx, output = NULL, regionSubsetList = NULL,
                          t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),

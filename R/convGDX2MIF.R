@@ -56,12 +56,12 @@ convGDX2MIF <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
   message("running reportExtraction...")
   output <- mbind(output, reportExtraction(gdx, regionSubsetList, t)[, t, ])
   message("running reportCapacity...")
-  output <- mbind(output, reportCapacity(gdx, regionSubsetList, t)[, t, ])
+  output <- mbind(output, reportCapacity(gdx, regionSubsetList, t, gdx_ref = gdx_ref)[, t, ])
   # output <- mbind(output,reportLCOE(gdx)[,t,])     now moved to additional LCOE.mif file because many variables
   message("running reportCapitalStock...")
-  output <- mbind(output, reportCapitalStock(gdx, regionSubsetList, t)[, t, ])
+  output <- mbind(output, reportCapitalStock(gdx, regionSubsetList, t, gdx_ref = gdx_ref)[, t, ])
   message("running reportEnergyInvestment...")
-  output <- mbind(output, reportEnergyInvestment(gdx, regionSubsetList, t)[, t, ])
+  output <- mbind(output, reportEnergyInvestment(gdx, regionSubsetList, t, gdx_ref = gdx_ref)[, t, ])
   message("running reportEmiAirPol...")
   tmp <- try(reportEmiAirPol(gdx, regionSubsetList, t))  # test whether reportEmiAirPol works
   if (!inherits(tmp, "try-error")) {

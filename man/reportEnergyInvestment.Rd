@@ -7,7 +7,8 @@
 reportEnergyInvestment(
   gdx,
   regionSubsetList = NULL,
-  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)
+  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+  gdx_ref = NULL
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ be created.}
 
 \item{t}{temporal resolution of the reporting, default:
 t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)}
+
+\item{gdx_ref}{a GDX object as created by readGDX, or the path to a gdx of the reference run.
+It is used to guarantee consistency for Moving Avg prices before cm_startyear}
 }
 \value{
 MAgPIE object - contains the price variables
