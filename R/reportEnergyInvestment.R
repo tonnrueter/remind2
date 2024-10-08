@@ -231,7 +231,6 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
     - tmp[, , "Energy Investments|CO2 Trans&Stor (billion US$2017/yr)"]),
   "Energy Investments|Other (billion US$2017/yr)"))
 
-
   # add global values
   tmp <- mbind(tmp, dimSums(tmp, dim = 1))
   # add other region aggregations
@@ -242,19 +241,13 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
 
   # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
   cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
-
-  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
-    message("reportEnergyInvestment loads price for < cm_startyear from gdx_ref.")
-    ref <- try(reportEnergyInvestment(gdx_ref, regionSubsetList = regionSubsetList, t = t))
-    if (!inherits(ref, "try-error")) {
-      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
-      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
-      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
-    } else {
-      message("failed to run reportEnergyInvestment on gdx_ref")
-    }
-  }
+  tmp <- fixOnRef(
+    x = tmp,
+    gdx_ref = gdx_ref,
+    startYear = cm_startyear,
+    reportFunc = reportEnergyInvestment,
+    reportArgs = list(regionSubsetList = regionSubsetList, t = t)
+  )
 
   return(tmp)
 }

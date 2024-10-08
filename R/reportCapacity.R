@@ -345,7 +345,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
 
   if (!is.null(gdx_ref) && length(fixedYears) > 0) {
     message("reportCapacity loads price for < cm_startyear from gdx_ref.")
-    ref <- try(reportCapacity(gdx_ref, regionSubsetList = regionSubsetList, t = t))
+    ref <- try(reportCapacity(gdx = gdx_ref, regionSubsetList = regionSubsetList, t = t, gdx_ref = NULL))
     if (!inherits(ref, "try-error")) {
       joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
       joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
