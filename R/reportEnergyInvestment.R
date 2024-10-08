@@ -10,6 +10,8 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency for Moving Avg prices before cm_startyear
 #'
 #' @return MAgPIE object - contains the price variables
 #' @author Anastasis Giannousaki
@@ -24,7 +26,8 @@
 #' @importFrom gdx readGDX
 
 reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
-                                   t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
+                                   t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+                                   gdx_ref = NULL) {
   # read sets
   adjte   <- readGDX(gdx, name = c("teAdj", "adjte"), format = "first_found")
   petyf   <- readGDX(gdx, c("peFos", "petyf"), format = "first_found")
@@ -236,5 +239,22 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
   getSets(tmp)[3] <- "variable"
+
+  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
+
+  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
+    message("reportEnergyInvestment loads price for < cm_startyear from gdx_ref.")
+    ref <- try(reportEnergyInvestment(gdx_ref, regionSubsetList = regionSubsetList, t = t))
+    if (!inherits(ref, "try-error")) {
+      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
+      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
+      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
+    } else {
+      message("failed to run reportEnergyInvestment on gdx_ref")
+    }
+  }
+
   return(tmp)
 }

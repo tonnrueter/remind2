@@ -677,17 +677,20 @@ reportPrices <- function(gdx, output = NULL, regionSubsetList = NULL,
     out.reporting[, cm_startyear, ] <- 0.5 * (out[, cm_startyear - 5, ] + out[, cm_startyear + 5, ])
   }
   out.reporting <- lowpass(out.reporting)
+
   # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  if (!is.null(gdx_ref)) {
+  fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
+  if (!is.null(gdx_ref) && length(fixedyears) > 0) {
     message("reportPrices loads price for < cm_startyear from gdx_ref.")
     priceRef <- try(reportPrices(gdx_ref, output = NULL, regionSubsetList = regionSubsetList, t = t))
-    fixedyears <- getYears(out)[getYears(out, as.integer = TRUE) < cm_startyear]
-    if (!inherits(priceRef, "try-error") && length(fixedyears) > 0) {
+    if (!inherits(priceRef, "try-error")) {
       joinedNamesRep <- intersect(getNames(out), getNames(priceRef))
-      joinedRegions <- intersect(getRegions(priceRef), getRegions(out))
+      joinedRegions <- intersect(getItems(priceRef, dim = 1), getItems(out, dim = 1))
       out.reporting[joinedRegions, fixedyears, joinedNamesRep] <- priceRef[joinedRegions, fixedyears, joinedNamesRep]
       joinedNamesRaw <- intersect(getNames(out.rawdata), getNames(priceRef))
       out.rawdata[joinedRegions, fixedyears, joinedNamesRaw] <- priceRef[joinedRegions, fixedyears, joinedNamesRaw]
+    } else {
+      message("failed to run reportPrices on gdx_ref")
     }
   }
 
