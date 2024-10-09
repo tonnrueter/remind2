@@ -340,19 +340,15 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
   getSets(tmp)[3] <- "variable"
 
   # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
-
-  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
-    message("reportCapacity loads price for < cm_startyear from gdx_ref.")
-    ref <- try(reportCapacity(gdx = gdx_ref, regionSubsetList = regionSubsetList, t = t, gdx_ref = NULL))
-    if (!inherits(ref, "try-error")) {
-      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
-      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
-      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
-    } else {
-      message("failed to run reportCapacity on gdx_ref")
-    }
+  if (is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    tmp <- fixOnRef(
+      x = tmp,
+      gdx_ref = gdx_ref,
+      startYear = cm_startyear,
+      reportFunc = reportCapacity,
+      reportArgs = list(regionSubsetList = regionSubsetList, t = t)
+    )
   }
 
   return(tmp)

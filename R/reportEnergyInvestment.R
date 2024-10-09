@@ -240,14 +240,16 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   getSets(tmp)[3] <- "variable"
 
   # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-  tmp <- fixOnRef(
-    x = tmp,
-    gdx_ref = gdx_ref,
-    startYear = cm_startyear,
-    reportFunc = reportEnergyInvestment,
-    reportArgs = list(regionSubsetList = regionSubsetList, t = t)
-  )
+  if (is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    tmp <- fixOnRef(
+      x = tmp,
+      gdx_ref = gdx_ref,
+      startYear = cm_startyear,
+      reportFunc = reportEnergyInvestment,
+      reportArgs = list(regionSubsetList = regionSubsetList, t = t)
+    )
+  }
 
   return(tmp)
 }

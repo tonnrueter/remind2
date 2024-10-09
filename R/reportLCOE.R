@@ -1610,27 +1610,23 @@ reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
   LCOE.out.inclGlobal["GLO", , ] <- dimSums(LCOE.out, dim = 1) / length(getRegions(LCOE.out))
 
   if (output.type  == "marginal detail") {
-    tmp <- df.LCOE
+    out <- df.LCOE
   } else {
-    tmp <- LCOE.out.inclGlobal
+    out <- LCOE.out.inclGlobal
   }
 
   # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
-
-  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
-    message("reportLCOE loads price for < cm_startyear from gdx_ref.")
-    ref <- try(reportLCOE(gdx = gdx_ref, output.type = output.type, gdx_ref = NULL))
-    if (!inherits(ref, "try-error")) {
-      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
-      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
-      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
-    } else {
-      message("failed to run reportLCOE on gdx_ref")
-    }
+  if (is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    out <- fixOnRef(
+      x = out,
+      gdx_ref = gdx_ref,
+      startYear = cm_startyear,
+      reportFunc = reportLCOE,
+      reportArgs = list(output.type = output.type)
+    )
   }
 
-  return(tmp)
+  return(out)
 
 }

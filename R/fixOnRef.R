@@ -14,10 +14,6 @@
 #' @author Falk Benke
 fixOnRef <- function(x, gdx_ref, startYear, reportFunc, reportArgs = list()) {
 
-  if (is.null(gdx_ref)) {
-    return(x)
-  }
-
   fixedYears <- getYears(x)[getYears(x, as.integer = TRUE) < startYear]
 
   if (length(fixedYears) == 0) {

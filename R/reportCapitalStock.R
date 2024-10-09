@@ -3,7 +3,6 @@
 #' Read in capital stock information from GDX file, information used in convGDX2MIF.R
 #' for the reporting
 #'
-#'
 #' @param gdx a GDX object as created by readGDX, or the path to a gdx
 #' @param regionSubsetList a list containing regions to create report variables region
 #' aggregations. If NULL (default value) only the global region aggregation "GLO" will
@@ -97,6 +96,18 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apcarDiEffH2T"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffH2T (arbitrary unit)"))
 
 
+    # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
+    if (is.null(gdx_ref)) {
+      cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+      tmp <- fixOnRef(
+        x = tmp,
+        gdx_ref = gdx_ref,
+        startYear = cm_startyear,
+        reportFunc = reportCapitalStock,
+        reportArgs = list(regionSubsetList = regionSubsetList, t = t)
+      )
+    }
+
     ## add global values
     tmp <- mbind(tmp, dimSums(tmp, dim = 1))
   }
@@ -139,24 +150,6 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
   getSets(tmp)[3] <- "variable"
-
-  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-  fixedYears <- getYears(tmp)[getYears(tmp, as.integer = TRUE) < cm_startyear]
-
-  if (!is.null(gdx_ref) && length(fixedYears) > 0) {
-    message("reportCapitalStock loads price for < cm_startyear from gdx_ref.")
-    ref <- try(reportCapitalStock(gdx = gdx_ref,
-                                  regionSubsetList = regionSubsetList,
-                                  t = t, gdx_ref = NULL))
-    if (!inherits(ref, "try-error")) {
-      joinedNamesRep <- intersect(getNames(tmp), getNames(ref))
-      joinedRegions <- intersect(getItems(ref, dim = 1), getItems(tmp, dim = 1))
-      tmp[joinedRegions, fixedYears, joinedNamesRep] <- ref[joinedRegions, fixedYears, joinedNamesRep]
-    } else {
-      message("failed to run reportCapitalStock on gdx_ref")
-    }
-  }
 
   return(tmp)
 }
