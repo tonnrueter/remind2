@@ -2562,6 +2562,7 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     names.lulucf <- gsub("\\ \\(Mt CO2eq/yr\\)", "|LULUCF national accounting (Mt CO2eq/yr)", names.lulucf)
     names.lulucf <- gsub("\\ \\(Mt CO2/yr\\)", "|LULUCF national accounting (Mt CO2/yr)", names.lulucf)
     names.lulucf <- gsub("\\|\\+\\|", "\\|", names.lulucf )
+    names.lulucf <- gsub("\\|\\+\\+\\|", "\\|", names.lulucf )
     names.lulucf <- gsub("\\|\\+\\+\\+\\|", "\\|", names.lulucf )
     getNames(out.lulucf) <- names.lulucf
 
