@@ -80,33 +80,38 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apCarH2T"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est H2 LDV Stock (million vehicles)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apCarPeT"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est ICE LDV Stock (million vehicles)"))
 
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , LDV35] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est LDV Sales (million vehicles)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apCarElT"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est EV LDV Sales (million vehicles)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apCarH2T"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est H2 LDV Sales (million vehicles)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apCarPeT"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est ICE LDV Sales (million vehicles)"))
-
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("apCarDiT", "apcarDiEffT", "apcarDiEffH2T")], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Stock|uedit (arbitrary unit)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apCarDiT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Stock|apCarDiT (arbitrary unit)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apcarDiEffT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Stock|apcarDiEffT (arbitrary unit)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apcarDiEffH2T"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Stock|apcarDiEffH2T (arbitrary unit)"))
 
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , c("apCarDiT", "apcarDiEffT", "apcarDiEffH2T")], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|uedit (arbitrary unit)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apCarDiT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apCarDiT (arbitrary unit)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apcarDiEffT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffT (arbitrary unit)"))
-    tmp <- mbind(tmp, setNames(dimSums(vm_deltaCap[, , "apcarDiEffH2T"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffH2T (arbitrary unit)"))
+
+    tmp2 <- NULL
+
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , LDV35] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est LDV Sales (million vehicles)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apCarElT"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est EV LDV Sales (million vehicles)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apCarH2T"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est H2 LDV Sales (million vehicles)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apCarPeT"] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est ICE LDV Sales (million vehicles)"))
+
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("apCarDiT", "apcarDiEffT", "apcarDiEffH2T")], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|uedit (arbitrary unit)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apCarDiT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apCarDiT (arbitrary unit)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apcarDiEffT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffT (arbitrary unit)"))
+    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apcarDiEffH2T"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffH2T (arbitrary unit)"))
 
 
     # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
     if (is.null(gdx_ref)) {
       cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-      tmp <- fixOnRef(
-        x = tmp,
+      tmp2 <- fixOnRef(
+        x = tmp2,
         gdx_ref = gdx_ref,
         startYear = cm_startyear,
         reportFunc = reportCapitalStock,
         reportArgs = list(regionSubsetList = regionSubsetList, t = t)
       )
     }
+
+    tmp <- mbind(tmp, tmp2)
 
     ## add global values
     tmp <- mbind(tmp, dimSums(tmp, dim = 1))
