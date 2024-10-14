@@ -36,7 +36,8 @@ items <- c(
   "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|OAE",
-  "Emi|CO2|CDR|EW")
+  "Emi|CO2|CDR|EW",
+  "Emi|CO2|Accounted in Other Sectors via CCU|Energy|Industry")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
@@ -63,7 +64,8 @@ items <- c(
   "Emi|CO2|CDR|Industry CCS|Synthetic Fuels",
   "Emi|CO2|CDR|DACCS",
   "Emi|CO2|CDR|OAE",
-  "Emi|CO2|CDR|EW")
+  "Emi|CO2|CDR|EW",
+  "Emi|CO2|Accounted in Other Sectors via CCU|Energy|Industry")
 showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
