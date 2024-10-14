@@ -369,7 +369,7 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
   v33_EW_onfield_tot_byClimateGrade <- dimSums(v33_EW_onfield_tot,dim=3.2) # rocks weathering on field by climate grade, aggregated across transportation grades [Gt rock]
 
   tmp2 <- mbind(
-      setNames(v33_EW_onfield_total                 * 1000,  "CDR|Rocks spread  (Mt rocks/yr)"), 
+      setNames(v33_EW_onfield_total                 * 1000,  "CDR|Rocks spread (Mt rocks/yr)"), 
       setNames(v33_EW_onfield_byClimateGrade[,,"1"] * 1000,  "CDR|Rocks spread|+|warm regions (Mt rocks/yr)"),
       setNames(v33_EW_onfield_byClimateGrade[,,"2"] * 1000,  "CDR|Rocks spread|+|temperate regions (Mt rocks/yr)"),
       setNames(v33_EW_onfield_tot_total             * 1000,  "CDR|Rocks weathering (Mt rocks)"),
