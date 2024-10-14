@@ -383,7 +383,7 @@ cdrVars <-
 walk(cdrVars, showLinePlots, data = data)
 ```
 
-#### EW rock spread per year and total weathering on fields
+#### EW rock spreading
 ```{r CO2 EW rock}
 items <- c(
   "CDR|Rocks spread",
