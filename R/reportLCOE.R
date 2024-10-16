@@ -141,17 +141,31 @@ reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
 
     ## variables
 
+
     ## Total direct Investment Cost in Timestep
     vm_costInvTeDir <- readGDX(gdx, name = c("vm_costInvTeDir", "v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")[, ttot, ]
-    vm_costInvTeDir <- modifyInvestmentVariables(vm_costInvTeDir)
 
     ## total adjustment cost in period
     vm_costInvTeAdj <- readGDX(gdx, name = c("vm_costInvTeAdj", "v_costInvTeAdj"), field = "l", format = "first_found")[, ttot, ]
-    vm_costInvTeAdj <- modifyInvestmentVariables(vm_costInvTeAdj)
 
     # capacity additions per year
     vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")[, ttot, ]
-    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+
+    if (!is.null(gdx_ref)) {
+      cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+
+      vm_costInvTeDirRef <- readGDX(gdx_ref, name = c("vm_costInvTeDir", "v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")[, ttot, ]
+      vm_costInvTeAdjRef <- readGDX(gdx_ref, name = c("vm_costInvTeAdj", "v_costInvTeAdj"), field = "l", format = "first_found")[, ttot, ]
+      vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found")[, ttot, ]
+
+      vm_costInvTeDir <- modifyInvestmentVariables(vm_costInvTeDir, vm_costInvTeDirRef, cm_startyear)
+      vm_costInvTeAdj <- modifyInvestmentVariables(vm_costInvTeAdj, vm_costInvTeAdjRef, cm_startyear)
+      vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
+    } else {
+      vm_costInvTeDir <- modifyInvestmentVariables(vm_costInvTeDir)
+      vm_costInvTeAdj <- modifyInvestmentVariables(vm_costInvTeAdj)
+      vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+    }
 
     vm_demPe      <- readGDX(gdx, name = c("vm_demPe", "v_pedem"), field = "l", restore_zeros = FALSE, format = "first_found")
     v_investcost  <- readGDX(gdx, name = c("vm_costTeCapital", "v_costTeCapital", "v_investcost"), field = "l", format = "first_found")[, ttot, ]
@@ -1613,18 +1627,6 @@ reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
     out <- df.LCOE
   } else {
     out <- LCOE.out.inclGlobal
-  }
-
-  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  if (is.null(gdx_ref)) {
-    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-    out <- fixOnRef(
-      x = out,
-      gdx_ref = gdx_ref,
-      startYear = cm_startyear,
-      reportFunc = reportLCOE,
-      reportArgs = list(output.type = output.type)
-    )
   }
 
   return(out)

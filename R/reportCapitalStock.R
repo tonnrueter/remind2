@@ -39,7 +39,15 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
   # read variables
   vm_cap <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found")
   vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")
-  vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+
+  if (!is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found")
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
+  } else {
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+  }
+
   v_investcost <- readGDX(gdx, name = c("vm_costTeCapital", "v_costTeCapital", "v_investcost"), field = "l", format = "first_found")
   vm_cesIO <- readGDX(gdx, name = "vm_cesIO", field = "l")
   # read parameters
@@ -85,7 +93,6 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apcarDiEffT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Stock|apcarDiEffT (arbitrary unit)"))
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , "apcarDiEffH2T"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Stock|apcarDiEffH2T (arbitrary unit)"))
 
-
     tmp2 <- NULL
 
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , LDV35] * pm_conv_cap_2_MioLDV, dim = c(3.1, 3.2)), "Est LDV Sales (million vehicles)"))
@@ -97,19 +104,6 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apCarDiT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apCarDiT (arbitrary unit)"))
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apcarDiEffT"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffT (arbitrary unit)"))
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "apcarDiEffH2T"], dim = c(3.1, 3.2)), "Services and Products|Transport|non-LDV|Sales|apcarDiEffH2T (arbitrary unit)"))
-
-
-    # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-    if (is.null(gdx_ref)) {
-      cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-      tmp2 <- fixOnRef(
-        x = tmp2,
-        gdx_ref = gdx_ref,
-        startYear = cm_startyear,
-        reportFunc = reportCapitalStock,
-        reportArgs = list(regionSubsetList = regionSubsetList, t = t)
-      )
-    }
 
     tmp <- mbind(tmp, tmp2)
 

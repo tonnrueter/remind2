@@ -53,7 +53,15 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
   vm_cap      <- vm_cap[, ttot, ]
   vm_deltaCap <- vm_deltaCap[teall2rlf]
   vm_deltaCap <- vm_deltaCap[, ttot, ]
-  vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+
+  if (!is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, gdx_ref)
+  } else {
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+  }
+
   v_earlyreti <-   v_earlyreti[, ttot, ]
   t2005 <- ttot[ttot > 2004]
 
@@ -260,18 +268,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
   # carbon management
   if ("dac" %in% magclass::getNames(vm_cap, dim = 1)) {
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("dac")], dim = 3) * sm_c_2_co2, "New Cap|Carbon Management|DAC (Mt CO2/yr/yr)"))
-  }
-
-  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  if (is.null(gdx_ref)) {
-    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-    tmp2 <- fixOnRef(
-      x = tmp2,
-      gdx_ref = gdx_ref,
-      startYear = cm_startyear,
-      reportFunc = reportCapacity,
-      reportArgs = list(regionSubsetList = regionSubsetList, t = t)
-    )
   }
 
   # add terms calculated from previously calculated capacity values

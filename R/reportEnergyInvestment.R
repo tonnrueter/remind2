@@ -71,8 +71,20 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   # data preparation
 
   ttot <- as.numeric(as.vector(readGDX(gdx, "ttot", format = "first_found")))
-  v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ])
-  v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ])
+
+  if (!is.null(gdx_ref)) {
+    v_directteinv_ref <- readGDX(gdx_ref, name = c("v_costInvTeDir", "vm_costInvTeDir", "v_directteinv"),
+                             field = "l", format = "first_found")
+    v_adjustteinv_ref <- readGDX(gdx_ref, name = c("v_costInvTeAdj", "vm_costInvTeAdj", "v_adjustteinv"),
+                             field = "l", format = "first_found")
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ], v_directteinv_ref, cm_startyear)
+    v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ], v_adjustteinv_ref, cm_startyear)
+  } else {
+    v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ])
+    v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ])
+  }
+
   costRatioTdelt2Tdels <- pm_data[, , "inco0.tdelt"] / pm_data[, , "inco0.tdels"]
 
   ####### internal function for reporting ###########
@@ -238,18 +250,6 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
   getSets(tmp)[3] <- "variable"
-
-  # reset values for years smaller than cm_startyear to avoid inconsistencies in cm_startyear - 5
-  if (is.null(gdx_ref)) {
-    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-    tmp <- fixOnRef(
-      x = tmp,
-      gdx_ref = gdx_ref,
-      startYear = cm_startyear,
-      reportFunc = reportEnergyInvestment,
-      reportArgs = list(regionSubsetList = regionSubsetList, t = t)
-    )
-  }
 
   return(tmp)
 }
