@@ -29,7 +29,7 @@ convGDX2MIF_LCOE <- function(gdx, gdx_ref, file = NULL, scenario = "default",
   output <- NULL
   output <- mbind(output, reportLCOE(gdx)[, t, ])
 
-  # write the LCOE.mif or give back the magpie opject output
+  # write the LCOE.mif or give back the magpie object output
   if (!is.null(file)) {
     write.report(output, model = "REMIND", scenario = scenario, file = file, ndigit = 7)
   } else {
