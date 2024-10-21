@@ -58,7 +58,7 @@ reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
   v32_storloss <- readGDX(gdx, "v32_storloss", field = "l")
 
   if (is.null(vm_capFac) || is.null(qm_balcapture) || is.null(vm_co2CCS) ||
-        is.null(pm_emifac) || is.null(v32_storloss)) {
+      is.null(pm_emifac) || is.null(v32_storloss)) {
     print("The gdx file is too old for generating a LCOE reporting...returning NULL")
     return(new.magpie(cells_and_regions = "GLO",
                       years = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)))
@@ -380,7 +380,9 @@ reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
 
     grid_factor_tech <- new.magpie(names = te2grid$all_te, fill = 1)
     getSets(grid_factor_tech)[3] <- "all_te"
-    grid_factor_tech[, , "wind"] <- 1.5
+    if ("wind" %in% getNames(grid_factor_tech)) {
+      grid_factor_tech[, , "wind"] <- 1.5
+    }
     grid_factor_tech[, , "windon"] <- 1.5
     grid_factor_tech[, , "windoff"] <- 3.0
 
@@ -389,7 +391,7 @@ reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
     te_annual_grid_cost_wadj <- new.magpie(getRegions(te_inv_annuity), ttot_from2005, magclass::getNames(te_inv_annuity), fill = 0)
 
 
-    gridwindonStr <- ifelse("windon" %in% all_te, "gridwindon", "gridwind")
+    gridwindonStr <- ifelse("windon" %in% te2grid$all_te, "gridwindon", "gridwind")
 
     te_annual_grid_cost[, , te2grid$all_te] <-
       collapseNames(te_annual_inv_cost[, ttot_from2005, gridwindonStr] + te_annual_OMF_cost[, , gridwindonStr]) *
