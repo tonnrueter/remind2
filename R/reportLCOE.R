@@ -21,7 +21,7 @@
 #' "marginal" (returns only marginal LCOE), "both" (returns marginal and average LCOE) and
 #' and "marginal detail" (returns table to trace back how marginal LCOE are calculated).
 #' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
-#' It is used to guarantee consistency for Moving Avg prices before cm_startyear
+#' It is used to guarantee consistency for capacity additions and investment variables before cm_startyear
 #' @return MAgPIE object - LCOE calculated by model post-processing.
 #' Two types a) standing system LCOE b) new plant LCOE.
 #' @author Felix Schreyer, Robert Pietzcker, Lavinia Baumstark

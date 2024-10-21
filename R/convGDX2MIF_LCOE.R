@@ -23,7 +23,7 @@
 #' @importFrom magclass mbind write.report
 #' @importFrom utils write.table
 
-convGDX2MIF_LCOE <- function(gdx, gdx_ref, file = NULL, scenario = "default",
+convGDX2MIF_LCOE <- function(gdx, gdx_ref = NULL, file = NULL, scenario = "default",
                              t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
   # make the reporting
   output <- NULL
