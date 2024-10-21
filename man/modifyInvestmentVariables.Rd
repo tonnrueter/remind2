@@ -4,10 +4,14 @@
 \alias{modifyInvestmentVariables}
 \title{Modify Investment Variables}
 \usage{
-modifyInvestmentVariables(x)
+modifyInvestmentVariables(x, ref = NULL, startYear = NULL)
 }
 \arguments{
 \item{x}{a magclass object to be manipulated}
+
+\item{ref}{an optional magclass object to be used for fixing values before 'startYear'}
+
+\item{startYear}{years before will be overwritten with values from 'ref'}
 }
 \description{
 a helper to adapt investment variables in reporting after changes in

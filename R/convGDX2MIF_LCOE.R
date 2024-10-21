@@ -27,7 +27,7 @@ convGDX2MIF_LCOE <- function(gdx, gdx_ref, file = NULL, scenario = "default",
                              t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
   # make the reporting
   output <- NULL
-  output <- mbind(output, reportLCOE(gdx = gdx, gdx_ref = gdx_ref)[, t, ],)
+  output <- mbind(output, reportLCOE(gdx = gdx, gdx_ref = gdx_ref)[, t, ])
 
   # write the LCOE.mif or give back the magpie object output
   if (!is.null(file)) {

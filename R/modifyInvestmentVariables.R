@@ -26,12 +26,11 @@ modifyInvestmentVariables <- function(x, ref = NULL, startYear = NULL) {
   x <- (x + tmp) / 2
 
   if (!is.null(ref)) {
-    fixedYears <- getYears(x)[getYears(x, as.integer = TRUE) < startYear]
-
+    joinedYears <- intersect(getYears(x, as.integer = TRUE), getYears(ref, as.integer = TRUE))
+    fixedYears <- joinedYears[joinedYears < startYear]
     if (length(fixedYears) == 0) {
       return(x)
     }
-
     ref <- modifyInvestmentVariables(ref)
     joinedNames <- intersect(getNames(x), getNames(ref))
     joinedRegions <- intersect(getItems(ref, dim = 1), getItems(x, dim = 1))

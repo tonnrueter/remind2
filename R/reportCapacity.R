@@ -49,15 +49,18 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
 
   # data preparation
   ttot <- as.numeric(as.vector(ttot))
-  vm_cap      <- vm_cap[teall2rlf]
-  vm_cap      <- vm_cap[, ttot, ]
+  vm_cap <- vm_cap[teall2rlf]
+  vm_cap <- vm_cap[, ttot, ]
+
   vm_deltaCap <- vm_deltaCap[teall2rlf]
   vm_deltaCap <- vm_deltaCap[, ttot, ]
 
   if (!is.null(gdx_ref)) {
     cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
     vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000
-    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, gdx_ref)
+    vm_deltaCapRef <- vm_deltaCapRef[teall2rlf]
+    vm_deltaCapRef <- vm_deltaCapRef[, ttot, ]
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
   } else {
     vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
   }
@@ -168,7 +171,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
   if ("dac" %in% magclass::getNames(vm_cap, dim = 1)) {
     tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("dac")], dim = 3) * sm_c_2_co2, "Cap|Carbon Management|DAC (Mt CO2/yr)"))
   }
-
   # Newly built capacities electricity (Should all go into tmp2, so that this can be used for calculating cumulated values in tmp5 below)
   tmp2 <- NULL
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3),        "New Cap|Electricity|Gas (GW/yr)"))

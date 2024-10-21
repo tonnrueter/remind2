@@ -78,8 +78,8 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
     v_adjustteinv_ref <- readGDX(gdx_ref, name = c("v_costInvTeAdj", "vm_costInvTeAdj", "v_adjustteinv"),
                              field = "l", format = "first_found")
     cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-    v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ], v_directteinv_ref, cm_startyear)
-    v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ], v_adjustteinv_ref, cm_startyear)
+    v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ], v_directteinv_ref[, ttot, ], cm_startyear)
+    v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ], v_adjustteinv_ref[, ttot, ], cm_startyear)
   } else {
     v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ])
     v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ])
