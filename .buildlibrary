@@ -7,3 +7,4 @@ AcceptedNotes: Imports includes .* non-default packages.
 AutocreateReadme: yes
 allowLinterWarnings: yes
 enforceVersionUpdate: yes
+skipCoverage: yes
