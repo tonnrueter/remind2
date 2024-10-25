@@ -37,20 +37,14 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
   # read sets
   teall2rlf <- readGDX(gdx, name = c("te2rlf", "teall2rlf"), format = "first_found")
   teue2rlf <- readGDX(gdx, name = c("teue2rlf", "tees2rlf"), format = "first_found")
+
   # read variables
   vm_cap <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found")
   vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")
 
-  if (!is.null(gdx_ref)) {
-    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found")
-    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
-  } else {
-    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
-  }
-
   v_investcost <- readGDX(gdx, name = c("vm_costTeCapital", "v_costTeCapital", "v_investcost"), field = "l", format = "first_found")
   vm_cesIO <- readGDX(gdx, name = "vm_cesIO", field = "l")
+
   # read parameters
   ppfKap_Ind <- readGDX(gdx, name = "ppfkap_industry_dyn37", react = "silent")
   steel_process_based <- "steel" %in% readGDX(gdx, "secInd37Prc", react = "silent")
@@ -60,6 +54,14 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
   vm_cap <- vm_cap[, y, ]
   vm_deltaCap <- vm_deltaCap[, y, ]
   v_investcost <- v_investcost[, y, ]
+
+  if (!is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found")
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
+  } else {
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+  }
 
   tmp <- NULL
 
