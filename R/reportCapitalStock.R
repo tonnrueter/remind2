@@ -57,7 +57,7 @@ reportCapitalStock <- function(gdx, regionSubsetList = NULL,
 
   if (!is.null(gdx_ref)) {
     cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
-    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found")
+    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found")[, y, ]
     vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
   } else {
     vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
