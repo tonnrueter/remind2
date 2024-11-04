@@ -56,6 +56,9 @@ reportCapacity <- function(gdx, regionSubsetList = NULL,
   vm_deltaCap <- vm_deltaCap[teall2rlf]
   vm_deltaCap <- vm_deltaCap[, ttot, ]
 
+  # apply 'modifyInvestmentVariables' to shift from the model-internal time coverage (deltacap and investment
+  # variables for step t represent the average of the years from t-4years to t) to the general convention for
+  # the reporting template (all variables represent the average of the years from t-2.5years to t+2.5years)
   if (!is.null(gdx_ref)) {
     cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
     vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000

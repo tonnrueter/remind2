@@ -1,18 +1,15 @@
 #' Modify Investment Variables
 #'
-#' Timesteps for investment variables represent a different year range than
-#' general REMIND reporting. This function transforms investment data to the
-#' general REMIND timesteps representation.
+#' This function transforms investment variables to the normal reporting convention.
+#'
+#' Years represented by investment variables in the energy system
+#' ('vm_deltaCap', 'vm_costInvTeDir' and 'vm_costInvTeAdj') are different from the normal
+#' reporting convention. In the current REMIND version, vm_deltacap(t) represents
+#' the average of the years t-4..t, while in the general reporting
+#' convention it represents the average of t-2.5..t+2.5 (for 5 year time steps).
 #'
 #' See also: https://github.com/remindmodel/remind/pull/1238.
 #'
-#' For investment variables, the timesteps represent the years as follows:
-#' * 5-year timesteps: t represents t .. t-4, e.g. for 2005: 2001-2005
-#  * 10-year timesteps: t represents t .. t-9, e.g. for 2070: 2061-2070
-#  * 20-year timesteps: t represents t .. t-19, e.g. for 2150: 2131-2150
-#'
-#' In REMIND, the timesteps represent the years around the timestep, taking
-#' into account the length of the period between t-1..t as well as t..t+1
 #' @seealso \code{\link{quitte::remind_timesteps}}
 #'
 #' @param x a magclass object to be manipulated, must have timesteps in 'ttot'
