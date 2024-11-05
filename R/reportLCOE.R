@@ -56,7 +56,7 @@ reportLCOE <- function(gdx, output.type = "both") {
   v32_storloss <- readGDX(gdx, "v32_storloss", field = "l")
 
   if (is.null(vm_capFac) || is.null(qm_balcapture) || is.null(vm_co2CCS) ||
-        is.null(pm_emifac) || is.null(v32_storloss)) {
+      is.null(pm_emifac) || is.null(v32_storloss)) {
     print("The gdx file is too old for generating a LCOE reporting...returning NULL")
     return(new.magpie(cells_and_regions = "GLO",
                       years = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)))
@@ -138,9 +138,16 @@ reportLCOE <- function(gdx, output.type = "both") {
     pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = FALSE)
 
     ## variables
-    vm_costInvTeDir <- readGDX(gdx, name = c("vm_costInvTeDir", "v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")[, ttot, ] ## Total direct Investment Cost in Timestep
-    vm_costInvTeAdj <- readGDX(gdx, name = c("vm_costInvTeAdj", "v_costInvTeAdj"), field = "l", format = "first_found")[, ttot, ] ## total adjustment cost in period
-    vm_deltaCap   <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")[, ttot, ]
+
+    ## Total direct Investment Cost in Timestep
+    vm_costInvTeDir <- readGDX(gdx, name = c("vm_costInvTeDir", "v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")[, ttot, ]
+
+    ## total adjustment cost in period
+    vm_costInvTeAdj <- readGDX(gdx, name = c("vm_costInvTeAdj", "v_costInvTeAdj"), field = "l", format = "first_found")[, ttot, ]
+
+    # capacity additions per year
+    vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")[, ttot, ]
+
     vm_demPe      <- readGDX(gdx, name = c("vm_demPe", "v_pedem"), field = "l", restore_zeros = FALSE, format = "first_found")
     v_investcost  <- readGDX(gdx, name = c("vm_costTeCapital", "v_costTeCapital", "v_investcost"), field = "l", format = "first_found")[, ttot, ]
     vm_cap        <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found")
@@ -354,7 +361,9 @@ reportLCOE <- function(gdx, output.type = "both") {
 
     grid_factor_tech <- new.magpie(names = te2grid$all_te, fill = 1)
     getSets(grid_factor_tech)[3] <- "all_te"
-    grid_factor_tech[, , "wind"] <- 1.5
+    if ("wind" %in% getNames(grid_factor_tech)) {
+      grid_factor_tech[, , "wind"] <- 1.5
+    }
     grid_factor_tech[, , "windon"] <- 1.5
     grid_factor_tech[, , "windoff"] <- 3.0
 
@@ -363,7 +372,7 @@ reportLCOE <- function(gdx, output.type = "both") {
     te_annual_grid_cost_wadj <- new.magpie(getRegions(te_inv_annuity), ttot_from2005, magclass::getNames(te_inv_annuity), fill = 0)
 
 
-    gridwindonStr <- ifelse("windon" %in% all_te, "gridwindon", "gridwind")
+    gridwindonStr <- ifelse("windon" %in% te2grid$all_te, "gridwindon", "gridwind")
 
     te_annual_grid_cost[, , te2grid$all_te] <-
       collapseNames(te_annual_inv_cost[, ttot_from2005, gridwindonStr] + te_annual_OMF_cost[, , gridwindonStr]) *
@@ -1597,13 +1606,12 @@ reportLCOE <- function(gdx, output.type = "both") {
   LCOE.out.inclGlobal[getRegions(LCOE.out), , ] <- LCOE.out
   LCOE.out.inclGlobal["GLO", , ] <- dimSums(LCOE.out, dim = 1) / length(getRegions(LCOE.out))
 
-
-
-  if (output.type %in% c("marginal detail")) {
-    return(df.LCOE)
+  if (output.type  == "marginal detail") {
+    out <- df.LCOE
   } else {
-    return(LCOE.out.inclGlobal)
+    out <- LCOE.out.inclGlobal
   }
 
-  return(LCOE.out)
+  return(out)
+
 }

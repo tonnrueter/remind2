@@ -37,8 +37,9 @@ Read in all information from GDX file and create
 the *.mif reporting
 }
 \examples{
-
-\dontrun{convGDX2MIF(gdx,gdx_refpolicycost,file="REMIND_generic_default.csv",scenario="default")}
+\dontrun{
+convGDX2MIF(gdx, gdx_refpolicycost, file = "REMIND_generic_default.csv", scenario = "default")
+}
 
 }
 \author{

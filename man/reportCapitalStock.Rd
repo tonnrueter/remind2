@@ -7,7 +7,8 @@
 reportCapitalStock(
   gdx,
   regionSubsetList = NULL,
-  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)
+  t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+  gdx_ref = gdx_ref
 )
 }
 \arguments{
@@ -19,6 +20,10 @@ be created.}
 
 \item{t}{temporal resolution of the reporting, default:
 t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)}
+
+\item{gdx_ref}{a GDX object as created by readGDX, or the path to a gdx of the reference run.
+It is used to guarantee consistency before 'cm_startyear' for capacity variables
+using time averaging.}
 }
 \value{
 MAgPIE object - contains the capital stock variables
@@ -28,8 +33,9 @@ Read in capital stock information from GDX file, information used in convGDX2MIF
 for the reporting
 }
 \examples{
-
-\dontrun{reportCapitalStock(gdx)}
+\dontrun{
+reportCapitalStock(gdx)
+}
 
 }
 \seealso{

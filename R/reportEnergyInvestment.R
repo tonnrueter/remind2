@@ -10,6 +10,9 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency before 'cm_startyear' for investment variables
+#' using time averaging.
 #'
 #' @return MAgPIE object - contains the price variables
 #' @author Anastasis Giannousaki
@@ -20,11 +23,12 @@
 #' }
 #'
 #' @export
-#' @importFrom magclass mbind
+#' @importFrom magclass mbind is.magpie
 #' @importFrom gdx readGDX
 
 reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
-                                   t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
+                                   t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+                                   gdx_ref = NULL) {
   # read sets
   adjte   <- readGDX(gdx, name = c("teAdj", "adjte"), format = "first_found")
   petyf   <- readGDX(gdx, c("peFos", "petyf"), format = "first_found")
@@ -52,9 +56,13 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   grid  <- readGDX(gdx, name = c("teGrid", "grid"), format = "first_found")
   pebio  <- readGDX(gdx, c("peBio", "pebio"), format = "first_found")
   ttot        <- readGDX(gdx, name = "ttot", format = "first_found")
+
   # read variables
+
+  # investment cost per technology
   v_directteinv <- readGDX(gdx, name = c("v_costInvTeDir", "vm_costInvTeDir", "v_directteinv"),
                            field = "l", format = "first_found")
+  # adjustment cost per technology
   v_adjustteinv <- readGDX(gdx, name = c("v_costInvTeAdj", "vm_costInvTeAdj", "v_adjustteinv"),
                            field = "l", format = "first_found")
 
@@ -62,11 +70,26 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
   pm_data   <- readGDX(gdx, c("pm_data"), format = "first_found")
 
   # data preparation
-  ttot <- as.numeric(as.vector(readGDX(gdx, "ttot", format = "first_found")))
-  v_directteinv <- v_directteinv[, ttot, ]
-  v_adjustteinv <- v_adjustteinv[, ttot, ]
-  costRatioTdelt2Tdels <- pm_data[, , "inco0.tdelt"] / pm_data[, , "inco0.tdels"]
 
+  ttot <- as.numeric(as.vector(readGDX(gdx, "ttot", format = "first_found")))
+
+  # apply 'modifyInvestmentVariables' to shift from the model-internal time coverage (deltacap and investment
+  # variables for step t represent the average of the years from t-4years to t) to the general convention for
+  # the reporting template (all variables represent the average of the years from t-2.5years to t+2.5years)
+  if (!is.null(gdx_ref)) {
+    v_directteinv_ref <- readGDX(gdx_ref, name = c("v_costInvTeDir", "vm_costInvTeDir", "v_directteinv"),
+                             field = "l", format = "first_found")
+    v_adjustteinv_ref <- readGDX(gdx_ref, name = c("v_costInvTeAdj", "vm_costInvTeAdj", "v_adjustteinv"),
+                             field = "l", format = "first_found")
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ], v_directteinv_ref[, ttot, ], cm_startyear)
+    v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ], v_adjustteinv_ref[, ttot, ], cm_startyear)
+  } else {
+    v_directteinv <- modifyInvestmentVariables(v_directteinv[, ttot, ])
+    v_adjustteinv <- modifyInvestmentVariables(v_adjustteinv[, ttot, ])
+  }
+
+  costRatioTdelt2Tdels <- pm_data[, , "inco0.tdelt"] / pm_data[, , "inco0.tdels"]
 
   ####### internal function for reporting ###########
   ## "ie" stands for input energy, "oe" for output energy
@@ -224,7 +247,6 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
     - tmp[, , "Energy Investments|CO2 Trans&Stor (billion US$2017/yr)"]),
   "Energy Investments|Other (billion US$2017/yr)"))
 
-
   # add global values
   tmp <- mbind(tmp, dimSums(tmp, dim = 1))
   # add other region aggregations
@@ -232,5 +254,6 @@ reportEnergyInvestment <- function(gdx, regionSubsetList = NULL,
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
   getSets(tmp)[3] <- "variable"
+
   return(tmp)
 }
