@@ -81,19 +81,26 @@ modifyInvestmentVariables <- function(x, ref = NULL, startYear = NULL) {
     distinct() %>%
     as.magpie()
 
-  # Average variables with yearly timesteps to 5-year reporting time steps defined around center year (e.g. 2018-2022 average -> 2020)
+  # Average variables with yearly timesteps to 5-year reporting time steps defined
+  # around center year (e.g. 2018-2022 average -> 2020)
   x <- toolAggregate(x, dim = 2, rel = remindTs, weight = w, from = "year", to = "period")
 
   if (!is.null(ref)) {
-    joinedYears <- intersect(getYears(x, as.integer = TRUE), getYears(ref, as.integer = TRUE))
-    fixedYears <- joinedYears[joinedYears < startYear]
+    if (!all(
+      setequal(getYears(x), getYears(ref)),
+      setequal(getItems(x, dim = 1), getItems(ref, dim = 1)),
+      setequal(getNames(x), getNames(ref))
+    )) {
+      stop("ref does not match the dimensions of x")
+    }
+
+    fixedYears <- getYears(x, as.integer = TRUE)[getYears(x, as.integer = TRUE) < startYear]
     if (length(fixedYears) == 0) {
       return(x)
     }
+
     ref <- modifyInvestmentVariables(ref)
-    joinedNames <- intersect(getNames(x), getNames(ref))
-    joinedRegions <- intersect(getItems(ref, dim = 1), getItems(x, dim = 1))
-    x[joinedRegions, fixedYears, joinedNames] <- ref[joinedRegions, fixedYears, joinedNames]
+    x[, fixedYears, ] <- ref[, fixedYears, ]
   }
 
   return(x)
