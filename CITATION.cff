@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using the metadata from this file.
 type: software
 title: 'remind2: The REMIND R package (2nd generation)'
-version: 1.158.2
-date-released: '2024-10-23'
+version: 1.159.0
+date-released: '2024-11-05'
 abstract: Contains the REMIND-specific routines for data and model output manipulation.
 authors:
 - family-names: Rodrigues

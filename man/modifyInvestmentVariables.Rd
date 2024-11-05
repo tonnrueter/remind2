@@ -7,20 +7,23 @@
 modifyInvestmentVariables(x, ref = NULL, startYear = NULL)
 }
 \arguments{
-\item{x}{a magclass object to be manipulated}
+\item{x}{a magclass object to be manipulated, must have timesteps in 'ttot'}
 
 \item{ref}{an optional magclass object to be used for fixing values before 'startYear'}
 
 \item{startYear}{years before will be overwritten with values from 'ref'}
 }
 \description{
-a helper to adapt investment variables in reporting after changes in
-https://github.com/remindmodel/remind/pull/1238
+This function transforms investment variables to the normal reporting convention.
 }
 \details{
-for a given magclass object, calculates the value of each timestep
-as the average of this timestep and the next timestep
-the data for the last timestep in the magclass object remains unchanged
+Years represented by investment variables in the energy system
+('vm_deltaCap', 'vm_costInvTeDir' and 'vm_costInvTeAdj') are different from the normal
+reporting convention. In the current REMIND version, vm_deltacap(t) represents
+the average of the years t-4..t, while in the general reporting
+convention it represents the average of t-2.5..t+2.5 (for 5 year time steps).
+
+See also: https://github.com/remindmodel/remind/pull/1238.
 }
 \author{
 Falk Benke

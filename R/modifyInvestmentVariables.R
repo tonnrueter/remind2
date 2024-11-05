@@ -10,7 +10,6 @@
 #'
 #' See also: https://github.com/remindmodel/remind/pull/1238.
 #'
-#' @seealso \code{\link{quitte::remind_timesteps}}
 #'
 #' @param x a magclass object to be manipulated, must have timesteps in 'ttot'
 #' @param ref an optional magclass object to be used for fixing values before 'startYear'
