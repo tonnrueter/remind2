@@ -28,7 +28,9 @@ modifyInvestmentVariables <- function(x, ref = NULL, startYear = NULL) {
     stop("Timesteps must equal to 'ttot'")
   }
 
-  # interpretation of investment timesteps for 'ttot'
+  # generate mapping from REMIND timesteps to yearly timesteps for REMIND investment variables (vm_deltaCap etc.)
+  # REMIND investment variables are defined to cover years between the last and the current REMIND time step.
+  # Example: vm_deltaCap(2020) refers to annual capacity additions from 2016 to 2020.
   investTs <- rbind(
     # first year is 1898, as 1990 represents 1898 to 1902 in REMIND
     data.frame(year = seq(1898, 2110, 1)) %>%
@@ -42,7 +44,9 @@ modifyInvestmentVariables <- function(x, ref = NULL, startYear = NULL) {
       mutate("period" = ifelse(.data$year <= 2130, 2130, 2150))
   )
 
-  # interpretation of REMIND timesteps for 'ttot'
+  # generate mapping from yearly timesteps to REMIND reporting timesteps.
+  # Reported variables are defined as averages between t-2 and t+2 around the central year t.
+  # Example: New Cap|XYZ(2020) refers to average annual capacity additions of technology XYZ in 2018 to 2022.
   remindTs <-
     rbind(
       # mapping for 2005 - 2150 from quitte
@@ -68,7 +72,7 @@ modifyInvestmentVariables <- function(x, ref = NULL, startYear = NULL) {
       "period" = paste0("y", .data$period),
     )
 
-  # map investment timesteps to yearly timesteps
+  # map variables from model timesteps to yearly timesteps (e.g. 2020 -> 2016-2020)
   x <- toolAggregate(x, dim = 2, rel = investTs, from = "period", to = "year", verbosity = 2)
 
   w <- remindTs %>%
@@ -77,6 +81,7 @@ modifyInvestmentVariables <- function(x, ref = NULL, startYear = NULL) {
     distinct() %>%
     as.magpie()
 
+  # Average variables with yearly timesteps to 5-year reporting time steps defined around center year (e.g. 2018-2022 average -> 2020)
   x <- toolAggregate(x, dim = 2, rel = remindTs, weight = w, from = "year", to = "period")
 
   if (!is.null(ref)) {
