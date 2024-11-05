@@ -10,6 +10,9 @@
 #' be created.
 #' @param t temporal resolution of the reporting, default:
 #' t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)
+#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
+#' It is used to guarantee consistency before 'cm_startyear' for capacity variables
+#' using time averaging.
 #'
 #' @return MAgPIE object - contains the capacity variables
 #' @author Lavinia Baumstark, Christoph Bertram
@@ -24,7 +27,9 @@
 #' @importFrom magclass mbind setNames getSets getSets<- as.magpie
 #' @importFrom dplyr %>% filter mutate
 
-reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150)) {
+reportCapacity <- function(gdx, regionSubsetList = NULL,
+                           t = c(seq(2005, 2060, 5), seq(2070, 2110, 10), 2130, 2150),
+                           gdx_ref = gdx_ref) {
   # read sets
   teall2rlf   <- readGDX(gdx, name = c("te2rlf", "teall2rlf"), format = "first_found")
   possibleRefineries <- c("refped", "refdip", "refliq")
@@ -43,13 +48,27 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   # read scalars
   sm_c_2_co2 <- as.vector(readGDX(gdx, "sm_c_2_co2"))
 
-
   # data preparation
   ttot <- as.numeric(as.vector(ttot))
-  vm_cap      <- vm_cap[teall2rlf]
-  vm_cap      <- vm_cap[, ttot, ]
+  vm_cap <- vm_cap[teall2rlf]
+  vm_cap <- vm_cap[, ttot, ]
+
   vm_deltaCap <- vm_deltaCap[teall2rlf]
   vm_deltaCap <- vm_deltaCap[, ttot, ]
+
+  # apply 'modifyInvestmentVariables' to shift from the model-internal time coverage (deltacap and investment
+  # variables for step t represent the average of the years from t-4years to t) to the general convention for
+  # the reporting template (all variables represent the average of the years from t-2.5years to t+2.5years)
+  if (!is.null(gdx_ref)) {
+    cm_startyear <- as.integer(readGDX(gdx, name = "cm_startyear", format = "simplest"))
+    vm_deltaCapRef <- readGDX(gdx_ref, name = c("vm_deltaCap"), field = "l", format = "first_found") * 1000
+    vm_deltaCapRef <- vm_deltaCapRef[teall2rlf]
+    vm_deltaCapRef <- vm_deltaCapRef[, ttot, ]
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap, vm_deltaCapRef, cm_startyear)
+  } else {
+    vm_deltaCap <- modifyInvestmentVariables(vm_deltaCap)
+  }
+
   v_earlyreti <-   v_earlyreti[, ttot, ]
   t2005 <- ttot[ttot > 2004]
 
@@ -154,9 +173,8 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
 
   # carbon management
   if ("dac" %in% magclass::getNames(vm_cap, dim = 1)) {
-  tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("dac")], dim = 3) * sm_c_2_co2, "Cap|Carbon Management|DAC (Mt CO2/yr)"))
+    tmp <- mbind(tmp, setNames(dimSums(vm_cap[, , c("dac")], dim = 3) * sm_c_2_co2, "Cap|Carbon Management|DAC (Mt CO2/yr)"))
   }
-
   # Newly built capacities electricity (Should all go into tmp2, so that this can be used for calculating cumulated values in tmp5 below)
   tmp2 <- NULL
   tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("ngcc", "ngt", "gaschp", "ngccc")], dim = 3),        "New Cap|Electricity|Gas (GW/yr)"))
@@ -225,40 +243,38 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp_chpAdd <- mbind(tmp_chpAdd, setNames(dimSums(tmp_chpAdd, dim = 3),                                                                        "New Cap|Heat (GW/yr)"))
   tmp2 <- mbind(tmp2, tmp_chpAdd)
 
-    # Newly built capacities liquids
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec", "bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl", "MeOH")], dim = 3),
-        "New Cap|Liquids (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec")], dim = 3),
-        "New Cap|Liquids|Fossil (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("coalftrec", "coalftcrec")], dim = 3),
-                                 "New Cap|Liquids|Coal (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , refineries], dim = 3),
-                                 "New Cap|Liquids|Oil (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl")], dim = 3),
-        "New Cap|Liquids|Biomass (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("MeOH")], dim = 3),
-        "New Cap|Liquids|Hydrogen (GW/yr)"))
+  # Newly built capacities liquids
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec", "bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl", "MeOH")], dim = 3),
+                               "New Cap|Liquids (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c(refineries, "coalftrec", "coalftcrec")], dim = 3),
+                               "New Cap|Liquids|Fossil (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("coalftrec", "coalftcrec")], dim = 3),
+                               "New Cap|Liquids|Coal (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , refineries], dim = 3),
+                               "New Cap|Liquids|Oil (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("bioftrec", "bioftcrec", "biodiesel", "bioeths", "bioethl")], dim = 3),
+                               "New Cap|Liquids|Biomass (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("MeOH")], dim = 3),
+                               "New Cap|Liquids|Hydrogen (GW/yr)"))
 
+  # Newly built capacities gases
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas", "biogas", "h22ch4")], dim = 3),
+                               "New Cap|Gases (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas")], dim = 3),
+                               "New Cap|Gases|Fossil (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "gastr"], dim = 3),
+                               "New Cap|Gases|Gas (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "coalgas"], dim = 3),
+                               "New Cap|Gases|Coal (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biogas")], dim = 3),
+                               "New Cap|Gases|Biomass (GW/yr)"))
+  tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h22ch4")], dim = 3),
+                               "New Cap|Gases|Hydrogen (GW/yr)"))
 
-    # Newly built capacities gases
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas", "biogas", "h22ch4")], dim = 3),
-        "New Cap|Gases (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("gastr", "coalgas")], dim = 3),
-        "New Cap|Gases|Fossil (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "gastr"], dim = 3),
-                                 "New Cap|Gases|Gas (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , "coalgas"], dim = 3),
-                                 "New Cap|Gases|Coal (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("biogas")], dim = 3),
-        "New Cap|Gases|Biomass (GW/yr)"))
-    tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("h22ch4")], dim = 3),
-        "New Cap|Gases|Hydrogen (GW/yr)"))
-
-    # carbon management
-    if ("dac" %in% magclass::getNames(vm_cap, dim = 1)) {
+  # carbon management
+  if ("dac" %in% magclass::getNames(vm_cap, dim = 1)) {
     tmp2 <- mbind(tmp2, setNames(dimSums(vm_deltaCap[, , c("dac")], dim = 3) * sm_c_2_co2, "New Cap|Carbon Management|DAC (Mt CO2/yr/yr)"))
-    }
-
+  }
 
   # add terms calculated from previously calculated capacity values
   tmp_aux <- NULL
@@ -276,7 +292,7 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   names_capacities <- intersect(names_capacities, getNames(tmp1))
 
   tmp_aux <- mbind(tmp_aux, setNames(dimSums(tmp1[, , names_capacities], dim = 3) + 0.6 * tmp1[, , "Cap|Electricity|Hydro (GW)"] + tmp[, , "Cap|Electricity|Storage|Battery (GW)"],
-                        "Cap|Electricity|Estimated firm capacity counting hydro at 0p6 (GW)"))
+                                     "Cap|Electricity|Estimated firm capacity counting hydro at 0p6 (GW)"))
   tmp1 <- mbind(tmp1, tmp_aux)
 
 
@@ -287,19 +303,19 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   # Idle capacities and Total (sum of operating and idle)
   tmp4 <- NULL
   tmp4 <- mbind(tmp4, setNames(dimSums(vm_cap[, , "igcc"], dim = 3) * v_earlyreti[, , "igcc"] / (1 - v_earlyreti[, , "igcc"]) +
-    dimSums(vm_cap[, , "coalchp"], dim = 3) * v_earlyreti[, , "coalchp"] / (1 - v_earlyreti[, , "coalchp"]) +
-    dimSums(vm_cap[, , "pc"], dim = 3) * v_earlyreti[, , "pc"] / (1 - v_earlyreti[, , "pc"]),
-  "Idle Cap|Electricity|Coal|w/o CC (GW)"))
+                                 dimSums(vm_cap[, , "coalchp"], dim = 3) * v_earlyreti[, , "coalchp"] / (1 - v_earlyreti[, , "coalchp"]) +
+                                 dimSums(vm_cap[, , "pc"], dim = 3) * v_earlyreti[, , "pc"] / (1 - v_earlyreti[, , "pc"]),
+                               "Idle Cap|Electricity|Coal|w/o CC (GW)"))
   tmp4 <- mbind(tmp4, setNames(dimSums(vm_cap[, , "ngcc"], dim = 3) * v_earlyreti[, , "ngcc"] / (1 - v_earlyreti[, , "ngcc"]) +
-    dimSums(vm_cap[, , "gaschp"], dim = 3) * v_earlyreti[, , "gaschp"] / (1 - v_earlyreti[, , "gaschp"]) +
-    dimSums(vm_cap[, , "ngt"], dim = 3) * v_earlyreti[, , "ngt"] / (1 - v_earlyreti[, , "ngt"]),
-  "Idle Cap|Electricity|Gas|w/o CC (GW)"))
+                                 dimSums(vm_cap[, , "gaschp"], dim = 3) * v_earlyreti[, , "gaschp"] / (1 - v_earlyreti[, , "gaschp"]) +
+                                 dimSums(vm_cap[, , "ngt"], dim = 3) * v_earlyreti[, , "ngt"] / (1 - v_earlyreti[, , "ngt"]),
+                               "Idle Cap|Electricity|Gas|w/o CC (GW)"))
   tmp4 <- mbind(tmp4, setNames(dimSums(vm_cap[, , "dot"], dim = 3) * v_earlyreti[, , "dot"] / (1 - v_earlyreti[, , "dot"]),
-    "Idle Cap|Electricity|Oil|w/o CC (GW)"))
+                               "Idle Cap|Electricity|Oil|w/o CC (GW)"))
   tmp4 <- mbind(tmp4, setNames(tmp4[, , "Idle Cap|Electricity|Coal|w/o CC (GW)"] + tmp[, , "Cap|Electricity|Coal|w/o CC (GW)"],
-    "Total Cap|Electricity|Coal|w/o CC (GW)"))
+                               "Total Cap|Electricity|Coal|w/o CC (GW)"))
   tmp4 <- mbind(tmp4, setNames(tmp4[, , "Idle Cap|Electricity|Gas|w/o CC (GW)"] + tmp[, , "Cap|Electricity|Gas|w/o CC (GW)"],
-    "Total Cap|Electricity|Gas|w/o CC (GW)"))
+                               "Total Cap|Electricity|Gas|w/o CC (GW)"))
   # Cumulate things on extensive time set
   tmp <- mbind(tmp, tmp7, tmp1, tmp2, tmp4)
 
@@ -309,9 +325,9 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   tmp6 <- quitte::as.quitte(tmp6)
   mylist <- lapply(levels(tmp6$variable), function(x) {
     calcCumulatedDiscount(data = tmp6 %>%
-      filter(.data$variable == x),
-    nameVar = x,
-    discount = 0.0) %>%
+                            filter(.data$variable == x),
+                          nameVar = x,
+                          discount = 0.0) %>%
       mutate(variable = gsub("New", replacement = "Cumulative", x))
   })
 
@@ -325,7 +341,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
   magclass::getNames(tmp6)[grep("Cumulative Cap\\|Carbon Management", getNames(tmp6))] <- gsub("GW", "Mt CO2/yr",
                                                                                                magclass::getNames(tmp6)[grep("Cumulative Cap\\|Carbon Management", getNames(tmp6))])
 
-
   tmp <- mbind(tmp[, t2005, ], tmp6)
   # add global values
   tmp <- mbind(tmp, dimSums(tmp, dim = 1))
@@ -334,5 +349,6 @@ reportCapacity <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5
     tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
 
   getSets(tmp)[3] <- "variable"
+
   return(tmp)
 }

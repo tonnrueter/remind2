@@ -138,9 +138,16 @@ reportLCOE <- function(gdx, output.type = "both") {
     pm_SEPrice <- readGDX(gdx, "pm_SEPrice", restore_zeros = FALSE)
 
     ## variables
-    vm_costInvTeDir <- readGDX(gdx, name = c("vm_costInvTeDir", "v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")[, ttot, ] ## Total direct Investment Cost in Timestep
-    vm_costInvTeAdj <- readGDX(gdx, name = c("vm_costInvTeAdj", "v_costInvTeAdj"), field = "l", format = "first_found")[, ttot, ] ## total adjustment cost in period
-    vm_deltaCap   <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")[, ttot, ]
+
+    ## Total direct Investment Cost in Timestep
+    vm_costInvTeDir <- readGDX(gdx, name = c("vm_costInvTeDir", "v_costInvTeDir", "v_directteinv"), field = "l", format = "first_found")[, ttot, ]
+
+    ## total adjustment cost in period
+    vm_costInvTeAdj <- readGDX(gdx, name = c("vm_costInvTeAdj", "v_costInvTeAdj"), field = "l", format = "first_found")[, ttot, ]
+
+    # capacity additions per year
+    vm_deltaCap <- readGDX(gdx, name = c("vm_deltaCap"), field = "l", format = "first_found")[, ttot, ]
+
     vm_demPe      <- readGDX(gdx, name = c("vm_demPe", "v_pedem"), field = "l", restore_zeros = FALSE, format = "first_found")
     v_investcost  <- readGDX(gdx, name = c("vm_costTeCapital", "v_costTeCapital", "v_investcost"), field = "l", format = "first_found")[, ttot, ]
     vm_cap        <- readGDX(gdx, name = c("vm_cap"), field = "l", format = "first_found")
@@ -1599,13 +1606,12 @@ reportLCOE <- function(gdx, output.type = "both") {
   LCOE.out.inclGlobal[getRegions(LCOE.out), , ] <- LCOE.out
   LCOE.out.inclGlobal["GLO", , ] <- dimSums(LCOE.out, dim = 1) / length(getRegions(LCOE.out))
 
-
-
-  if (output.type %in% c("marginal detail")) {
-    return(df.LCOE)
+  if (output.type  == "marginal detail") {
+    out <- df.LCOE
   } else {
-    return(LCOE.out.inclGlobal)
+    out <- LCOE.out.inclGlobal
   }
 
-  return(LCOE.out)
+  return(out)
+
 }
