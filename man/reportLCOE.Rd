@@ -4,7 +4,7 @@
 \alias{reportLCOE}
 \title{Read in GDX and calculate LCOE reporting used in convGDX2MIF_LCOE.}
 \usage{
-reportLCOE(gdx, output.type = "both", gdx_ref = NULL)
+reportLCOE(gdx, output.type = "both")
 }
 \arguments{
 \item{gdx}{a GDX object as created by readGDX, or the path to a gdx}
@@ -13,10 +13,6 @@ reportLCOE(gdx, output.type = "both", gdx_ref = NULL)
 Can be either "average" (returns only average LCOE),
 "marginal" (returns only marginal LCOE), "both" (returns marginal and average LCOE) and
 and "marginal detail" (returns table to trace back how marginal LCOE are calculated).}
-
-\item{gdx_ref}{a GDX object as created by readGDX, or the path to a gdx of the reference run.
-It is used to guarantee consistency before 'cm_startyear' for capacity and investment variables
-using time averaging.}
 }
 \value{
 MAgPIE object - LCOE calculated by model post-processing.

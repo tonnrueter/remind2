@@ -20,9 +20,6 @@
 #' Can be either "average" (returns only average LCOE),
 #' "marginal" (returns only marginal LCOE), "both" (returns marginal and average LCOE) and
 #' and "marginal detail" (returns table to trace back how marginal LCOE are calculated).
-#' @param gdx_ref a GDX object as created by readGDX, or the path to a gdx of the reference run.
-#' It is used to guarantee consistency before 'cm_startyear' for capacity and investment variables
-#' using time averaging.
 #' @return MAgPIE object - LCOE calculated by model post-processing.
 #' Two types a) standing system LCOE b) new plant LCOE.
 #' @author Felix Schreyer, Robert Pietzcker, Lavinia Baumstark
@@ -39,7 +36,7 @@
 #' @importFrom quitte as.quitte overwrite getRegs getPeriods
 #' @importFrom tidyr spread gather expand fill
 
-reportLCOE <- function(gdx, output.type = "both", gdx_ref = NULL) {
+reportLCOE <- function(gdx, output.type = "both") {
   # test whether output.type defined
   if (!output.type %in% c("marginal", "average", "both", "marginal detail")) {
     print("Unknown output type. Please choose either marginal, average, both or marginal detail.")
