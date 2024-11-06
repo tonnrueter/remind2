@@ -389,38 +389,38 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL, t = c(
 
   tmp[is.na(tmp)] <- 0  # tmp is NA if weight is zero for all regions within the GLO or the specific region aggregation. Therefore, we replace all NAs with zeros.
 
-  
+
  # EW reporting: add info on rocks for enhanced weathering ----
     tmp2 <- NULL
-    ## calculate totals of rocks spread 
-    v33_EW_onfield <- readGDX(gdx,"v33_EW_onfield", restore_zeros = F,field="l",format="first_found")[,t,] # [Gt rock]
-    v33_EW_onfield_total <- dimSums(v33_EW_onfield,dim=3)             # aggregate total rocks spread [Gt rock]
-    v33_EW_onfield_byClimateGrade <- dimSums(v33_EW_onfield,dim=3.2)  # rocks spread by climate grade, aggregated across transportation grades [Gt rock]
-    
+    ## calculate totals of rocks spread
+    v33_EW_onfield <- readGDX(gdx, "v33_EW_onfield", restore_zeros = FALSE, field = "l", format = "first_found")[, t, ] # [Gt rock]
+    v33_EW_onfield_total <- dimSums(v33_EW_onfield, dim = 3)             # aggregate total rocks spread [Gt rock]
+    v33_EW_onfield_byClimateGrade <- dimSums(v33_EW_onfield, dim = 3.2)  # rocks spread by climate grade, aggregated across transportation grades [Gt rock]
+
     ## calculate totals of rocks weathering on fields in each period
-    v33_EW_onfield_tot <- readGDX(gdx,"v33_EW_onfield_tot", restore_zeros = F,field="l",format="first_found")[,t,] # [Gt rock]
-    v33_EW_onfield_tot_total <- dimSums(v33_EW_onfield_tot,dim=3)            # total of rocks weathering on fields  [Gt rock]
-    v33_EW_onfield_tot_byClimateGrade <- dimSums(v33_EW_onfield_tot,dim=3.2) # rocks weathering on field by climate grade, aggregated across transportation grades [Gt rock]
+    v33_EW_onfield_tot <- readGDX(gdx, "v33_EW_onfield_tot", restore_zeros = FALSE, field = "l", format = "first_found")[, t, ] # [Gt rock]
+    v33_EW_onfield_tot_total <- dimSums(v33_EW_onfield_tot, dim = 3)            # total of rocks weathering on fields  [Gt rock]
+    v33_EW_onfield_tot_byClimateGrade <- dimSums(v33_EW_onfield_tot, dim = 3.2) # rocks weathering on field by climate grade, aggregated across transportation grades [Gt rock]
 
     tmp2 <- mbind(
-        setNames(v33_EW_onfield_total                 * 1000,  "CDR|Rocks spread (Mt rocks/yr)"), 
-        setNames(v33_EW_onfield_byClimateGrade[,,"1"] * 1000,  "CDR|Rocks spread|+|warm regions (Mt rocks/yr)"),
-        setNames(v33_EW_onfield_byClimateGrade[,,"2"] * 1000,  "CDR|Rocks spread|+|temperate regions (Mt rocks/yr)"),
+        setNames(v33_EW_onfield_total                 * 1000,  "CDR|Rocks spread (Mt rocks/yr)"),
+        setNames(v33_EW_onfield_byClimateGrade[, , "1"] * 1000,  "CDR|Rocks spread|+|warm regions (Mt rocks/yr)"),
+        setNames(v33_EW_onfield_byClimateGrade[, , "2"] * 1000,  "CDR|Rocks spread|+|temperate regions (Mt rocks/yr)"),
         setNames(v33_EW_onfield_tot_total             * 1000,  "CDR|Rocks weathering (Mt rocks)"),
-        setNames(v33_EW_onfield_tot_byClimateGrade[,,"1"] * 1000,  "CDR|Rocks weathering|+|warm regions (Mt rocks)"),
-        setNames(v33_EW_onfield_tot_byClimateGrade[,,"2"] * 1000,  "CDR|Rocks weathering|+|temperate regions (Mt rocks)")
+        setNames(v33_EW_onfield_tot_byClimateGrade[, , "1"] * 1000,  "CDR|Rocks weathering|+|warm regions (Mt rocks)"),
+        setNames(v33_EW_onfield_tot_byClimateGrade[, , "2"] * 1000,  "CDR|Rocks weathering|+|temperate regions (Mt rocks)")
     )
-  	
+
     ## add global values
     tmp2 <- mbind(tmp2, dimSums(tmp2, dim = 1))
-    
+
     if (!is.null(regionSubsetList))
           tmp2 <- mbind(tmp2, calc_regionSubset_sums(tmp2, regionSubsetList))
-    
+
 
   # combine main reporting and EW ----
-    tmp2 <- magclass::matchDim(tmp2, tmp, dim=c(1,2))
-    tmp <- mbind(tmp,tmp2)  
+    tmp2 <- magclass::matchDim(tmp2, tmp, dim = c(1, 2))
+    tmp <- mbind(tmp, tmp2)
 
 
   getSets(tmp)[3] <- "variable"
