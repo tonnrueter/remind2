@@ -383,6 +383,14 @@ cdrVars <-
 walk(cdrVars, showLinePlots, data = data)
 ```
 
+#### EW rock spreading
+```{r CO2 EW rock}
+items <- c(
+  "CDR|Rocks spread",
+  "CDR|Rocks weathering"
+)
+walk(items, showLinePlots, data = data)
+```
 
 ### Cumulated Emissions
 
