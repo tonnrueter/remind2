@@ -51,7 +51,7 @@ reportLCOE <- function(gdx, output.type = "both") {
   vm_capFac <- readGDX(gdx, "vm_capFac", field = "l", restore_zeros = FALSE)
   qm_balcapture  <- readGDX(gdx, "q_balcapture", field = "m", restore_zeros = FALSE)
   vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = FALSE)
-  vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = FALSE)
+  vm_co2capture <- readGDX(gdx, c("vm_co2capture","v_co2capture"), field = "l", restore_zeros = FALSE)
   pm_emifac <- readGDX(gdx, "pm_emiFac", field = "l", restore_zeros = FALSE)
   v32_storloss <- readGDX(gdx, "v32_storloss", field = "l")
 
@@ -1215,7 +1215,7 @@ reportLCOE <- function(gdx, output.type = "both") {
 
     ### 13. calculate share stored carbon from capture carbon
     vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = FALSE)
-    vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = FALSE)
+    vm_co2capture <- readGDX(gdx, c("vm_co2capture","v_co2capture"), field = "l", restore_zeros = FALSE)
 
     if (getSets(vm_co2capture)[[3]] == "emiAll") {
       sel_vm_co2capture_cco2 <- mselect(vm_co2capture, emiAll = "cco2")
@@ -1294,7 +1294,7 @@ reportLCOE <- function(gdx, output.type = "both") {
     # for now take the storage share of the construction year of plant, it will not change much over time
     # (if CCS, then no CCU and v_capturevalve is mostly small)
     vm_co2CCS <- readGDX(gdx, "vm_co2CCS", field = "l", restore_zeros = FALSE)
-    vm_co2capture <- readGDX(gdx, "vm_co2capture", field = "l", restore_zeros = FALSE)
+    vm_co2capture <- readGDX(gdx, c("vm_co2capture","v_co2capture"), field = "l", restore_zeros = FALSE)
 
 
     # calculate stored CO2 per output of capture technology (GtC/TWa)
