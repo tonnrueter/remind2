@@ -1703,11 +1703,13 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
               # Industry BECCS
               setNames(-out[, , "Carbon Management|Storage|Industry Energy|+|Biomass (Mt CO2/yr)"],
                       "Emi|CO2|CDR|BECCS|Industry (Mt CO2/yr)"),
-              # stored CO2 in industry from carbon-neutral synthetic fuels (storage of fossil synthetic fuels accounted under Emi|CO2|Accounted in Other Sectors|...)
-              setNames(-out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_atmosco2 * p_share_CCS,
+              # stored CO2 in industry from carbon-neutral synthetic fuels
+              # (storage of fossil synthetic fuels accounted under Emi|CO2|Accounted in Other Sectors|...)
+              setNames(-out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"] * p_share_atmosco2,
                       "Emi|CO2|CDR|Industry CCS|Synthetic Fuels (Mt CO2/yr)"),
 
-              # CO2 stored in plastic products that are not incinerated and come from atmospheric or biogenic carbon (storage of plastics from fossil synthetic fuels accounted under Emi|CO2|Accounted in Other Sectors|... )
+              # CO2 stored in plastic products that are not incinerated and come from atmospheric or biogenic carbon
+              # (storage of plastics from fossil synthetic fuels accounted under Emi|CO2|Accounted in Other Sectors|... )
               setNames(-out[, , "Carbon Management|Materials|Plastics|Waste|++|Other destination (Mt CO2/yr)"] * p_share_atmosco2_plastics,
                        "Emi|CO2|CDR|Materials|+|Plastics (Mt CO2/yr)"),
 
@@ -1794,9 +1796,9 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
   # are not carbon dioxide removal (CDR) because the CO2 is of fossil origin.
 
   out <- mbind(out,
-               setNames( -out[, , "Carbon Management|Carbon Capture|Industry Energy|+|Synfuel (Mt CO2/yr)"] * (1-p_share_atmosco2) * p_share_CCS,
+               setNames( -out[, , "Carbon Management|Storage|Industry Energy|+|Synfuel (Mt CO2/yr)"] * (1-p_share_atmosco2),
                          "Emi|CO2|Accounted in Other Sectors via CCU|Energy|Industry|Fossil Synfuel CCS (Mt CO2/yr)"),
-              setNames( -out[, , "Carbon Management|Materials|Plastics|Waste|++|Other destination (Mt CO2/yr)"] * p_share_fossyn_plastics,
+              setNames(  -out[, , "Carbon Management|Materials|Plastics|Waste|++|Other destination (Mt CO2/yr)"] * p_share_fossyn_plastics,
                          "Emi|CO2|Accounted in Other Sectors via CCU|Energy|Industry|Fossil Synfuel Plastics Sequestration (Mt CO2/yr)"))
 
   out <- mbind(out,
