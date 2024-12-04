@@ -166,7 +166,6 @@ showMultiLinePlots(data, items)
 ### ES Pass - perCap - Line
 ```{r ES Pass - perCap - Line}
 items <- c(
-  # problems see last chunk
   "ES|Transport|Pass pCap",
   "ES|Transport|Pass|Road|LDV pCap")
 showMultiLinePlots(data, items)
