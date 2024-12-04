@@ -5,11 +5,11 @@
 ```{r FE demand from buildings by carriers}
 tot <- "FE|Buildings"
 items <- c(
-  "FE|Buildings|non-Heating|Electricity|Conventional",  
-  "FE|Buildings|Heating|Electricity|Heat pump",  
-  "FE|Buildings|Heating|District Heating",  
+  "FE|Buildings|non-Heating|Electricity|Conventional",
+  "FE|Buildings|Heating|Electricity|Heat pump",
+  "FE|Buildings|Heating|District Heating",
   "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Hydrogen",  
+  "FE|Buildings|Heating|Hydrogen",
   "FE|Buildings|Heating|Gases",
   "FE|Buildings|Heating|Liquids",
   "FE|Buildings|Heating|Solids",
@@ -22,11 +22,11 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 if ("FE|Buildings|non-Heating|Electricity|Conventional pCap" %in% data[["variable"]]) {
   tot <- "FE|Buildings pCap"
   items <- c(
-    "FE|Buildings|non-Heating|Electricity|Conventional pCap",  
-    "FE|Buildings|Heating|Electricity|Heat pump pCap",  
-    "FE|Buildings|Heating|District Heating pCap",  
+    "FE|Buildings|non-Heating|Electricity|Conventional pCap",
+    "FE|Buildings|Heating|Electricity|Heat pump pCap",
+    "FE|Buildings|Heating|District Heating pCap",
     "FE|Buildings|Heating|Electricity|Resistance pCap",
-    "FE|Buildings|Heating|Hydrogen pCap",  
+    "FE|Buildings|Heating|Hydrogen pCap",
     "FE|Buildings|Heating|Gases pCap",
     "FE|Buildings|Heating|Liquids pCap",
     "FE|Buildings|Heating|Solids pCap",
@@ -39,11 +39,11 @@ if ("FE|Buildings|non-Heating|Electricity|Conventional pCap" %in% data[["variabl
 ```{r UE demand from buildings by carriers}
 tot <- "UE|Buildings"
 items <- c(
-  "UE|Buildings|non-Heating|Electricity|Conventional",  
-  "UE|Buildings|Heating|Electricity|Heat pump",  
-  "UE|Buildings|Heating|District Heating",  
+  "UE|Buildings|non-Heating|Electricity|Conventional",
+  "UE|Buildings|Heating|Electricity|Heat pump",
+  "UE|Buildings|Heating|District Heating",
   "UE|Buildings|Heating|Electricity|Resistance",
-  "UE|Buildings|Heating|Hydrogen",  
+  "UE|Buildings|Heating|Hydrogen",
   "UE|Buildings|Heating|Gases",
   "UE|Buildings|Heating|Liquids",
   "UE|Buildings|Heating|Solids",
@@ -56,11 +56,11 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 if ("UE|Buildings|non-Heating|Electricity|Conventional pCap" %in% data[["variable"]]) {
   tot <- "UE|Buildings pCap"
   items <- c(
-    "UE|Buildings|non-Heating|Electricity|Conventional pCap",  
-    "UE|Buildings|Heating|Electricity|Heat pump pCap",  
-    "UE|Buildings|Heating|District Heating pCap",  
+    "UE|Buildings|non-Heating|Electricity|Conventional pCap",
+    "UE|Buildings|Heating|Electricity|Heat pump pCap",
+    "UE|Buildings|Heating|District Heating pCap",
     "UE|Buildings|Heating|Electricity|Resistance pCap",
-    "UE|Buildings|Heating|Hydrogen pCap",  
+    "UE|Buildings|Heating|Hydrogen pCap",
     "UE|Buildings|Heating|Gases pCap",
     "UE|Buildings|Heating|Liquids pCap",
     "UE|Buildings|Heating|Solids pCap",
@@ -73,10 +73,10 @@ if ("UE|Buildings|non-Heating|Electricity|Conventional pCap" %in% data[["variabl
 ```{r FE demand from buildings for heating by carriers}
 tot <- "FE|Buildings|Heating"
 items <- c(
-  "FE|Buildings|Heating|Electricity|Heat pump",  
-  "FE|Buildings|Heating|District Heating",  
+  "FE|Buildings|Heating|Electricity|Heat pump",
+  "FE|Buildings|Heating|District Heating",
   "FE|Buildings|Heating|Electricity|Resistance",
-  "FE|Buildings|Heating|Hydrogen",  
+  "FE|Buildings|Heating|Hydrogen",
   "FE|Buildings|Heating|Gases",
   "FE|Buildings|Heating|Liquids",
   "FE|Buildings|Heating|Solids",
@@ -89,10 +89,10 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 if ("FE|Buildings|Heating|Electricity|Heat pump pCap" %in% data[["variable"]]) {
   tot <- "FE|Buildings|Heating pCap"
   items <- c(
-    "FE|Buildings|Heating|Electricity|Heat pump pCap",  
-    "FE|Buildings|Heating|District Heating pCap",  
+    "FE|Buildings|Heating|Electricity|Heat pump pCap",
+    "FE|Buildings|Heating|District Heating pCap",
     "FE|Buildings|Heating|Electricity|Resistance pCap",
-    "FE|Buildings|Heating|Hydrogen pCap",  
+    "FE|Buildings|Heating|Hydrogen pCap",
     "FE|Buildings|Heating|Gases pCap",
     "FE|Buildings|Heating|Liquids pCap",
     "FE|Buildings|Heating|Solids pCap",
@@ -105,10 +105,10 @@ if ("FE|Buildings|Heating|Electricity|Heat pump pCap" %in% data[["variable"]]) {
 ```{r UE demand from buildings for heating by carriers}
 tot <- "UE|Buildings|Heating"
 items <- c(
-  "UE|Buildings|Heating|Electricity|Heat pump",  
-  "UE|Buildings|Heating|District Heating",  
+  "UE|Buildings|Heating|Electricity|Heat pump",
+  "UE|Buildings|Heating|District Heating",
   "UE|Buildings|Heating|Electricity|Resistance",
-  "UE|Buildings|Heating|Hydrogen",  
+  "UE|Buildings|Heating|Hydrogen",
   "UE|Buildings|Heating|Gases",
   "UE|Buildings|Heating|Liquids",
   "UE|Buildings|Heating|Solids",
@@ -121,10 +121,10 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 if ("UE|Buildings|Heating|Electricity|Heat pump pCap" %in% data[["variable"]]) {
   tot <- "UE|Buildings|Heating pCap"
   items <- c(
-    "UE|Buildings|Heating|Electricity|Heat pump pCap",  
-    "UE|Buildings|Heating|District Heating pCap",  
+    "UE|Buildings|Heating|Electricity|Heat pump pCap",
+    "UE|Buildings|Heating|District Heating pCap",
     "UE|Buildings|Heating|Electricity|Resistance pCap",
-    "UE|Buildings|Heating|Hydrogen pCap",  
+    "UE|Buildings|Heating|Hydrogen pCap",
     "UE|Buildings|Heating|Gases pCap",
     "UE|Buildings|Heating|Liquids pCap",
     "UE|Buildings|Heating|Solids pCap",
@@ -158,8 +158,8 @@ showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```{r ES Pass - Line}
 items <- c(
   "ES|Transport|Pass",
-  "ES|Transport|Pass|Road|LDV",
-  "ES|Transport|Pass|non-LDV")
+  "ES|Transport|Pass|Road|LDV"
+  )
 showMultiLinePlots(data, items)
 ```
 
@@ -167,8 +167,7 @@ showMultiLinePlots(data, items)
 ```{r ES Pass - perCap - Line}
 items <- c(
   "ES|Transport|Pass pCap",
-  "ES|Transport|Pass|Road|LDV pCap",
-  "ES|Transport|Pass|non-LDV pCap")
+  "ES|Transport|Pass|Road|LDV pCap")
 showMultiLinePlots(data, items)
 showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ```
@@ -213,7 +212,7 @@ showMultiLinePlotsByVariable(data, items, "GDP|PPP pCap")
 ### ES Freight Road by tech - Bar
 ```{r ES Freight Road by tech - Bar}
 items <- c(
-  "ES|Transport|Freight|Road|Electric",
+  "ES|Transport|Freight|Road|BEV",
   "ES|Transport|Freight|Road|FCEV",
   "ES|Transport|Freight|Road|Gases",
   "ES|Transport|Freight|Road|Liquids")
@@ -235,7 +234,7 @@ showAreaAndBarPlots(data, items, orderVars = "user", scales = "fixed")
 tot <- "Stock|Transport|Pass|Road|LDV"
 items <- c(
   "Stock|Transport|Pass|Road|LDV|BEV",
-  "Stock|Transport|Pass|Road|LDV|Hybrid electric",  
+  "Stock|Transport|Pass|Road|LDV|Hybrid electric",
   "Stock|Transport|Pass|Road|LDV|FCEV",
   "Stock|Transport|Pass|Road|LDV|Gases",
   "Stock|Transport|Pass|Road|LDV|Liquids",
@@ -245,24 +244,14 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 
 ### LDV Vehicles Stock - perCap - EDGE-T
 ```{r LDV Vehicles Stock - perCap - EDGE-T}
-tot <- "Stock|Transport|LDV pCap"
+tot <- "Stock|Transport|Pass|Road|LDV pCap"
 items <- c(
-  "Stock|Transport|LDV|BEV pCap",
-  "Stock|Transport|LDV|Hybrid electric pCap",  
-  "Stock|Transport|LDV|FCEV pCap",
-  "Stock|Transport|LDV|Gases pCap",
-  "Stock|Transport|LDV|Liquids pCap",
+  "Stock|Transport|Pass|Road|LDV|BEV pCap",
+  "Stock|Transport|Pass|Road|LDV|Hybrid electric pCap",
+  "Stock|Transport|Pass|Road|LDV|FCEV pCap",
+  "Stock|Transport|Pass|Road|LDV|Gases pCap",
+  "Stock|Transport|Pass|Road|LDV|Liquids pCap",
   NULL)
-showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
-```
-
-### LDV Vehicles Stock - TransportComplex
-```{r LDV Vehicles Stock - TransportComplex}
-tot <- "Est LDV Stock"
-items <- c(
-  "Est EV LDV Stock",
-  "Est H2 LDV Stock",
-  "Est ICE LDV Stock")
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
@@ -270,9 +259,9 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```{r LDV Vehicles Sales - EDGE-T}
 tot <- "Sales|Transport|Pass|Road|LDV"
 items <- c(
-  "Sales|Transport|Pass|Road|LDV|BEV",  
+  "Sales|Transport|Pass|Road|LDV|BEV",
   "Sales|Transport|Pass|Road|LDV|Hybrid electric",
-  "Sales|Transport|Pass|Road|LDV|FCEV",  
+  "Sales|Transport|Pass|Road|LDV|FCEV",
   "Sales|Transport|Pass|Road|LDV|Gases",
   "Sales|Transport|Pass|Road|LDV|Liquids",
   NULL
@@ -280,21 +269,11 @@ items <- c(
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```
 
-### LDV Vehicles Sales - TransportComplex
-```{r LDV Vehicles Sales - TransportComplex}
-tot <- "Est LDV Sales"
-items <- c(
-  "Est EV LDV Sales",
-  "Est H2 LDV Sales",
-  "Est ICE LDV Sales")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-```
-
 ### Truck Stock - EDGE-T
 ```{r Truck Stock}
 tot <- "Stock|Transport|Freight|Road"
 items <- c(
-  "Stock|Transport|Freight|Road|Electric",  
+  "Stock|Transport|Freight|Road|BEV",
   "Stock|Transport|Freight|Road|FCEV",
   "Stock|Transport|Freight|Road|Gases",
   "Stock|Transport|Freight|Road|Liquids",
@@ -306,7 +285,7 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```{r Truck Sales}
 tot <- "Sales|Transport|Freight|Road"
 items <- c(
-  "Sales|Transport|Freight|Road|Electric",  
+  "Sales|Transport|Freight|Road|BEV",
   "Sales|Transport|Freight|Road|FCEV",
   "Sales|Transport|Freight|Road|Gases",
   "Sales|Transport|Freight|Road|Liquids",
@@ -318,7 +297,7 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```{r Bus Stock}
 tot <- "Stock|Transport|Pass|Road|Bus"
 items <- c(
-  "Stock|Transport|Pass|Road|Bus|Electric",
+  "Stock|Transport|Pass|Road|Bus|BEV",
   "Stock|Transport|Pass|Road|Bus|FCEV",
   "Stock|Transport|Pass|Road|Bus|Gases",
   "Stock|Transport|Pass|Road|Bus|Liquids",
@@ -330,32 +309,12 @@ showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
 ```{r Bus Sales}
 tot <- "Sales|Transport|Pass|Road|Bus"
 items <- c(
-  "Sales|Transport|Pass|Road|Bus|Electric",  
+  "Sales|Transport|Pass|Road|Bus|BEV",
   "Sales|Transport|Pass|Road|Bus|FCEV",
   "Sales|Transport|Pass|Road|Bus|Gases",
   "Sales|Transport|Pass|Road|Bus|Liquids",
   NULL)
 showAreaAndBarPlots(data, items, tot, orderVars = "user", scales = "fixed")
-```
-
-### non-LDV Vehicles Stock - TransportComplex
-```{r non-LDV Vehicles Stock}
-tot <- "Services and Products|Transport|non-LDV|Stock|uedit"
-items <- c(
-  "Services and Products|Transport|non-LDV|Stock|apCarDiT",
-  "Services and Products|Transport|non-LDV|Stock|apcarDiEffT",
-  "Services and Products|Transport|non-LDV|Stock|apcarDiEffH2T")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
-```
-
-### non-LDV Vehicles Sales - TransportComplex
-```{r non-LDV Vehicles Sales}
-tot <- "Services and Products|Transport|non-LDV|Sales|uedit"
-items <- c(
-  "Services and Products|Transport|non-LDV|Sales|apCarDiT",
-  "Services and Products|Transport|non-LDV|Sales|apcarDiEffT",
-  "Services and Products|Transport|non-LDV|Sales|apcarDiEffH2T")
-showAreaAndBarPlots(data, items, tot, scales = "fixed")
 ```
 
 ## Industry Production
@@ -378,11 +337,11 @@ dPlot <- data %>%
   filter(variable %in% items) %>%
   mutate(variable = shorten_legend(variable)) %>%
   order.levels(variable = rev(shorten_legend(items)),
-               scenario = unique(c('historical', levels(data$scenario))))
+               scenario = unique(c("historical", levels(data$scenario))))
 
 # Show at max 5 scenario rows by 7 region column plots
 for (regions in bin_distribute(getRegs(dPlot), 7)) {
-  for (scenarios in bin_distribute(setdiff(getScenarios(dPlot), 'historical'),
+  for (scenarios in bin_distribute(setdiff(getScenarios(dPlot), "historical"),
                                    5)) {
     suppressWarnings(
       p <- ggplot_bar_remind_vts(
@@ -405,20 +364,20 @@ for (regions in bin_distribute(getRegs(dPlot), 7)) {
           mapping = aes(x = xpos, y = value)) +
         geom_step(data = dPlot %>%
                     filter(region %in% regions,
-                           'historical' == scenario) %>%
+                           "historical" == scenario) %>%
                     complete(nesting(model, region, variable, unit, period,
                                      value),
                              scenario = scenarios) %>%
-                    filter('historical' != scenario) %>%
+                    filter("historical" != scenario) %>%
                     group_by(model, scenario, region, unit, period) %>%
                     arrange(model, scenario, region, unit, period,
                             desc(variable)) %>%
                     mutate(value = cumsum(value)) %>%
                     ungroup(),
-                  mapping = aes(x = period, y = value, colour = 'historic',
+                  mapping = aes(x = period, y = value, colour = "historic",
                                 group = interaction(region, variable)),
-                  direction = 'vh') +
-        scale_colour_manual(values = c('historic' = 'black'),
+                  direction = "vh") +
+        scale_colour_manual(values = c("historic" = "black"),
                             name = NULL) +
         facet_wrap(~ interaction(region, scenario, sep = " "),
                    nrow = length(scenarios), scales = "free_y") +
@@ -436,30 +395,30 @@ p <- ggplot() +
               filter(2100 >= period) %>%
               group_by(scenario, region, period) %>%
               mutate(value = value / sum(value),
-                     variable = paste(variable, 'Share')) %>%
+                     variable = paste(variable, "Share")) %>%
               ungroup(),
             mapping = aes(x = period, y = value, colour = scenario,
                           linetype = variable)) +
   scale_colour_manual(
-    values = c(gg_colour_hue(setdiff(levels(dPlot$scenario), 'historical')),
-               c('historical' = 'black')),
+    values = c(gg_colour_hue(setdiff(levels(dPlot$scenario), "historical")),
+               c("historical" = "black")),
     name = NULL) +
   scale_linetype_discrete(name = NULL,
                           guide = guide_legend(nrow = 2)) +
   scale_y_continuous(breaks = seq(0, 1, 0.2),
                      minor_breaks = seq(0.1, 0.9, 0.2)) +
-  facet_wrap(~ region) +
+  facet_wrap(~region) +
   labs(x = NULL, y = NULL) +
   theme_minimal() +
-  theme(legend.position = 'bottom')
+  theme(legend.position = "bottom")
 
 plot(p)
-cat('\n\n')
+cat("\n\n")
 ```
 
 ### Steel mix by route using process-based steel modeling
 ```{r Steel mix by route}
-if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process-based steel is used
+if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)) { # if process-based steel is used
   tot <- "Production|Industry|Steel"
   items <- c(
     "Production|Industry|Steel|DRI-NG-EAF-CCS",
@@ -473,11 +432,11 @@ if ("Production|Industry|Steel|BF-BOF" %in% levels(data$variable)){ # if process
   dscens <- data %>%
     filter(.data$variable %in% items, .data$scenario != "historical") %>%
     droplevels() %>%
-    pull('scenario') %>%
+    pull("scenario") %>%
     unique()
   droute <- data %>%
     filter(.data$scenario %in% dscens)
-showAreaAndBarPlots(droute, items, tot, orderVars="user", scales = "fixed")
+showAreaAndBarPlots(droute, items, tot, orderVars = "user", scales = "fixed")
 }
 ```
 
