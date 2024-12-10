@@ -457,7 +457,7 @@ showAreaAndBarPlots(data, items, tot, scales = "fixed")
 tot <- "SE|Solids"
 
 items <- c(
-  "SE|Input|Solids|T&D Losses",
+  "SE|Input|Solids|T&D losses",
   "FE|CDR|Solids",
   "FE|Transport|Solids",  
   "FE|Buildings|Solids",
@@ -493,7 +493,7 @@ showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 tot <- "SE|Liquids"
 
 items <- c(
-  "SE|Input|Liquids|T&D Losses",
+  "SE|Input|Liquids|T&D losses",
   "FE|CDR|Liquids",
   "FE|Buildings|Liquids",
   "FE|Non-energy Use|Industry|Liquids",
@@ -526,7 +526,7 @@ showAreaAndBarPlots(data, items, tot, orderVars="user", scales = "fixed")
 tot <- "SE|Gases"
 
 items <- c(
-  "SE|Input|Gases|T&D Losses",
+  "SE|Input|Gases|T&D losses",
   "FE|CDR|Gases",
   "FE|Transport|Bunkers|Gases",
   "FE|Transport|w/o Bunkers|Gases",
