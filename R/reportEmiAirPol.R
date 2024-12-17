@@ -76,10 +76,6 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
     return(tmp)
   }
 
-  ####### conversion factors ##########
-  pm_conv_TWa_EJ    <- 31.536
-  conv_MtSO2_to_MtS <- 1/2     # 32/(32+2*16)
-
   ####### read in needed data #########
   ## sets
   ttot  <-  as.numeric(readGDX(gdx, name=c("ttot"), format="first_found"))
