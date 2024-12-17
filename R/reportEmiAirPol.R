@@ -85,8 +85,8 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
   p11_emiAPexoGlob <- readGDX(gdx, name = c("p11_emiAPexoGlob", "pm_emiAPexoGlob"), field = "l", format = "first_found")[, ttot, airpollutants]
 
   ####### prepare parameter ########################
-  magclass::getNames(p11_emiAPexsolve) <- gsub("SOx","so2",magclass::getNames(p11_emiAPexsolve))
-  magclass::getNames(p11_emiAPexsolve) <- gsub("NMVOC","VOC",magclass::getNames(p11_emiAPexsolve))
+  getNames(p11_emiAPexsolve) <- gsub("SOx","so2",getNames(p11_emiAPexsolve))
+  getNames(p11_emiAPexsolve) <- gsub("NMVOC","VOC",getNames(p11_emiAPexsolve))
 
   ####### calculate reporting parameters ############
   # Loop over air pollutants and call reporting generating function
@@ -106,7 +106,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
       tmp <- mbind(tmp,setNames(p11_emiAPexoGlob["GLO",,"InternationalShipping"][,,pollutant],paste0("Emi|",poll_rep,"|Energy Demand|Transport|International Shipping (Mt ",poll_rep,"/yr)")),
                        setNames(p11_emiAPexoGlob["GLO",,"Aviation"][,,pollutant],             paste0("Emi|",poll_rep,"|Energy Demand|Transport|Aviation (Mt ",poll_rep,"/yr)"))
                     )
-      tmp1 <- new.magpie(getItems(out, dim = 1), getYears(out), magclass::getNames(tmp), fill = 0)
+      tmp1 <- new.magpie(getItems(out, dim = 1), getYears(out), getNames(tmp), fill = 0)
       tmp1["GLO",,] <- tmp["GLO",,]
       out  <- mbind(out,tmp1)
       # Aggregation: Transport and Energy Supply
