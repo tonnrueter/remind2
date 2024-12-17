@@ -37,7 +37,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
   airpollutants <- c("so2","bc","oc","CO","VOC","NOx","NH3")
 
   ######### internal function  ###########
-  generateReportingEmiAirPol <- function(pollutant,i_emiAPexsolve=pm_emiAPexsolve,i_emiAPexo=pm_emiAPexo){
+  generateReportingEmiAirPol <- function(pollutant,i_emiAPexsolve=p11_emiAPexsolve,i_emiAPexo=p11_emiAPexo){
     poll_rep <- toupper(pollutant)
     tmp <- NULL
 
@@ -84,13 +84,13 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
   ## sets
   ttot  <-  as.numeric(readGDX(gdx, name=c("ttot"), format="first_found"))
   ## parameter
-  pm_emiAPexsolve <- readGDX(gdx, name = c("p11_emiAPexsolve", "pm_emiAPexsolve"), field = "l", format = "first_found")[, ttot, ]
-  pm_emiAPexo <- readGDX(gdx, name = c("p11_emiAPexo", "pm_emiAPexo"), field = "l", format = "first_found")[, ttot, airpollutants]
-  pm_emiAPexoGlob <- readGDX(gdx, name = c("p11_emiAPexoGlob", "pm_emiAPexoGlob"), field = "l", format = "first_found")[, ttot, airpollutants]
+  p11_emiAPexsolve <- readGDX(gdx, name = c("p11_emiAPexsolve", "pm_emiAPexsolve"), field = "l", format = "first_found")[, ttot, ]
+  p11_emiAPexo <- readGDX(gdx, name = c("p11_emiAPexo", "pm_emiAPexo"), field = "l", format = "first_found")[, ttot, airpollutants]
+  p11_emiAPexoGlob <- readGDX(gdx, name = c("p11_emiAPexoGlob", "pm_emiAPexoGlob"), field = "l", format = "first_found")[, ttot, airpollutants]
 
   ####### prepare parameter ########################
-  magclass::getNames(pm_emiAPexsolve) <- gsub("SOx","so2",magclass::getNames(pm_emiAPexsolve))
-  magclass::getNames(pm_emiAPexsolve) <- gsub("NMVOC","VOC",magclass::getNames(pm_emiAPexsolve))
+  magclass::getNames(p11_emiAPexsolve) <- gsub("SOx","so2",magclass::getNames(p11_emiAPexsolve))
+  magclass::getNames(p11_emiAPexsolve) <- gsub("NMVOC","VOC",magclass::getNames(p11_emiAPexsolve))
 
   ####### calculate reporting parameters ############
   # Loop over air pollutants and call reporting generating function
@@ -107,8 +107,8 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
       poll_rep <- toupper(pollutant)
       tmp <- NULL
       # Add Aviation and Int. Shipping emissions
-      tmp <- mbind(tmp,setNames(pm_emiAPexoGlob["GLO",,"InternationalShipping"][,,pollutant],paste0("Emi|",poll_rep,"|Energy Demand|Transport|International Shipping (Mt ",poll_rep,"/yr)")),
-                       setNames(pm_emiAPexoGlob["GLO",,"Aviation"][,,pollutant],             paste0("Emi|",poll_rep,"|Energy Demand|Transport|Aviation (Mt ",poll_rep,"/yr)"))
+      tmp <- mbind(tmp,setNames(p11_emiAPexoGlob["GLO",,"InternationalShipping"][,,pollutant],paste0("Emi|",poll_rep,"|Energy Demand|Transport|International Shipping (Mt ",poll_rep,"/yr)")),
+                       setNames(p11_emiAPexoGlob["GLO",,"Aviation"][,,pollutant],             paste0("Emi|",poll_rep,"|Energy Demand|Transport|Aviation (Mt ",poll_rep,"/yr)"))
                     )
       tmp1 <- new.magpie(getRegions(out),getYears(out),magclass::getNames(tmp),fill=0)
       tmp1["GLO",,] <- tmp["GLO",,]
