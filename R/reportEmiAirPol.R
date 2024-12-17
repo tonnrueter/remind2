@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @importFrom gdx readGDX
-#' @importFrom magclass collapseNames getNames<- mbind setNames new.magpie getRegions getYears mbind setYears getItems<-
+#' @importFrom magclass collapseNames getNames<- mbind setNames new.magpie getYears mbind setYears getItems
 reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2070,2110,10),2130,2150)){
 
   # Get realisation name
@@ -106,7 +106,7 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
       tmp <- mbind(tmp,setNames(p11_emiAPexoGlob["GLO",,"InternationalShipping"][,,pollutant],paste0("Emi|",poll_rep,"|Energy Demand|Transport|International Shipping (Mt ",poll_rep,"/yr)")),
                        setNames(p11_emiAPexoGlob["GLO",,"Aviation"][,,pollutant],             paste0("Emi|",poll_rep,"|Energy Demand|Transport|Aviation (Mt ",poll_rep,"/yr)"))
                     )
-      tmp1 <- new.magpie(getRegions(out),getYears(out),magclass::getNames(tmp),fill=0)
+      tmp1 <- new.magpie(getItems(out, dim = 1), getYears(out), magclass::getNames(tmp), fill = 0)
       tmp1["GLO",,] <- tmp["GLO",,]
       out  <- mbind(out,tmp1)
       # Aggregation: Transport and Energy Supply
