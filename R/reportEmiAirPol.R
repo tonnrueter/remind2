@@ -84,9 +84,9 @@ reportEmiAirPol <- function(gdx,regionSubsetList=NULL,t=c(seq(2005,2060,5),seq(2
   ## sets
   ttot  <-  as.numeric(readGDX(gdx, name=c("ttot"), format="first_found"))
   ## parameter
-  pm_emiAPexsolve   <- readGDX(gdx, name=c("pm_emiAPexsolve"), field="l", format="first_found")[,ttot,]
-  pm_emiAPexo       <- readGDX(gdx, name=c("pm_emiAPexo"), field="l", format="first_found")[,ttot,airpollutants]
-  pm_emiAPexoGlob   <- readGDX(gdx, name=c("pm_emiAPexoGlob"), field="l", format="first_found")[,ttot,airpollutants]
+  pm_emiAPexsolve <- readGDX(gdx, name = c("p11_emiAPexsolve", "pm_emiAPexsolve"), field = "l", format = "first_found")[, ttot, ]
+  pm_emiAPexo <- readGDX(gdx, name = c("p11_emiAPexo", "pm_emiAPexo"), field = "l", format = "first_found")[, ttot, airpollutants]
+  pm_emiAPexoGlob <- readGDX(gdx, name = c("p11_emiAPexoGlob", "pm_emiAPexoGlob"), field = "l", format = "first_found")[, ttot, airpollutants]
 
   ####### prepare parameter ########################
   magclass::getNames(pm_emiAPexsolve) <- gsub("SOx","so2",magclass::getNames(pm_emiAPexsolve))
