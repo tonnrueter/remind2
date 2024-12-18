@@ -29,7 +29,9 @@ Read in air pollution emission information from GDX file, information used in
 convGDX2MIF.R for the reporting
 }
 \examples{
-\dontrun{reportEmiAirPol(gdx)}
+\dontrun{
+reportEmiAirPol(gdx)
+}
 
 }
 \seealso{

@@ -17,7 +17,7 @@ loadCs2Data(
 If the vector has names, those are used to refer to the scenarios in the
 output file.}
 
-\item{mifHist}{\code{character(1)}. Path to historical mif.}
+\item{mifHist}{\code{character(1)}. Path to historical mif or \code{NULL}.}
 
 \item{cfgScen, cfgDefault}{See section "YAML Parameters" in \link[=compareScenarios]{compareScenarios()}.}
 
